@@ -1,0 +1,531 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using SpatialSlur.SlurData;
+
+namespace SpatialSlur.SlurCore
+{
+    public struct Vec2d
+    {
+        #region Static
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Vec2d Zero
+        {
+            get { return new Vec2d(0.0, 0.0); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Vec2d UnitX
+        {
+            get { return new Vec2d(1.0, 0.0); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Vec2d UnitY
+        {
+            get { return new Vec2d(0.0, 1.0); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2d operator +(Vec2d v0, Vec2d v1)
+        {
+            v0.x += v1.x;
+            v0.y += v1.y;
+            return v0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2d operator -(Vec2d v0, Vec2d v1)
+        {
+            v0.x -= v1.x;
+            v0.y -= v1.y;
+            return v0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2d operator -(Vec2d v)
+        {
+            v.x = -v.x;
+            v.y = -v.y;
+            return v;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec2d operator *(Vec2d v, double t)
+        {
+            v.x *= t;
+            v.y *= t;
+            return v;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec2d operator *(double t, Vec2d v)
+        {
+            v.x *= t;
+            v.y *= t;
+            return v;
+        }
+
+
+        /// <summary>
+        /// returns the dot product of two vectors
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static double operator *(Vec2d v0, Vec2d v1)
+        {
+            return v0.x * v1.x + v0.y * v1.y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec2d operator /(Vec2d v, double t)
+        {
+            t = 1.0 / t;
+            v.x *= t;
+            v.y *= t;
+            return v;
+        }
+
+
+        /// <summary>
+        /// returns the angle between two vectors
+        /// returns NaN if either vector is zero length
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static double Angle(Vec2d v0, Vec2d v1)
+        {
+            if (v0.Unitize() && v1.Unitize())
+                return Math.Acos(v0 * v1);
+
+            return Double.NaN;
+        }
+
+
+
+        /// <summary>
+        /// reflects v0 about v1
+        /// </summary>
+        /// <param name="?"></param>
+        /// <param name="?"></param>
+        /// <returns></returns>
+        public static Vec2d Reflect(Vec2d v0, Vec2d v1)
+        {
+            v1.Unitize();
+            return v1 * (v0 * v1 * 2.0) - v0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec2d Lerp(Vec2d v0, Vec2d v1, double t)
+        {
+            v0.x += (v1.x - v0.x) * t;
+            v0.y += (v1.y - v0.y) * t;
+            return v0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static implicit operator Vec2d(Vec3d v)
+        {
+            return new Vec2d(v.x, v.y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static List<Vec2d> RemoveDuplicates(IList<Vec2d> points, double epsilon)
+        {
+            int[] indexMap;
+            SpatialHash2d<int> hash;
+            return RemoveDuplicates(points, epsilon, out indexMap, out hash);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="indexMap"></param>
+        /// <returns></returns>
+        public static List<Vec2d> RemoveDuplicates(IList<Vec2d> points, double epsilon, out int[] indexMap)
+        {
+            SpatialHash2d<int> hash;
+            return RemoveDuplicates(points, epsilon, out indexMap, out hash);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="indexMap"></param>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        public static List<Vec2d> RemoveDuplicates(IList<Vec2d> points, double epsilon, out int[] indexMap, out SpatialHash2d<int> hash)
+        {
+            List<Vec2d> result = new List<Vec2d>();
+            indexMap = new int[points.Count];
+
+            hash = new SpatialHash2d<int>(points.Count * 4, epsilon * 2.0); // TODO test optimal factors for size and scale
+            List<int> foundIds = new List<int>();
+            Vec2d offset = new Vec2d(epsilon, epsilon);
+
+            // add points to result if no duplicates are found in the hash
+            for (int i = 0; i < points.Count; i++)
+            {
+                Vec2d p = points[i];
+                hash.Search(new Domain2d(p - offset, p + offset), foundIds);
+        
+                // check found ids
+                bool isDup = false;
+                foreach(int j in foundIds)
+                {
+                    if (p.Equals(result[j], epsilon))
+                    {
+                        indexMap[i] = j;
+                        isDup = true;
+                        break;
+                    }
+                }
+                foundIds.Clear();
+
+                // if no duplicate, add to result and hash
+                if (!isDup)
+                {
+                    int id = result.Count;
+                    indexMap[i] = id;
+                    hash.Insert(p, id);
+                    result.Add(p);
+                }
+            }
+
+            return result;
+        }
+
+
+        [Obsolete("Use method in GeometryUtil instead")]
+        /// <summary>
+        /// returns the the entries of the covariance matrix in column-major order
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        public static double[] GetCovariance(IList<Vec2d> vectors)
+        {
+            Vec2d mean;
+            return GetCovariance(vectors, out mean);
+        }
+
+
+        [Obsolete("Use method in GeometryUtil instead")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="mean"></param>
+        /// <returns></returns>
+        public static double[] GetCovariance(IList<Vec2d> vectors, out Vec2d mean)
+        {
+            // calculate mean
+            mean = new Vec2d();
+            foreach (Vec2d v in vectors) mean += v;
+            mean /= vectors.Count;
+
+            // calculate covariance matrix
+            double[] result = new double[4];
+            for (int i = 0; i < vectors.Count; i++)
+            {
+                Vec3d d = vectors[i] - mean;
+                result[0] += d.x * d.x;
+                result[1] += d.x * d.y;
+                result[3] += d.y * d.y;
+            }
+
+            // set symmetric values
+            result[2] = result[1];
+            return result;
+        }
+
+        #endregion
+
+
+        public double x, y;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public Vec2d(double x, double y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double Length
+        {
+            get { return Math.Sqrt(SquareLength); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double SquareLength
+        {
+            get { return x * x + y * y; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double ManhattanLength
+        {
+            get { return Math.Abs(x) + Math.Abs(y); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsZero
+        {
+            get { return x == 0.0 && y == 0.0; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsUnit
+        {
+            get { return SquareLength == 1.0; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format("({0},{1})", x, y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public void Set(double x, double y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+
+        /// <summary>
+        /// convert from euclidean to polar coordiantes
+        /// (x,y) -> (radius, theta)
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public Vec2d ToPolar()
+        {
+            return new Vec2d(Length, Math.Atan(y / x));
+        }
+
+
+        /// <summary>
+        /// convert from polar to euclidean coordiantes
+        /// (radius, theta) -> (x,y)
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public Vec2d ToEuclidean()
+        {
+            return new Vec2d(Math.Cos(y) * x, Math.Sin(y) * x);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public bool Equals(Vec2d other, double epsilon)
+        {
+            return (Math.Abs(other.x - x) < epsilon) && (Math.Abs(other.y - y) < epsilon);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public bool Equals(Vec2d other, Vec2d epsilon)
+        {
+            return (Math.Abs(other.x - x) < epsilon.x) && (Math.Abs(other.y - y) < epsilon.y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public double DistanceTo(Vec2d other)
+        {
+            other -= this;
+            return other.Length;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public double SquareDistanceTo(Vec2d other)
+        {
+            other -= this;
+            return other.SquareLength;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public double ManhattanDistanceTo(Vec2d other)
+        {
+            other -= this;
+            return other.ManhattanLength;
+        }
+
+
+        /// <summary>
+        /// returns false if the vector is zero length
+        /// </summary>
+        public bool Unitize()
+        {
+            double d = SquareLength;
+            if (d == 0.0) return false;
+        
+            d = 1.0 / Math.Sqrt(d);
+            x *= d;
+            y *= d;
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vec2d Abs()
+        {
+            return new Vec2d(Math.Abs(x), Math.Abs(y));
+        }
+
+
+        /// <summary>
+        /// returns the largest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public double Max()
+        {
+            return Math.Max(x, y);
+        }
+
+
+        /// <summary>
+        /// returns the smallest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public double Min()
+        {
+            return Math.Min(x, y);
+        }
+
+    }
+}
