@@ -31,11 +31,6 @@ namespace SpatialSlur.SlurGraph
         }
 
 
-        public int Test
-        {
-            get { return 1; }
-        }
-
         /// <summary>
         /// 
         /// </summary>
