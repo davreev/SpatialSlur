@@ -89,6 +89,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="index"></param>
+        void RemoveNode(int index);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
@@ -102,6 +109,13 @@ namespace SpatialSlur.SlurGraph
         /// <param name="j"></param>
         /// <returns></returns>
         bool RemoveEdge(int i, int j);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        void RemoveEdge(int index);
 
 
         /// <summary>

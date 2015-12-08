@@ -51,7 +51,8 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Returns the index of the edge within the graph's edge list.
+        /// This will be set to -1 if the edge is removed.
         /// </summary>
         public int Index
         {
@@ -66,15 +67,6 @@ namespace SpatialSlur.SlurGraph
         public bool IsRemoved
         {
             get { return _index == -1; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Remove()
-        {
-            _index = -1;
         }
 
 

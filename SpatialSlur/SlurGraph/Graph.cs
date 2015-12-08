@@ -43,29 +43,30 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="nodeIndex"></param>
         /// <returns></returns>
-        public override IEnumerable<Node> GetConnectedNodes(int nodeIndex)
+        protected override IEnumerable<Node> GetConnectedNodes(Node node)
         {
-            Node node = Nodes[nodeIndex];
             var edges = node.Edges;
 
             for (int i = 0; i < edges.Count; i++)
-                yield return edges[i].GetOther(node);
+            {
+                Edge e = edges[i];
+                Node n = e.GetOther(node);
+
+                if (!e.IsRemoved && !n.IsRemoved)
+                    yield return n;
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
+        /// <param name="ni"></param>
+        /// <param name="nj"></param>
         /// <returns></returns>
-        public override Edge FindEdge(int i, int j)
+        protected override Edge FindEdge(Node ni, Node nj)
         {
-            Node ni = Nodes[i];
-            Node nj = Nodes[j];
-
-            // search from the node with the smaller degree
-            if (nj.Degree < ni.Degree)
+            if (nj.Degree < ni.Degree) // search from the node with the smaller degree
                 return nj.FindEdgeTo(nj);
             else
                 return ni.FindEdgeTo(nj);
@@ -73,21 +74,31 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Adds an edge between nodes i and j.
+        /// 
         /// </summary>
         /// <param name="vi"></param>
         /// <param name="vj"></param>
-        public override Edge AddEdge(int i, int j)
+        protected override void AddEdge(Edge edge)
         {
-            Node ni = Nodes[i];
-            Node nj = Nodes[j];
+            Node n = edge.Start;
+            n.Edges.Add(edge);
+            n.Degree++;
 
-            Edge e = new Edge(ni, nj, EdgeCount);
-            ni.Edges.Add(e);
-            nj.Edges.Add(e);
-            Edges.Add(e);
-  
-            return e;
+            n = edge.End;
+            n.Edges.Add(edge);
+            n.Degree++;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="edge"></param>
+        protected override void RemoveEdge(Edge edge)
+        {
+            edge.Index = -1;
+            edge.Start.Degree--;
+            edge.End.Degree--;
         }
     }
 }
