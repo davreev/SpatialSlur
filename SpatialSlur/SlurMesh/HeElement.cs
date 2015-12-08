@@ -15,12 +15,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        internal HeElement() { }
-
-
-        /// <summary>
         /// element's position within the collection of the parent mesh
         /// </summary>
         public int Index

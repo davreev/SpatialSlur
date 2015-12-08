@@ -14,7 +14,6 @@ namespace SpatialSlur.SlurGraph
         private readonly List<Edge> _edges;
         //private V _data;
         private int _index;
-        private bool _removed;
 
 
         /// <summary>
@@ -60,7 +59,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public bool IsRemoved
         {
-            get { return _removed; }
+            get { return _index == -1; }
         }
 
 
@@ -69,7 +68,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public void Remove()
         {
-            _removed = true;
+            _index = -1;
 
             for (int i = 0; i < _edges.Count; i++)
                 _edges[i].Remove();

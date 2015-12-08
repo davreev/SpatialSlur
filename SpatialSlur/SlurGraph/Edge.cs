@@ -15,7 +15,6 @@ namespace SpatialSlur.SlurGraph
         private Node _end;
         //private E _data;
         private int _index;
-        private bool _removed;
 
 
         /// <summary>
@@ -66,7 +65,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public bool IsRemoved
         {
-            get { return _removed; }
+            get { return _index == -1; }
         }
 
 
@@ -75,7 +74,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public void Remove()
         {
-            _removed = true;
+            _index = -1;
         }
 
 
