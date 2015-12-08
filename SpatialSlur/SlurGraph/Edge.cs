@@ -14,7 +14,7 @@ namespace SpatialSlur.SlurGraph
         private Node _start;
         private Node _end;
         //private E _data;
-        private int _index;
+        private int _index = -1;
 
 
         /// <summary>

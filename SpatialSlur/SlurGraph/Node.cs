@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurGraph
     {
         private readonly List<Edge> _edges;
         //private V _data;
-        private int _index;
+        private int _index = -1;
 
 
         /// <summary>
