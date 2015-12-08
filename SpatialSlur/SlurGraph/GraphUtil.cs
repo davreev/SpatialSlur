@@ -60,14 +60,12 @@ namespace SpatialSlur.SlurGraph
                 {
                     Node ni = graph.GetNode(i);
                     if (ni.IsRemoved) continue;
+
                     double sum = 0.0;
 
                     foreach (Node nj in graph.GetConnectedNodes(i))
-                    {
-                        if (nj.IsRemoved) continue;
                         sum += nodeValues[nj.Index];
-                    }
-               
+                  
                     result[i] = sum / ni.Degree - nodeValues[i];
                 }
             });
@@ -98,12 +96,12 @@ namespace SpatialSlur.SlurGraph
                 {
                     Node ni = graph.GetNode(i);
                     if (ni.IsRemoved) continue;
+
                     double val = nodeValues[i];
                     double sum = 0.0;
 
                     foreach (Edge e in graph.GetIncidentEdges(i))
                     {
-                        if (e.IsRemoved) continue;
                         Node nj = e.GetOther(ni);
                         sum += (nodeValues[nj.Index] - val) * edgeWeights[e.Index];
                     }
@@ -153,7 +151,6 @@ namespace SpatialSlur.SlurGraph
 
                 foreach (Node n in graph.GetConnectedNodes(i))
                 {
-                    if (n.IsRemoved) continue;
                     int j = n.Index;
 
                     if (tj < result[j])
@@ -209,7 +206,6 @@ namespace SpatialSlur.SlurGraph
          
                 foreach (Edge e in graph.GetIncidentEdges(i))
                 {
-                    if (e.IsRemoved) continue;
                     int j =  e.GetOther(ni).Index;
                     double tj = ti + edgeLengths[e.Index];
 

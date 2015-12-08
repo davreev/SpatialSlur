@@ -60,6 +60,38 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
+        /// Skips nodes which have been flagged for removal.
+        /// </summary>
+        public IEnumerable<Node> Nodes
+        {
+            get
+            {
+                for (int i = 0; i < _nodes.Count; i++)
+                {
+                    Node n = _nodes[i];
+                    if (!n.IsRemoved) yield return n;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Skips edges which have been flagged for removal.
+        /// </summary>
+        public IEnumerable<Edge> Edges
+        {
+            get
+            {
+                for (int i = 0; i < _edges.Count; i++)
+                {
+                    Edge e = _edges[i];
+                    if (!e.IsRemoved) yield return e;
+                }
+            }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         public int NodeCount
@@ -100,7 +132,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Skips nodes which have been flagged for removal.
         /// </summary>
         /// <param name="nodeIndex"></param>
         /// <returns></returns>
@@ -119,7 +151,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Skips edges which have been flagged for removal.
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
