@@ -45,13 +45,9 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         protected override IEnumerable<Node> GetConnectedNodes(Node node)
         {
-            var edges = node.Edges;
-
-            for (int i = 0; i < edges.Count; i++)
+            foreach (Edge e in node.IncidentEdges)
             {
-                Edge e = edges[i];
                 Node n = e.GetOther(node);
-
                 if (!e.IsRemoved && !n.IsRemoved)
                     yield return n;
             }
@@ -80,13 +76,8 @@ namespace SpatialSlur.SlurGraph
         /// <param name="vj"></param>
         protected override void AddEdge(Edge edge)
         {
-            Node n = edge.Start;
-            n.Edges.Add(edge);
-            n.Degree++;
-
-            n = edge.End;
-            n.Edges.Add(edge);
-            n.Degree++;
+            edge.Start.AddEdge(edge);
+            edge.End.AddEdge(edge);
         }
 
 
@@ -96,9 +87,11 @@ namespace SpatialSlur.SlurGraph
         /// <param name="edge"></param>
         protected override void RemoveEdge(Edge edge)
         {
-            edge.Index = -1;
-            edge.Start.Degree--;
-            edge.End.Degree--;
+            if (edge.IsRemoved) return; // make sure the edge hasn't already been removed
+            edge.Remove(); // flag for removal
+
+            edge.Start.RemoveEdge();
+            edge.End.RemoveEdge();
         }
     }
 }
