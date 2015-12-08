@@ -168,13 +168,7 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         private IEnumerable<Edge> GetIncidentEdges(Node node)
         {
-            var edges = node.Edges;
-
-            for (int i = 0; i < edges.Count; i++)
-            {
-                Edge e = edges[i];
-                if (!e.IsRemoved) yield return e;
-            }
+            return node.IncidentEdges;
         }
 
 
@@ -250,11 +244,11 @@ namespace SpatialSlur.SlurGraph
         /// <param name="node"></param>
         private void RemoveNode(Node node)
         {
-            node.Index = -1; // flag for removal
-            var edges = node.Edges;
+            if (node.IsRemoved) return; // exit if already removed
+            node.Remove(); // flag for removal
 
-            for (int i = 0; i < edges.Count; i++)
-                RemoveEdge(edges[i]);
+            foreach (Edge e in node.IncidentEdges)
+                RemoveEdge(e);
         }
 
 

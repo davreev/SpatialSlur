@@ -30,20 +30,26 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        internal List<Edge> Edges
+        public IEnumerable<Edge> IncidentEdges
         {
-            get { return _edges; }
+            get
+            {
+                for(int i = 0; i < _edges.Count; i++)
+                {
+                    Edge e = _edges[i];
+                    if (!e.IsRemoved) yield return e;
+                }
+            }
         }
-   
+
 
         /// <summary>
         /// Returns the number of edges incident to this node.
-        /// This excludes any edges which have been flagged for removal.
+        /// This accoutns for any edges which have been flagged for removal.
         /// </summary>
         public int Degree
         {
             get { return _degree; }
-            internal set { _degree = value; }
         }
 
 
@@ -64,6 +70,15 @@ namespace SpatialSlur.SlurGraph
         public bool IsRemoved
         {
             get { return _index == -1; }
+        }
+
+
+        /// <summary>
+        /// Flags the node for removal.
+        /// </summary>
+        internal void Remove()
+        {
+            _index = -1;
         }
 
 
@@ -112,6 +127,26 @@ namespace SpatialSlur.SlurGraph
             }
 
             return null;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="edge"></param>
+        internal void AddEdge(Edge edge)
+        {
+            _edges.Add(edge);
+            _degree++;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal void RemoveEdge()
+        {
+            _degree--;
         }
     }
 }
