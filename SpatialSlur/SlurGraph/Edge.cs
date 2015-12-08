@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Flags the edge for removal.
         /// </summary>
-        internal void Remove()
+        public void Remove()
         {
             _index = -1;
         }

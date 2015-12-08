@@ -41,21 +41,24 @@ namespace SpatialSlur.SlurGraph
         protected GraphBase(GraphBase other)
             : this(other.NodeCount, other.EdgeCount)
         {
-            // add all nodes
-            for (int i = 0; i < other.NodeCount; i++)
-            {
-                Node n0 = other._nodes[i];
-                Node n1 = AddNode();
-                if (n0.IsRemoved) n1.Remove();
-            }
+            var otherNodes = other._nodes;
+            var otherEdges = other._edges;
+
+            // add all nodes (don't flag removed nodes yet as it will interfere with the creation of edges below)
+            for (int i = 0; i < otherNodes.Count; i++)
+                AddNode();
 
             // add all edges
-            for (int i = 0; i < other.EdgeCount; i++)
+            for (int i = 0; i < otherEdges.Count; i++)
             {
-                Edge e0 = other._edges[i];
-                Edge e1 = AddEdge(e0.Start.Index, e0.End.Index);
-                if (e0.IsRemoved) RemoveEdge(e1);
+                Edge e0 = otherEdges[i];
+                Edge e1 = AddEdge(e0.Start.Index, e0.End.Index); // returns a null if nodes are flagged for removal
+                if (e0.IsRemoved) e1.Remove();
             }
+
+            // flag nodes for removal after creating edges
+            for (int i = 0; i < otherNodes.Count; i++)
+                if (otherNodes[i].IsRemoved) _nodes[i].Index = -1;
         }
 
 
@@ -132,43 +135,24 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Skips nodes which have been flagged for removal.
-        /// </summary>
-        /// <param name="nodeIndex"></param>
-        /// <returns></returns>
-        public IEnumerable<Node> GetConnectedNodes(int nodeIndex)
-        {
-            return GetConnectedNodes(_nodes[nodeIndex]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        protected abstract IEnumerable<Node> GetConnectedNodes(Node node);
-
-
-        /// <summary>
         /// Skips edges which have been flagged for removal.
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
         public IEnumerable<Edge> GetIncidentEdges(int nodeIndex)
         {
-            return GetIncidentEdges(_nodes[nodeIndex]);
+            return _nodes[nodeIndex].IncidentEdges;
         }
 
 
         /// <summary>
-        /// Skips edges which have been flagged for removal.
+        /// Skips nodes which have been flagged for removal.
         /// </summary>
-        /// <param name="node"></param>
+        /// <param name="nodeIndex"></param>
         /// <returns></returns>
-        private IEnumerable<Edge> GetIncidentEdges(Node node)
+        public IEnumerable<Node> GetConnectedNodes(int nodeIndex)
         {
-            return node.IncidentEdges;
+            return _nodes[nodeIndex].ConnectedNodes;
         }
 
 
@@ -210,9 +194,9 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public Node AddNode()
         {
-            Node v = new Node(NodeCount);
-            _nodes.Add(v);
-            return v;
+            Node n = new Node(NodeCount);
+            _nodes.Add(n);
+            return n;
         }
 
 
@@ -233,26 +217,13 @@ namespace SpatialSlur.SlurGraph
         /// <param name="index"></param>
         public void RemoveNode(int index)
         {
-            RemoveNode(_nodes[index]);
+            _nodes[index].Remove();
         }
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        private void RemoveNode(Node node)
-        {
-            if (node.IsRemoved) return; // exit if already removed
-            node.Remove(); // flag for removal
-
-            foreach (Edge e in node.IncidentEdges)
-                RemoveEdge(e);
-        }
-
-
-        /// <summary>
-        /// 
+        /// Adds a new edge between nodes i and j.
+        /// Note that if node i or j is flagged for removal, no new edge is added and null is returned.
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
@@ -264,14 +235,16 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// TODO don't allow edges to be added between removed nodes
-        /// Note that this complicates the copy constructor
+        /// 
         /// </summary>
-        /// <param name="ni"></param>
-        /// <param name="nj"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
         /// <returns></returns>
         protected virtual Edge AddEdge(Node ni, Node nj)
         {
+            if (ni.IsRemoved || nj.IsRemoved) 
+                return null;
+
             Edge e = new Edge(ni, nj, EdgeCount);
             _edges.Add(e);
             return e;
@@ -287,22 +260,11 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         public bool RemoveEdge(int i, int j)
         {
-            return RemoveEdge(_nodes[i], _nodes[j]);
-        }
+            Edge e = FindEdge(_nodes[i], _nodes[j]);
+            if (e == null) 
+                return false;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ni"></param>
-        /// <param name="nj"></param>
-        /// <returns></returns>
-        private bool RemoveEdge(Node ni, Node nj)
-        {
-            Edge e = FindEdge(ni, nj);
-            if (e == null) return false;
-
-            RemoveEdge(e);
+            e.Remove();
             return true;
         }
 
@@ -313,15 +275,8 @@ namespace SpatialSlur.SlurGraph
         /// <param name="edgeIndex"></param>
         public void RemoveEdge(int edgeIndex)
         {
-            RemoveEdge(_edges[edgeIndex]);
+            _edges[edgeIndex].Remove();
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="edge"></param>
-        protected abstract void RemoveEdge(Edge edge);
 
 
         /// <summary>

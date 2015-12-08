@@ -43,6 +43,23 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
+        /// Skips nodes which have been flagged for removal.
+        /// </summary>
+        public IEnumerable<Node> ConnectedNodes
+        {
+            get
+            {
+                for (int i = 0; i < _edges.Count; i++)
+                {
+                    Edge e = _edges[i];
+                    Node n = e.GetOther(this);
+                    if (!e.IsRemoved && !n.IsRemoved) yield return n;
+                }
+            }
+        }
+
+
+        /// <summary>
         /// Returns the number of edges incident to this node.
         /// This doesn't account for edges which have been flagged for removal.
         /// </summary>
@@ -73,11 +90,14 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Flags the node for removal.
+        /// Flags the node and all its incident edges for removal.
         /// </summary>
-        internal void Remove()
+        public void Remove()
         {
             _index = -1;
+
+            for (int i = 0; i < _edges.Count; i++)
+                _edges[i].Remove();
         }
 
 
