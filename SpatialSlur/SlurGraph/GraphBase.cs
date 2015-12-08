@@ -162,7 +162,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Skips edges which have been flagged for removal.
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
@@ -265,7 +265,8 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// TODO don't allow edges to be added between removed nodes
+        /// Note that this complicates the copy constructor
         /// </summary>
         /// <param name="ni"></param>
         /// <param name="nj"></param>
