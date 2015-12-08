@@ -28,7 +28,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Skips edges which have been flagged for removal.
         /// </summary>
         public IEnumerable<Edge> IncidentEdges
         {
