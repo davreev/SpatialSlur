@@ -69,11 +69,14 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vi"></param>
-        /// <param name="vj"></param>
-        protected override void AddEdge(Edge edge)
+        /// <param name="ni"></param>
+        /// <param name="nj"></param>
+        /// <returns></returns>
+        protected override Edge AddEdge(Node ni, Node nj)
         {
-            edge.Start.AddEdge(edge);
+            Edge e =  base.AddEdge(ni, nj);
+            ni.AddEdge(e);
+            return e;
         }
 
 
@@ -85,8 +88,6 @@ namespace SpatialSlur.SlurGraph
         {
             if (edge.IsRemoved) return; // make sure the edge hasn't already been removed
             edge.Remove(); // flag for removal
-
-            edge.Start.RemoveEdge();
         }
     }
 }

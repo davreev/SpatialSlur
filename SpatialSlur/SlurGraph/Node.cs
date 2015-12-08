@@ -14,8 +14,7 @@ namespace SpatialSlur.SlurGraph
         private readonly List<Edge> _edges;
         //private V _data;
         private int _index = -1;
-        private int _degree; // hold degree explicitly to keep up with edge/node removal
-
+  
 
         /// <summary>
         /// 
@@ -45,11 +44,11 @@ namespace SpatialSlur.SlurGraph
 
         /// <summary>
         /// Returns the number of edges incident to this node.
-        /// This accoutns for any edges which have been flagged for removal.
+        /// This doesn't account for edges which have been flagged for removal.
         /// </summary>
         public int Degree
         {
-            get { return _degree; }
+            get { return _edges.Count; }
         }
 
 
@@ -137,16 +136,6 @@ namespace SpatialSlur.SlurGraph
         internal void AddEdge(Edge edge)
         {
             _edges.Add(edge);
-            _degree++;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        internal void RemoveEdge()
-        {
-            _degree--;
         }
     }
 }

@@ -46,7 +46,7 @@ namespace SpatialSlur.SlurGraph
             {
                 Node n0 = other._nodes[i];
                 Node n1 = AddNode();
-                n1.Index = n0.Index; // set removed status
+                if (n0.IsRemoved) n1.Remove();
             }
 
             // add all edges
@@ -212,7 +212,6 @@ namespace SpatialSlur.SlurGraph
         {
             Node v = new Node(NodeCount);
             _nodes.Add(v);
-
             return v;
         }
 
@@ -271,21 +270,12 @@ namespace SpatialSlur.SlurGraph
         /// <param name="ni"></param>
         /// <param name="nj"></param>
         /// <returns></returns>
-        private Edge AddEdge(Node ni, Node nj)
+        protected virtual Edge AddEdge(Node ni, Node nj)
         {
             Edge e = new Edge(ni, nj, EdgeCount);
             _edges.Add(e);
-
-            AddEdge(e);
             return e;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="edge"></param>
-        protected abstract void AddEdge(Edge edge);
    
 
         /// <summary>
