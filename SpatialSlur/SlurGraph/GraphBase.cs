@@ -43,13 +43,18 @@ namespace SpatialSlur.SlurGraph
         {
             // add all nodes
             for (int i = 0; i < other.NodeCount; i++)
-                AddNode();
+            {
+                Node n0 = other._nodes[i];
+                Node n1 = AddNode();
+                if (n0.IsRemoved) n1.Remove(); // set removed status
+            }
 
             // add all edges
             for (int i = 0; i < other.EdgeCount; i++)
             {
-                Edge e = other._edges[i];
-                AddEdge(e.Start.Index, e.End.Index);
+                Edge e0 = other._edges[i];
+                Edge e1 = AddEdge(e0.Start.Index, e0.End.Index);
+                if (e0.IsRemoved) e1.Remove(); // set removed status
             }
         }
 
