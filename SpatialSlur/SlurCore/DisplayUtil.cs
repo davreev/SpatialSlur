@@ -27,5 +27,13 @@ namespace SpatialSlur.SlurCore
 
             return colors[i].LerpTo(colors[i + 1], t - i);
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void CommitTest()
+        {
+        }
     }
 }
