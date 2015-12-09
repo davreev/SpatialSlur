@@ -95,9 +95,7 @@
     <Compile Include="SlurField\ImplicitSurfaces.cs" />
     <Compile Include="SlurField\PerlinNoise.cs" />
     <Compile Include="SlurGraph\Edge.cs" />
-    <Compile Include="SlurGraph\DiGraph.cs" />
     <Compile Include="SlurGraph\Graph.cs" />
-    <Compile Include="SlurGraph\GraphBase.cs" />
     <Compile Include="SlurGraph\IGraph.cs" />
     <Compile Include="SlurGraph\Node.cs" />
     <Compile Include="SlurGraph\GraphUtil.cs" />

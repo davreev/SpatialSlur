@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurGraph
     public class Node
     {
         private readonly List<Edge> _edges;
-        //private V _data;
+        //private N _data;
         private int _index = -1;
   
 
