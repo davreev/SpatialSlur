@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// explicit implementation of non-generic method
+        /// Explicit implementation of non-generic method.
         /// </summary>
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
@@ -86,7 +86,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// checks that the element is ownded by this element list and that it is in use
+        /// Checks that the given element is owned by this list and that it is in use.
         /// </summary>
         /// <param name="element"></param>
         internal void Validate(HeElement element)
@@ -97,7 +97,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the element belongs to this element list
+        /// Returns true if the element belongs to this list.
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
@@ -108,7 +108,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// adds an edge to the list
+        /// Adds an edge to the list.
         /// </summary>
         /// <param name="element"></param>
         internal void Add(T element)
@@ -119,8 +119,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// removes all unused elements in the list and re-indexes
-        /// if the element list has any associated attributes, be sure to compact those first
+        /// Removes all unused elements in the list and re-indexes.
+        /// If the list has any associated attributes, be sure to compact those first.
         /// </summary>
         public void Compact()
         {
@@ -141,8 +141,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// removes all objects that coincide with unused elements in the list
-        /// useful for maintaining a matching collection of user defined element attributes
+        /// Removes all attributes corresponding with unused elements in the list.
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
@@ -163,8 +162,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns a filtered array of attributes ignoring those that coincide with unused elements in the list
-        /// useful for maintaining a matching collection of user defined element attributes
+        /// Returns a subset of the given attributes which correspond with used elements in the list.
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>

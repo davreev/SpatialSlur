@@ -6,16 +6,13 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurMesh
 {
-    /// <summary>
-    /// abstract base class for all HeMesh elements
-    /// </summary>
     public abstract class HeElement
     {
         private int _index = -1;
 
 
         /// <summary>
-        /// element's position within the collection of the parent mesh
+        /// Reeturns the element's position within the collection of the parent mesh.
         /// </summary>
         public int Index
         {
@@ -25,27 +22,26 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the element lies on the mesh boundary
+        /// Returns true if the element lies on the mesh boundary.
         /// </summary>
         public abstract bool IsBoundary { get; }
 
 
         /// <summary>
-        /// true if element has been flagged for removal
+        /// Returns true if the element has been flagged for removal.
         /// </summary>
         /// <returns></returns>
         public abstract bool IsUnused { get; }
 
 
         /// <summary>
-        /// returns false for non-manifold elements
-        /// assumes element is used
+        /// Returns false for non-manifold elements.
         /// </summary>
         internal abstract bool IsValid { get; }
 
 
         /// <summary>
-        /// 
+        /// Flags the element for removal.
         /// </summary>
         internal abstract void MakeUnused();
     }

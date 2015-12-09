@@ -235,7 +235,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Applies a single iteration of QuadSplit subdivision. This is similar to CatmullClark without the smoothing.
+        /// Applies a single iteration of QuadSplit subdivision. 
+        /// This is effectively CatmullClark without the smoothing.
         /// </summary>
         /// <param name="mesh"></param>
         public static void QuadSplit(HeMesh mesh)

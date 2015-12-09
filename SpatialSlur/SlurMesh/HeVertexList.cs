@@ -76,7 +76,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Quick intersection test for common vertex neighbors between two vertices
+        /// Counts the number of vertices connected to both given vertices.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -109,7 +109,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Quick intersection test for common vertex neighbors between two vertices
+        /// Returns all vertices connected to both given vertices.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -142,7 +142,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// quick intersection test for common faces between two vertices
+        /// Counts the number of faces that surround both given vertices.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -175,7 +175,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// quick intersection test for common faces between two vertices
+        /// Returns all faces that surround both given vertices.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -238,7 +238,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Gets the topological depth of all vertices connected to a set of sources via breadth first dearch
+        /// Returns the topological depth of all vertices connected to a set of sources.
         /// </summary>
         /// <returns></returns>
         public int[] GetVertexDepths(IList<int> sources)
@@ -288,7 +288,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Gets the topological distance of all vertices connected to a set of sources via breadth first dearch
+        /// Returns the topological distance of all vertices connected to a set of sources.
         /// </summary>
         /// <returns></returns>
         public double[] GetVertexDepths(IList<int> sources, IList<double> edgeLengths)
@@ -340,7 +340,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Gets the morse smale classification for each vertex
+        /// Returns the morse smale classification for each vertex
         /// 0 = normal
         /// 1 = minima
         /// 2 = maxima
@@ -422,7 +422,7 @@ namespace SpatialSlur.SlurMesh
       
 
         /// <summary>
-        /// calculates the areas associated with each vertex
+        /// Returns the area associated with each vertex.
         /// </summary>
         /// <param name="edgeAreas"></param>
         /// <returns></returns>
@@ -435,7 +435,7 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// calculates the areas associated with each vertex
+        ///
         /// </summary>
         /// <param name="faceCenters"></param>
         /// <returns></returns>
@@ -520,8 +520,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the areas associated with each vertex
-        /// Assumes all faces are triangular
+        /// Calculates the areas associated with each vertex.
+        /// Note that this method assumes all faces are triangular.
         /// </summary>
         /// <param name="faceCenters"></param>
         /// <returns></returns>
@@ -559,10 +559,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns a radii for each vertex 
-        /// if the mesh is a circle packing mesh, these will be the radii of tangent spheres centered on each vertex
+        /// Returns a radii for each vertex.
+        /// If the mesh is a circle packing mesh, these will be the radii of tangent spheres centered on each vertex.
         /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
-        ///
         /// </summary>
         public double[] GetVertexRadii(IList<double> edgeLengths)
         {
@@ -617,9 +616,9 @@ namespace SpatialSlur.SlurMesh
             return result;
         }
 
+
         /// <summary>
-        /// returns the gaussian curvature at each vertex
-        /// 
+        /// Returns the gaussian curvature at each vertex.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -686,7 +685,7 @@ namespace SpatialSlur.SlurMesh
 
         /*
         /// <summary>
-        /// returns distances between the end of each edge and the end of the edge two edges in front around its start vertex
+        /// 
         /// </summary>
         /// <returns></returns>
         public double[] GetVertexDiagonalLengths()
@@ -698,7 +697,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns distances between the end of each edge and the end of the edge two edges in front around its start vertex
+        /// 
         /// </summary>
         /// <returns></returns>
         public void UpdateVertexDiagonalLengths(IList<double> result)
@@ -776,7 +775,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates vertex normals as the average edge normal around each vertex
+        /// Calculates the vertex normal as the average of edge normals around each vertex.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -789,7 +788,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates vertex normals as the average edge normal around each vertex
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -802,7 +801,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates vertex normals as the average edge normal around each vertex
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -811,14 +810,14 @@ namespace SpatialSlur.SlurMesh
             SizeCheck(result);
 
             if (unitize)
-                UpdateVertexUnitNormals(result);
+                UpdateUnitVertexNormals(result);
             else
                 UpdateVertexNormals(result);
         }
 
 
         /// <summary>
-        /// calculates vertex normals as the average edge normal around each vertex
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -851,7 +850,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="result"></param>
-        private void UpdateVertexUnitNormals(IList<Vec3d> result)
+        private void UpdateUnitVertexNormals(IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -875,7 +874,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates vertex normals as the average edge normal around each vertex
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -885,14 +884,14 @@ namespace SpatialSlur.SlurMesh
             SizeCheck(result);
 
             if (unitize)
-                UpdateVertexUnitNormals(edgeNormals, result);
+                UpdateUnitVertexNormals(edgeNormals, result);
             else
                 UpdateVertexNormals(edgeNormals, result);
         }
 
 
         /// <summary>
-        /// calculates vertex normals as the average edge normal around each vertex
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -922,11 +921,11 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates vertex normals as the average edge normal around each vertex
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        private void UpdateVertexUnitNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
+        private void UpdateUnitVertexNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -950,7 +949,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// uses a normalized umbrella weighting scheme (Tutte scheme)
+        /// Calculates the Laplacian using a normalized umbrella weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         /// <param name="edgeWeights"></param>
@@ -964,7 +963,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// uses a user-defined weighting scheme
+        /// Calculates the Laplacian using a custom weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         /// <param name="edgeWeights"></param>
@@ -1121,7 +1120,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// simplified removal for degree 2 verts
+        /// Simplified removal method for interior degree 2 verts.
         /// </summary>
         /// <param name="vertex"></param>
         /// <returns></returns>
@@ -1148,8 +1147,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// merges a pair of boundary vertices
-        /// the second given vertex is removed
+        /// Merges a pair of boundary vertices.
+        /// That the first vertex is retained and the second is flagged as unused.
         /// </summary>
         /// <param name="edge"></param>
         public bool MergeVertices(HeVertex v0, HeVertex v1)
@@ -1211,7 +1210,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns one of the new edges created
+        /// Splits a vertex in 2 connected by a new edge.
+        /// Returns the new edge on success and null on failure.
         /// </summary>
         /// <param name="e0"></param>
         /// <param name="e1"></param>

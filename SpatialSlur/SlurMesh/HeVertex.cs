@@ -10,7 +10,7 @@ namespace SpatialSlur.SlurMesh
     public class HeVertex : HeElement
     {
         private Vec3d _position;
-        private HeEdge _outgoing; // one of the half edges starting at the vertex - if the vertex is on a boundary the outgoing edge must have a null face reference
+        private HeEdge _outgoing;
 
 
         /// <summary>
@@ -44,8 +44,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Gets one of the edges starting at this vertex.
-        /// Note that if a vertex lies on a boundary, the face of the outgoing edge will also be null.
+        /// Returns one of the edges starting at this vertex.
+        /// Note that if the vertex is on the mesh boundary, the outgoing edge will be as well (i.e. it will have a null face).
         /// </summary>
         public HeEdge Outgoing
         {
@@ -64,7 +64,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if this vertex has at least 2 outgoing edges.
+        /// Returns true if the vertex has at least 2 outgoing edges.
         /// Note that this assumes the vertex is used.
         /// </summary>
         internal override bool IsValid
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if the vertex lies on the mesh boundary.
-        /// Note that if a vertex lies on a boundary, the face of the outgoing edge will also be null.
+        /// Note that if this is true, the outgoing edge will also be on the boundary (i.e. it will have a null face).
         /// </summary>
         public override bool IsBoundary
         {
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex is has exactly 2 outgoing edges.
+        /// Returns true if the vertex is has 2 outgoing edges.
         /// </summary>
         public bool IsDeg2
         {
@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex is has exactly 3 outgoing edges.
+        /// Returns true if the vertex is has 3 outgoing edges.
         /// </summary>
         public bool IsDeg3
         {
@@ -132,16 +132,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Circulates all neighbouring vertices.
+        /// Iterates over all connected vertices.
         /// </summary>
         public IEnumerable<HeVertex> ConnectedVertices
         {
             get
             {
-                // can't circulate an unused vertex
                 if (IsUnused) yield break;
-
-                // start on the vertex's outgoing edge
                 HeEdge e = _outgoing;
 
                 // circulate to the next edge until back at the first
@@ -156,16 +153,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Circulates all outgoing edges.
+        /// Iterates over all outgoing edges.
         /// </summary>
         public IEnumerable<HeEdge> OutgoingEdges
         {
             get
             {
-                // can't circulate an unused vertex
                 if (IsUnused) yield break;
-
-                // start on the vertex's outgoing edge
                 HeEdge e = _outgoing;
 
                 // circulate to the next edge until back at the first
@@ -179,16 +173,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Circulates all incoming edges.
+        /// Iterates over all incoming edges.
         /// </summary>
         public IEnumerable<HeEdge> IncomingEdges
         {
             get
             {
-                // can't circulate an unused vertex
                 if (IsUnused) yield break;
-
-                // start on the vertex's outgoing edge
                 HeEdge e = _outgoing;
 
                 // circulate to the next edge until back at the first
@@ -203,16 +194,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Circulates all surrounding faces.
+        /// Iterates over all surrounding faces.
+        /// Null faces are skipped.
         /// </summary>
         public IEnumerable<HeFace> SurroundingFaces
         {
             get
             {
-                // can't circulate an unused vertex
                 if (IsUnused) yield break;
-
-                // start on the vertex's outgoing edge
                 HeEdge e = _outgoing;
                 HeFace f = e.Face;
 
@@ -228,15 +217,12 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the number of neighbouring vertices.
+        /// Returns the number of connected vertices.
         /// </summary>
         /// <returns></returns>
         public int GetDegree()
         {
-            // no nieghbours if unused
-            if (IsUnused) return 0;
-
-            // start on the vertex's outgoing edge
+            if (IsUnused) return 0; // no nieghbours if unused
             HeEdge e = _outgoing;
             int count = 0;
 
