@@ -145,6 +145,7 @@ namespace SpatialSlur.SlurMesh
         }
         */
 
+
         /// <summary>
         /// 
         /// </summary>
@@ -188,7 +189,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// TODO establish various triangulation schemes for ngons
+        /// TODO support different triangulation schemes for n-gons.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
@@ -227,7 +228,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// TODO establish various triangulation schemes for ngons
+        /// TODO support different triangulation schemes for n-gons.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>

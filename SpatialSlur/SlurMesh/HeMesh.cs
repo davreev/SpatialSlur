@@ -7,11 +7,6 @@ using SpatialSlur.SlurCore;
 using Rhino.Geometry;
 
 
-/* Notes
- * http://webdoc.sub.gwdg.de/ebook/serien/e/IMPA_A/406.pdf
- * */
-
-
 namespace SpatialSlur.SlurMesh
 {
     public class HeMesh
@@ -19,7 +14,7 @@ namespace SpatialSlur.SlurMesh
         #region Static
 
         /// <summary>
-        /// Creates a new HeMesh instance from face vertex topology information.
+        /// Creates a new HeMesh instance from face-vertex information.
         /// Note that this method assumes consistent faces windings.
         /// </summary>
         /// <param name="vertices"></param>
@@ -105,12 +100,12 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// creates an hemesh from a collection of polylines
+        /// Creates a HeMesh instance from a collection of Rhino Polylines.
         /// </summary>
         /// <param name="polylines"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static HeMesh CreateFromPolylines(IList<Polyline> polylines, double tolerance)
+        public static HeMesh CreateFromPolylines(IEnumerable<Polyline> polylines, double tolerance)
         {
             List<Vec3d> faceVerts = new List<Vec3d>();
             List<int> nSides = new List<int>();
@@ -284,7 +279,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// removes all unused elements in the mesh
+        /// Removes all unused elements in the mesh.
         /// </summary>
         public void Compact()
         {
@@ -295,8 +290,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// removes all objects coinciding with unused elements in the mesh
-        /// useful for maintaining a matching collection of user defined objects
+        /// Removes all attributes corresponding with unused elements in the mesh.
+        /// This is intended for maintaining matching lists of user defined objects.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -313,8 +308,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns a deep copy of the mesh
-        /// all mesh elements are copied while maintaining the references between them
+        /// Returns a deep copy of the mesh.
         /// </summary>
         /// <returns></returns>
         public HeMesh Duplicate()
@@ -369,7 +363,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Appends the elements of another mesh to this one.
         /// </summary>
         /// <param name="other"></param>
         public void Append(HeMesh other)
@@ -425,9 +419,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// triangulates all non-tri faces in the mesh
-        /// quads are triangulated by creating an edge between the first and third vertex (can be controlled by orienting faces beforehand)
-        /// ngons are triangulated by adding a new vertex at the face center (stellate)
+        /// Triangulates all non-triangular faces in the mesh.
+        /// Quads are triangulated by creating an edge between the first and third vertex (can be controlled by orienting faces beforehand).
+        /// N-gons are triangulated by adding a new vertex at the face center.
+        /// 
         /// TODO add support for different triangulation schemes
         /// </summary>
         public void Triangulate()
@@ -450,7 +445,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// TODO implement more direct dual creation by spinning edges
+        /// Returns the dual of the mesh.
+        /// 
+        /// TODO implement more direct dual creation by spinning edges.
         /// </summary>
         public HeMesh GetDual()
         {
@@ -532,8 +529,6 @@ namespace SpatialSlur.SlurMesh
                 e1.Face = f0;
 
 
-
-
                 ed.Face = f1;
                 ed.Twin
             }
@@ -544,8 +539,7 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// Returns the entries of the laplacian matrix in column-major order
-        /// http://en.wikipedia.org/wiki/Laplacian_matrix
+        /// Returns the entries of the laplacian matrix in column-major order.
         /// </summary>
         /// <returns></returns>
         public double[] GetLaplacianMatrix()

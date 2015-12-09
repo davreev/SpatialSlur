@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// first edge the face loop (doesn't matter which one)
+        /// Returns the first edge the face.
         /// </summary>
         public HeEdge First
         {
@@ -29,7 +29,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if element has been flagged for removal
+        /// 
         /// </summary>
         public override bool IsUnused
         {
@@ -38,8 +38,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the face has at least 3 edges
-        /// assumes the face is used
+        /// Returns true if the face has at least 3 edges.
+        /// This method assumes that the face is in use.
         /// </summary>
         internal override bool IsValid
         {
@@ -48,21 +48,21 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the face has at least 1 boundary edge
+        /// Returns true if the face has at least 1 boundary vertex.
         /// </summary>
         public override bool IsBoundary
         {
             get
             {
                 foreach (HeEdge e in Edges)
-                    if (e.Twin.Face == null) return true;
+                    if (e.Start.IsBoundary) return true;
                 return false;
             }
         }
 
 
         /// <summary>
-        /// true if face has three edges
+        /// Returns true if the face has 3 edges.
         /// </summary>
         public bool IsTri
         {
@@ -71,7 +71,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true is the face has 4 edges
+        /// Returns true if the face has 4 edges.
         /// </summary>
         public bool IsQuad
         {
@@ -80,16 +80,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// enumerates the face's vertices
+        /// Iterates over the face's vertices.
         /// </summary>
         public IEnumerable<HeVertex> Vertices
         {
             get
             {
-                // can't enumerate an unused face
                 if (IsUnused) yield break;
-
-                // start on the face's first edge
                 HeEdge e = _first;
 
                 // advance to the next edge until back at the first
@@ -103,16 +100,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// enumerates the face's edges
+        /// Iterates over the face's edges.
         /// </summary>
         public IEnumerable<HeEdge> Edges
         {
             get
             {
-                // can't enumerate an unused face
                 if (IsUnused) yield break;
-
-                // start on the face's first edge
                 HeEdge e = _first;
 
                 // advance to the next edge until back at the first
@@ -126,18 +120,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// enumerates all faces adjacent to this one
-        /// null faces are not returned
-        /// if mutliple edges are shared with an adjacent face, that face will be returned multiple times
+        /// Iterates over adjacent faces.
+        /// Null faces are skipped.
+        /// Note that if mutliple edges are shared with an adjacent face, that face will be returned multiple times.
         /// </summary>
         public IEnumerable<HeFace> AdjacentFaces
         {
             get
             {
-                // can't enumerate an unused face
                 if (IsUnused) yield break;
-
-                // start on the face's first edge
                 HeEdge e = _first;
           
                 // advance to the next edge until back at the first
@@ -153,7 +144,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// flags element for removal
+        /// 
         /// </summary>
         internal override void MakeUnused()
         {
@@ -162,8 +153,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the number of edges in the face
-        /// this is also equal to the number of vertices in the face
+        /// Returns the number of edges in the face.
         /// </summary>
         /// <returns></returns>
         public int CountEdges()
@@ -178,7 +168,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the number of boundary edges in the face.
         /// </summary>
         /// <returns></returns>
         public int CountBoundaryEdges()
@@ -193,7 +183,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the number of boundary vertices in the face.
         /// </summary>
         /// <returns></returns>
         public int CountBoundaryVertices()
@@ -208,7 +198,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Finds the edge between this face and another. Returns null if no edge exists.
+        /// Finds the edge between this face and another. 
+        /// Returns null if no edge exists.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -224,7 +215,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the centroid of the face
+        /// Returns the average position of vertices in the face.
         /// </summary>
         /// <param name="f"></param>
         /// <returns></returns>
@@ -245,7 +236,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the circumcenter of a triangular face
+        /// Returns the circumcenter of a triangular face.
         /// </summary>
         /// <returns></returns>
         public Vec3d GetCircumcenter()

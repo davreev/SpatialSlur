@@ -22,7 +22,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// adds and connects a new face between the given vertices
+        /// Adds a new face to the mesh.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -36,7 +36,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// adds and connects a new face between the given vertices
+        /// 
         /// </summary>
         /// <param name="v0"></param> 
         /// <param name="v1"></param>
@@ -66,7 +66,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// adds a new face between the given vertices and makes all the necessary connections
+        /// 
         /// </summary>
         /// <param name="vertices"></param>
         private HeFace Add(IList<HeVertex> vertices)
@@ -217,7 +217,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Turns all faces to create consistent directionality across the mesh where possible.
-        /// Intended for use on quad meshes.
+        /// This is intended for use on quad meshes.
         /// http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf
         /// </summary>
         public void UnifyOrientation()
@@ -256,9 +256,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Turns all faces to create consistent directionality across the mesh where possible.
-        /// Intended for use on quad meshes.
-        /// http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf
+        /// 
         /// </summary>
         public void UnifyOrientation(HeEdge start)
         {
@@ -289,8 +287,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns lists of face indices which
-        /// Assumes quad mesh
+        /// Returns lists of edges whose faces form stips.
+        /// This is intended for use on quad meshes.
         /// </summary>
         public List<List<HeEdge>> GetStrips(HeEdge start)
         {
@@ -326,9 +324,8 @@ namespace SpatialSlur.SlurMesh
                     strip.Add(e);
                     visited[f.Index] = true; // flag face as visited
 
-                    // add left/right faces to queue
-                    q.Enqueue(e.Prev.Twin.Prev); // left
-                    q.Enqueue(e.Next.Twin.Next); // right
+                    q.Enqueue(e.Prev.Twin.Prev); // enqueue left
+                    q.Enqueue(e.Next.Twin.Next); // enqueue right
 
                     e = e.Next.Next.Twin; // up
                     f = e.Face;
@@ -342,8 +339,7 @@ namespace SpatialSlur.SlurMesh
 
         /*
         /// <summary>
-        /// returns lists of face indices which
-        /// Assumes quad mesh
+        /// 
         /// </summary>
         public List<List<HeEdge>> GetStrips(HeEdge start)
         {
@@ -404,7 +400,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Orients quads such that the first edge has the shortest diagonal in the face
+        /// Orients each quad such that the first edge has the shortest diagonal in the face.
+        /// This is intended for use on quad meshes.
         /// </summary>
         /// <param name="mesh"></param>
         public void OrientQuadsToShortestDiagonal()
@@ -431,7 +428,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// quick intersection test for common neighbors between two faces
+        /// Counts the number of faces adjacent to both given faces.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -464,7 +461,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// quick intersection test for common neighbors between two faces
+        /// Returns all faces adjacent to both given faces.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -497,7 +494,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// quick intersection test for vertices shared between two faces
+        /// Counts the number of vertices shared by both given faces.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -530,7 +527,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// quick intersection test for vertices shared between two faces
+        /// Returns all vertices shared by both given faces.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -566,7 +563,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the number of boundary edges in each face
+        /// Returns the number of boundary edges in each face.
         /// </summary>
         /// <returns></returns>
         public int[] GetFaceBoundaryStatus()
@@ -601,7 +598,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Gets the number of vertices in each face
+        /// Returns the number of edges in each face.
         /// </summary>
         /// <returns></returns>
         public int[] GetFaceDegrees()
@@ -629,7 +626,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Gets the topological depth of all faces connected to a set of sources
+        /// Returns the topological depth of all faces connected to a set of sources.
         /// </summary>
         /// <returns></returns>
         public int[] GetFaceDepths(IList<int> sources)
@@ -679,7 +676,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Gets the topological distance of all faces connected to a set of sources via breadth first dearch
+        /// Returns the topological distance of all faces connected to a set of sources.
         /// </summary>
         /// <returns></returns>
         public double[] GetFaceDepths(IList<int> sources, IList<double> edgeLengths)
@@ -768,7 +765,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns distances between the start of each edge and the end of the next within each face loop
+        /// Returns distances between the start of each edge and the end of the next within each face.
         /// </summary>
         /// <returns></returns>
         public double[] GetFaceDiagonalLengths()
@@ -826,7 +823,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates face normals as the average of edge normals around each face
+        /// Calculates face normals as the average of edge normals in each face.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -840,7 +837,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates face normals as the average of edge normals around each face
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -1033,7 +1030,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Assumes all faces are triangular/planar
+        /// Calculates face normals as the normal of the first edge in the face.
+        /// This method assumes all faces are triangular or planar.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -1203,7 +1201,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Assumes all faces are triangular
+        /// Returns the area of each face.
+        /// This method assumes all faces are triangular.
         /// </summary>
         /// <returns></returns>
         public double[] GetFaceAreasTri()
@@ -1274,7 +1273,6 @@ namespace SpatialSlur.SlurMesh
                     if (e3.Next == e0)
                     {
                         // simplified quad case
-                        //Vec3d span = GeometryUtil.GetVolumeGradient(e0.Start.Position, e1.Start.Position, e2.Start.Position, e3.Start.Position);
                         Vec3d span = GeometryUtil.GetShortestVector(e0.Start.Position, e2.Start.Position, e1.Start.Position, e3.Start.Position);
                         result[i] = span.Length;
                     }
@@ -1284,7 +1282,6 @@ namespace SpatialSlur.SlurMesh
                         double sum = 0.0;
                         do
                         {
-                            //Vec3d span = GeometryUtil.GetVolumeGradient(e0.Start.Position, e1.Start.Position, e2.Start.Position, e3.Start.Position);
                             Vec3d span = GeometryUtil.GetShortestVector(e0.Start.Position, e2.Start.Position, e1.Start.Position, e3.Start.Position);
                             sum += span.Length;
 
@@ -1308,8 +1305,8 @@ namespace SpatialSlur.SlurMesh
         #region Euler Operators
 
         /// <summary>
-        /// removes a face from the mesh
-        /// also removes any invalid elements created as a result
+        /// Removes a face from the mesh as well as any invalid elements created in the process.
+        /// Returns true on success.
         /// </summary>
         /// <param name="face"></param>
         public bool Remove(HeFace face)
@@ -1347,8 +1344,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// removes a half edge pair, merging their two adajcent faces
-        /// the face adjacent to the given halfedge is retained
+        /// Removes a half edge pair, merging their two adajcent faces.
+        /// The face adjacent to the given halfedge is retained.
         /// </summary>
         /// <param name="edge"></param>
         /// <returns></returns>
@@ -1402,7 +1399,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns edge adjacent to new face on success or null on failure
+        /// Splits a face by creating a new halfedge pair between the start vertices of the given halfedges.
+        /// Returns the new edge adjacent to the new face on success or null on failure.
         /// </summary>
         /// <param name="e0"></param>
         /// <param name="e1"></param>
@@ -1455,7 +1453,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the new vertex created at the center of the given face
+        /// Returns the new vertex created at the center of the given face.
         /// </summary>
         /// <param name="face"></param>
         public HeVertex Stellate(HeFace face)
@@ -1510,8 +1508,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// TODO
-        /// triangulates a given face without adding any vertices
+        /// TODO 
+        /// Triangulates a given face without adding any vertices.
         /// </summary>
         /// <param name="face"></param>
         /// <returns></returns>

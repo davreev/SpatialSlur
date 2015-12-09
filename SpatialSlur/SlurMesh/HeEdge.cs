@@ -63,7 +63,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// vertex at the start of the half edge
+        /// Returns the vertex at the start of the half edge.
         /// </summary>
         public HeVertex Start
         {
@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// vertex at the end of the half edge
+        /// Returns the vertex at the end of the half edge.
         /// </summary>
         public HeVertex End
         {
@@ -83,7 +83,7 @@ namespace SpatialSlur.SlurMesh
 
         [Obsolete("use Prev property instead")]
         /// <summary>
-        /// previous edge in the face loop
+        /// Returns the previous edge in the face.
         /// </summary>
         public HeEdge Previous
         {
@@ -93,7 +93,7 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// 
+        /// Returns the previous edge in the face.
         /// </summary>
         public HeEdge Prev
         {
@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurMesh
        
 
         /// <summary>
-        /// next edge in the face loop
+        /// Returns the next edge in the face.
         /// </summary>
         public HeEdge Next
         {
@@ -123,7 +123,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// adjacent face
+        /// Returns the face to which this edge belongs.
         /// </summary>
         public HeFace Face
         {
@@ -133,7 +133,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if element has been flagged for removal
+        /// 
         /// </summary>
         public override bool IsUnused
         {
@@ -142,8 +142,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the edge and its twin have different faces
-        /// assumes the edge is used
+        /// Returns true if the edge and its twin have different faces.
         /// </summary>
         internal override bool IsValid
         {
@@ -152,7 +151,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the edge or its twin has no adjacent face
+        /// Returns true if the edge or its twin has no adjacent face.
         /// </summary>
         public override bool IsBoundary
         {
@@ -161,7 +160,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// gets the span vector of the edge
+        /// Returns a vector which spans between the edge's vertices.
         /// </summary>
         public Vec3d Span
         {
@@ -170,7 +169,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the length of the edge.
         /// </summary>
         public double Length
         {
@@ -179,7 +178,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the edge starts at a degree 1 vertex
+        /// Returns true if the edge starts at a degree 1 vertex.
         /// </summary>
         internal bool IsFromDeg1
         {
@@ -188,7 +187,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the edge starts at a degree 2 vertex
+        /// Returns true if the edge starts at a degree 2 vertex
         /// </summary>
         public bool IsFromDeg2
         {
@@ -197,7 +196,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the edge starts at a degree 3 vertex
+        /// Returns true if the edge starts at a degree 3 vertex.
         /// </summary>
         public bool IsFromDeg3
         {
@@ -206,7 +205,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the edge is the outgoing edge of its start vertex
+        /// Returns true if the edge is the outgoing edge of its start vertex.
         /// </summary>
         public bool IsOutgoing
         {
@@ -215,7 +214,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// true if the edge is the first edge of its face
+        /// Returns true if the edge is the first in its face.
         /// </summary>
         public bool IsFirst
         {
@@ -224,7 +223,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// flags element for removal
+        /// 
         /// </summary>
         internal override void MakeUnused()
         {
@@ -233,7 +232,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// makes this edge the first in it's face
+        /// Makes the edge the first in its face.
         /// </summary>
         public void MakeFirst()
         {
@@ -242,7 +241,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// makes this edge the outgoing edge from it's start vertex
+        /// Makes the edge the outgoing edge from its start vertex.
         /// </summary>
         internal void MakeOutgoing()
         {
@@ -251,8 +250,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the next boundary edge encountered when circulating around this edge's start vertex
-        /// returns null if no boundary edge is found 
+        /// Returns the first boundary edge encountered when circulating around the start vertex.
+        /// Returns null if no boundary edge is found.
         /// </summary>
         /// <returns></returns>
         internal HeEdge FindBoundary()
@@ -269,7 +268,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// circulates face starting from this edge
+        /// Circulates the face starting from this edge.
         /// </summary>
         public IEnumerable<HeEdge> CirculateFace
         {
@@ -292,7 +291,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// circulates vertex starting from this edge
+        /// Circulates the start vertex starting from this edge.
         /// </summary>
         public IEnumerable<HeEdge> CirculateVertex
         {
@@ -315,7 +314,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns an linearly interpolated point along the edge.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>

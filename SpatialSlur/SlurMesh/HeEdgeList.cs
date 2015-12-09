@@ -22,7 +22,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// adds an edge and its twin to the list
+        /// Adds an edge and its twin to the list.
         /// </summary>
         /// <param name="edge"></param>
         internal void AddPair(HeEdge edge)
@@ -33,8 +33,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// creates a pair of edges between the given vertices and add them to the list
-        /// the face references of both edges in the pair are left unassigned
+        /// Creates a pair of halfedges between the given vertices and add them to the list.
+        /// Note that the face references of the new halfedges are left unassigned.
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
@@ -95,7 +95,7 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// Calculates the angle between each edge and its previous
+        /// Returns the angle between each edge and the previous in its face.
         /// </summary>
         /// <returns></returns>
         public double[] GetEdgeAngles()
@@ -162,7 +162,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the dihedral angle at each half-edge pair
+        /// Returns the dihedral angle at each half-edge pair.
         /// </summary>
         /// <returns></returns>
         public double[] GetDihedralAngles(IList<Vec3d> faceNormals)
@@ -202,11 +202,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the area associated with each half-edge
-        /// 
-        /// TODO consider alternate formulations
+        /// Returns the area associated with each halfedge.
+        /// TODO Look into alternate formulations.
         /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
-        /// 
         /// </summary>
         /// <param name="faceCenters"></param>
         /// <returns></returns>
@@ -247,7 +245,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the cotangent of each halfedge.
+        /// Assumes triangle mesh.
+        /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
         /// </summary>
         /// <returns></returns>
         public double[] GetCotangents()
@@ -259,8 +259,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
-        /// Assumes triangle mesh
+        /// 
+        /// 
         /// </summary>
         /// <param name="result"></param>
         public void UpdateCotangents(IList<double> result)
@@ -283,9 +283,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the cotangent weight for each half-edge.
-        /// Assumes all faces are triangular.
-        /// 
+        /// Returns the cotangent weight for each halfedge.
+        /// Assumes triangle mesh.
         /// http://www.multires.caltech.edu/pubs/diffGeoOps.pdf
         /// http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf
         /// </summary>
@@ -341,9 +340,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the area normalized cotangent weight for each halfedge
-        /// Assumes all faces are triangular
-        /// 
+        /// Returns the area normalized cotangent weight for each halfedge.
+        /// Assumes triangle mesh.
         /// http://www.multires.caltech.edu/pubs/diffGeoOps.pdf
         /// http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf
         /// </summary>
@@ -492,7 +490,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the span vector for each edge in the mesh.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -505,7 +503,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// TODO separate method for unitized
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -533,8 +531,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the cross product of each edge and its previous
-        /// these are used in the calculation of both face and vertex normals
+        /// Returns a normal for each edge in the mesh.
+        /// These are calculated as the cross product of each edge and its previous.
+        /// Note that these are used in the calculation of both vertex and face normals.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -547,8 +546,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// returns the cross product of each edge and its previous
-        /// these are used in the calculation of both face and vertex normals
+        /// 
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -739,8 +737,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Creates a new vertex and edge pair. 
-        /// The new edge which is outgoing from the new vertex is returned.
+        /// Splits the given edge by adding a new vertex in the middle.
+        /// Returns the new edge outgoing from the new vertex.
         /// </summary>
         public HeEdge SplitEdge(HeEdge edge)
         {
@@ -786,8 +784,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// assumes triangle mesh
-        /// returns null on failure
+        /// Splits an edge by adding a new vertex in the middle. 
+        /// Faces adjacent to the given edge are also split at the new vertex.
+        /// Returns the new edge outgoing from the new vertex or null on failure.
+        /// Assumes triangle mesh.
         /// </summary>
         public HeEdge SplitEdgeFace(HeEdge edge)
         {
@@ -803,8 +803,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// collapses the given half edge by merging the start vertex to the end vertex
-        /// the start vertex is removed
+        /// Collapses the given half edge by merging the vertices at either end.
+        /// The start vertex is retained and the end vertex is flagged as unused.
+        /// Return true on success.
         /// </summary>
         /// <param name="edge"></param>
         public bool CollapseEdge(HeEdge edge)
