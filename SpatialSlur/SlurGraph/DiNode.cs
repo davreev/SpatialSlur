@@ -37,6 +37,24 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
+        /// Iterates over nodes connected by outgoing edges.
+        /// Skips nodes which have been flagged for removal.
+        /// </summary>
+        public IEnumerable<DiNode> ConnectedNodes
+        {
+            get
+            {
+                for (int i = 0; i < _outEdges.Count; i++)
+                {
+                    DiEdge e = _outEdges[i];
+                    DiNode n = e.End;
+                    if (!e.IsRemoved && !n.IsRemoved) yield return n;
+                }
+            }
+        }
+
+
+        /// <summary>
         /// Iterates edges starting at this node.
         /// Skips edges which have been flagged for removal.
         /// </summary>

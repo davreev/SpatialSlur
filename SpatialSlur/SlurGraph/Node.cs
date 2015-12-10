@@ -38,22 +38,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Skips edges which have been flagged for removal.
-        /// </summary>
-        public IEnumerable<Edge> IncidentEdges
-        {
-            get
-            {
-                for (int i = 0; i < _edges.Count; i++)
-                {
-                    Edge e = _edges[i];
-                    if (!e.IsRemoved) yield return e;
-                }
-            }
-        }
-
-
-        /// <summary>
+        /// Iterates over connected nodes.
         /// Skips nodes which have been flagged for removal.
         /// </summary>
         public IEnumerable<Node> ConnectedNodes
@@ -65,6 +50,22 @@ namespace SpatialSlur.SlurGraph
                     Edge e = _edges[i];
                     Node n = e.GetOther(this);
                     if (!e.IsRemoved && !n.IsRemoved) yield return n;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Skips edges which have been flagged for removal.
+        /// </summary>
+        public IEnumerable<Edge> IncidentEdges
+        {
+            get
+            {
+                for (int i = 0; i < _edges.Count; i++)
+                {
+                    Edge e = _edges[i];
+                    if (!e.IsRemoved) yield return e;
                 }
             }
         }

@@ -11,7 +11,9 @@ namespace SpatialSlur.SlurGraph
         where E : IEdge<N, E>
     {
         IEnumerable<E> Adjacency { get; }
+        IEnumerable<N> ConnectedNodes { get; }
         int Index { get; }
         int Degree { get; }
+        bool IsRemoved { get; }
     }
 }

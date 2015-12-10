@@ -13,5 +13,6 @@ namespace SpatialSlur.SlurGraph
         N Start { get; }
         N End { get; }
         int Index { get; }
+        bool IsRemoved { get; }
     }
 }
