@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurGraph
 {
-    public class DiNode
+    public class DiNode : INode<DiNode, DiEdge>
     {
         private readonly List<DiEdge> _outEdges;
         //private readonly List<DiEdge> _inEdges;
         //private N _data;
         private int _index = -1;
         private int _outDegree; // explicitly store degree to keep up with edge/node removal
-        private int _inDegree; 
-  
+        private int _inDegree;
+
 
         /// <summary>
         /// 
@@ -27,6 +27,16 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
+        /// INode interface method.
+        /// Calls OutgoingEdges internally.
+        /// </summary>
+        public IEnumerable<DiEdge> Adjacency
+        {
+            get { return OutgoingEdges; }
+        }
+
+
+        /// <summary>
         /// Iterates edges starting at this node.
         /// Skips edges which have been flagged for removal.
         /// </summary>
@@ -34,7 +44,7 @@ namespace SpatialSlur.SlurGraph
         {
             get
             {
-                for(int i = 0; i < _outEdges.Count; i++)
+                for (int i = 0; i < _outEdges.Count; i++)
                 {
                     DiEdge e = _outEdges[i];
                     if (!e.IsRemoved) yield return e;
@@ -60,6 +70,16 @@ namespace SpatialSlur.SlurGraph
             }
         }
         */
+
+
+        /// <summary>
+        /// INode interface method.
+        /// Calls OutDegree internally.
+        /// </summary>
+        public int Degree
+        {
+            get { return _outDegree; }
+        }
 
 
         /// <summary>
@@ -110,7 +130,7 @@ namespace SpatialSlur.SlurGraph
         public void Remove()
         {
             if (IsRemoved) return; // check if already flagged
-            _index = -1; 
+            _index = -1;
 
             for (int i = 0; i < _outEdges.Count; i++)
                 _outEdges[i].Remove();
@@ -159,7 +179,7 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         public DiEdge FindEdgeTo(DiNode other)
         {
-            for(int i = 0; i < _outEdges.Count; i++)
+            for (int i = 0; i < _outEdges.Count; i++)
             {
                 DiEdge e = _outEdges[i];
                 if (e.End == other && !e.IsRemoved)

@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// Adjacency list implementation of a directed graph.
     /// </summary>
-    public class DiGraph
+    public class DiGraph : IGraph<DiNode, DiEdge>
     {
         private readonly List<DiNode> _nodes;
         private readonly List<DiEdge> _edges;

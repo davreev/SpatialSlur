@@ -9,13 +9,13 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// TODO make generic for attaching attributes
     /// </summary>
-    public class Node
+    public class Node : INode<Node, Edge>
     {
         private readonly List<Edge> _edges;
         //private N _data;
         private int _index = -1;
         private int _degree; // explicitly store degree to keep up with edge/node removal
-  
+
 
         /// <summary>
         /// 
@@ -28,13 +28,23 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
+        /// INode interface method.
+        /// Calls IncidentEdges internally.
+        /// </summary>
+        public IEnumerable<Edge> Adjacency
+        {
+            get { return IncidentEdges; }
+        }
+
+
+        /// <summary>
         /// Skips edges which have been flagged for removal.
         /// </summary>
         public IEnumerable<Edge> IncidentEdges
         {
             get
             {
-                for(int i = 0; i < _edges.Count; i++)
+                for (int i = 0; i < _edges.Count; i++)
                 {
                     Edge e = _edges[i];
                     if (!e.IsRemoved) yield return e;
@@ -96,7 +106,7 @@ namespace SpatialSlur.SlurGraph
         public void Remove()
         {
             if (IsRemoved) return; // check if already flagged
-            _index = -1; 
+            _index = -1;
 
             for (int i = 0; i < _edges.Count; i++)
                 _edges[i].Remove();
@@ -140,7 +150,7 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         public Edge FindEdgeTo(Node other)
         {
-            for(int i = 0; i < _edges.Count; i++)
+            for (int i = 0; i < _edges.Count; i++)
             {
                 Edge e = _edges[i];
                 if (e.GetOther(this) == other && !e.IsRemoved)

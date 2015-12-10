@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// TODO make generic for attaching attributes
     /// </summary>
-    public class Edge
+    public class Edge : IEdge<Node, Edge>
     {
         private Node _start;
         private Node _end;

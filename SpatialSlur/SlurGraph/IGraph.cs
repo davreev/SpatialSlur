@@ -10,7 +10,15 @@ namespace SpatialSlur.SlurGraph
     /// TODO
     /// Consolidate necessary functionality of Graph and Digraph for use in various graph search algorithms.
     /// </summary>
-    public interface IGraph
+    public interface IGraph<N, E>
+        where N : INode<N, E>
+        where E : IEdge<N, E>
     {
+        IEnumerable<N> Nodes { get; }
+        IEnumerable<E> Edges { get; }
+        N GetNode(int index);
+        E GetEdge(int index);
+        int NodeCount { get; }
+        int EdgeCount { get; }
     }
 }
