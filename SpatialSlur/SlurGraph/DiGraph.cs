@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
-    /// Adjacency list implementation of an undirected graph.
+    /// Adjacency list implementation of a directed graph.
     /// </summary>
-    public class Graph
+    public class DiGraph
     {
-        private readonly List<Node> _nodes;
-        private readonly List<Edge> _edges;
+        private readonly List<DiNode> _nodes;
+        private readonly List<DiEdge> _edges;
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="capacity"></param>
-        public Graph()
+        public DiGraph()
         {
-            _nodes = new List<Node>();
-            _edges = new List<Edge>();
+            _nodes = new List<DiNode>();
+            _edges = new List<DiEdge>();
         }
 
 
@@ -30,10 +30,10 @@ namespace SpatialSlur.SlurGraph
         /// 
         /// </summary>
         /// <param name="vertexCount"></param>
-        public Graph(int nodeCapacity, int edgeCapacity)
+        public DiGraph(int nodeCapacity, int edgeCapacity)
         {
-            _nodes = new List<Node>(nodeCapacity);
-            _edges = new List<Edge>(edgeCapacity);
+            _nodes = new List<DiNode>(nodeCapacity);
+            _edges = new List<DiEdge>(edgeCapacity);
         }
 
 
@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurGraph
         /// Creates a deep copy of the given graph.
         /// </summary>
         /// <param name="other"></param>
-        public Graph(Graph other)
+        public DiGraph(DiGraph other)
             : this(other.NodeCount, other.EdgeCount)
         {
             var otherNodes = other._nodes;
@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurGraph
             // add all edges
             for (int i = 0; i < otherEdges.Count; i++)
             {
-                Edge e = otherEdges[i];
+                DiEdge e = otherEdges[i];
                 AddEdge(e.Start.Index, e.End.Index);
             }
       
@@ -71,13 +71,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Skips nodes which have been flagged for removal.
         /// </summary>
-        public IEnumerable<Node> Nodes
+        public IEnumerable<DiNode> Nodes
         {
             get
             {
                 for (int i = 0; i < _nodes.Count; i++)
                 {
-                    Node n = _nodes[i];
+                    DiNode n = _nodes[i];
                     if (!n.IsRemoved) yield return n;
                 }
             }
@@ -87,13 +87,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Skips edges which have been flagged for removal.
         /// </summary>
-        public IEnumerable<Edge> Edges
+        public IEnumerable<DiEdge> Edges
         {
             get
             {
                 for (int i = 0; i < _edges.Count; i++)
                 {
-                    Edge e = _edges[i];
+                    DiEdge e = _edges[i];
                     if (!e.IsRemoved) yield return e;
                 }
             }
@@ -123,7 +123,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Node GetNode(int index)
+        public DiNode GetNode(int index)
         {
             return _nodes[index];
         }
@@ -134,27 +134,21 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Edge GetEdge(int index)
+        public DiEdge GetEdge(int index)
         {
             return _edges[index];
         }
 
 
         /// <summary>
-        /// 
+        /// Returns an edge spanning from i to j.
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public Edge FindEdge(int i, int j)
+        public DiEdge FindEdge(int i, int j)
         {
-            Node ni = _nodes[i];
-            Node nj = _nodes[j];
-
-            if (nj.Degree < ni.Degree) // search from the node with the smaller degree
-                return nj.FindEdgeTo(nj);
-            else
-                return ni.FindEdgeTo(nj);
+            return _nodes[i].FindEdgeTo(_nodes[j]);
         }
 
 
@@ -173,9 +167,9 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        public Node AddNode()
+        public DiNode AddNode()
         {
-            Node n = new Node(_nodes.Count);
+            DiNode n = new DiNode(_nodes.Count);
             _nodes.Add(n);
             return n;
         }
@@ -188,30 +182,30 @@ namespace SpatialSlur.SlurGraph
         public void AddNodes(int quantity)
         {
             for (int i = 0; i < quantity; i++)
-                _nodes.Add(new Node(_nodes.Count));
+                _nodes.Add(new DiNode(_nodes.Count));
         }
 
 
         /// <summary>
-        /// Adds a new edge between nodes i and j.
+        /// Adds a new edge from node i to node j.
         /// Note that if node i or j is flagged for removal, no new edge is added and null is returned.
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public Edge AddEdge(int i, int j)
+        public DiEdge AddEdge(int i, int j)
         {
-            Node ni = _nodes[i];
-            Node nj = _nodes[j];
+            DiNode ni = _nodes[i];
+            DiNode nj = _nodes[j];
 
             if (ni.IsRemoved || nj.IsRemoved)
                 return null;
 
-            Edge e = new Edge(ni, nj, _edges.Count);
+            DiEdge e = new DiEdge(ni, nj, _edges.Count);
             _edges.Add(e);
 
-            ni.AddEdge(e);
-            nj.AddEdge(e);
+            ni.AddOutEdge(e);
+            nj.AddInEdge(e);
 
             return e;
         }
@@ -236,7 +230,7 @@ namespace SpatialSlur.SlurGraph
             int marker = 0;
             for (int i = 0; i < _nodes.Count; i++)
             {
-                Node n = _nodes[i];
+                DiNode n = _nodes[i];
                 if (!n.IsRemoved)
                 {
                     n.Compact(); // compact adjacency list
@@ -258,7 +252,7 @@ namespace SpatialSlur.SlurGraph
             int marker = 0;
             for (int i = 0; i < _edges.Count; i++)
             {
-                Edge e = _edges[i];
+                DiEdge e = _edges[i];
                 if (!e.IsRemoved)
                 {
                     e.Index = marker;

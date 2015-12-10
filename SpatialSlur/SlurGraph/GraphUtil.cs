@@ -40,7 +40,7 @@ namespace SpatialSlur.SlurGraph
         /// Computes the graph laplacian using a normalized umbrella weighting scheme (Tutte scheme).
         /// </summary>
         /// <returns></returns>
-        public static double[] GetLaplacian(IGraph graph, IList<double> vertexValues)
+        public static double[] GetLaplacian(Graph graph, IList<double> vertexValues)
         {
             double[] result = new double[graph.NodeCount];
             UpdateLaplacian(graph, vertexValues, result);
@@ -52,7 +52,7 @@ namespace SpatialSlur.SlurGraph
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public static void UpdateLaplacian(IGraph graph, IList<double> nodeValues, IList<double> result)
+        public static void UpdateLaplacian(Graph graph, IList<double> nodeValues, IList<double> result)
         {
             Parallel.ForEach(Partitioner.Create(0, graph.NodeCount), range =>
             {
@@ -63,7 +63,7 @@ namespace SpatialSlur.SlurGraph
 
                     double sum = 0.0;
 
-                    foreach (Node nj in graph.GetConnectedNodes(i))
+                    foreach (Node nj in ni.ConnectedNodes)
                         sum += nodeValues[nj.Index];
                   
                     result[i] = sum / ni.Degree - nodeValues[i];
@@ -76,7 +76,7 @@ namespace SpatialSlur.SlurGraph
         /// Computes the graph laplacian using custom edge weights.
         /// </summary>
         /// <returns></returns>
-        public static double[] GetLaplacian(IGraph graph, IList<double> nodeValues, IList<double> edgeWeights)
+        public static double[] GetLaplacian(Graph graph, IList<double> nodeValues, IList<double> edgeWeights)
         {
             double[] result = new double[graph.NodeCount];
             UpdateLaplacian(graph, nodeValues, result);
@@ -88,7 +88,7 @@ namespace SpatialSlur.SlurGraph
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public static void UpdateLaplacian(IGraph graph, IList<double> nodeValues, IList<double> edgeWeights, IList<double> result)
+        public static void UpdateLaplacian(Graph graph, IList<double> nodeValues, IList<double> edgeWeights, IList<double> result)
         {
             Parallel.ForEach(Partitioner.Create(0, graph.NodeCount), range =>
             {
@@ -100,7 +100,7 @@ namespace SpatialSlur.SlurGraph
                     double val = nodeValues[i];
                     double sum = 0.0;
 
-                    foreach (Edge e in graph.GetIncidentEdges(i))
+                    foreach (Edge e in ni.IncidentEdges)
                     {
                         Node nj = e.GetOther(ni);
                         sum += (nodeValues[nj.Index] - val) * edgeWeights[e.Index];
@@ -117,7 +117,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="sources"></param>
         /// <returns></returns>
-        public static int[] GetNodeDepths(IGraph graph, IList<int> sources)
+        public static int[] GetNodeDepths(Graph graph, IList<int> sources)
         {
             int[] result = new int[graph.NodeCount];
             UpdateNodeDepths(graph, sources, result);
@@ -130,7 +130,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDepths(IGraph graph, IList<int> sources, IList<int> result)
+        public static void UpdateNodeDepths(Graph graph, IList<int> sources, IList<int> result)
         {
             // set values to infinity
             result.Set(int.MaxValue);
@@ -147,11 +147,12 @@ namespace SpatialSlur.SlurGraph
             while (queue.Count > 0)
             {
                 int i = queue.Dequeue();
+                Node ni = graph.GetNode(i);
                 int tj = result[i] + 1;
 
-                foreach (Node n in graph.GetConnectedNodes(i))
+                foreach (Node nj in ni.ConnectedNodes)
                 {
-                    int j = n.Index;
+                    int j = nj.Index;
 
                     if (tj < result[j])
                     {
@@ -170,7 +171,7 @@ namespace SpatialSlur.SlurGraph
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <returns></returns>
-        public static double[] GetNodeDistances(IGraph graph, IList<int> sources, IList<double> edgeLengths)
+        public static double[] GetNodeDistances(Graph graph, IList<int> sources, IList<double> edgeLengths)
         {
             double[] result = new double[graph.NodeCount];
             UpdateNodeDistances(graph, sources, edgeLengths, result);
@@ -185,7 +186,7 @@ namespace SpatialSlur.SlurGraph
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDistances(IGraph graph, IList<int> sources, IList<double> edgeLengths, IList<double> result)
+        public static void UpdateNodeDistances(Graph graph, IList<int> sources, IList<double> edgeLengths, IList<double> result)
         {
             result.Set(Double.PositiveInfinity);
 
@@ -204,7 +205,7 @@ namespace SpatialSlur.SlurGraph
                 Node ni = graph.GetNode(i);
                 double ti = result[i];
          
-                foreach (Edge e in graph.GetIncidentEdges(i))
+                foreach (Edge e in graph.GetNode(i).IncidentEdges)
                 {
                     int j =  e.GetOther(ni).Index;
                     double tj = ti + edgeLengths[e.Index];
@@ -225,7 +226,7 @@ namespace SpatialSlur.SlurGraph
         /// <param name="graph"></param>
         /// <param name="nodeCoords"></param>
         /// <returns></returns>
-        public static double[] GetEdgeLengths(IGraph graph, IList<Vec3d> nodeCoords)
+        public static double[] GetEdgeLengths(Graph graph, IList<Vec3d> nodeCoords)
         {
             double[] result = new double[graph.EdgeCount];
             UpdateEdgeLengths(graph, nodeCoords, result);
@@ -238,7 +239,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="nodeCoords"></param>
         /// <param name="result"></param>
-        public static void UpdateEdgeLengths(IGraph graph, IList<Vec3d> nodeCoords, IList<double> result)
+        public static void UpdateEdgeLengths(Graph graph, IList<Vec3d> nodeCoords, IList<double> result)
         {
             Parallel.ForEach(Partitioner.Create(0, graph.EdgeCount), range =>
             {
