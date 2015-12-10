@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurGraph
 {
-    /// <summary>
-    /// TODO make generic for attaching attributes
-    /// </summary>
-    public class Edge
+    public class DiEdge
     {
-        private Node _start;
-        private Node _end;
+        private DiNode _start;
+        private DiNode _end;
         //private E _data;
         private int _index = -1;
 
@@ -22,7 +19,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        internal Edge(Node start, Node end, int index)
+        internal DiEdge(DiNode start, DiNode end, int index)
         {
             _start = start;
             _end = end;
@@ -33,7 +30,7 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        public Node Start
+        public DiNode Start
         {
             get { return _start; }
             internal set { _start = value; }
@@ -43,7 +40,7 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        public Node End
+        public DiNode End
         {
             get { return _end; }
             internal set { _end = value; }
@@ -77,24 +74,8 @@ namespace SpatialSlur.SlurGraph
         {
             if (IsRemoved) return; // check if already flagged
             _index = -1;
-            _start.Degree--;
-            _end.Degree--;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        public Node GetOther(Node node)
-        {
-            if (node == _start)
-                return _end;
-            else if (node == _end)
-                return _start;
-
-            return null;
+            _start.OutDegree--;
+            _end.InDegree--;
         }
     }
 }

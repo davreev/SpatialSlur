@@ -8,18 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 /// <summary>
-/// static force methods that make use of hemesh topological querying for their calculation
+/// Static force methods that make use of hemesh topological querying for their calculation
 /// 
 /// Notes on threading
 /// Threaded force calculations are problematic since multiple threads need to write to the same entry in the resulting force array.
 /// This requires excessive locking ultimately resulting in performance loss.
-/// 
-/// Solution 1 - All force vectors for a single vertex must be calculated by a single thread.
-/// This will likely require different vertex-based iteration structures and will result in calculating the same force multiple times.
-///
-/// Solution 2 - Give each thread its own array of force vectors to write to. Combine these arrays after all threads are done.
-/// Update - When tested on Planarize(), this approach resulted in a performance loss
-/// 
 /// </summary>
 
 namespace SpatialSlur.SlurMesh
@@ -33,7 +26,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which pull vertices towards a target mesh
+        /// Calculates forces which pull vertices towards a target mesh.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="target"></param>
@@ -58,7 +51,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which pull vertices towards a target brep
+        /// Calculates forces which pull vertices towards a target brep.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="target"></param>
@@ -83,7 +76,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths to be zero length
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -110,7 +103,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths to match a given rest length
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -141,7 +134,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths to match given rest lengths
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -173,7 +166,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths to fall within a given range
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -215,7 +208,6 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// TODO
-        /// calculates forces which adjust edge lengths to fall within a given range
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -256,7 +248,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths to match given rest lengths
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="diagonalLengths"></param>
@@ -312,7 +304,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths to match given rest lengths
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="diagonalLengths"></param>
@@ -371,7 +363,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths to match given rest lengths
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="diagonalLengths"></param>
@@ -442,8 +434,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust angles between consecutive edges to match a given rest angle
-        /// uses angular difference to calculate force magnitude
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -475,7 +466,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust angles within each face to match given rest angles
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -508,8 +499,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust angles between consecutive edges to match a given rest angle
-        /// uses angular difference to calculate force magnitude
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -551,7 +541,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust angles between adjacent faces to match a given rest angle
         /// http://www.miralab.ch/repository/papers/165.pdf
         /// </summary>
         /// <param name="mesh"></param>
@@ -566,7 +555,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust angles between adjacent faces to match given rest angles
         /// http://www.miralab.ch/repository/papers/165.pdf
         /// </summary>
         /// <param name="mesh"></param>
@@ -581,8 +569,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust the lengths of each edge so that adjacent faces have tangent incircles
-        /// intended for use on triangle meshes
+        /// Adjusts edge lengths to make adjacent faces have tangent incircles.
+        /// Intended for use on triangle meshes.
         /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
         /// </summary>
         /// <param name="mesh"></param>
@@ -637,7 +625,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust the length of each edge to match a pair of radii associated with its end vertices
+        /// Adjusts edge lengths to match a pair of radii associated with its end vertices.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -1140,7 +1128,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths towards the average around each vertex
+        /// Adjusts edge lengths towards the average around their vertex.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -1186,7 +1174,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust edge lengths towards the average within each face
+        /// Adjust edge lengths towards the average within their face.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -1257,7 +1245,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust the angles between consecutive edges towards the average around each vertex
+        /// Adjusts edge angles towards the average around their vertex.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -1303,7 +1291,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which adjust the angles between consecutive edges towards the average within each face
+        /// Adjusts edge angles towards the average within their face.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeLengths"></param>
@@ -1347,8 +1335,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which aligns the edges of a mesh with a given set of vectors
-        /// could potentially be used for the production of parallel meshes (see link)
+        /// Aligns the edges of a mesh with a given set of vectors.
         /// http://www.eecs.berkeley.edu/~sequin/CS285/PAPERS/Pottmann_FrFrm_arch.pdf
         /// </summary>
         /// <param name="mesh"></param>
@@ -1386,7 +1373,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which place vertices from each face on a common plane
+        /// Pulls vertices within each face to a common plane.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
@@ -1450,8 +1437,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which place vertices from each face on a common plane
-        /// ignores all non-quad faces
+        /// Pulls vertices within each face to a common plane.
+        /// Ignores non-quad faces.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
@@ -1489,8 +1476,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Pulls vertices around each vertex to a common plane.
         /// TODO
-        /// calculates forces which place each vertex and it's neihgbours on a common plane
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
@@ -1554,8 +1541,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which place vertices from each quadrilateral face on a common circle
-        /// should be used in conjunction with planarize
+        /// Pulls vertices within each face to a common circle.
+        /// Intended for use on quad meshes.
+        /// Note that this method should be used in conjunction with planarize.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="faceCenters"></param>
@@ -1612,9 +1600,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// alternative experimental method
-        /// calculates forces which place vertices from each quadrilateral face on a common circle
-        /// should be used in conjunction with planarize
+        /// Experimental alternative method.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="faceCenters"></param>
@@ -1663,8 +1649,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which make faces around internal degree 4 vertices tangent to a common cone
-        /// should be used in conjunction with planarize
+        /// Adjusts faces around each internal degree 4 vertex to be tangent to a common cone.
+        /// Intended for use on quadrilateral meshes.
+        /// Note that this method should be used in conjunction with planarize.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="faceCenters"></param>
@@ -1729,9 +1716,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which make faces around internal degree 4 vertices tangent to a common cone
-        /// should be used in conjunction with planarize
-        /// alternative expoerimental method
+        /// Experimental alternative method.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="faceCenters"></param>
@@ -1793,8 +1778,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// adjusts edges so that quads becomes tangential
-        /// opposite sides of a tangential quad have equal sums
+        /// Adjusts edge lengths to make quad faces tangential.
+        /// Note that opposite sides of a tangential quad have equal sums.
         /// http://en.wikipedia.org/wiki/Tangential_quadrilateral
         /// 
         /// combine with physical smooth to produce circle packing quad meshes
@@ -1850,7 +1835,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which minimize gaussian curvature
+        /// Minimizes gaussian curvature at interior vertices.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeAngles"></param>
@@ -1890,7 +1875,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which minimize gaussian curvature
+        /// Minimizes gaussian curvature at interior vertices.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeAngles"></param>
@@ -1931,7 +1916,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// calculates forces which minimize gaussian curvature
+        /// Minimizes gaussian curvature at interior vertices.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="edgeAngles"></param>
@@ -1973,6 +1958,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// TODO
+        /// Experimental method.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="vertexDepths"></param>

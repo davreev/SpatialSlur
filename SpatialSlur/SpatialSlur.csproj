@@ -94,6 +94,9 @@
     <Compile Include="SlurField\MeshScalarField.cs" />
     <Compile Include="SlurField\ImplicitSurfaces.cs" />
     <Compile Include="SlurField\PerlinNoise.cs" />
+    <Compile Include="SlurGraph\DiEdge.cs" />
+    <Compile Include="SlurGraph\DiGraph.cs" />
+    <Compile Include="SlurGraph\DiNode.cs" />
     <Compile Include="SlurGraph\Edge.cs" />
     <Compile Include="SlurGraph\Graph.cs" />
     <Compile Include="SlurGraph\IGraph.cs" />
