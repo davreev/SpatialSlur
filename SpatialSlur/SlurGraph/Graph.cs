@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// Adjacency list implementation of an undirected graph.
     /// </summary>
-    public class Graph
+    public class Graph : IGraph<Node,Edge>
     {
         private readonly List<Node> _nodes;
         private readonly List<Edge> _edges;

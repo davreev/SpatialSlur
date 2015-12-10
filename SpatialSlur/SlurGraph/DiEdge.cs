@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurGraph
 {
-    public class DiEdge
+    public class DiEdge : IEdge<DiNode, DiEdge>
     {
         private DiNode _start;
         private DiNode _end;
