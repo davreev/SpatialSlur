@@ -87,7 +87,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public Node GetOther(Node node)
+        public Node Other(Node node)
         {
             if (node == _start)
                 return _end;

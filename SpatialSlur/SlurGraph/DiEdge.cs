@@ -28,7 +28,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Returns the node at the start of the edge.
         /// </summary>
         public DiNode Start
         {
@@ -38,7 +38,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Returns the node at the end of the edge.
         /// </summary>
         public DiNode End
         {
@@ -59,7 +59,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Return true if the edge has been flagged for removal.
         /// </summary>
         public bool IsRemoved
         {

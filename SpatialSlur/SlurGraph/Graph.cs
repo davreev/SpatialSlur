@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurGraph
 {
@@ -11,6 +12,26 @@ namespace SpatialSlur.SlurGraph
     /// </summary>
     public class Graph : IGraph<Node,Edge>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pointPairs"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="nodePositions"></param>
+        /// <returns></returns>
+        public static Graph CreateFromLineSegments(IList<Vec3d> pointPairs, double epsilon, out List<Vec3d> nodePositions)
+        {
+            int[] indexMap;
+            nodePositions = Vec3d.RemoveDuplicates(pointPairs, epsilon, out indexMap);
+            Graph result = new Graph(nodePositions.Count, pointPairs.Count >> 1);
+
+            for (int i = 0; i < indexMap.Length; i += 2)
+                result.AddEdge(indexMap[i], indexMap[i + 1]);
+
+            return result;
+        }
+   
+
         private readonly List<Node> _nodes;
         private readonly List<Edge> _edges;
 
