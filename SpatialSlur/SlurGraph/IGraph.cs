@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
-    /// TODO
-    /// Consolidate necessary functionality of Graph and Digraph for use in various graph search algorithms.
+    /// Consolidates common functionality of various Graph types for use in graph search algorithms.
     /// </summary>
     public interface IGraph<N, E>
         where N : INode<N, E>

@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurGraph
     public class DiNode : INode<DiNode, DiEdge>
     {
         private readonly List<DiEdge> _outEdges;
-        //private readonly List<DiEdge> _inEdges;
+        private readonly List<DiEdge> _inEdges;
         //private N _data;
         private int _index = -1;
         private int _outDegree; // explicitly store degree to keep up with edge/node removal
@@ -22,22 +22,13 @@ namespace SpatialSlur.SlurGraph
         internal DiNode(int index)
         {
             _outEdges = new List<DiEdge>();
+            _inEdges = new List<DiEdge>();
             _index = index;
         }
 
 
         /// <summary>
-        /// INode interface method.
-        /// Calls OutgoingEdges internally.
-        /// </summary>
-        public IEnumerable<DiEdge> Adjacency
-        {
-            get { return OutgoingEdges; }
-        }
-
-
-        /// <summary>
-        /// Iterates over nodes connected by outgoing edges.
+        /// Iterates over all nodes that this node connects to (i.e. those at the ends of outgoing edges).
         /// Skips nodes which have been flagged for removal.
         /// </summary>
         public IEnumerable<DiNode> ConnectedNodes
@@ -48,6 +39,24 @@ namespace SpatialSlur.SlurGraph
                 {
                     DiEdge e = _outEdges[i];
                     DiNode n = e.End;
+                    if (!e.IsRemoved && !n.IsRemoved) yield return n;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Iterates over all nodes that connect to this node (i.e. those at the ends of incoming edges).
+        /// Skips nodes which have been flagged for removal.
+        /// </summary>
+        public IEnumerable<DiNode> ConnectingNodes
+        {
+            get
+            {
+                for (int i = 0; i < _inEdges.Count; i++)
+                {
+                    DiEdge e = _inEdges[i];
+                    DiNode n = e.Start;
                     if (!e.IsRemoved && !n.IsRemoved) yield return n;
                 }
             }
@@ -71,7 +80,6 @@ namespace SpatialSlur.SlurGraph
         }
 
 
-        /*
         /// <summary>
         /// Iterates edges starting at this node.
         /// Skips edges which have been flagged for removal.
@@ -86,17 +94,6 @@ namespace SpatialSlur.SlurGraph
                     if (!e.IsRemoved) yield return e;
                 }
             }
-        }
-        */
-
-
-        /// <summary>
-        /// INode interface method.
-        /// Calls OutDegree internally.
-        /// </summary>
-        public int Degree
-        {
-            get { return _outDegree; }
         }
 
 
@@ -143,7 +140,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Flags the node and all its incident edges for removal.
+        /// Flags the node and all incoming and outgoing edges for removal.
         /// </summary>
         public void Remove()
         {
@@ -153,33 +150,42 @@ namespace SpatialSlur.SlurGraph
             for (int i = 0; i < _outEdges.Count; i++)
                 _outEdges[i].Remove();
 
-            /*
             for (int i = 0; i < _inEdges.Count; i++)
-                _outEdges[i].Remove();
-            */
+                _inEdges[i].Remove();
         }
 
 
         /// <summary>
-        /// Removes all flagged edges from the edge list.
+        /// Removes all flagged edges from incoming and outgoing edges lists.
         /// </summary>
         internal void Compact()
         {
-            int marker = 0;
-
-            for (int i = 0; i < _outEdges.Count; i++)
-            {
-                DiEdge e = _outEdges[i];
-                if (!e.IsRemoved)
-                    _outEdges[marker++] = e;
-            }
-
-            _outEdges.RemoveRange(marker, _outEdges.Count - marker); // trim list to include only used elements
+            Compact(_outEdges);
+            Compact(_inEdges);
         }
 
 
         /// <summary>
-        /// Returns true if an edge exists from this node to another.
+        /// 
+        /// </summary>
+        /// <param name="edges"></param>
+        private void Compact(List<DiEdge> edges)
+        {
+            int marker = 0;
+
+            for (int i = 0; i < edges.Count; i++)
+            {
+                DiEdge e = edges[i];
+                if (!e.IsRemoved)
+                    edges[marker++] = e;
+            }
+
+            edges.RemoveRange(marker, edges.Count - marker); // trim list to include only used elements
+        }
+
+
+        /// <summary>
+        /// Returns true if there is an edge connecting this node to another.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -225,7 +231,7 @@ namespace SpatialSlur.SlurGraph
         /// <param name="edge"></param>
         internal void AddInEdge(DiEdge edge)
         {
-            //_inEdges.Add(edge);
+            _inEdges.Add(edge);
             _inDegree++;
         }
     }

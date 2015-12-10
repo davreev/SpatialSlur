@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurGraph
 {
@@ -11,6 +13,26 @@ namespace SpatialSlur.SlurGraph
     /// </summary>
     public class DiGraph : IGraph<DiNode, DiEdge>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pointPairs"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="nodePositions"></param>
+        /// <returns></returns>
+        public static DiGraph CreateFromLineSegments(IList<Vec3d> pointPairs, double epsilon, out List<Vec3d> nodePositions)
+        {
+            int[] indexMap;
+            nodePositions = Vec3d.RemoveDuplicates(pointPairs, epsilon, out indexMap);
+            DiGraph result = new DiGraph(nodePositions.Count, pointPairs.Count >> 1);
+
+            for (int i = 0; i < indexMap.Length; i += 2)
+                result.AddEdge(indexMap[i], indexMap[i + 1]);
+
+            return result;
+        }
+
+
         private readonly List<DiNode> _nodes;
         private readonly List<DiEdge> _edges;
 

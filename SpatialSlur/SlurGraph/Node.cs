@@ -28,16 +28,6 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// INode interface method.
-        /// Calls IncidentEdges internally.
-        /// </summary>
-        public IEnumerable<Edge> Adjacency
-        {
-            get { return IncidentEdges; }
-        }
-
-
-        /// <summary>
         /// Iterates over connected nodes.
         /// Skips nodes which have been flagged for removal.
         /// </summary>
@@ -48,7 +38,7 @@ namespace SpatialSlur.SlurGraph
                 for (int i = 0; i < _edges.Count; i++)
                 {
                     Edge e = _edges[i];
-                    Node n = e.GetOther(this);
+                    Node n = e.Other(this);
                     if (!e.IsRemoved && !n.IsRemoved) yield return n;
                 }
             }
@@ -154,7 +144,7 @@ namespace SpatialSlur.SlurGraph
             for (int i = 0; i < _edges.Count; i++)
             {
                 Edge e = _edges[i];
-                if (e.GetOther(this) == other && !e.IsRemoved)
+                if (e.Other(this) == other && !e.IsRemoved)
                     return e;
             }
 
