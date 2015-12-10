@@ -185,7 +185,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Returns true if an edge exists from this node to another.
+        /// Returns true if there is an edge connecting this node to another.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
