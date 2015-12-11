@@ -123,7 +123,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the dot product of two vectors
+        /// Returns the dot product of two vectors.
         /// </summary>
         /// <param name="vector"></param>
         /// <param name="t"></param>
@@ -163,6 +163,18 @@ namespace SpatialSlur.SlurCore
             v0.y += (v1.y - v0.y) * t;
             v0.z += (v1.z - v0.z) * t;
             return v0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static double Dot(Vec3d v0, Vec3d v1)
+        {
+            return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
         }
 
 
