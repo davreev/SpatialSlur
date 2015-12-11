@@ -8,27 +8,26 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// TODO compare performance to other kdtree libs
+    /// Pointer based KdTree implementation.
     /// 
-    /// KdTree performance degrades at higher dimensions
-    /// in general the number of nodes should be significantly larger than 2^k for good performance
+    /// Notes
+    /// Left subtrees are strictly less than.
+    /// Right subtrees are equal or greater than.
+    /// 
+    /// KdTree search performance degrades at higher dimensions.
+    /// In general the number of nodes should be larger than 2^k for decent performance.
     /// 
     /// References
     /// https://www.cs.umd.edu/class/spring2008/cmsc420/L19.kd-trees.pdf
     /// http://www.cs.umd.edu/~meesh/420/Notes/MountNotes/lecture18-kd2.pdf
-    /// 
-    /// Notes
-    /// left subtrees are strictly less than
-    /// equal or greater than go to the right subtree
-    /// 
     /// </summary>
     public class TreeKd<T>
     {
         #region Static
 
         /// <summary>
-        /// returns the node with the smallest value in the specified dimension
-        /// if equal, n0 is returned
+        /// Returns the node with the smallest value in the specified dimension.
+        /// If equal, n0 is returned.
         /// </summary>
         /// <param name="n0"></param>
         /// <param name="n1"></param>
@@ -40,6 +39,7 @@ namespace SpatialSlur.SlurData
         }
 
         #endregion
+
 
         private KdNode _root;
         private double _epsilon = 1.0e-8;
@@ -61,7 +61,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// returns the number of dimensions used by this tree
+        /// Returns the number of dimensions used by the tree.
         /// </summary>
         public int K
         {
@@ -70,7 +70,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// returns the number of nodes in the tree
+        /// Returns the number of nodes in the tree.
         /// </summary>
         public int Count
         {
@@ -79,16 +79,16 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// sets the tolerance used for finding equal points in the tree
-        /// by default this is set to 1.0e-8
+        /// Sets the tolerance used for finding equal points in the tree.
+        /// By default, this is set to 1.0e-8.
         /// </summary>
         public double Epsilon
         {
             get { return _epsilon; }
             set
             {
-                if (value < 0.0)
-                    throw new ArgumentException("epsilon cannot be less than zero");
+                if (value <= 0.0)
+                    throw new ArgumentException("Epsilon must be greater than zero.");
 
                 _epsilon = value;
             }
@@ -161,7 +161,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// checks if the tree contains the given point
+        /// Returns true if the tree contains the given point.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -283,7 +283,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// TODO
         /// </summary>
         /// <param name="points"></param>
         /// <param name="values"></param>
@@ -325,7 +325,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary> 
-        /// Removes the first node in the tree which is equal to the given point
+        /// Removes the first node in the tree which is equal to the given point.
         /// </summary>
         /// <param name="point"></param>
         public bool Remove(VecKd point)
@@ -393,7 +393,7 @@ namespace SpatialSlur.SlurData
        
 
         /// <summary>
-        /// Find the node in the subtree with the smallest value in the specified dimension.
+        /// Returns the node in the subtree with the smallest value in the specified dimension.
         /// </summary>
         /// <param name="node"></param>
         /// <param name="dim"></param>
@@ -427,16 +427,16 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// Returns all values within the given Euclidean distance.
         /// </summary>
         /// <param name="point"></param>
-        /// <param name="radius"></param>
-        public IEnumerable<T> SphereSearch(VecKd point, double radius)
+        /// <param name="range"></param>
+        public List<T> EuclideanSearch(VecKd point, double range)
         {
             DimCheck(point);
 
             List<T> result = new List<T>();
-            SphereSearch(_root, point, radius * radius, result, 0);
+            EuclideanSearch(_root, point, range * range, result, 0);
             return result;
         }
 
@@ -446,9 +446,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="node"></param>
         /// <param name="point"></param>
-        /// <param name="radius"></param>
+        /// <param name="range"></param>
         /// <param name="result"></param>
-        private void SphereSearch(KdNode node, VecKd point, double radius, List<T> result, int i)
+        private void EuclideanSearch(KdNode node, VecKd point, double range, List<T> result, int i)
         {
             if (node == null) return;
 
@@ -456,27 +456,27 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // enqueue value if node is within range
-            if (point.SquareDistanceTo(node.Point) < radius) 
+            if (point.SquareDistanceTo(node.Point) < range) 
                 result.Add(node.Value);
 
             double d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
                 // point is in left subtree
-                SphereSearch(node.Left, point, radius, result, i + 1); // recurse in left subtree
-                if (d * d < radius) SphereSearch(node.Right, point, radius, result, i + 1); // recurse in right subtree only if necessary
+                EuclideanSearch(node.Left, point, range, result, i + 1); // recurse in left subtree
+                if (d * d < range) EuclideanSearch(node.Right, point, range, result, i + 1); // recurse in right subtree only if necessary
             }
             else
             {
                 // point is in right subtree
-                SphereSearch(node.Right, point, radius, result, i + 1); // recurse in right subtree
-                if (d * d < radius) SphereSearch(node.Left, point, radius, result, i + 1); // recurse in left subtree only if necessary
+                EuclideanSearch(node.Right, point, range, result, i + 1); // recurse in right subtree
+                if (d * d < range) EuclideanSearch(node.Left, point, range, result, i + 1); // recurse in left subtree only if necessary
             }
         }
 
 
         /// <summary>
-        /// 
+        /// Returns all values within the given box.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
@@ -527,7 +527,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// returns all values within the given range
+        /// Returns all values within the given Manhattan distance.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
@@ -576,12 +576,12 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// finds nearest neighbour in tree
-        /// if the tree is empty the default value of T is returned
+        /// Returns the nearest value in the tree using a Euclidean distance metric.
+        /// If the tree is empty the default value of T is returned.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public T Nearest(VecKd point)
+        public T EuclideanNearest(VecKd point)
         {
             DimCheck(point);
 
@@ -593,8 +593,9 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// finds nearest neighbour in tree
-        /// if the tree is empty the default value of T is returned
+        /// Returns the nearest value in the tree using a Euclidean distance metric.
+        /// If the tree is empty the default value of T is returned.
+        /// Also returns the distance to the nearest value as an out parameter.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -651,7 +652,7 @@ namespace SpatialSlur.SlurData
 
          
         /// <summary>
-        /// finds the nearest n neighbours in tree
+        /// Returns the nearest n values in the tree using a Euclidean distance metric.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -662,7 +663,7 @@ namespace SpatialSlur.SlurData
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree");
 
-            SortedList<double, T> result = new SortedList<double, T>(new NearestNComparer<double>());
+            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
             EuclideanNearestN(_root, point, n, 0, result);
             
             // return first n values
@@ -671,7 +672,8 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Finds the nearest n neighbours in tree.
+        /// Returns the nearest n values in the tree using a Euclidean distance metric.
+        /// Also returns the respective distances as an out parameter.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -682,7 +684,7 @@ namespace SpatialSlur.SlurData
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree");
 
-            SortedList<double, T> result = new SortedList<double, T>(new NearestNComparer<double>());
+            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
             EuclideanNearestN(_root, point, n, 0, result);
 
             // get first n distances
@@ -695,7 +697,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// TODO implement with min heap rather than sorted list
+        /// 
         /// </summary>
         /// <param name="node"></param>
         /// <param name="point"></param>
@@ -732,8 +734,8 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// finds nearest neighbour in tree
-        /// if the tree is empty the default value of T is returned
+        /// Returns the nearest value in the tree using a Manhattan distance metric.
+        /// If the tree is empty the default value of T is returned.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -749,8 +751,9 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// finds nearest neighbour in tree
-        /// if the tree is empty the default value of T is returned
+        /// Returns the nearest value in the tree using a Manhattan distance metric.
+        /// If the tree is empty the default value of T is returned.
+        /// Also returns the distance to the nearest value as an out parameter.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -807,7 +810,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// finds the nearest n neighbours in tree
+        /// Returns the nearest n values in the tree using a Manhattan distance metric.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -818,7 +821,7 @@ namespace SpatialSlur.SlurData
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree");
 
-            SortedList<double, T> result = new SortedList<double, T>(new NearestNComparer<double>());
+            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
             ManhattanNearestN(_root, point, n, 0, result);
 
             // return first n values
@@ -827,7 +830,8 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// finds the nearest n neighbours in tree
+        /// Returns the nearest n values in the tree using a Manhattan distance metric.
+        /// Also returns the respective distances as an out parameter.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -838,7 +842,7 @@ namespace SpatialSlur.SlurData
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree");
 
-            SortedList<double, T> result = new SortedList<double, T>(new NearestNComparer<double>());
+            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
             ManhattanNearestN(_root, point, n, 0, result);
 
             // get first n distances
@@ -990,11 +994,12 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Used in nearest n search to avoid duplicate key errors in sorted lists.
-        /// TODO use heap instead of sorted list (will make this obsolete).
+        /// Comparer used to avoid errors related to duplicate values.
+        /// Duplicates are treated as greater than.
         /// </summary>
         /// <typeparam name="U"></typeparam>
-        private class NearestNComparer<U> : IComparer<U> where U : IComparable
+        private class DuplicateComparer<U> : IComparer<U> 
+            where U : IComparable
         {
             public int Compare(U x, U y)
             {
