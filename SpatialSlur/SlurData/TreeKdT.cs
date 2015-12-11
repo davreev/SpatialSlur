@@ -964,7 +964,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Used to cache relevant information during a nearest search
+        /// Used to cache relevant information during a nearest search.
         /// </summary>
         private class NearestHelper
         {
