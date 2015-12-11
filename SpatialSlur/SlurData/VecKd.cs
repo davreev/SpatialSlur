@@ -34,7 +34,7 @@ namespace SpatialSlur.SlurData
 
         
         /// <summary>
-        /// returns the the entries of the covariance matrix in column-major order
+        /// Returns the the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="vectors"></param>
         /// <returns></returns>
@@ -177,7 +177,7 @@ namespace SpatialSlur.SlurData
         private void SizeCheck(VecKd other)
         {
             if (K != other.K)
-                throw new System.ArgumentException("The two vectors must be the same size");
+                throw new System.ArgumentException("The vectors must be the same size.");
         }
 
 
