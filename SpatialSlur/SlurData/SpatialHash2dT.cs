@@ -8,14 +8,17 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Hash based data structure for broad phase collision detection between dynamic objects.
+    /// Spatial hash for broad phase collision detection between dynamic objects.
     /// http://www.beosil.com/download/CollisionDetectionHashing_VMV03.pdf
-    /// http://www.slaney.org/malcolm/yahoo/Slaney2008-LSHTutorial.pdf
+    /// 
+    /// Notes
+    /// Search methods may return the contents of the same bin multiple times since different points may hash to the same index.
+    /// Similarly, insertion methods may add the given item to the same bin multiple times.
     /// </summary>
     public class SpatialHash2d<T>:Spatial2d<T>
     {
         // prime numbers used in hash function
-        private const int P1 = 73856093;
+        private const int P1 = 73856093; 
         private const int P2 = 19349663;
 
         private double _scale, _scaleInv; // scale of implicit grid
@@ -32,6 +35,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
+        /// Gets or sets the scale of the implicit grid used to discretize coordinates.
         /// Note that setting the scale clears the map.
         /// </summary>
         public double BinScale

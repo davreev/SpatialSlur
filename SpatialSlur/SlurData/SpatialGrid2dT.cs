@@ -69,6 +69,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
+        /// Gets or sets the extents of the grid.
         /// Note that setting the domain clears the grid.
         /// </summary>
         public Domain2d Domain
