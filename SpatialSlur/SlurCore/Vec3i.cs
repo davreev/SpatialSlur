@@ -146,12 +146,24 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the dot product of two vectors
+        /// Returns the dot product of two vectors.
         /// </summary>
         /// <param name="vector"></param>
         /// <param name="t"></param>
         /// <returns></returns>
         public static int operator *(Vec3i v0, Vec3i v1)
+        {
+            return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static double Dot(Vec3i v0, Vec3i v1)
         {
             return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
         }

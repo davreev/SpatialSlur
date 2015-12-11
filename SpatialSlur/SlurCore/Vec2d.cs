@@ -109,7 +109,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the dot product of two vectors
+        /// Returns the dot product of two vectors.
         /// </summary>
         /// <param name="vector"></param>
         /// <param name="t"></param>
@@ -136,6 +136,18 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static double Dot(Vec2d v0, Vec2d v1)
+        {
+            return v0.x * v1.x + v0.y * v1.y;
+        }
+
+
+        /// <summary>
         /// returns the angle between two vectors
         /// returns NaN if either vector is zero length
         /// </summary>
@@ -149,7 +161,6 @@ namespace SpatialSlur.SlurCore
 
             return Double.NaN;
         }
-
 
 
         /// <summary>
