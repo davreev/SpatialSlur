@@ -53,7 +53,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// returns the number of elements in the queue
+        /// Returns the number of elements in the queue.
         /// </summary>
         public int Count
         {
@@ -62,7 +62,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// true if no elements in the queue
+        /// Returns true if no elements in the queue.
         /// </summary>
         public bool IsEmpty
         {
@@ -71,7 +71,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// returns the minimum element in the queue
+        /// Returns the minimum element in the queue.
         /// </summary>
         public T Min
         {

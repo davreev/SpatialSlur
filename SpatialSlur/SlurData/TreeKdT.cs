@@ -38,6 +38,22 @@ namespace SpatialSlur.SlurData
             return (n1.Point[dim] < n0.Point[dim]) ? n1 : n0;
         }
 
+
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a more balanced tree.
+        /// </summary>
+        public static TreeKd<T> CreateBalanced<T>(IList<VecKd> points, IList<T> values)
+        {
+            if (points.Count != values.Count)
+                throw new ArgumentException("Must provide an equal number of points and values.");
+
+            TreeKd<T> result = new TreeKd<T>(points[0].K);
+            result._root = result.InsertBalanced(points, values, 0, points.Count - 1, 0);
+            result._n = points.Count;
+
+            return result;
+        }
+
         #endregion
 
 
@@ -156,7 +172,7 @@ namespace SpatialSlur.SlurData
         private void DimCheck(VecKd point)
         {
             if (_k != point.K)
-                throw new System.ArgumentException("the given point must have the same number of dimensions as this tree.");
+                throw new System.ArgumentException("The given point must have the same number of dimensions as this tree.");
         }
 
 
@@ -260,29 +276,6 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Inserts point value pairs in way that produces a balanced tree.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        public void InsertBalanced(IList<VecKd> points, IList<T> values)
-        {
-            if (points.Count != values.Count)
-                throw new ArgumentException("Must provide an equal number of points and values");
-
-            try
-            {
-                _root = InsertBalanced(points, values, 0, points.Count - 1, 0);
-                _n = points.Count;
-            }
-            catch (IndexOutOfRangeException)
-            {
-                throw new ArgumentException("All given points must have the same number of dimensions");
-            }
-        }
-
-
-        /// <summary>
         /// TODO
         /// </summary>
         /// <param name="points"></param>
@@ -316,8 +309,11 @@ namespace SpatialSlur.SlurData
 
             }
 
-            // create node and recurse on left/right children
+            // check dimension and create node 
+            DimCheck(points[med]);
             KdNode node = new KdNode(points[med], values[med]);
+
+            // recurse on left and right children
             node.Left = InsertBalanced(points, values, from, med - 1, i + 1);
             node.Right = InsertBalanced(points, values, med + 1, to, i + 1);
             return node;

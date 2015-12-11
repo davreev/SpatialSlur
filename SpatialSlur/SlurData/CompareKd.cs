@@ -25,7 +25,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// the dimension used for vector comparison
+        /// The dimension used for vector comparison.
         /// </summary>
         public int K
         {

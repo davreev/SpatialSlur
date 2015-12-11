@@ -151,7 +151,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Note that this method may return duplicates of found items.
+        /// 
         /// </summary>
         public void Search(Domain3d domain, List<T> result)
         {
@@ -192,7 +192,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Note that the callback may be invoked on the same found item multiple times.
+        /// 
         /// </summary>
         public void Search(Domain3d domain, Action<IEnumerable<T>> callback)
         {
