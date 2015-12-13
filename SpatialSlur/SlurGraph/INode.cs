@@ -10,7 +10,6 @@ namespace SpatialSlur.SlurGraph
         where N : INode<N, E>
         where E : IEdge<N, E>
     {
-        IEnumerable<N> ConnectedNodes { get; }
         int Index { get; }
         bool IsRemoved { get; }
     }
