@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurGraph
         /// Iterates over all nodes that this node connects to (i.e. those at the ends of outgoing edges).
         /// Skips nodes which have been flagged for removal.
         /// </summary>
-        public IEnumerable<DiNode> ConnectedNodes
+        public IEnumerable<DiNode> ConnectedTo
         {
             get
             {
@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurGraph
         /// Iterates over all nodes that connect to this node (i.e. those at the ends of incoming edges).
         /// Skips nodes which have been flagged for removal.
         /// </summary>
-        public IEnumerable<DiNode> ConnectingNodes
+        public IEnumerable<DiNode> ConnectedFrom
         {
             get
             {

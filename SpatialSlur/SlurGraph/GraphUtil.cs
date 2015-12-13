@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurGraph
 
                     double sum = 0.0;
 
-                    foreach (var nj in ni.ConnectedNodes)
+                    foreach (var nj in ni.ConnectedTo)
                         sum += nodeValues[nj.Index];
 
                     result[i] = sum / ni.OutDegree - nodeValues[i];

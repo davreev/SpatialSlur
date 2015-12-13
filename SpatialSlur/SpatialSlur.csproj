@@ -116,7 +116,6 @@
     <Compile Include="SlurMesh\HeVertex.cs" />
     <Compile Include="SlurMesh\HeVertexList.cs" />
     <Compile Include="SlurMesh\RhinoExtensions.cs" />
-    <Compile Include="SlurSketch\PointGrid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SlurField\RhinoExtensions.cs" />
     <Compile Include="SlurField\ScalarField2d.cs" />
@@ -125,10 +124,6 @@
     <Compile Include="SlurCore\SlurMath.cs" />
     <Compile Include="SlurField\VectorField2d.cs" />
     <Compile Include="SlurField\VectorField3d.cs" />
-    <Compile Include="SlurSketch\PointLattice.cs" />
-    <Compile Include="SlurSketch\Test.cs" />
-    <Compile Include="SlurSketch\TwistedBox.cs" />
-    <Compile Include="SlurSketch\TwistedQuad.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
