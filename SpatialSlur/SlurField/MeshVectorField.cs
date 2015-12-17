@@ -11,7 +11,7 @@ using SpatialSlur.SlurMesh;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// TODO research vector fields on polygon meshes
+    /// 
     /// </summary>
     public class MeshVectorField:MeshField<Vec3d>
     {

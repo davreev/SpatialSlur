@@ -19,7 +19,8 @@ namespace SpatialSlur.SlurField
         private double _dx, _dy;
         private double _dxInv, _dyInv; // cached to avoid uneccesary divs
         private readonly int _nx, _ny, _n;
-  
+
+        // delegates for methods which depend on the field's boundary type
         private Func<Vec2d, int> _indexAt;
         private Func<Vec2d, Vec2i> _indexAt2d;
         private Action<Vec2d, FieldPoint2d> _fieldPointAt;
