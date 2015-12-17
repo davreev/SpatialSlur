@@ -29,6 +29,17 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
+        public static Point2f ToPoint2f(this Vec2d vector)
+        {
+            return new Point2f((float)vector.x, (float)vector.y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
         public static Vector2d ToVector2d(this Vec2d vector)
         {
             return new Vector2d(vector.x, vector.y);
@@ -95,9 +106,31 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
+        public static Point3f ToPoint3f(this Vec3d vector)
+        {
+            return new Point3f((float)vector.x, (float)vector.y, (float)vector.z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
         public static Vector3d ToVector3d(this Vec3d vector)
         {
             return new Vector3d(vector.x, vector.y, vector.z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static Vector3f ToVector3f(this Vec3d vector)
+        {
+            return new Vector3f((float)vector.x, (float)vector.y, (float)vector.z);
         }
 
 
@@ -215,6 +248,17 @@ namespace SpatialSlur.SlurCore
             Vec3d p0 = bbox.Min.ToVec3d();
             Vec3d p1 = bbox.Max.ToVec3d();
             return new Domain3d(p0, p1);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        public static Domain3d ToDomain3d(this Line line)
+        {
+            return new Domain3d(line.From.ToVec3d(), line.To.ToVec3d());
         }
 
 

@@ -67,6 +67,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Gets/sets the constant value 
         /// only applies when BoundaryType is set to Constant
         /// </summary>
         public T BoundaryValue
@@ -85,7 +86,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO clean up this mess
+        /// TODO clean up with SetBlock()
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
@@ -327,7 +328,7 @@ namespace SpatialSlur.SlurField
         /// sets this field to some function of its normalized field points
         /// </summary>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<Vec3d, T> func)
+        public void NormSpatialFunction(Func<Vec3d, T> func)
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
@@ -350,10 +351,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// sets this field to some function of its normalized field points
+        /// Sets this field to some function of its normalized field points.
         /// </summary>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<double, double, double, T> func)
+        public void NormSpatialFunction(Func<double, double, double, T> func)
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
@@ -381,7 +382,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<Vec3d, T> func, Vec3i from, Vec3i to)
+        public void NormSpatialFunction(Func<Vec3d, T> func, Vec3i from, Vec3i to)
         {
             throw new NotImplementedException();
         }
@@ -393,7 +394,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<double, double, double, T> func, Vec3i from, Vec3i to)
+        public void NormSpatialFunction(Func<double, double, double, T> func, Vec3i from, Vec3i to)
         {
             throw new NotImplementedException();
         }

@@ -298,7 +298,7 @@ namespace SpatialSlur.SlurField
         /// Sets this field to some function of its normalized field points.
         /// </summary>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<Vec2d, T> func)
+        public void NormSpatialFunction(Func<Vec2d, T> func)
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
@@ -322,7 +322,7 @@ namespace SpatialSlur.SlurField
         /// Sets this field to some function of its normalized field points.
         /// </summary>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<double, double, T> func)
+        public void NormSpatialFunction(Func<double, double, T> func)
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
@@ -347,7 +347,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to)
+        public void NormSpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to)
         {
             throw new NotImplementedException();
         }
@@ -359,7 +359,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
-        public void NormalizedSpatialFunction(Func<double, double, T> func, Vec2i from, Vec2i to)
+        public void NormSpatialFunction(Func<double, double, T> func, Vec2i from, Vec2i to)
         {
             throw new NotImplementedException();
         }
