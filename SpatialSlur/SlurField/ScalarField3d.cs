@@ -64,7 +64,7 @@ namespace SpatialSlur.SlurField
 
         #endregion
 
-        // Delegates for boundary dependant functions
+        // delegates for methods which depend on the field's boundary type
         private Action<IList<double>> _getLaplacian;
         private Action<IList<Vec3d>> _getGradient;
 
