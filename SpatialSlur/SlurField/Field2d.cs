@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// TODO use cached inverse scale to replace divs 
+    /// 
     /// </summary>
     public abstract class Field2d
     {
@@ -72,7 +72,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns the domain of the field
+        /// Gets/sets the domain of the field.
         /// </summary>
         public Domain2d Domain
         {
@@ -89,7 +89,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the number of values in the field.
         /// </summary>
         public int Count
         {
@@ -98,7 +98,7 @@ namespace SpatialSlur.SlurField
   
 
         /// <summary>
-        /// 
+        /// Returns the number of values in the x direction.
         /// </summary>
         public int CountX
         {
@@ -107,7 +107,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the number of values in the y direction.
         /// </summary>
         public int CountY
         {
@@ -116,7 +116,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the distance between values in the x direction.
         /// </summary>
         public double ScaleX
         {
@@ -125,7 +125,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the distance between values in the y direction.
         /// </summary>
         public double ScaleY
         {
@@ -134,7 +134,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Gets/sets the boundary type for the field.
+        /// This property determines how edge cases are handled in many other methods.
         /// </summary>
         public FieldBoundaryType BoundaryType
         {
@@ -148,7 +149,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Iterates through points associated with field values. Note that these are not explicitly stored in memory.
+        /// Iterates through the positions of values in the field. 
+        /// Note that these are not explicitly stored in memory.
         /// </summary>
         public IEnumerable<Vec2d> Points
         {
@@ -212,7 +214,7 @@ namespace SpatialSlur.SlurField
         
 
         /// <summary>
-        /// returns a copy of the field
+        ///
         /// </summary>
         /// <returns></returns>
         public abstract Field2d Duplicate();
@@ -242,7 +244,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns true if the field has the same number of values in each dimension as another.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -397,7 +399,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns indices and weights of the 4 values nearest to the given point.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -421,7 +423,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Assumes the given point is inside the field domain (exclusively).
+        /// Returns indices and weights of the 4 values nearest to the given point.
+        /// Assumes the given point is inside the field domain.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>

@@ -15,56 +15,6 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public class VectorField2d:Field2d<Vec2d>
     {
-        #region Static
-
-        /*
-        /// <summary>
-        /// returns a vector field of normalized rgb values
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static VectorField2d CreateFromImage(Domain2d domain, Bitmap bitmap, FieldBoundaryType boundary)
-        {
-            VectorField2d result = new VectorField2d(domain, bitmap.Width, bitmap.Height, boundary);
-
-            unsafe
-            {
-                // get and check bytes per pixel
-                int bytesPerPixel = Bitmap.GetPixelFormatSize(bitmap.PixelFormat) / 8;
-
-                // ensure valid color depth
-                if (bytesPerPixel < 2)
-                    throw new ArgumentException("the given image must have a color depth of at least 16 bits per pixel");
-
-                // lock bits and get pointer to first
-                BitmapData bitmapData = bitmap.LockBits(new Rectangle(0,0,bitmap.Width,bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
-                byte* first = (byte*)bitmapData.Scan0;
-
-                // assign pixel data to field
-                int byteWidth = bitmap.Width * bytesPerPixel;
-                int fieldIndex = 0;
-                for (int i = 0; i < bitmap.Height; i++)
-                {
-                    byte* currentLine = first + (i * bitmapData.Stride);
-
-                    for (int j = 0; j < byteWidth; j+= bytesPerPixel, fieldIndex++)
-                    {
-                        int r = currentLine[j];
-                        int g = currentLine[j + 1];
-                        //int b = currentLine[j + 2];
-
-                        double t = 1.0 / 255.0;
-                        result.Values[fieldIndex] = new Vec2d(r * t, g * t);
-                    }
-                }
-            }
-
-            return result;
-        }
-        */
-
-        #endregion
-
         private Action<IList<Vec2d>> _getLaplacian;
         private Action<IList<double>> _getDivergence;
         private Action<IList<Vec2d>> _getCurl;

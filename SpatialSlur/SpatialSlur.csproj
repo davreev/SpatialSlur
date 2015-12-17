@@ -52,7 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SlurCore\DisplayUtil.cs" />
+    <Compile Include="SlurCore\ColorUtil.cs" />
     <Compile Include="SlurCore\GeometryUtil.cs" />
     <Compile Include="SlurCore\IListExtensions.cs" />
     <Compile Include="SlurCore\RhinoUtil.cs" />

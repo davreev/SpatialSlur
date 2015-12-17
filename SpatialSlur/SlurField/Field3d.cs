@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// TODO use cached inverse scale to replace divs 
+    /// 
     /// </summary>
     public abstract class Field3d
     {
@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns the domain of the field
+        /// Gets/sets the domain of the field.
         /// </summary>
         public Domain3d Domain
         {
@@ -95,7 +95,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the number of values in the field.
         /// </summary>
         public int Count
         {
@@ -104,7 +104,7 @@ namespace SpatialSlur.SlurField
   
 
         /// <summary>
-        /// returns the number of elements in the x direction
+        /// Returns the number of values in the x direction.
         /// </summary>
         public int CountX
         {
@@ -113,7 +113,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns the number of elements in the y direction
+        /// Returns the number of values in the y direction.
         /// </summary>
         public int CountY
         {
@@ -122,7 +122,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns the number of elements in the z direction
+        /// Returns the number of values in the z direction.
         /// </summary>
         public int CountZ
         {
@@ -131,7 +131,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns the number of elements in each layer
+        /// Returns the number of values in a single xy layer.
         /// </summary>
         public int CountXY
         {
@@ -140,7 +140,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the distance between values in the x direction.
         /// </summary>
         public double ScaleX
         {
@@ -149,7 +149,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the distance between values in the y direction.
         /// </summary>
         public double ScaleY
         {
@@ -158,7 +158,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns the distance between values in the z direction.
         /// </summary>
         public double ScaleZ
         {
@@ -167,9 +167,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Gets/sets the boundary type for the field.
+        /// This property determines how edge cases are handled in many other methods.
         /// </summary>
-        public virtual FieldBoundaryType BoundaryType
+        public FieldBoundaryType BoundaryType
         {
             get { return _boundaryType; }
             set 
@@ -181,7 +182,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Iterates through points associated with field values. Note that these are not explicitly stored in memory.
+        /// Iterates through the positions of values in the field. 
+        /// Note that these are not explicitly stored in memory.
         /// </summary>
         public IEnumerable<Vec3d> Points
         {
@@ -209,7 +211,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// This is called after any changes to the field's domain
+        /// This is called after any changes to the field's domain.
         /// </summary>
         protected void OnDomainChange()
         {
@@ -252,7 +254,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns a deep copy of the field
+        /// 
         /// </summary>
         /// <returns></returns>
         public abstract Field3d Duplicate();
@@ -282,7 +284,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns true if the field has the same number of values in each dimension as another.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -447,7 +449,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns indices and weights of the 8 values nearest to the given point.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -471,7 +473,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Assumes the given point is inside the field domain (exclusively).
+        /// Returns the indices and weights of the 8 values nearest to the given point.
+        /// Assumes the given point is inside the field domain.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -539,6 +542,7 @@ namespace SpatialSlur.SlurField
             // set corner indices
             int index = FlattenIndex(i, j, k);
             int[] corners = result.Corners;
+
             corners[0] = index;
             corners[1] = index + 1;
             corners[2] = index + 1 + _nx;
@@ -594,13 +598,14 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
         /// Generalizes well for more involved types of interpolation (cubic etc.)
         /// http://paulbourke.net/miscellaneous/interpolation/
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        private void FieldPointAtClampedLegacy(Vec3d point, FieldPoint3d result)
+        private void FieldPointAtClamped2(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i0, j0, k0;
@@ -637,7 +642,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        private void FieldPointAtWrappedLegacy(Vec3d point, FieldPoint3d result)
+        private void FieldPointAtWrapped2(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i0, j0, k0;
@@ -666,5 +671,6 @@ namespace SpatialSlur.SlurField
             // compute weights using fractional components
             result.SetWeights(u, v, w);
         }
+        */
     }
 }

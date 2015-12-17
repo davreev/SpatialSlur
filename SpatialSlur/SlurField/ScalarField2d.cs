@@ -15,53 +15,7 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public class ScalarField2d:Field2d<double>
     {
-        #region Static
-
-        /*
-        /// <summary>
-        /// TODO
-        /// returns a scalar field of normalized brightness values
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static ScalarField2d CreateFromImage(Domain2d domain, Bitmap bitmap, FieldBoundaryType boundary)
-        {
-            ScalarField2d result = new ScalarField2d(domain, bitmap.Width, bitmap.Height, boundary);
-
-            unsafe
-            {
-                // get and check bytes per pixel
-                int bytesPerPixel = Bitmap.GetPixelFormatSize(bitmap.PixelFormat) / 8;
-
-                // ensure valid color depth
-                if (bytesPerPixel < 1)
-                    throw new ArgumentException("the given image must have a color depth of at least 8 bits per pixel");
-
-                // lock bits and get pointer to first
-                BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
-                byte* first = (byte*)bitmapData.Scan0;
-
-                // assign pixel data to field
-                int byteWidth = bitmap.Width * bytesPerPixel;
-                int fieldIndex = 0;
-                for (int i = 0; i < bitmap.Height; i++)
-                {
-                    byte* currentLine = first + (i * bitmapData.Stride);
-                  
-                    for (int j = 0; j < byteWidth; j += bytesPerPixel, fieldIndex++)
-                    {
-                        int r = currentLine[j];
-                        result.Values[fieldIndex] = r / 255.0;
-                    }
-                }
-            }
-
-            return result;
-        }
-        */
-
-        #endregion
-
+        // Delegates for boundary dependant methods
         private Action<IList<double>> _getLaplacian;
         private Action<IList<Vec2d>> _getGradient;
 

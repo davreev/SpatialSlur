@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public static class Isosurface
     {
+        /*
         // table of vertices belonging to each edge
         private static readonly int[][] _edgeTable = 
         {
@@ -31,6 +32,25 @@ namespace SpatialSlur.SlurField
             new int[]{ 1, 5 },
             new int[]{ 2, 6 },
             new int[]{ 3, 7 }
+        };
+        */
+
+
+        // table of vertices belonging to each edge
+        private static readonly int[] _edgeTable = 
+        {
+            0, 1,
+            1, 2,
+            2, 3,
+            3, 0,
+            4, 5,
+            5, 6,
+            6, 7,
+            7, 4,
+            0, 4,
+            1, 5,
+            2, 6,
+            3, 7
         };
 
 
@@ -724,21 +744,26 @@ namespace SpatialSlur.SlurField
         private static void AddVoxelVertices(Vec3d[] corners, double[] values, int caseIndex, double thresh, Mesh result)
         {
             int[] edges = _caseTable[caseIndex];
+            var verts = result.Vertices;
 
-            foreach (int e in edges)
+            for (int i = 0; i < 16; i++)
             {
-                // exit if no more edges
-                if (e == -1) break;
+                // get edge index
+                int ei = edges[i];
+                if (ei == -1) break; // break if no more edges
+
+                // get corner indices from edge table
+                ei <<= 1;
+                int i0 = _edgeTable[ei];
+                int i1 = _edgeTable[ei + 1];
 
                 // interpolate edge
-                int i = _edgeTable[e][0];
-                int j = _edgeTable[e][1];
-
-                double t = SlurMath.Normalize(thresh, values[i], values[j]);
-                Vec3d p = Vec3d.Lerp(corners[i], corners[j], t);
-                result.Vertices.Add(p.x, p.y, p.z);
+                double t = SlurMath.Normalize(thresh, values[i0], values[i1]);
+                Vec3d p = Vec3d.Lerp(corners[i0], corners[i1], t);
+                verts.Add(p.x, p.y, p.z);
             }
         }
+
     }
 
 }

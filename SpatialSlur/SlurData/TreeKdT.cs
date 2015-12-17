@@ -42,7 +42,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Inserts point value pairs in a way that produces a more balanced tree.
         /// </summary>
-        public static TreeKd<T> CreateBalanced<T>(IList<VecKd> points, IList<T> values)
+        public static TreeKd<T> CreateBalanced(IList<VecKd> points, IList<T> values)
         {
             if (points.Count != values.Count)
                 throw new ArgumentException("Must provide an equal number of points and values.");
