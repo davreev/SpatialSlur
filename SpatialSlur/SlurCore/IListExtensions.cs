@@ -127,6 +127,25 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns a new IList which excludes any elements for which the given delegate returns true.
+        /// </summary>
+        /// <param name="edges"></param>
+        public static T[] Compact<T>(this IList<T> list, Func<T, bool> exclude)
+        {
+            int marker = 0;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                T t = list[i];
+                if (!exclude(t))
+                    list[marker++] = t;
+            }
+
+            return list.SubArray(0, marker);
+        }
+
+
+        /// <summary>
         /// Swaps a pair of elements.
         /// </summary>
         /// <typeparam name="T"></typeparam>

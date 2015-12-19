@@ -86,7 +86,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO clean up with SetBlock()
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>

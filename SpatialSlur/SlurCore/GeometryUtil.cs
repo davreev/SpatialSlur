@@ -29,22 +29,22 @@ namespace SpatialSlur.SlurCore
             Vec3d v = p3 - p1;
             Vec3d w = p0 - p1;
 
-            double duu = u * u;
-            double duv = u * v;
-            double dvv = v * v;
-            double duw = u * w;
-            double dvw = v * w;
+            double uu = u * u;
+            double uv = u * v;
+            double vv = v * v;
+            double uw = u * w;
+            double vw = v * w;
 
-            double t = 1.0 / (duu * dvv - duv * duv);
-            double tu = (duv * dvw - dvv * duw) * t;
-            double tv = (duu * dvw - duv * duw) * t;
+            double t = 1.0 / (uu * vv - uv * uv);
+            double tu = (uv * vw - vv * uw) * t;
+            double tv = (uu * vw - uv * uw) * t;
 
             return w + tu * u - tv * v;
         }
 
 
         /// <summary>
-        /// Returns the closest pair of points between two skew lines a and b
+        /// Returns parameters for the closest pair of points along two skew lines a and b.
         /// http://geomalgorithms.com/a07-_distance.html
         /// </summary>
         /// <param name="p0"></param>
@@ -58,20 +58,20 @@ namespace SpatialSlur.SlurCore
             Vec3d v = b1 - b0;
             Vec3d w = a0 - b0;
 
-            double duu = u * u;
-            double duv = u * v;
-            double dvv = v * v;
-            double duw = u * w;
-            double dvw = v * w;
+            double uu = u * u;
+            double uv = u * v;
+            double vv = v * v;
+            double uw = u * w;
+            double vw = v * w;
 
-            double t = 1.0 / (duu * dvv - duv * duv);
-            ta = (duv * dvw - dvv * duw) * t;
-            tb = (duu * dvw - duv * duw) * t;
+            double t = 1.0 / (uu * vv - uv * uv);
+            ta = (uv * vw - vv * uw) * t;
+            tb = (uu * vw - uv * uw) * t;
         }
 
 
         /// <summary>
-        /// Returns the shortest span vector between two skew lines a and b.
+        /// Returns the shortest vector between two skew lines a and b.
         /// This can also be understood as the volume gradient of the tetrahedron defined by skew lines a and b.
         /// http://geomalgorithms.com/a07-_distance.html
         /// </summary>
@@ -86,15 +86,15 @@ namespace SpatialSlur.SlurCore
             Vec3d v = b1 - b0;
             Vec3d w = a0 - b0;
 
-            double duu = u * u;
-            double duv = u * v;
-            double dvv = v * v;
-            double duw = u * w;
-            double dvw = v * w;
+            double uu = u * u;
+            double uv = u * v;
+            double vv = v * v;
+            double uw = u * w;
+            double vw = v * w;
 
-            double t = 1.0 / (duu * dvv - duv * duv);
-            double tu = (duv * dvw - dvv * duw) * t;
-            double tv = (duu * dvw - duv * duw) * t;
+            double t = 1.0 / (uu * vv - uv * uv);
+            double tu = (uv * vw - vv * uw) * t;
+            double tv = (uu * vw - uv * uw) * t;
 
             return w + tu * u - tv * v;
         }
@@ -134,24 +134,24 @@ namespace SpatialSlur.SlurCore
         /// Returns the numerical approximation of the gradient of the given function with respect to v0.
         /// </summary>
         /// <param name="func"></param>
-        /// <param name="vec"></param>
+        /// <param name="vector"></param>
         /// <param name="v1"></param>
         /// <param name="v2"></param>
         /// <param name="delta"></param>
         /// <returns></returns>
-        public static Vec3d GetGradient(Func<Vec3d, double> func, Vec3d vec, double delta)
+        public static Vec3d GetGradient(Func<Vec3d, double> func, Vec3d vector, double delta)
         {
             Vec3d d = new Vec3d(delta, 0.0, 0.0);
-            double gx0 = func(vec - d);
-            double gx1 = func(vec + d);
+            double gx0 = func(vector - d);
+            double gx1 = func(vector + d);
 
             d = new Vec3d(0.0, delta, 0.0);
-            double gy0 = func(vec - d);
-            double gy1 = func(vec + d);
+            double gy0 = func(vector - d);
+            double gy1 = func(vector + d);
 
             d = new Vec3d(0.0, 0.0, delta);
-            double gz0 = func(vec - d);
-            double gz1 = func(vec + d);
+            double gz0 = func(vector - d);
+            double gz1 = func(vector + d);
 
             return new Vec3d(gx1 - gx0, gy1 - gy0, gz1 - gz0) / (delta * 2.0);
         }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using SpatialSlur.SlurCore;
+
 
 namespace SpatialSlur.SlurField
 {
@@ -334,10 +336,9 @@ namespace SpatialSlur.SlurField
         public Vec3i ExpandIndex(int index)
         {
             int k = index / _nxy;
-            int i = index - k * _nxy; // temporarily store remainder
+            int i = index - k * _nxy; // store remainder in i
             int j = i / _nx;
-            i -= j * _nx;
-            return new Vec3i(i, j, k);
+            return new Vec3i(i - j * _nx, j, k);
         }
 
 
@@ -360,9 +361,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int IndexAtUnchecked(Vec3d point)
         {
-            int i = (int)Math.Round((point.x - _from.x) / _dx);
-            int j = (int)Math.Round((point.y - _from.y) / _dy);
-            int k = (int)Math.Round((point.z - _from.z) / _dz);
+            int i = (int)Math.Round((point.x - _from.x) * _dxInv);
+            int j = (int)Math.Round((point.y - _from.y) * _dyInv);
+            int k = (int)Math.Round((point.z - _from.z) * _dzInv);
             return FlattenIndex(i, j, k);
         }
 
@@ -374,9 +375,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         private int IndexAtClamped(Vec3d point)
         {
-            int i = SlurMath.Clamp((int)Math.Round((point.x - _from.x) / _dx), _nx - 1);
-            int j = SlurMath.Clamp((int)Math.Round((point.y - _from.y) / _dy), _ny - 1);
-            int k = SlurMath.Clamp((int)Math.Round((point.z - _from.z) / _dz), _nz - 1);
+            int i = SlurMath.Clamp((int)Math.Round((point.x - _from.x) * _dxInv), _nx - 1);
+            int j = SlurMath.Clamp((int)Math.Round((point.y - _from.y) * _dyInv), _ny - 1);
+            int k = SlurMath.Clamp((int)Math.Round((point.z - _from.z) * _dzInv), _nz - 1);
             return FlattenIndex(i, j, k);
         }
 
@@ -388,9 +389,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         private int IndexAtWrapped(Vec3d point)
         {
-            int i = SlurMath.Mod2((int)Math.Round((point.x - _from.x) / _dx), _nx);
-            int j = SlurMath.Mod2((int)Math.Round((point.y - _from.y) / _dy), _ny);
-            int k = SlurMath.Mod2((int)Math.Round((point.z - _from.z) / _dz), _nz);
+            int i = SlurMath.Mod2((int)Math.Round((point.x - _from.x) * _dxInv), _nx);
+            int j = SlurMath.Mod2((int)Math.Round((point.y - _from.y) * _dyInv), _ny);
+            int k = SlurMath.Mod2((int)Math.Round((point.z - _from.z) * _dzInv), _nz);
             return FlattenIndex(i, j, k);
         }
 
@@ -414,9 +415,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public Vec3i Index3AtUnchecked(Vec3d point)
         {
-            int i = (int)Math.Round((point.x - _from.x) / _dx);
-            int j = (int)Math.Round((point.y - _from.y) / _dy);
-            int k = (int)Math.Round((point.z - _from.z) / _dz);
+            int i = (int)Math.Round((point.x - _from.x) * _dxInv);
+            int j = (int)Math.Round((point.y - _from.y) * _dyInv);
+            int k = (int)Math.Round((point.z - _from.z) * _dzInv);
             return new Vec3i(i, j, k);
         }
 
@@ -428,12 +429,12 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         private Vec3i Index3AtClamped(Vec3d point)
         {
-            int i = SlurMath.Clamp((int)Math.Round((point.x - _from.x) / _dx), _nx - 1);
-            int j = SlurMath.Clamp((int)Math.Round((point.y - _from.y) / _dy), _ny - 1);
-            int k = SlurMath.Clamp((int)Math.Round((point.z - _from.z) / _dz), _nz - 1);
+            int i = SlurMath.Clamp((int)Math.Round((point.x - _from.x) * _dxInv), _nx - 1);
+            int j = SlurMath.Clamp((int)Math.Round((point.y - _from.y) * _dyInv), _ny - 1);
+            int k = SlurMath.Clamp((int)Math.Round((point.z - _from.z) * _dzInv), _nz - 1);
             return new Vec3i(i, j, k);
         }
-
+     
 
         /// <summary>
         /// 
@@ -442,9 +443,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         private Vec3i Index3AtWrapped(Vec3d point)
         {
-            int i = SlurMath.Mod2((int)Math.Round((point.x - _from.x) / _dx), _nx);
-            int j = SlurMath.Mod2((int)Math.Round((point.y - _from.y) / _dy), _ny);
-            int k = SlurMath.Mod2((int)Math.Round((point.z - _from.z) / _dz), _nz);
+            int i = SlurMath.Mod2((int)Math.Round((point.x - _from.x) * _dxInv), _nx);
+            int j = SlurMath.Mod2((int)Math.Round((point.y - _from.y) * _dyInv), _ny);
+            int k = SlurMath.Mod2((int)Math.Round((point.z - _from.z) * _dzInv), _nz);
             return new Vec3i(i, j, k);
         }
 
@@ -496,49 +497,9 @@ namespace SpatialSlur.SlurField
         {
             // convert to grid space and separate fractional and whole components
             int i, j, k;
-            double u = SlurMath.Fract((point.x - _from.x) / _dx, out i);
-            double v = SlurMath.Fract((point.y - _from.y) / _dy, out j);
-            double w = SlurMath.Fract((point.z - _from.z) / _dz, out k);
-
-            // set corner indices
-            int index = FlattenIndex(i, j, k);
-            int[] corners = result.Corners;
-
-            corners[0] = index;
-            corners[1] = index + 1;
-            corners[2] = index + 1 + _nx;
-            corners[3] = index + _nx;
-            corners[4] = index + _nxy;
-            corners[5] = index + 1 + _nxy;
-            corners[6] = index + 1 + _nx + _nxy;
-            corners[7] = index + _nx + _nxy;
-
-            // compute weights using fractional components
-            result.SetWeights(u, v, w);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
-        private void FieldPointAtClamped(Vec3d point, FieldPoint3d result)
-        {
-            // convert to grid space
-            double u = (point.x - _from.x) / _dx;
-            double v = (point.y - _from.y) / _dy;
-            double w = (point.z - _from.z) / _dz;
-
-            // get clamped whole components of coordinate
-            int i = SlurMath.Clamp((int)Math.Floor(u), _nx - 2);
-            int j = SlurMath.Clamp((int)Math.Floor(v), _ny - 2);
-            int k = SlurMath.Clamp((int)Math.Floor(w), _nz - 2);
-
-            // clamp fractional components
-            u = SlurMath.Saturate(u - i);
-            v = SlurMath.Saturate(v - j);
-            w = SlurMath.Saturate(w - k);
+            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i);
+            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j);
+            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k);
 
             // set corner indices
             int index = FlattenIndex(i, j, k);
@@ -563,13 +524,59 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
+        public void FieldPointAtClamped(Vec3d point, FieldPoint3d result)
+        {
+            // convert to grid space and separate fractional and whole components
+            int i, j, k;
+            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i);
+            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j);
+            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k);
+
+            // offsets
+            int di = 1;
+            int dj = _nx;
+            int dk = _nxy;
+
+            // clamp whole components and adjust offsets if necessary
+            if (i < 0) { i = 0; di = 0; }
+            else if (i > _nx - 2) { i = _nx - 1; di = 0; }
+
+            if (j < 0) { j = 0; dj = 0; }
+            else if (j > _ny - 2) { j = _ny - 1; dj = 0; }
+
+            if (k < 0) { k = 0; dk = 0; }
+            else if (k > _nz - 2) { k = _nz - 1; dk = 0; }
+
+            // set corner indices
+            int index = FlattenIndex(i, j, k);
+            int[] corners = result.Corners;
+
+            corners[0] = index;
+            corners[1] = index + di;
+            corners[2] = index + di + dj;
+            corners[3] = index + dj;
+            corners[4] = index + dk;
+            corners[5] = index + di + dk;
+            corners[6] = index + di + dj + dk;
+            corners[7] = index + dj + dk;
+
+            // compute weights using fractional components
+            result.SetWeights(u, v, w);
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="result"></param>
         private void FieldPointAtWrapped(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i, j, k;
-            double u = SlurMath.Fract((point.x - _from.x) / _dx, out i);
-            double v = SlurMath.Fract((point.y - _from.y) / _dy, out j);
-            double w = SlurMath.Fract((point.z - _from.z) / _dz, out k);
+            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i);
+            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j);
+            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k);
 
             // wrap whole components
             i = SlurMath.Mod2(i, _nx);
@@ -610,9 +617,9 @@ namespace SpatialSlur.SlurField
         {
             // convert to grid space and separate fractional and whole components
             int i0, j0, k0;
-            double u = SlurMath.Fract((point.x - _from.x) / _dx, out i0);
-            double v = SlurMath.Fract((point.y - _from.y) / _dy, out j0);
-            double w = SlurMath.Fract((point.z - _from.z) / _dz, out k0);
+            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i0);
+            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j0);
+            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k0);
 
             int[] corners = result.Corners;
             int index = 0;
@@ -647,9 +654,9 @@ namespace SpatialSlur.SlurField
         {
             // convert to grid space and separate fractional and whole components
             int i0, j0, k0;
-            double u = SlurMath.Fract((point.x - _from.x) / _dx, out i0);
-            double v = SlurMath.Fract((point.y - _from.y) / _dy, out j0);
-            double w = SlurMath.Fract((point.z - _from.z) / _dz, out k0);
+            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i0);
+            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j0);
+            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k0);
 
             int[] corners = result.Corners;
             int index = 0;

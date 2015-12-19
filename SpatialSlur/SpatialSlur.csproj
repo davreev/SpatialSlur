@@ -99,11 +99,7 @@
     <Compile Include="SlurGraph\DiNode.cs" />
     <Compile Include="SlurGraph\Edge.cs" />
     <Compile Include="SlurGraph\Graph.cs" />
-    <Compile Include="SlurGraph\IEdge.cs" />
-    <Compile Include="SlurGraph\IGraph.cs" />
-    <Compile Include="SlurGraph\INode.cs" />
     <Compile Include="SlurGraph\Node.cs" />
-    <Compile Include="SlurGraph\GraphUtil.cs" />
     <Compile Include="SlurMesh\HeEdge.cs" />
     <Compile Include="SlurMesh\HeEdgeList.cs" />
     <Compile Include="SlurMesh\HeElement.cs" />
