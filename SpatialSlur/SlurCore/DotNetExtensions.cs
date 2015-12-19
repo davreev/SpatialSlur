@@ -125,14 +125,14 @@ namespace SpatialSlur.SlurCore
         /// This is far more efficient than removing them one by one.
         /// </summary>
         /// <param name="edges"></param>
-        public static void Compact<T>(this List<T> list, Func<T, bool> remove)
+        public static void Compact<T>(this List<T> list, Func<T, bool> exclude)
         {
             int marker = 0;
 
             for (int i = 0; i < list.Count; i++)
             {
                 T t = list[i];
-                if (!remove(t))
+                if (!exclude(t))
                     list[marker++] = t;
             }
 

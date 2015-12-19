@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurGraph
 {
-    public class DiNode : INode<DiNode, DiEdge>
+    public class DiNode
     {
         private readonly List<DiEdge> _outEdges;
         private readonly List<DiEdge> _inEdges;
@@ -38,8 +38,7 @@ namespace SpatialSlur.SlurGraph
                 for (int i = 0; i < _outEdges.Count; i++)
                 {
                     DiEdge e = _outEdges[i];
-                    DiNode n = e.End;
-                    if (!e.IsRemoved && !n.IsRemoved) yield return n;
+                    if (!e.IsRemoved) yield return e.End;
                 }
             }
         }
@@ -56,8 +55,7 @@ namespace SpatialSlur.SlurGraph
                 for (int i = 0; i < _inEdges.Count; i++)
                 {
                     DiEdge e = _inEdges[i];
-                    DiNode n = e.Start;
-                    if (!e.IsRemoved && !n.IsRemoved) yield return n;
+                    if (!e.IsRemoved) yield return e.Start;
                 }
             }
         }

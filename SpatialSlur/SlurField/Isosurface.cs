@@ -10,32 +10,10 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// implmentation of marching cubes algorithm
-    /// based on the following implementation by Paul Bourke 
-    /// http://paulbourke.net/geometry/polygonise/
+    /// 
     /// </summary>
     public static class Isosurface
     {
-        /*
-        // table of vertices belonging to each edge
-        private static readonly int[][] _edgeTable = 
-        {
-            new int[]{ 0, 1 },
-            new int[]{ 1, 2 },
-            new int[]{ 2, 3 },
-            new int[]{ 3, 0 },
-            new int[]{ 4, 5 },
-            new int[]{ 5, 6 },
-            new int[]{ 6, 7 },
-            new int[]{ 7, 4 },
-            new int[]{ 0, 4 },
-            new int[]{ 1, 5 },
-            new int[]{ 2, 6 },
-            new int[]{ 3, 7 }
-        };
-        */
-
-
         // table of vertices belonging to each edge
         private static readonly int[] _edgeTable = 
         {
@@ -317,7 +295,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns an isosurface mesh at the given threshold
+        /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="field"></param>
         /// <param name="thresh"></param>
@@ -334,7 +312,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns an isosurface mesh at the given threshold
+        /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
         /// <param name="nx"></param>
@@ -387,8 +365,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns an isosurface mesh at the given threshold
-        /// assumes cubic voxels of size 1
+        /// Returns an isosurface mesh at the given threshold.
+        /// Assumes cubic voxels of size 1.
         /// </summary>
         /// <param name="values"></param>
         /// <param name="nx"></param>
@@ -417,7 +395,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns an isosurface mesh at the given threshold
+        /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
         /// <param name="dx"></param>
@@ -433,9 +411,8 @@ namespace SpatialSlur.SlurField
             // ensure the number of values matches the given dimensions
             int nxy = nx * ny;
             int n = nxy * nz;
-
-            if (values.Count < n)
-                throw new System.ArgumentException("The specified dimensions must match the number of values provided.");
+            if (values.Count != n)
+                throw new System.ArgumentException("The specified dimensions must match the number of values.");
 
             // resulting mesh
             Mesh result = new Mesh();
@@ -518,13 +495,12 @@ namespace SpatialSlur.SlurField
                 }
             });
 
-            //result.UnifyNormals();
             return result;
         }
 
 
         /// <summary>
-        /// returns an isosurface mesh at the given threshold
+        /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="layers"></param>
         /// <param name="dx"></param>
@@ -557,7 +533,7 @@ namespace SpatialSlur.SlurField
 
                     // ensure both layers are valid
                     if(layer0.Count != nxy || layer1.Count != nxy)
-                        throw new System.ArgumentException("The specified dimensions must match the number of values in each layer");
+                        throw new System.ArgumentException("The specified dimensions must match the number of values in each layer.");
                     
                     for (int j = 0; j < ny - 1; j++)
                     {
@@ -624,13 +600,12 @@ namespace SpatialSlur.SlurField
                 }
             });
 
-            //result.UnifyNormals();
             return result;
         }
 
 
         /// <summary>
-        /// returns an isosurface mesh at the given threshold
+        /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
         /// <param name="nx"></param>
@@ -645,14 +620,13 @@ namespace SpatialSlur.SlurField
         {
             // must have an equal number of values and points
             if (values.Count != points.Count)
-                throw new System.ArgumentException("Must provide an equal number of points and values");
+                throw new System.ArgumentException("Must provide an equal number of values and points.");
 
             // ensure the number of values matches the given dimensions
             int nxy = nx * ny;
             int n = nxy * nz;
-
             if (values.Count != n)
-                throw new System.ArgumentException("The specified dimensions do not match the number of values provided");
+                throw new System.ArgumentException("The specified dimensions must match the number of values.");
 
             // resulting mesh
             Mesh result = new Mesh();
@@ -728,13 +702,12 @@ namespace SpatialSlur.SlurField
                 }
             });
 
-            //result.UnifyNormals();
             return result;
         }
 
 
         /// <summary>
-        /// meshes a single voxel
+        /// 
         /// </summary>
         /// <param name="corners"></param>
         /// <param name="values"></param>
@@ -764,6 +737,161 @@ namespace SpatialSlur.SlurField
             }
         }
 
+
+        /// <summary>
+        /// Returns an isosurface mesh at the given threshold.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="dx"></param>
+        /// <param name="dy"></param>
+        /// <param name="dz"></param>
+        /// <param name="nx"></param>
+        /// <param name="ny"></param>
+        /// <param name="nz"></param>
+        /// <param name="thresh"></param>
+        /// <returns></returns>
+        public static Mesh Evaluate(IList<double> values, IList<Vec3d> normals, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
+        {
+            if (values.Count != normals.Count)
+                throw new System.ArgumentException("Must provide an equal number of values and normals.");
+
+            // ensure the number of values matches the given dimensions
+            int nxy = nx * ny;
+            int n = nxy * nz;
+            if (values.Count != n)
+                throw new System.ArgumentException("The specified dimensions must match the number of values.");
+
+            // resulting mesh
+            Mesh result = new Mesh();
+            Object locker = new Object();
+
+            // triangulate voxels in chunks
+            Parallel.ForEach(Partitioner.Create(0, n - nxy), range =>
+            {
+                Vec3d[] voxelCorners = new Vec3d[8];
+                Vec3d[] voxelNormals = new Vec3d[8];
+                double[] voxelValues = new double[8];
+                Mesh chunk = new Mesh();
+
+                // expand index
+                int k = range.Item1 / nxy;
+                int i = range.Item1 - k * nxy; // store remainder in i temporarily
+                int j = i / nx;
+                i -= j * nx;
+
+                // flatten loop for better parallelization
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    // increment 3d index
+                    if (i == nx) { i = 0; j++; }
+                    if (j == ny) { j = 0; k++; }
+                    if (i == nx - 1 || j == ny - 1) continue; // skip last index in each dimension
+
+                    voxelValues[0] = values[index];
+                    voxelValues[1] = values[index + 1];
+                    voxelValues[2] = values[index + 1 + nx];
+                    voxelValues[3] = values[index + nx];
+                    voxelValues[4] = values[index + nxy];
+                    voxelValues[5] = values[index + 1 + nxy];
+                    voxelValues[6] = values[index + 1 + nx + nxy];
+                    voxelValues[7] = values[index + nx + nxy];
+
+                    //get case index
+                    int caseIndex = 0;
+                    if (voxelValues[0] < thresh) caseIndex |= 1;
+                    if (voxelValues[1] < thresh) caseIndex |= 2;
+                    if (voxelValues[2] < thresh) caseIndex |= 4;
+                    if (voxelValues[3] < thresh) caseIndex |= 8;
+                    if (voxelValues[4] < thresh) caseIndex |= 16;
+                    if (voxelValues[5] < thresh) caseIndex |= 32;
+                    if (voxelValues[6] < thresh) caseIndex |= 64;
+                    if (voxelValues[7] < thresh) caseIndex |= 128;
+
+                    // if current voxel isn't on thresholdold move to the next
+                    if (caseIndex == 0 || caseIndex == 255) continue;
+
+                    // set voxel normals
+                    voxelNormals[0] = normals[index];
+                    voxelNormals[1] = normals[index + 1];
+                    voxelNormals[2] = normals[index + 1 + nx];
+                    voxelNormals[3] = normals[index + nx];
+                    voxelNormals[4] = normals[index + nxy];
+                    voxelNormals[5] = normals[index + 1 + nxy];
+                    voxelNormals[6] = normals[index + 1 + nx + nxy];
+                    voxelNormals[7] = normals[index + nx + nxy];
+
+                    // set voxel corners
+                    double x0 = i * dx;
+                    double y0 = j * dy;
+                    double z0 = k * dz;
+                    double x1 = x0 + dx;
+                    double y1 = y0 + dy;
+                    double z1 = z0 + dz;
+
+                    voxelCorners[0].Set(x0, y0, z0);
+                    voxelCorners[1].Set(x1, y0, z0);
+                    voxelCorners[2].Set(x1, y1, z0);
+                    voxelCorners[3].Set(x0, y1, z0);
+                    voxelCorners[4].Set(x0, y0, z1);
+                    voxelCorners[5].Set(x1, y0, z1);
+                    voxelCorners[6].Set(x1, y1, z1);
+                    voxelCorners[7].Set(x0, y1, z1);
+
+                    // triangulate the current voxel
+                    AddVoxelVertices(voxelCorners, voxelValues, voxelNormals, caseIndex, thresh, chunk);
+                }
+
+                // append chunk
+                if (chunk.Vertices.Count > 0)
+                {
+                    // add mesh faces
+                    for (i = 0; i < chunk.Vertices.Count; i += 3)
+                        chunk.Faces.AddFace(i, i + 1, i + 2);
+
+                    lock (locker)
+                        result.Append(chunk);
+                }
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="corners"></param>
+        /// <param name="values"></param>
+        /// <param name="edges"></param>
+        /// <param name="thresh"></param>
+        /// <param name="result"></param>
+        private static void AddVoxelVertices(Vec3d[] corners, double[] values, Vec3d[] normals, int caseIndex, double thresh, Mesh result)
+        {
+            int[] edges = _caseTable[caseIndex];
+            var verts = result.Vertices;
+            var norms = result.Normals;
+
+            for (int i = 0; i < 16; i++)
+            {
+                // get edge index
+                int ei = edges[i];
+                if (ei == -1) break; // break if no more edges
+
+                // get corner indices from edge table
+                ei <<= 1;
+                int i0 = _edgeTable[ei];
+                int i1 = _edgeTable[ei + 1];
+
+                // interpolate edge
+                double t = SlurMath.Normalize(thresh, values[i0], values[i1]);
+
+                Vec3d p = Vec3d.Lerp(corners[i0], corners[i1], t);
+                verts.Add(p.x, p.y, p.z);
+
+                Vec3d n = Vec3d.Lerp(normals[i0], normals[i1], t);
+                norms.Add(n.x, n.y, n.z);
+            }
+        }
     }
 
 }

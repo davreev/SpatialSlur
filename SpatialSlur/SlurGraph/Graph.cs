@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// Adjacency list implementation of an undirected graph.
     /// </summary>
-    public class Graph : IGraph<Node,Edge>
+    public class Graph
     {
         /// <summary>
         /// 
@@ -346,6 +347,220 @@ namespace SpatialSlur.SlurGraph
         public override string ToString()
         {
             return String.Format("EdgeGraph (N:{0} E:{1})", _nodes.Count, _edges.Count);
+        }
+
+
+        /// <summary>
+        /// Gets the topological depth of each node from a given set of source nodes via breadth first search.
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <returns></returns>
+        public int[] GetNodeDepths(IList<int> sources)
+        {
+            int[] result = new int[_nodes.Count];
+            UpdateNodeDepths(sources, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        public void UpdateNodeDepths( IList<int> sources, IList<int> result)
+        {
+            // set values to infinity
+            result.Set(int.MaxValue);
+
+            // set sources to zero and enqueue
+            Queue<int> queue = new Queue<int>();
+            foreach (int i in sources)
+            {
+                result[i] = 0;
+                queue.Enqueue(i);
+            }
+
+            // breadth first search from sources
+            while (queue.Count > 0)
+            {
+                int i = queue.Dequeue();
+                var ni = _nodes[i];
+                int tj = result[i] + 1;
+
+                foreach (var nj in ni.ConnectedNodes)
+                {
+                    int j = nj.Index;
+                    if (tj < result[j])
+                    {
+                        result[j] = tj;
+                        queue.Enqueue(j);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the topological distance of each node from a given set of source nodes via breadth first search.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="sources"></param>
+        /// <param name="edgeLengths"></param>
+        /// <returns></returns>
+        public double[] GetNodeDistances(IList<int> sources, IList<double> edgeLengths)
+        {
+            double[] result = new double[_nodes.Count];
+            UpdateNodeDistances(sources, edgeLengths, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="sources"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="result"></param>
+        public void UpdateNodeDistances(IList<int> sources, IList<double> edgeLengths, IList<double> result)
+        {
+            result.Set(Double.PositiveInfinity);
+
+            // set sources to zero and enqueue
+            Queue<int> queue = new Queue<int>();
+            foreach (int i in sources)
+            {
+                result[i] = 0.0;
+                queue.Enqueue(i);
+            }
+
+            // conduct distance-aware breadth first search
+            while (queue.Count > 0)
+            {
+                int i = queue.Dequeue();
+                var ni = _nodes[i];
+                double ti = result[i];
+
+                foreach (var e in ni.IncidentEdges)
+                {
+                    int j = e.Other(ni).Index;
+                    double tj = ti + edgeLengths[e.Index];
+
+                    if (tj < result[j])
+                    {
+                        result[j] = tj;
+                        queue.Enqueue(j);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Computes the laplacian using a normalized umbrella weighting scheme.
+        /// </summary>
+        /// <returns></returns>
+        public  double[] GetLaplacian(IList<double> nodeValues)
+        {
+            double[] result = new double[_nodes.Count];
+            UpdateLaplacian(nodeValues, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        public void UpdateLaplacian(IList<double> nodeValues, IList<double> result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, _nodes.Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var ni = _nodes[i];
+                    if (ni.IsRemoved) continue;
+
+                    double sum = 0.0;
+                    foreach (var nj in ni.ConnectedNodes)
+                        sum += nodeValues[nj.Index];
+
+                    result[i] = sum / ni.Degree - nodeValues[i];
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Computes the laplacian using custom edge weights.
+        /// </summary>
+        /// <returns></returns>
+        public double[] GetLaplacian(IList<double> nodeValues, IList<double> edgeWeights)
+        {
+            double[] result = new double[_nodes.Count];
+            UpdateLaplacian(nodeValues, edgeWeights, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        public void UpdateLaplacian(IList<double> nodeValues, IList<double> edgeWeights, IList<double> result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, _nodes.Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var ni = _nodes[i];
+                    if (ni.IsRemoved) continue;
+
+                    double val = nodeValues[i];
+                    double sum = 0.0;
+                    foreach (var e in ni.IncidentEdges)
+                    {
+                        Node nj = e.Other(ni);
+                        sum += (nodeValues[nj.Index] - val) * edgeWeights[e.Index];
+                    }
+
+                    result[i] = sum;
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="nodeCoords"></param>
+        /// <returns></returns>
+        public double[] GetEdgeLengths(IList<Vec3d> nodeCoords)
+        {
+            double[] result = new double[_edges.Count];
+            UpdateEdgeLengths(nodeCoords, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nodeCoords"></param>
+        /// <param name="result"></param>
+        public void UpdateEdgeLengths(IList<Vec3d> nodeCoords, IList<double> result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, _edges.Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var e = _edges[i];
+                    if (e.IsRemoved) continue;
+                    result[i] = nodeCoords[e.Start.Index].DistanceTo(nodeCoords[e.End.Index]);
+                }
+            });
         }
     }
 }

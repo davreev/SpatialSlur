@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// TODO make generic for attaching attributes
     /// </summary>
-    public class Node : INode<Node, Edge>
+    public class Node
     {
         private readonly List<Edge> _edges;
         //private N _data;
@@ -38,8 +38,7 @@ namespace SpatialSlur.SlurGraph
                 for (int i = 0; i < _edges.Count; i++)
                 {
                     Edge e = _edges[i];
-                    Node n = e.Other(this);
-                    if (!e.IsRemoved && !n.IsRemoved) yield return n;
+                    if (!e.IsRemoved) yield return e.Other(this);
                 }
             }
         }
