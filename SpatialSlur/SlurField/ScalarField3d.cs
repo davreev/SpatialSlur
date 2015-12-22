@@ -281,23 +281,12 @@ namespace SpatialSlur.SlurField
         /// <param name="factor"></param>
         public void LerpTo(ScalarField3d other, double factor)
         {
-            LerpTo(other.Values, factor);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="factor"></param>
-        public void LerpTo(IList<double> values, double factor)
-        {
-            SizeCheck(values);
+            SizeCheck(other);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurMath.Lerp(Values[i], values[i], factor);
+                    Values[i] = SlurMath.Lerp(Values[i], other.Values[i], factor);
             });
         }
 
@@ -309,23 +298,12 @@ namespace SpatialSlur.SlurField
         /// <param name="factor"></param>
         public void LerpTo(double value, ScalarField3d factors)
         {
-            LerpTo(value, factors.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="factor"></param>
-        public void LerpTo(double value, IList<double> factors)
-        {
             SizeCheck(factors);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurMath.Lerp(Values[i], value, factors[i]);
+                    Values[i] = SlurMath.Lerp(Values[i], value, factors.Values[i]);
             });
         }
 
@@ -337,24 +315,13 @@ namespace SpatialSlur.SlurField
         /// <param name="factors"></param>
         public void LerpTo(ScalarField3d other, ScalarField3d factors)
         {
-            LerpTo(other.Values, factors.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="factors"></param>
-        public void LerpTo(IList<double> values, IList<double> factors)
-        {
-            SizeCheck(values);
+            SizeCheck(other);
             SizeCheck(factors);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurMath.Lerp(Values[i], values[i], factors[i]);
+                    Values[i] = SlurMath.Lerp(Values[i], other.Values[i], factors.Values[i]);
             });
         }
 
@@ -837,6 +804,16 @@ namespace SpatialSlur.SlurField
                     result[index] = new Vec3d(gx, gy, gz);
                 }
             });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format("ScalarField3d ({0} x {1} x {2})", CountX, CountY, CountZ);
         }
 
     }

@@ -44,7 +44,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns parameters for the closest pair of points along two skew lines a and b.
+        /// Returns parameters for the closest pair of points along skew lines a and b.
         /// http://geomalgorithms.com/a07-_distance.html
         /// </summary>
         /// <param name="p0"></param>
@@ -71,7 +71,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns the shortest vector between two skew lines a and b.
+        /// Returns the shortest vector from line a to line b.
         /// This can also be understood as the volume gradient of the tetrahedron defined by skew lines a and b.
         /// http://geomalgorithms.com/a07-_distance.html
         /// </summary>
@@ -96,7 +96,8 @@ namespace SpatialSlur.SlurCore
             double tu = (uv * vw - vv * uw) * t;
             double tv = (uu * vw - uv * uw) * t;
 
-            return w + tu * u - tv * v;
+            //return w + tu * u - tv * v; // flipped
+            return tv * v - tu * u - w;
         }
 
 

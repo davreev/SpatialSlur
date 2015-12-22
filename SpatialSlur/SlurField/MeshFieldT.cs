@@ -86,27 +86,17 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets the result to some function of this field.
+        /// Sets this field to some function of another field.
         /// </summary>
         /// <param name="result"></param>
-        public void Function<U>(Func<T, U> func, MeshField<U> result)
+        public void Function<U>(Func<U, T> func, MeshField<U> other)
         {
-            Function(func, result._values);
-        }
-
-
-        /// <summary>
-        /// Sets the result to some function of this field.
-        /// </summary>
-        /// <param name="result"></param>
-        public void Function<U>(Func<T, U> func, IList<U> result)
-        {
-            SizeCheck(result);
+            SizeCheck(other);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = func(_values[i]);
+                    _values[i] = func(other._values[i]);
             });
         }
 
@@ -130,32 +120,35 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets the result to some function of this field and another field.
+        /// Sets this field to some function of two other fields.
         /// </summary>
-        /// <param name="func"></param>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public void Function<U, V>(Func<T, U, V> func, MeshField<U> other, MeshField<V> result)
+        /// <param name="result"></param>
+        public void Function<U, V>(Func<U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
         {
-            Function(func, other, result._values);
-        }
-
-
-        /// <summary>
-        /// Sets the result to some function of this field and another field.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public void Function<U, V>(Func<T, U, V> function, MeshField<U> other, IList<V> result)
-        {
-            SizeCheck(other);
-            SizeCheck(result);
+            SizeCheck(otherU);
+            SizeCheck(otherV);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = function(_values[i], other._values[i]);
+                    _values[i] = func(otherU._values[i], otherV._values[i]);
+            });
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of itself and two other fields.
+        /// </summary>
+        /// <param name="result"></param>
+        public void Function<U, V>(Func<T, U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
+        {
+            SizeCheck(otherU);
+            SizeCheck(otherV);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    _values[i] = func(_values[i], otherU._values[i], otherV._values[i]);
             });
         }
 

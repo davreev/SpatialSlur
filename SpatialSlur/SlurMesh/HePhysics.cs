@@ -1400,12 +1400,11 @@ namespace SpatialSlur.SlurMesh
                     HeVertex v3 = e3.Start;
 
                     // calculate and apply force
-                    //Vec3d frc = GeometryUtil.GetVolumeGradient(v0.Position, v1.Position, v2.Position, v3.Position) * strength;
                     Vec3d frc = GeometryUtil.GetShortestVector(v0.Position, v2.Position, v1.Position, v3.Position) * strength;
-                    forceSums[v0.Index] -= frc;
-                    forceSums[v2.Index] -= frc;
-                    forceSums[v1.Index] += frc;
-                    forceSums[v3.Index] += frc;
+                    forceSums[v0.Index] += frc;
+                    forceSums[v2.Index] += frc;
+                    forceSums[v1.Index] -= frc;
+                    forceSums[v3.Index] -= frc;
                 }
                 else
                 {
@@ -1418,12 +1417,11 @@ namespace SpatialSlur.SlurMesh
                         HeVertex v3 = e3.Start;
 
                         // calculate and apply force
-                        //Vec3d frc = GeometryUtil.GetVolumeGradient(v0.Position, v1.Position, v2.Position, v3.Position) * strength;
                         Vec3d frc = GeometryUtil.GetShortestVector(v0.Position, v2.Position, v1.Position, v3.Position) * strength;
-                        forceSums[v0.Index] -= frc;
-                        forceSums[v2.Index] -= frc;
-                        forceSums[v1.Index] += frc;
-                        forceSums[v3.Index] += frc;
+                        forceSums[v0.Index] += frc;
+                        forceSums[v2.Index] += frc;
+                        forceSums[v1.Index] -= frc;
+                        forceSums[v3.Index] -= frc;
 
                         // advance to next set of 4 points
                         e0 = e0.Next;
@@ -1464,12 +1462,11 @@ namespace SpatialSlur.SlurMesh
                     HeVertex v3 = e3.Start;
 
                     // calculate and apply force
-                    //Vec3d frc = GeometryUtil.GetVolumeGradient(v0.Position, v1.Position, v2.Position, v3.Position) * strength;
                     Vec3d frc = GeometryUtil.GetShortestVector(v0.Position, v2.Position, v1.Position, v3.Position) * strength;
-                    forceSums[v0.Index] -= frc;
-                    forceSums[v2.Index] -= frc;
-                    forceSums[v1.Index] += frc;
-                    forceSums[v3.Index] += frc;
+                    forceSums[v0.Index] += frc;
+                    forceSums[v2.Index] += frc;
+                    forceSums[v1.Index] -= frc;
+                    forceSums[v3.Index] -= frc;
                 }
             }
         }
