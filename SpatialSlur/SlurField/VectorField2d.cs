@@ -540,5 +540,15 @@ namespace SpatialSlur.SlurField
             throw new NotImplementedException();
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format("VectorField2d ({0} x {1})", CountX, CountY);
+        }
+
     }
 }

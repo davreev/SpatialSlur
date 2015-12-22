@@ -729,5 +729,15 @@ namespace SpatialSlur.SlurField
             });
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format("ScalarField2d ({0} x {1})", CountX, CountY);
+        }
+
     }
 }

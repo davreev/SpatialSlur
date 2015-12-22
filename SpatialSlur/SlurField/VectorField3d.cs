@@ -212,7 +212,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Cross(VectorField3d other)
         {
-            Function((v0, v1) => Vec3d.Cross(v0, v1), other);
+            Function(Vec3d.Cross, other);
         }
 
 
@@ -220,19 +220,75 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public void Cross(VectorField3d other, VectorField3d result)
+        public void Cross(VectorField3d fieldA, VectorField3d fieldB)
         {
-            Function((v0, v1) => Vec3d.Cross(v0, v1), other, result);
+            Function(Vec3d.Cross, fieldA, fieldB);
         }
 
 
-        /// <summary>up
+        /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        public void Cross(VectorField3d other, IList<Vec3d> result)
+        /// <param name="t"></param>
+        public void LerpTo(Vec3d value, double factor)
         {
-            Function((v0, v1) => Vec3d.Cross(v0, v1), other, result);
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] = Vec3d.Lerp(Values[i], value, factor);
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        public void LerpTo(VectorField3d other, double factor)
+        {
+            SizeCheck(other);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] = Vec3d.Lerp(Values[i], other.Values[i], factor);
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        public void LerpTo(Vec3d value, ScalarField3d factors)
+        {
+            SizeCheck(factors);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] = Vec3d.Lerp(Values[i], value, factors.Values[i]);
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factors"></param>
+        public void LerpTo(VectorField3d other, ScalarField3d factors)
+        {
+            SizeCheck(other);
+            SizeCheck(factors);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] = Vec3d.Lerp(Values[i], other.Values[i], factors.Values[i]);
+            });
         }
 
 
@@ -519,5 +575,14 @@ namespace SpatialSlur.SlurField
             throw new NotImplementedException();
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format("VectorField3d ({0} x {1} x {2})", CountX, CountY, CountZ);
+        }
     }
 }

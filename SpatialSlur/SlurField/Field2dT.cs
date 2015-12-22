@@ -122,7 +122,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// sets this field to some function of itself
+        /// Sets this field to some function of itself.
         /// </summary>
         /// <param name="result"></param>
         public void Function(Func<T, T> func)
@@ -136,33 +136,23 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// sets the result to some function of this field
+        /// Sets this field to some function of another field.
         /// </summary>
         /// <param name="result"></param>
-        public void Function<U>(Func<T, U> func, Field2d<U> result)
+        public void Function<U>(Func<U, T> func, Field2d<U> other)
         {
-            Function(func, result._values);
-        }
-
-
-        /// <summary>
-        /// sets the result to some function of this field
-        /// </summary>
-        /// <param name="result"></param>
-        public void Function<U>(Func<T, U> func, IList<U> result)
-        {
-            SizeCheck(result);
+            SizeCheck(other);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = func(_values[i]);
+                    _values[i] = func(other._values[i]);
             });
         }
 
 
         /// <summary>
-        /// sets this field to some function of itself and another field
+        /// Sets this field to some function of itself and another field.
         /// </summary>
         /// <param name="func"></param>
         /// <param name="other"></param>
@@ -179,33 +169,37 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// sets the result to some function of this field and another field
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public void Function<U, V>(Func<T, U, V> func, Field2d<U> other, Field2d<V> result)
-        {
-            Function(func, other, result._values);
-        }
-
 
         /// <summary>
-        /// sets the result to some function of this field and another field
+        /// Sets this field to some function of two other fields.
         /// </summary>
-        /// <param name="function"></param>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public void Function<U, V>(Func<T, U, V> function, Field2d<U> other, IList<V> result)
+        /// <param name="result"></param>
+        public void Function<U, V>(Func<U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
         {
-            SizeCheck(other);
-            SizeCheck(result);
+            SizeCheck(otherU);
+            SizeCheck(otherV);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = function(_values[i], other._values[i]);
+                    _values[i] = func(otherU._values[i], otherV._values[i]);
+            });
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of itself and two other fields.
+        /// </summary>
+        /// <param name="result"></param>
+        public void Function<U, V>(Func<T, U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
+        {
+            SizeCheck(otherU);
+            SizeCheck(otherV);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    _values[i] = func(_values[i], otherU._values[i], otherV._values[i]);
             });
         }
 
@@ -228,7 +222,8 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         public void SpatialFunction(Func<Vec2d, T> func)
         {
-            Vec2d p0 = Domain.From;
+            double x0 = Domain.x.t0;
+            double y0 = Domain.y.t0;
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -239,7 +234,7 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
           
-                    _values[index] = func(p0 + new Vec2d(i * ScaleX, j * ScaleY));
+                    _values[index] = func(new Vec2d(i * ScaleX + x0, j * ScaleY + y0));
                 }
             });
         }
@@ -254,7 +249,7 @@ namespace SpatialSlur.SlurField
         {
             double x0 = Domain.x.t0;
             double y0 = Domain.y.t0;
-   
+
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
@@ -263,8 +258,60 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-                
-                    _values[index] = func(x0 + i * ScaleX, y0 + j * ScaleY);
+
+                    _values[index] = func(i * ScaleX + x0, j * ScaleY + y0);
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of its field points and another field.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func"></param>
+        public void SpatialFunction<U>(Func<Vec2d, U, T> func, Field2d<U> other)
+        {
+            SizeCheck(other);
+            double x0 = Domain.x.t0;
+            double y0 = Domain.y.t0;
+     
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                this.ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+
+                    _values[index] = func(new Vec2d(i * ScaleX + x0, j * ScaleY + y0), other._values[index]);
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of its field points and another field.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func"></param>
+        public void SpatialFunction<U>(Func<double, double, U, T> func, Field2d<U> other)
+        {
+            SizeCheck(other);
+            double x0 = Domain.x.t0;
+            double y0 = Domain.y.t0;
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                this.ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+
+                    _values[index] = func(i * ScaleX + x0, j * ScaleY + y0, other._values[index]);
                 }
             });
         }
@@ -336,6 +383,55 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
                     _values[index] = func(i * ti, j * tj);
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of its normalized field points and another field.
+        /// </summary>
+        /// <param name="func"></param>
+        public void NormSpatialFunction<U>(Func<Vec2d, U, T> func, Field2d<U> other)
+        {
+            SizeCheck(other);
+            double ti = 1.0 / (CountX - 1);
+            double tj = 1.0 / (CountY - 1);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                this.ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+
+                    _values[index] = func(new Vec2d(i * ti, j * tj), other._values[index]);
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of its normalized field points and another field.
+        /// </summary>
+        /// <param name="func"></param>
+        public void NormSpatialFunction<U>(Func<double, double, U, T> func, Field2d<U> other)
+        {
+            SizeCheck(other);
+            double ti = 1.0 / (CountX - 1);
+            double tj = 1.0 / (CountY - 1);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+                    _values[index] = func(i * ti, j * tj, other._values[index]);
                 }
             });
         }
