@@ -71,7 +71,7 @@
     <Compile Include="SlurData\SpatialGrid2dT.cs" />
     <Compile Include="SlurData\SpatialGrid3dT.cs" />
     <Compile Include="SlurData\PriorityQueueT.cs" />
-    <Compile Include="SlurData\TreeKdT.cs" />
+    <Compile Include="SlurData\KdTreeT.cs" />
     <Compile Include="SlurData\RhinoExtensions.cs" />
     <Compile Include="SlurData\SpatialHash2dT.cs" />
     <Compile Include="SlurData\SpatialHash3dT.cs" />

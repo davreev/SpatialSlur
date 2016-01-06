@@ -176,7 +176,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("{0}-{1}", t0, t1);
+            return String.Format("{0} to {1}", t0, t1);
         }
 
 

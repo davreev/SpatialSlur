@@ -9,18 +9,17 @@ namespace SpatialSlur.SlurData
     public class CompareKd : IComparer<VecKd>
     {
         private int _k;
+        private double _epsilon;
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="k"></param>
-        public CompareKd(int k)
+        public CompareKd(int k, double epsilon)
         {
-            if (k < 0) 
-                throw new ArgumentException("The sort dimension cannot be less than 0");
-
-            _k = k;
+            K = k;
+            Epsilon = epsilon;
         }
 
 
@@ -30,7 +29,29 @@ namespace SpatialSlur.SlurData
         public int K
         {
             get { return _k; }
-            set { _k = value; }
+            set 
+            {
+                if (value < 0)
+                    throw new ArgumentException("The sort dimension cannot be less than 0.");
+
+                _k = value; 
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Epsilon
+        {
+            get { return _epsilon; }
+            set
+            {
+                if (value <= 0.0)
+                    throw new ArgumentException("Epsilon must be greater than zero.");
+
+                _epsilon = value;
+            }
         }
 
 
@@ -42,7 +63,8 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public int Compare(VecKd x, VecKd y)
         {
-            return x[_k].CompareTo(y[_k]);
+            double d = x[_k] - y[_k];
+            return (Math.Abs(d) < _epsilon) ? 0 : Math.Sign(d);
         }
     }
 }

@@ -299,9 +299,9 @@ namespace SpatialSlur.SlurField
 
                     foreach (HeEdge e in v.OutgoingEdges)
                     {
-                        Vec3d d = e.Span; // calculate the directional derivative
-                        // d *= (Values[e.End.Index] - value) / d.Length ; // non-unitized directional derivative
+                        Vec3d d = e.Span;
                         double m = 1.0 / d.Length;
+
                         d *= (Values[e.End.Index] - value) * m * m; // unitized directional derivative
                         sum += d;
                         n++;
@@ -347,9 +347,9 @@ namespace SpatialSlur.SlurField
                     foreach (HeEdge e in v.OutgoingEdges)
                     {
                         Vec3d d = e.Span;
-                        double w = edgeWeights[e.Index];
-                        //d *= (Values[e.End.Index] - value) * w / d.Length; // non-unitized directional derivative
                         double m = 1.0 / d.Length;
+                        double w = edgeWeights[e.Index];
+            
                         d *= (Values[e.End.Index] - value) * m * m * w; // unitized directional derivative
                         sum += d;
                     }
