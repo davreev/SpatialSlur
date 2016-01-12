@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// TODO test performance against lists of various lengths
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
@@ -50,7 +50,6 @@ namespace SpatialSlur.SlurCore
         /// <param name="length"></param>
         public static void Set<T>(this IList<T> list, T value, int index, int length)
         {
-            //TODO test performance against lists of various lengths
             Parallel.ForEach(Partitioner.Create(index, index + length), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -72,7 +71,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// TODO test against various list lengths
+        /// TODO test performance against lists of various lengths
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>

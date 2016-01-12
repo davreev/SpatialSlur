@@ -764,6 +764,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
         /// <summary>
         /// Returns distances between the start of each edge and the end of the next within each face.
         /// </summary>
@@ -820,6 +821,7 @@ namespace SpatialSlur.SlurMesh
                 }
             });
         }
+        */
 
 
         /// <summary>
@@ -833,7 +835,6 @@ namespace SpatialSlur.SlurMesh
             UpdateFaceNormals(unitize, result);
             return result;
         }
-
 
 
         /// <summary>
@@ -863,7 +864,6 @@ namespace SpatialSlur.SlurMesh
             else
                 UpdateFaceNormals(result);
         }
-
 
 
         /// <summary>
@@ -972,7 +972,7 @@ namespace SpatialSlur.SlurMesh
 
                     if (f.IsTri)
                     {
-                        // simplified unitized tri case
+                        // simplified tri case
                         result[i] = edgeNormals[f.First.Index];
                     }
                     else

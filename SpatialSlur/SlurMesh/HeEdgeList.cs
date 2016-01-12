@@ -314,8 +314,8 @@ namespace SpatialSlur.SlurMesh
                 {
                     HeEdge e = List[i];
                     if (e.IsUnused) continue;
-
                     double w = 0.0;
+
                     if (e.Face != null)
                     {
                         Vec3d v0 = e.Prev.Span;
@@ -324,6 +324,7 @@ namespace SpatialSlur.SlurMesh
                     }
 
                     e = e.Twin;
+
                     if (e.Face != null)
                     {
                         Vec3d v0 = e.Prev.Span;

@@ -9,8 +9,9 @@ namespace SpatialSlur.SlurCore
     public static class SlurMath
     {
         public const double PI2 = Math.PI * 2.0;
+        public const double HalfPI = Math.PI * 0.5;
 
-
+        
         /// <summary>
         /// 
         /// </summary>

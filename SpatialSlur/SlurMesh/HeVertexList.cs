@@ -544,14 +544,14 @@ namespace SpatialSlur.SlurMesh
             SizeCheck(result);
 
             HeFaceList faces = Mesh.Faces;
-            double t = 0.5 / 3.0;
+            double t = 1.0 / 3.0;
 
             for (int i = 0; i < faces.Count; i++)
             {
                 HeFace f = faces[i];
                 if (f.IsUnused) continue;
 
-                double a = Vec3d.Cross(f.First.Span, f.First.Next.Span).Length * t;
+                double a = Vec3d.Cross(f.First.Span, f.First.Next.Span).Length * t * 0.5;
                 foreach (HeVertex v in f.Vertices)
                     result[v.Index] += a;
             }
