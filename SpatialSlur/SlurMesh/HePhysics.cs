@@ -19,12 +19,29 @@ namespace SpatialSlur.SlurMesh
 {
     public static class HePhysics
     {
-        // Delegates for different SmoothBoundary types
-        private static Action<HeMesh, double, IList<Vec3d>>[] _laplacianSmoothUniform = { LaplacianSmoothFixed, LaplacianSmoothCornerFixed, LaplacianSmoothFree };
-        private static Action<HeMesh, double, IList<double>, IList<Vec3d>>[] _laplacianSmoothWeighted = { LaplacianSmoothFixed, LaplacianSmoothCornerFixed, LaplacianSmoothFree };
-        private static Action<HeMesh, double, IList<Vec3d>>[] _laplacianFair = { LaplacianFairFixed, LaplacianFairCornerFixed, LaplacianFairFree };
+        // Delegates for boundary dependant methods
+        private static Action<HeMesh, double, IList<Vec3d>>[] _lapSmooth = 
+        { 
+            LaplacianSmoothFixed, 
+            LaplacianSmoothCornerFixed, 
+            LaplacianSmoothFree 
+        };
 
+        private static Action<HeMesh, double, IList<double>, IList<Vec3d>>[] _lapSmooth2 = 
+        { 
+            LaplacianSmoothFixed, 
+            LaplacianSmoothCornerFixed, 
+            LaplacianSmoothFree 
+        };
 
+        private static Action<HeMesh, double, IList<Vec3d>>[] _lapFair =
+        {
+            LaplacianFairFixed,
+            LaplacianFairCornerFixed,
+            LaplacianFairFree
+        };
+        
+        
         /// <summary>
         /// Calculates forces which pull vertices towards a target mesh.
         /// </summary>
@@ -247,6 +264,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -431,6 +449,7 @@ namespace SpatialSlur.SlurMesh
                 }
             }
         }
+        */
 
 
         /// <summary>
@@ -667,20 +686,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static void LaplacianSmooth(HeMesh mesh, double strength, IList<Vec3d> forceSums)
+        public static void LaplacianSmooth(HeMesh mesh, double strength, IList<Vec3d> forceSums, SmoothBoundaryType boundaryType = SmoothBoundaryType.Fixed)
         {
-            LaplacianSmoothFixed(mesh, strength, forceSums);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static void LaplacianSmooth(HeMesh mesh, double strength, IList<Vec3d> forceSums, SmoothBoundaryType boundaryType)
-        {
-            _laplacianSmoothUniform[(int)boundaryType](mesh, strength, forceSums);
+            _lapSmooth[(int)boundaryType](mesh, strength, forceSums);
         }
 
 
@@ -822,23 +830,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="strength"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="forceSums"></param>
-        public static void LaplacianSmooth(HeMesh mesh, double strength, IList<double> edgeWeights, IList<Vec3d> forceSums)
-        {
-            LaplacianSmoothFixed(mesh, strength, edgeWeights, forceSums);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="strength"></param>
-        /// <param name="edgeWeights"></param>
-        /// <param name="forceSums"></param>
         /// <param name="boundaryType"></param>
-        public static void LaplacianSmooth(HeMesh mesh, double strength, IList<double> edgeWeights, IList<Vec3d> forceSums, SmoothBoundaryType boundaryType)
+        public static void LaplacianSmooth(HeMesh mesh, double strength, IList<double> edgeWeights, IList<Vec3d> forceSums, SmoothBoundaryType boundaryType = SmoothBoundaryType.Fixed)
         {
-            _laplacianSmoothWeighted[(int)boundaryType](mesh, strength, edgeWeights, forceSums);
+            _lapSmooth2[(int)boundaryType](mesh, strength, edgeWeights, forceSums);
         }
 
 
@@ -969,7 +964,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public static void LaplacianFair(HeMesh mesh, double strength, IList<Vec3d> forceSums, SmoothBoundaryType boundaryType = SmoothBoundaryType.Fixed)
         {
-            _laplacianFair[(int)boundaryType](mesh, strength, forceSums);
+            _lapFair[(int)boundaryType](mesh, strength, forceSums);
         }
 
 

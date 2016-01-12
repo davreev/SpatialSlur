@@ -15,23 +15,38 @@ namespace SpatialSlur.SlurField
         // permutation table
         private static readonly int[] _perm = new int[256];
 
-        // gradient table
-        private static readonly double[][] _grad = 
+
+        // 2d gradient table
+        private static readonly double[][] _grad2 = 
         {
-          new double[]{1,1,0},
-          new double[]{-1,1,0},
-          new double[]{1,-1,0},
-          new double[]{-1,-1,0},
-          new double[]{1,0,1},
-          new double[]{-1,0,1},
-          new double[]{1,0,-1},
-          new double[]{-1,0,-1},
-          new double[]{0,1,1},
-          new double[]{0,-1,1},
-          new double[]{0,1,-1},
-          new double[]{0,-1,-1}
+          new double[]{1, 1},
+          new double[]{-1, 1},
+          new double[]{1, -1},
+          new double[]{-1, -1},
+          new double[]{1, 0},
+          new double[]{-1, 0},
+          new double[]{0, 1},
+          new double[]{0, -1},
         };
 
+       
+        // 3d gradient table
+        private static readonly double[][] _grad3 = 
+        {
+          new double[]{1, 1, 0},
+          new double[]{-1, 1, 0},
+          new double[]{1, -1, 0},
+          new double[]{-1, -1, 0},
+          new double[]{1, 0, 1},
+          new double[]{-1, 0, 1},
+          new double[]{1, 0, -1},
+          new double[]{-1, 0, -1},
+          new double[]{0, 1, 1},
+          new double[]{0, -1, 1},
+          new double[]{0, 1, -1},
+          new double[]{0, -1, -1}
+        };
+      
      
         /// <summary>
         /// static constructor initializes default permutation table
@@ -76,19 +91,16 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double Evaluate(double x, double y)
         {
-            // get whole portion of the coordinates
-            int i = (int)Math.Floor(x);
-            int j = (int)Math.Floor(y);
-
-            // get fractional portion of coordinates
-            x -= i;
-            y -= j;
+            // get whole and franctional componenets
+            int i, j;
+            x = SlurMath.Fract(x, out i);
+            y = SlurMath.Fract(y, out j);
 
             // calculate noise contributions from each corner
-            double n00 = Dot(_grad[ToGradIndex(i, j)], x, y);
-            double n01 = Dot(_grad[ToGradIndex(i, j + 1)], x, y - 1);
-            double n10 = Dot(_grad[ToGradIndex(i + 1, j)], x - 1, y);
-            double n11 = Dot(_grad[ToGradIndex(i + 1, j + 1)], x - 1, y - 1);
+            double n00 = Dot(_grad2[ToGradIndex(i, j)], x, y);
+            double n01 = Dot(_grad2[ToGradIndex(i, j + 1)], x, y - 1);
+            double n10 = Dot(_grad2[ToGradIndex(i + 1, j)], x - 1, y);
+            double n11 = Dot(_grad2[ToGradIndex(i + 1, j + 1)], x - 1, y - 1);
 
             // Compute eased value for x, y, and z respectively
             x = SlurMath.SmootherStep(x);
@@ -123,25 +135,21 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double Evaluate(double x, double y, double z)
         {
-            // get whole portion of the coordinates
-            int i = (int)Math.Floor(x);
-            int j = (int)Math.Floor(y);
-            int k = (int)Math.Floor(z);
-
-            // get fractional portion of coordinates
-            x -= i;
-            y -= j;
-            z -= k;
+            // get whole and franctional componenets
+            int i, j, k;
+            x = SlurMath.Fract(x, out i);
+            y = SlurMath.Fract(y, out j);
+            z = SlurMath.Fract(z, out k);
 
             // calculate noise contributions from each corner
-            double n000 = Dot(_grad[ToGradIndex(i, j, k)], x, y, z);
-            double n001 = Dot(_grad[ToGradIndex(i, j, k + 1)], x, y, z - 1);
-            double n010 = Dot(_grad[ToGradIndex(i, j + 1, k)], x, y - 1, z);
-            double n011 = Dot(_grad[ToGradIndex(i, j + 1, k + 1)], x, y - 1, z - 1);
-            double n100 = Dot(_grad[ToGradIndex(i + 1, j, k)], x - 1, y, z);
-            double n101 = Dot(_grad[ToGradIndex(i + 1, j, k + 1)], x - 1, y, z - 1);
-            double n110 = Dot(_grad[ToGradIndex(i + 1, j + 1, k)], x - 1, y - 1, z);
-            double n111 = Dot(_grad[ToGradIndex(i + 1, j + 1, k + 1)], x - 1, y - 1, z - 1);
+            double n000 = Dot(_grad3[ToGradIndex(i, j, k)], x, y, z);
+            double n001 = Dot(_grad3[ToGradIndex(i, j, k + 1)], x, y, z - 1);
+            double n010 = Dot(_grad3[ToGradIndex(i, j + 1, k)], x, y - 1, z);
+            double n011 = Dot(_grad3[ToGradIndex(i, j + 1, k + 1)], x, y - 1, z - 1);
+            double n100 = Dot(_grad3[ToGradIndex(i + 1, j, k)], x - 1, y, z);
+            double n101 = Dot(_grad3[ToGradIndex(i + 1, j, k + 1)], x - 1, y, z - 1);
+            double n110 = Dot(_grad3[ToGradIndex(i + 1, j + 1, k)], x - 1, y - 1, z);
+            double n111 = Dot(_grad3[ToGradIndex(i + 1, j + 1, k + 1)], x - 1, y - 1, z - 1);
             
             // Compute eased value for each dimension
             x = SlurMath.SmootherStep(x);
@@ -171,7 +179,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         private static int ToGradIndex(int i, int j)
         {
-            return  GetPermAt(i +  GetPermAt(j)) % 12;
+            return  GetPermAt(i +  GetPermAt(j)) & 7;
         }
 
 
@@ -224,6 +232,5 @@ namespace SpatialSlur.SlurField
         {
             return xyz[0] * x + xyz[1] * y + xyz[2] * z;
         }
-
     }
 }

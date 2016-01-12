@@ -28,7 +28,12 @@ namespace SpatialSlur.SlurMesh
     public static class HeSubdivide
     {
         // Delegates for different SmoothBoundary types
-        private static Action<HeVertexList, int>[] _ccMoveOldVerts = { CCMoveOldVertsFixed, CCMoveOldVertsCornerFixed, CCMoveOldVertsFree };
+        private static Action<HeVertexList, int>[] _ccMoveOldVerts = 
+        { 
+            CCMoveOldVertsFixed, 
+            CCMoveOldVertsCornerFixed, 
+            CCMoveOldVertsFree 
+        };
 
 
         /// <summary>
