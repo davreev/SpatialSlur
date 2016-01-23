@@ -122,7 +122,7 @@ namespace SpatialSlur.SlurField
                     double sum = 0.0;
                     int n = 0;
 
-                    foreach (HeEdge e in verts[i].IncomingEdges)
+                    foreach (HalfEdge e in verts[i].IncomingEdges)
                     {
                         sum += Values[e.Start.Index];
                         n++;
@@ -140,9 +140,9 @@ namespace SpatialSlur.SlurField
         /// http://www.igl.ethz.ch/projects/Laplacian-mesh-processing/Laplacian-mesh-optimization/lmo.pdf
         /// </summary>
         /// <param name="rate"></param>
-        public void Diffuse(double rate, IList<double> edgeWeights)
+        public void Diffuse(double rate, IList<double> halfEdgeWeights)
         {
-            Mesh.Edges.SizeCheck(edgeWeights);
+            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
 
             HeVertexList verts = Mesh.Vertices;
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -152,8 +152,8 @@ namespace SpatialSlur.SlurField
                     double value = Values[i];
                     double sum = 0.0;
 
-                    foreach (HeEdge e in verts[i].OutgoingEdges)
-                        sum += (Values[e.End.Index] - value) * edgeWeights[e.Index];
+                    foreach (HalfEdge e in verts[i].OutgoingEdges)
+                        sum += (Values[e.End.Index] - value) * halfEdgeWeights[e.Index];
 
                     _deltas[i] += sum * rate;
                 }

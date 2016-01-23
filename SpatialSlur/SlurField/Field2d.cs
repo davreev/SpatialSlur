@@ -1,5 +1,6 @@
 ﻿ using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace SpatialSlur.SlurField
         private Field2d(int countX, int countY)
         {
             if (countX < 2 || countY < 2)
-                throw new System.ArgumentException("the field must have 2 or more values in each dimension");
+                throw new System.ArgumentException("The field must have 2 or more values in each dimension.");
 
             _nx = countX;
             _ny = countY;
@@ -81,7 +82,7 @@ namespace SpatialSlur.SlurField
             set
             {
                 if (!value.IsValid)
-                    throw new System.ArgumentException("The given domain must be valid");
+                    throw new System.ArgumentException("The given domain must be valid.");
 
                 _domain = value;
                 OnDomainChange();
@@ -212,6 +213,40 @@ namespace SpatialSlur.SlurField
                     break;
             }
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vec2d[] GetPointArray()
+        {
+            Vec2d[] result = new Vec2d[_n];
+            UpdatePointArray(result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        public void UpdatePointArray(IList<Vec2d> points)
+        {
+            SizeCheck(points);
+
+            Parallel.ForEach(Partitioner.Create(0, _n), range =>
+            {
+                int i, j;
+                ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == _nx) { j++; i = 0; }
+                    points[index] = new Vec2d(i * _dx + _from.x, j * _dy + _from.y);
+                }
+            });
+        }
         
 
         /// <summary>
@@ -262,23 +297,22 @@ namespace SpatialSlur.SlurField
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public int FlattenIndex(int i, int j)
+        public int FlattenIndex(Vec2i index2)
         {
-            return i + j * _nx;
+            return index2.x + index2.y * _nx;
         }
 
 
         /// <summary>
-        /// Converts a 1 dimensional index into a 2 dimensional index.
+        /// Converts a 2 dimensional index into a 1 dimensional index.
         /// </summary>
-        /// <param name="index"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <param name="k"></param>
-        public void ExpandIndex(int index, out int i, out int j)
+        /// <returns></returns>
+        public int FlattenIndex(int i, int j)
         {
-            j = index / _nx;
-            i = index - j * _nx;
+            return i + j * _nx;
         }
 
 
@@ -294,6 +328,20 @@ namespace SpatialSlur.SlurField
             int j = index / _nx;
             int i = index - j * _nx;
             return new Vec2i(i, j);
+        }
+
+
+        /// <summary>
+        /// Converts a 1 dimensional index into a 2 dimensional index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        public void ExpandIndex(int index, out int i, out int j)
+        {
+            j = index / _nx;
+            i = index - j * _nx;
         }
 
 

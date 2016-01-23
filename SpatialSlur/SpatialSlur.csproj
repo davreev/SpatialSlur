@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>
+    </DocumentationFile>
+    <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Grasshopper">
@@ -100,8 +103,8 @@
     <Compile Include="SlurGraph\Edge.cs" />
     <Compile Include="SlurGraph\Graph.cs" />
     <Compile Include="SlurGraph\Node.cs" />
-    <Compile Include="SlurMesh\HeEdge.cs" />
-    <Compile Include="SlurMesh\HeEdgeList.cs" />
+    <Compile Include="SlurMesh\HalfEdge.cs" />
+    <Compile Include="SlurMesh\HalfEdgeList.cs" />
     <Compile Include="SlurMesh\HeElement.cs" />
     <Compile Include="SlurMesh\HeElementList.cs" />
     <Compile Include="SlurMesh\HeFace.cs" />
@@ -121,9 +124,7 @@
     <Compile Include="SlurField\VectorField2d.cs" />
     <Compile Include="SlurField\VectorField3d.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SlurSketch\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
