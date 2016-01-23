@@ -40,6 +40,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Creates an HeMesh instance from a Rhino mesh.
+        /// TODO isolate in factory class.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
@@ -69,38 +70,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
-        /// <summary>
-        /// Creates an HeMesh instance from a Rhino mesh.
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static HeMesh CreateFromRhinoMeshLegacy(Mesh mesh)
-        {
-            // check validity of mesh
-            if (!mesh.IsValid) return null;
-
-            Vec3d[] vertices = new Vec3d[mesh.TopologyVertices.Count];
-            int[][] faces = new int[mesh.Faces.Count][];
-
-            // get vertices
-            for (int i = 0; i < mesh.TopologyVertices.Count; i++)
-            {
-                Point3d p = mesh.TopologyVertices[i];
-                vertices[i] = p.ToVec3d();
-            }
-
-            // get face indices
-            for (int i = 0; i < mesh.Faces.Count; i++)
-                faces[i] = mesh.TopologyVertices.IndicesFromFace(i);
-
-            return CreateFromFaceVertexData(vertices, faces);
-        }
-        */
-
-
         /// <summary>
         /// Creates a HeMesh instance from a collection of Rhino Polylines.
+        /// TODO Isolate in factor class.
         /// </summary>
         /// <param name="polylines"></param>
         /// <param name="tolerance"></param>
@@ -141,92 +113,11 @@ namespace SpatialSlur.SlurMesh
             return CreateFromFaceVertexData(verts, faces);
         }
 
-
-        /*
-        /// <summary>
-        /// creates a new HeMesh instance from face vertex topology information
-        /// this method assumes faces windings are unified
-        /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="faces"></param>
-        /// <returns></returns>
-        public static HeMesh CreateFromFaceVertexData(IList<Point3d> vertices, IList<int[]> faces)
-        {
-            HeMesh mesh = new HeMesh();
-
-            // add new HeVertices
-            foreach (Point3d v in vertices)
-                mesh.Vertices.Add(v.X, v.Y, v.Z);
-
-            // add new HeFaces
-            foreach (int[] f in faces)
-                mesh.Faces.Add(f);
-
-            return mesh;
-        }
-        */
-
-
-        /*
-        /// <summary>
-        /// creates an hemesh from a collection of polylines
-        /// </summary>
-        /// <param name="polylines"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static HeMesh CreateFromPolylines2(IList<Polyline> polylines, double tolerance)
-        {
-            List<Point3d> faceVerts = new List<Point3d>();
-            List<Polyline> facePolys = new List<Polyline>();
-
-            // get all polyline vertices
-            foreach (Polyline p in polylines)
-            {
-                // skip open polylines
-                if (!p.IsClosed) continue;
-
-                // closed polyline must have more than 3 vertices
-                if (p.Count < 3) continue;
-
-                // collect all points except the last
-                for (int i = 0; i < p.Count - 1; i++)
-                    faceVerts.Add(p[i]);
-     
-                // add to list of face polygons
-                facePolys.Add(p);
-            }
-
-            // remove duplicate points
-            int[] faceIndices; 
-            Point3d[] vertices = RhinoUtil.RemoveDuplicatePoints(faceVerts, tolerance, out faceIndices).ToArray();
-            int[][] faces = new int[facePolys.Count][];
-      
-            // populate face-vertex arrays
-            int marker = 0;
-            for (int i = 0; i < facePolys.Count; i++)
-            {
-                int n = facePolys[i].Count - 1; // the last point was skipped in each polygon
-                int[] face = new int[n];
-
-                for (int j = 0; j < n; j++)
-                {
-                    face[j] = (faceIndices[marker]);
-                    marker++;
-                }
-
-                faces[i] = face;
-            }
-
-            // create from face vertex data
-            return CreateFromFaceVertexData(vertices, faces);
-        }
-        */
-
         #endregion
 
 
         private HeVertexList _vertices;
-        private HeEdgeList _edges;
+        private HalfEdgeList _halfEdges;
         private HeFaceList _faces;
 
 
@@ -236,8 +127,19 @@ namespace SpatialSlur.SlurMesh
         public HeMesh() 
         {
             _vertices = new HeVertexList(this);
-            _edges = new HeEdgeList(this);
+            _halfEdges = new HalfEdgeList(this);
             _faces = new HeFaceList(this);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HeMesh(int vertexCapacity, int halfEdgeCapacity, int faceCapacity)
+        {
+            _vertices = new HeVertexList(this, vertexCapacity);
+            _halfEdges = new HalfEdgeList(this, halfEdgeCapacity);
+            _faces = new HeFaceList(this, faceCapacity);
         }
 
 
@@ -253,9 +155,9 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeEdgeList Edges
+        public HalfEdgeList HalfEdges
         { 
-            get { return _edges; }
+            get { return _halfEdges; }
         }
 
 
@@ -274,7 +176,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("HeMesh (V:{0} E:{1} F:{2})", _vertices.Count, _edges.Count, _faces.Count);
+            return String.Format("HeMesh (V:{0} E:{1} F:{2})", _vertices.Count, _halfEdges.Count, _faces.Count);
         }
 
 
@@ -284,7 +186,7 @@ namespace SpatialSlur.SlurMesh
         public void Compact()
         {
             _vertices.Compact();
-            _edges.Compact();
+            _halfEdges.Compact();
             _faces.Compact();
         }
 
@@ -302,7 +204,7 @@ namespace SpatialSlur.SlurMesh
         public void CompactAttributes<V, E, F>(List<V> vertexAttributes, List<E> edgeAttributes, List<F> faceAttributes)
         {
             _vertices.CompactAttributes(vertexAttributes);
-            _edges.CompactAttributes(edgeAttributes);
+            _halfEdges.CompactAttributes(edgeAttributes);
             _faces.CompactAttributes(faceAttributes);
         }
 
@@ -319,8 +221,8 @@ namespace SpatialSlur.SlurMesh
             foreach (HeVertex v in _vertices)
                 result._vertices.Add(new HeVertex(v.Position));
 
-            for (int i = 0; i < _edges.Count; i++)
-                result._edges.Add(new HeEdge());
+            for (int i = 0; i < _halfEdges.Count; i++)
+                result._halfEdges.Add(new HalfEdge());
 
             for (int i = 0; i < _faces.Count; i++)
                 result._faces.Add(new HeFace());
@@ -332,7 +234,7 @@ namespace SpatialSlur.SlurMesh
                 if (v0.IsUnused) continue;
 
                 HeVertex v1 = result._vertices[i];
-                v1.Outgoing = result._edges[v0.Outgoing.Index];
+                v1.Outgoing = result._halfEdges[v0.Outgoing.Index];
             }
 
             // link faces to edges
@@ -342,17 +244,17 @@ namespace SpatialSlur.SlurMesh
                 if (f0.IsUnused) continue;
 
                 HeFace f1 = result._faces[i];
-                f1.First = result._edges[f0.First.Index];
+                f1.First = result._halfEdges[f0.First.Index];
             }
 
             // link edges to vertices, edges, and faces
-            for (int i = 0; i < _edges.Count; i++)
+            for (int i = 0; i < _halfEdges.Count; i++)
             {
-                HeEdge e0 = _edges[i];
-                HeEdge e1 = result._edges[i];
-                e1.Prev = result._edges[e0.Prev.Index];
-                e1.Next = result._edges[e0.Next.Index];
-                e1.Twin = result._edges[e0.Twin.Index];
+                HalfEdge e0 = _halfEdges[i];
+                HalfEdge e1 = result._halfEdges[i];
+                e1.Prev = result._halfEdges[e0.Prev.Index];
+                e1.Next = result._halfEdges[e0.Next.Index];
+                e1.Twin = result._halfEdges[e0.Twin.Index];
 
                 if (!e0.IsUnused) e1.Start = result._vertices[e0.Start.Index];
                 if(e0.Face != null) e1.Face = result._faces[e0.Face.Index];
@@ -370,15 +272,15 @@ namespace SpatialSlur.SlurMesh
         {
             // cache current number of elements in mesh
             int nv = _vertices.Count;
-            int ne = _edges.Count;
+            int ne = _halfEdges.Count;
             int nf = _faces.Count;
 
             // append elements
             foreach (HeVertex v in other._vertices)
                 _vertices.Add(new HeVertex(v.Position));
 
-            for (int i = 0; i < other._edges.Count; i++)
-                _edges.Add(new HeEdge());
+            for (int i = 0; i < other._halfEdges.Count; i++)
+                _halfEdges.Add(new HalfEdge());
 
             for (int i = 0; i < other._faces.Count; i++)
                 _faces.Add(new HeFace());
@@ -390,7 +292,7 @@ namespace SpatialSlur.SlurMesh
                 if (v0.IsUnused) continue;
 
                 HeVertex v1 = _vertices[i + nv];
-                v1.Outgoing = _edges[v0.Outgoing.Index + ne];
+                v1.Outgoing = _halfEdges[v0.Outgoing.Index + ne];
             }
 
             // link new faces to new edges
@@ -400,17 +302,17 @@ namespace SpatialSlur.SlurMesh
                 if (f0.IsUnused) continue;
 
                 HeFace f1 = _faces[i + nf];
-                f1.First = _edges[f0.First.Index + ne];
+                f1.First = _halfEdges[f0.First.Index + ne];
             }
 
             // link new edges to new vertices, edges, and faces
-            for (int i = 0; i < other._edges.Count; i++)
+            for (int i = 0; i < other._halfEdges.Count; i++)
             {
-                HeEdge e0 = other._edges[i];
-                HeEdge e1 = _edges[i + ne];
-                e1.Prev = _edges[e0.Prev.Index + ne];
-                e1.Next = _edges[e0.Next.Index + ne];
-                e1.Twin = _edges[e0.Twin.Index + ne];
+                HalfEdge e0 = other._halfEdges[i];
+                HalfEdge e1 = _halfEdges[i + ne];
+                e1.Prev = _halfEdges[e0.Prev.Index + ne];
+                e1.Next = _halfEdges[e0.Next.Index + ne];
+                e1.Twin = _halfEdges[e0.Twin.Index + ne];
 
                 if (!e0.IsUnused) e1.Start = _vertices[e0.Start.Index + nv];
                 if (e0.Face != null) e1.Face = _faces[e0.Face.Index + nf];
@@ -554,7 +456,7 @@ namespace SpatialSlur.SlurMesh
 
                 double wsum = 0.0;
 
-                foreach (HeEdge e in v.OutgoingEdges)
+                foreach (HalfEdge e in v.OutgoingEdges)
                 {
                     int j = e.End.Index;
                     result[i * nv + j] = -1.0;
@@ -571,11 +473,11 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edgeWeights"></param>
+        /// <param name="halfEdgeWeights"></param>
         /// <returns></returns>
-        public double[] GetLaplacianMatrix(IList<double> edgeWeights)
+        public double[] GetLaplacianMatrix(IList<double> halfEdgeWeights)
         {
-            _edges.SizeCheck(edgeWeights);
+            _halfEdges.SizeCheck(halfEdgeWeights);
 
             int nv = _vertices.Count;
             double[] result = new double[nv * nv];
@@ -587,10 +489,10 @@ namespace SpatialSlur.SlurMesh
 
                 double wsum = 0.0;
 
-                foreach (HeEdge e in v.OutgoingEdges)
+                foreach (HalfEdge e in v.OutgoingEdges)
                 {
                     int j = e.End.Index;
-                    double w = edgeWeights[e.Index];
+                    double w = halfEdgeWeights[e.Index];
                     result[i * nv + j] = -w;
                     wsum += w;
                 }

@@ -346,7 +346,7 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("EdgeGraph (N:{0} E:{1})", _nodes.Count, _edges.Count);
+            return String.Format("Graph (N:{0} E:{1})", _nodes.Count, _edges.Count);
         }
 
 

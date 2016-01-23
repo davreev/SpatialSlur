@@ -19,6 +19,17 @@ namespace SpatialSlur.SlurMesh
             : base(mesh)
         {
         }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="capacity"></param>
+        internal HeVertexList(HeMesh mesh, int capacity)
+            : base(mesh, capacity)
+        {
+        }
 
 
         /// <summary>
@@ -54,7 +65,7 @@ namespace SpatialSlur.SlurMesh
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    List[i].Position += delta;
+                    this[i].Position += delta;
             });
         }
 
@@ -70,7 +81,7 @@ namespace SpatialSlur.SlurMesh
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    List[i].Position += deltas[i];
+                    this[i].Position += deltas[i];
             });
         }
 
@@ -208,6 +219,7 @@ namespace SpatialSlur.SlurMesh
 
 
         #region Element Attributes
+
       
         /// <summary>
         /// 
@@ -232,7 +244,7 @@ namespace SpatialSlur.SlurMesh
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = List[i].GetDegree();
+                    result[i] = this[i].GetDegree();
             });
         }
 
@@ -273,7 +285,7 @@ namespace SpatialSlur.SlurMesh
                 int i0 = queue.Dequeue();
                 int t0 = result[i0] + 1;
 
-                foreach (HeVertex v in List[i0].ConnectedVertices)
+                foreach (HeVertex v in this[i0].ConnectedVertices)
                 {
                     int i1 = v.Index;
 
@@ -291,22 +303,22 @@ namespace SpatialSlur.SlurMesh
         /// Returns the topological distance of all vertices connected to a set of sources.
         /// </summary>
         /// <returns></returns>
-        public double[] GetVertexDepths(IList<int> sources, IList<double> edgeLengths)
+        public double[] GetVertexDepths(IList<int> sources, IList<double> halfEdgeLengths)
         {
             double[] result = new double[Count];
-            UpdateVertexDepths(sources, edgeLengths, result);
+            UpdateVertexDepths(sources, halfEdgeLengths, result);
             return result;
         }
 
 
         /// <summary>
-        /// 
+        /// TODO use edge lengths instead of half-edge lengths
         /// </summary>
         /// <returns></returns>
-        public void UpdateVertexDepths(IList<int> sources, IList<double> edgeLengths, IList<double> result)
+        public void UpdateVertexDepths(IList<int> sources, IList<double> halfEdgeLengths, IList<double> result)
         {
             SizeCheck(result);
-            Mesh.Edges.SizeCheck(edgeLengths);
+            Mesh.HalfEdges.SizeCheck(halfEdgeLengths);
 
             Queue<int> queue = new Queue<int>();
             result.Set(Double.PositiveInfinity);
@@ -324,10 +336,10 @@ namespace SpatialSlur.SlurMesh
                 int i0 = queue.Dequeue();
                 double t0 = result[i0];
 
-                foreach (HeEdge e in List[i0].IncomingEdges)
+                foreach (HalfEdge e in this[i0].IncomingEdges)
                 {
                     int i1 = e.Start.Index;
-                    double t1 = t0 + edgeLengths[e.Index];
+                    double t1 = t0 + halfEdgeLengths[e.Index];
 
                     if (t1 < result[i1])
                     {
@@ -370,11 +382,11 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v0 = List[i];
+                    HeVertex v0 = this[i];
                     double t0 = values[i];
 
                     // check first neighbour
-                    HeEdge first = v0.Outgoing.Twin;
+                    HalfEdge first = v0.Outgoing.Twin;
                     double t1 = values[first.Start.Index];
 
                     bool last = (t1 < t0); // was the last neighbour lower?
@@ -382,7 +394,7 @@ namespace SpatialSlur.SlurMesh
                     first = first.Next.Twin;
 
                     // circulate remaining neighbours
-                    HeEdge e = first;
+                    HalfEdge e = first;
                     do
                     {
                         t1 = values[e.Start.Index];
@@ -419,17 +431,15 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-      
-
         /// <summary>
         /// Returns the area associated with each vertex.
         /// </summary>
-        /// <param name="edgeAreas"></param>
+        /// <param name="halfEdgeAreas"></param>
         /// <returns></returns>
-        public double[] GetVertexAreas(IList<double> edgeAreas)
+        public double[] GetVertexAreas(IList<double> halfEdgeAreas)
         {
             double[] result = new double[Count];
-            UpdateVertexAreas(edgeAreas, result);
+            UpdateVertexAreas(halfEdgeAreas, result);
             return result;
         }
 
@@ -453,25 +463,25 @@ namespace SpatialSlur.SlurMesh
         /// <param name="faceCenters"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public void UpdateVertexAreas(IList<double> edgeAreas, IList<double> result)
+        public void UpdateVertexAreas(IList<double> halfEdgeAreas, IList<double> result)
         {
             SizeCheck(result);
 
-            HeEdgeList edges = Mesh.Edges;
-            edges.SizeCheck(edgeAreas);
+            HalfEdgeList edges = Mesh.HalfEdges;
+            edges.SizeCheck(halfEdgeAreas);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     double sum = 0.0;
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue;
-                        sum += edgeAreas[e.Index];
+                        sum += halfEdgeAreas[e.Index];
                     }
 
                     result[i] = sum;
@@ -497,12 +507,12 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     double sum = 0.0;
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue;
 
@@ -563,10 +573,10 @@ namespace SpatialSlur.SlurMesh
         /// If the mesh is a circle packing mesh, these will be the radii of tangent spheres centered on each vertex.
         /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
         /// </summary>
-        public double[] GetVertexRadii(IList<double> edgeLengths)
+        public double[] GetVertexRadii(IList<double> halfEdgeLengths)
         {
             double[] result = new double[Count];
-            UpdateVertexRadii(edgeLengths, result);
+            UpdateVertexRadii(halfEdgeLengths, result);
             return result;
         }
 
@@ -574,27 +584,27 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edgeLengths"></param>
+        /// <param name="halfEdgeLengths"></param>
         /// <param name="result"></param>
-        public void UpdateVertexRadii(IList<double> edgeLengths, IList<double> result)
+        public void UpdateVertexRadii(IList<double> halfEdgeLengths, IList<double> result)
         {
-            Mesh.Edges.SizeCheck(edgeLengths);
+            Mesh.HalfEdges.SizeCheck(halfEdgeLengths);
             SizeCheck(result);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue; // skip unused vertices
 
                     double sum = 0.0;
                     int n = 0;
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue; // skip boundary edges
-                        sum += (edgeLengths[e.Index] + edgeLengths[e.Prev.Index] - edgeLengths[e.Next.Index]) * 0.5;
+                        sum += (halfEdgeLengths[e.Index] + halfEdgeLengths[e.Prev.Index] - halfEdgeLengths[e.Next.Index]) * 0.5;
                         n++;
                     }
 
@@ -622,10 +632,10 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public double[] GetGaussianCurvature(IList<double> edgeAngles)
+        public double[] GetGaussianCurvature(IList<double> halfEdgeAngles)
         {
             double[] result = new double[Count];
-            UpdateGaussianCurvature(edgeAngles, result);
+            UpdateGaussianCurvature(halfEdgeAngles, result);
             return result;
         }
 
@@ -643,11 +653,11 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused || v.IsBoundary) continue;
 
                     double sum = 0.0;
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                         sum += Vec3d.Angle(e.Span, e.Prev.Twin.Span);
 
                     result[i] = Math.Abs(sum - SlurMath.PI2);
@@ -661,21 +671,21 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public void UpdateGaussianCurvature(IList<double> edgeAngles, IList<double> result)
+        public void UpdateGaussianCurvature(IList<double> halfEdgeAngles, IList<double> result)
         {
-            Mesh.Edges.SizeCheck(edgeAngles);
+            Mesh.HalfEdges.SizeCheck(halfEdgeAngles);
             SizeCheck(result);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused || v.IsBoundary) continue;
 
                     double sum = 0.0;
-                    foreach (HeEdge e in v.OutgoingEdges)
-                        sum += edgeAngles[e.Index];
+                    foreach (HalfEdge e in v.OutgoingEdges)
+                        sum += halfEdgeAngles[e.Index];
 
                     result[i] = Math.Abs(sum - SlurMath.PI2);
                 }
@@ -769,7 +779,7 @@ namespace SpatialSlur.SlurMesh
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = List[i].Position;
+                    result[i] = this[i].Position;
             });
         }
 
@@ -792,10 +802,10 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Vec3d[] GetVertexNormals(IList<Vec3d> edgeNormals, bool unitize)
+        public Vec3d[] GetVertexNormals(IList<Vec3d> halfEdgeNormals, bool unitize)
         {
             Vec3d[] result = new Vec3d[Count];
-            UpdateVertexNormals(edgeNormals, unitize, result); 
+            UpdateVertexNormals(halfEdgeNormals, unitize, result);
             return result;
         }
 
@@ -810,7 +820,7 @@ namespace SpatialSlur.SlurMesh
             SizeCheck(result);
 
             if (unitize)
-                UpdateUnitVertexNormals(result);
+                UpdateVertexUnitNormals(result);
             else
                 UpdateVertexNormals(result);
         }
@@ -827,13 +837,13 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     Vec3d sum = new Vec3d();
                     int n = 0;
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue;
                         sum += Vec3d.Cross(e.Prev.Span, e.Span);
@@ -850,18 +860,18 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="result"></param>
-        private void UpdateUnitVertexNormals(IList<Vec3d> result)
+        private void UpdateVertexUnitNormals(IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     Vec3d sum = new Vec3d();
                  
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue;
                         sum += Vec3d.Cross(e.Prev.Span, e.Span);
@@ -878,15 +888,15 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public void UpdateVertexNormals(IList<Vec3d> edgeNormals, bool unitize, IList<Vec3d> result)
+        public void UpdateVertexNormals(IList<Vec3d> halfEdgeNormals, bool unitize, IList<Vec3d> result)
         {
-            Mesh.Edges.SizeCheck(edgeNormals);
+            Mesh.HalfEdges.SizeCheck(halfEdgeNormals);
             SizeCheck(result);
 
             if (unitize)
-                UpdateUnitVertexNormals(edgeNormals, result);
+                UpdateVertexUnitNormals(halfEdgeNormals, result);
             else
-                UpdateVertexNormals(edgeNormals, result);
+                UpdateVertexNormals(halfEdgeNormals, result);
         }
 
 
@@ -895,22 +905,22 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        private void UpdateVertexNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
+        private void UpdateVertexNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     Vec3d sum = new Vec3d();
                     int n = 0;
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue;
-                        sum += edgeNormals[e.Index];
+                        sum += halfEdgeNormals[e.Index];
                         n++;
                     }
 
@@ -925,18 +935,18 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        private void UpdateUnitVertexNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
+        private void UpdateVertexUnitNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     Vec3d sum = new Vec3d();
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue;
                         sum += edgeNormals[e.Index];
@@ -989,13 +999,13 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     Vec3d sum = new Vec3d();
                     int n = 0;
 
-                    foreach (HeEdge e in v.IncomingEdges)
+                    foreach (HalfEdge e in v.IncomingEdges)
                     {
                         sum += e.Start.Position;
                         n++;
@@ -1010,24 +1020,24 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edgeWeights"></param>
+        /// <param name="halfEdgeWeights"></param>
         /// <param name="result"></param>
-        public void UpdateVertexLaplacians(IList<double> edgeWeights, IList<Vec3d> result)
+        public void UpdateVertexLaplacians(IList<double> halfEdgeWeights, IList<Vec3d> result)
         {
             SizeCheck(result);
-            Mesh.Edges.SizeCheck(edgeWeights);
+            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
          
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     Vec3d sum = new Vec3d();
 
-                    foreach (HeEdge e in v.OutgoingEdges)
-                        sum += e.Span * edgeWeights[e.Index];
+                    foreach (HalfEdge e in v.OutgoingEdges)
+                        sum += e.Span * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
                 }
@@ -1038,25 +1048,25 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edgeWeights"></param>
+        /// <param name="halfEdgeWeights"></param>
         /// <param name="result"></param>
-        public void UpdateVertexLaplacians(IList<double> values, IList<double> edgeWeights, IList<double> result)
+        public void UpdateVertexLaplacians(IList<double> values, IList<double> halfEdgeWeights, IList<double> result)
         {
             SizeCheck(result);
-            Mesh.Edges.SizeCheck(edgeWeights);
+            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     double t = values[i];
                     double sum = 0.0;
 
-                    foreach (HeEdge e in v.OutgoingEdges)
-                        sum += (values[e.End.Index] - t) * edgeWeights[e.Index];
+                    foreach (HalfEdge e in v.OutgoingEdges)
+                        sum += (values[e.End.Index] - t) * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
                 }
@@ -1072,19 +1082,19 @@ namespace SpatialSlur.SlurMesh
         public void UpdateVertexLaplacians(IList<Vec3d> values, IList<double> edgeWeights, IList<Vec3d> result)
         {
             SizeCheck(result);
-            Mesh.Edges.SizeCheck(edgeWeights);
+            Mesh.HalfEdges.SizeCheck(edgeWeights);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeVertex v = List[i];
+                    HeVertex v = this[i];
                     if (v.IsUnused) continue;
 
                     Vec3d t = values[i];
                     Vec3d sum = new Vec3d();
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                         sum += (values[e.End.Index] - t) * edgeWeights[e.Index];
 
                     result[i] = sum;
@@ -1126,8 +1136,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         private void RemoveSimple(HeVertex vertex)
         {
-            HeEdge e0 = vertex.Outgoing;
-            HeEdge e1 = e0.Twin;
+            HalfEdge e0 = vertex.Outgoing;
+            HalfEdge e1 = e0.Twin;
 
             HeVertex v0 = vertex; // to be removed
             HeVertex v1 = e1.Start;
@@ -1136,8 +1146,8 @@ namespace SpatialSlur.SlurMesh
             e1.Next.Start = v1;
             if (e1.IsOutgoing) v1.Outgoing = e1.Next;
 
-            HeEdge.MakeConsecutive(e0.Prev, e0.Next);
-            HeEdge.MakeConsecutive(e1.Prev, e1.Next);
+            HalfEdge.MakeConsecutive(e0.Prev, e0.Next);
+            HalfEdge.MakeConsecutive(e1.Prev, e1.Next);
 
             //flag for removal
             v0.MakeUnused();
@@ -1159,31 +1169,31 @@ namespace SpatialSlur.SlurMesh
             // both vertices must be on the mesh boundary
             if (!(v0.IsBoundary && v1.IsBoundary)) return false;
 
-            HeEdge e0 = v0.Outgoing;
-            HeEdge e1 = v1.Outgoing; // to be removed
+            HalfEdge e0 = v0.Outgoing;
+            HalfEdge e1 = v1.Outgoing; // to be removed
 
-            HeEdge e2 = e0.Prev;
-            HeEdge e3 = e1.Prev;
+            HalfEdge e2 = e0.Prev;
+            HalfEdge e3 = e1.Prev;
     
             // if vertices are consecutive, just collapse the edge between them
             if (e0.Next == e1) 
-                return Mesh.Edges.CollapseEdge(e0);
+                return Mesh.HalfEdges.CollapseEdge(e0);
             else if(e1.Next == e0)
-                return Mesh.Edges.CollapseEdge(e1);
+                return Mesh.HalfEdges.CollapseEdge(e1);
 
             // update edge-vertex refs for all edges emanating from v1
-            foreach (HeEdge e in v1.OutgoingEdges) 
+            foreach (HalfEdge e in v1.OutgoingEdges) 
                 e.Start = v0;
        
             // update edge-edge refs
-            HeEdge.MakeConsecutive(e3, e0);
-            HeEdge.MakeConsecutive(e2, e1);
+            HalfEdge.MakeConsecutive(e3, e0);
+            HalfEdge.MakeConsecutive(e2, e1);
 
             // deal with potential collapsed boundary loops on either side of the merge
             if (e0.Next == e3)
             {
                 e3 = e3.Twin;
-                Mesh.Edges.RemovePair(e3);
+                Mesh.HalfEdges.RemovePair(e3);
 
                 // update edge-face-edge refs
                 e0.Face = e3.Face;
@@ -1196,7 +1206,7 @@ namespace SpatialSlur.SlurMesh
             if (e1.Next == e2)
             {
                 e2 = e2.Twin;
-                Mesh.Edges.RemovePair(e2);
+                Mesh.HalfEdges.RemovePair(e2);
 
                 // update face-edge refs
                 e1.Face = e2.Face;
@@ -1216,9 +1226,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="e0"></param>
         /// <param name="e1"></param>
         /// <returns></returns>
-        public HeEdge SplitVertex(HeEdge e0, HeEdge e1)
+        public HalfEdge SplitVertex(HalfEdge e0, HalfEdge e1)
         {
-            HeEdgeList edges = Mesh.Edges;
+            HalfEdgeList edges = Mesh.HalfEdges;
             edges.Validate(e0);
             edges.Validate(e1);
 
@@ -1227,20 +1237,20 @@ namespace SpatialSlur.SlurMesh
             if (e0.Start != e1.Start) return null;
 
             // if the same edge then just split the edge
-            if (e0 == e1) return Mesh.Edges.SplitEdge(e0);
+            if (e0 == e1) return Mesh.HalfEdges.SplitEdge(e0);
 
             HeVertex v0 = e0.Start;
             HeVertex v1 = Add(v0.Position);
 
-            HeEdge e2 = Mesh.Edges.AddPair(v0, v1);
-            HeEdge e3 = e2.Twin;
+            HalfEdge e2 = Mesh.HalfEdges.AddPair(v0, v1);
+            HalfEdge e3 = e2.Twin;
 
             // update edge-face refs
             e2.Face = e0.Face;
             e3.Face = e1.Face;
 
             // update start vertex of all outoging edges between from and to
-            HeEdge e = e0;
+            HalfEdge e = e0;
             do
             {
                 e.Start = v1;
@@ -1260,10 +1270,10 @@ namespace SpatialSlur.SlurMesh
             }
 
             // update edge-edge refs
-            HeEdge.MakeConsecutive(e0.Prev, e2);
-            HeEdge.MakeConsecutive(e2, e0);
-            HeEdge.MakeConsecutive(e1.Prev, e3);
-            HeEdge.MakeConsecutive(e3, e1);
+            HalfEdge.MakeConsecutive(e0.Prev, e2);
+            HalfEdge.MakeConsecutive(e2, e0);
+            HalfEdge.MakeConsecutive(e1.Prev, e3);
+            HalfEdge.MakeConsecutive(e3, e1);
 
             return e2;
         }
@@ -1275,11 +1285,11 @@ namespace SpatialSlur.SlurMesh
         /// <param name="e0"></param>
         /// <param name="e1"></param>
         /// <returns></returns>
-        public bool DetatchVertex(HeEdge e0, HeEdge e1)
+        public bool DetatchVertex(HalfEdge e0, HalfEdge e1)
         {
             throw new NotImplementedException();
 
-            HeEdgeList edges = Mesh.Edges;
+            HalfEdgeList edges = Mesh.HalfEdges;
             edges.Validate(e0);
             edges.Validate(e1);
 
@@ -1294,20 +1304,20 @@ namespace SpatialSlur.SlurMesh
             // create new edges if original is not on the boundary
             if(e0.Face != null)
             {
-               HeEdge e2 = Mesh.Edges.AddPair(v0, e0.End);
+               HalfEdge e2 = Mesh.HalfEdges.AddPair(v0, e0.End);
 
             }
 
             if(e1.Face != null)
             {
                   
-            HeEdge e3 = Mesh.Edges.AddPair(v1, e1.End);
+            HalfEdge e3 = Mesh.HalfEdges.AddPair(v1, e1.End);
             }
      
         
 
             // update start vertex of all outgoing edges between e0 and e1
-            HeEdge e = e0;
+            HalfEdge e = e0;
             do
             {
                 e.Start = v1;

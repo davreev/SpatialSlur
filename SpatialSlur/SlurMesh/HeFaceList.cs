@@ -22,6 +22,17 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="capacity"></param>
+        internal HeFaceList(HeMesh mesh, int capacity)
+            : base(mesh, capacity)
+        {
+        }
+
+
+        /// <summary>
         /// Adds a new face to the mesh.
         /// </summary>
         /// <param name="v0"></param>
@@ -80,7 +91,7 @@ namespace SpatialSlur.SlurMesh
 
             // edges of the new face
             int n = vertices.Count;
-            HeEdge[] faceLoop = new HeEdge[n];
+            HalfEdge[] faceLoop = new HalfEdge[n];
 
             // gather any existing edges in the face loop
             for (int i = 0, j = 1; i < n; i++, j++)
@@ -88,7 +99,7 @@ namespace SpatialSlur.SlurMesh
                 if (j == n) j = 0; // wrap j 
 
                 // search for existing edge between vertices
-                HeEdge e = vertices[i].FindEdgeTo(vertices[j]);
+                HalfEdge e = vertices[i].FindEdgeTo(vertices[j]);
 
                 // if the edge does exist, it can't already have a face
                 if (e == null)
@@ -115,12 +126,12 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
-                HeEdge e = faceLoop[i];
+                HalfEdge e = faceLoop[i];
 
                 // if missing an edge, add a new edge pair between the vertices
                 if (e == null)
                 {
-                    e = Mesh.Edges.AddPair(vertices[i], vertices[j]);
+                    e = Mesh.HalfEdges.AddPair(vertices[i], vertices[j]);
                     faceLoop[i] = e;
                 }
 
@@ -131,8 +142,8 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
-                HeEdge e0 = faceLoop[i];
-                HeEdge e1 = faceLoop[j];
+                HalfEdge e0 = faceLoop[i];
+                HalfEdge e1 = faceLoop[j];
                 HeVertex v0 = e0.Start;
                 HeVertex v1 = e1.Start;
 
@@ -145,7 +156,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     // neither edge is new
                     // update v1's outgoing edge if necessary 
-                    HeEdge e = null;
+                    HalfEdge e = null;
                     if (e1.IsOutgoing)
                     {
                         e = e1.FindBoundary(); // find the next boundary edge around v1
@@ -163,9 +174,9 @@ namespace SpatialSlur.SlurMesh
                         if (e == null)
                             throw new InvalidOperationException(String.Format("No second boundary edge was found around vertex {0}. Face creation failed.", v1.Index));
 
-                        HeEdge.MakeConsecutive(e.Prev, e0.Next);
-                        HeEdge.MakeConsecutive(e1.Prev, e);
-                        HeEdge.MakeConsecutive(e0, e1);
+                        HalfEdge.MakeConsecutive(e.Prev, e0.Next);
+                        HalfEdge.MakeConsecutive(e1.Prev, e);
+                        HalfEdge.MakeConsecutive(e0, e1);
                     }
                 }
                 else
@@ -176,33 +187,33 @@ namespace SpatialSlur.SlurMesh
                     {
                         case 1:
                             // e0 is new, e1 is old
-                            HeEdge.MakeConsecutive(e1.Prev, e0.Twin);
+                            HalfEdge.MakeConsecutive(e1.Prev, e0.Twin);
                             v1.Outgoing = e0.Twin;
                             break;
                         case 2:
                             // e1 is new, e0 is old
-                            HeEdge.MakeConsecutive(e1.Twin, e0.Next);
+                            HalfEdge.MakeConsecutive(e1.Twin, e0.Next);
                             break;
                         case 3:
                             // both edges are new
                             if (v1.IsUnused)
                             {
                                 // if v1 has no outgoing edge
-                                HeEdge.MakeConsecutive(e1.Twin, e0.Twin);
+                                HalfEdge.MakeConsecutive(e1.Twin, e0.Twin);
                             }
                             else
                             {
                                 // if v1 is already in use (has an outgoing edge)
                                 // deal with non-manifold case
-                                HeEdge.MakeConsecutive(v1.Outgoing.Prev, e0.Twin);
-                                HeEdge.MakeConsecutive(e1.Twin, v1.Outgoing);
+                                HalfEdge.MakeConsecutive(v1.Outgoing.Prev, e0.Twin);
+                                HalfEdge.MakeConsecutive(e1.Twin, v1.Outgoing);
                             }
                             v1.Outgoing = e0.Twin;
                             break;
                     }
 
                     // update edge-edge refs for inner edges
-                    HeEdge.MakeConsecutive(e0, e1);
+                    HalfEdge.MakeConsecutive(e0, e1);
                 }
             }
 
@@ -224,12 +235,12 @@ namespace SpatialSlur.SlurMesh
         {
             // find an appropriate start edge
             bool[] visited = new bool[Count];
-            Stack<HeEdge> stack = new Stack<HeEdge>();
+            Stack<HalfEdge> stack = new Stack<HalfEdge>();
 
             for (int i = 0; i < Count; i++)
             {
                 // skip if unused or already visited
-                HeFace f = List[i];
+                HeFace f = this[i];
                 if (f.IsUnused || visited[i]) continue;
 
                 // conduct a depth first search from face i, orienting adjacent faces along the way
@@ -237,7 +248,7 @@ namespace SpatialSlur.SlurMesh
 
                 do
                 {
-                    HeEdge e = stack.Pop();
+                    HalfEdge e = stack.Pop();
                     f = e.Face;
                     if (f == null || visited[f.Index]) continue; // skip boundary edges or those whose face has already been visited
 
@@ -258,18 +269,18 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public void UnifyOrientation(HeEdge start)
+        public void UnifyOrientation(HalfEdge start)
         {
-            Mesh.Edges.Validate(start);
+            Mesh.HalfEdges.Validate(start);
 
             bool[] visited = new bool[Count];
-            Stack<HeEdge> stack = new Stack<HeEdge>();
+            Stack<HalfEdge> stack = new Stack<HalfEdge>();
             stack.Push(start);
 
             // conduct a depth first search from face i, orienting adjacent faces along the way
             do
             {
-                HeEdge e = stack.Pop();
+                HalfEdge e = stack.Pop();
                 HeFace f = e.Face;
                 if (f == null || visited[f.Index]) continue; // skip boundary edges or those whose face has already been visited
 
@@ -287,51 +298,56 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns lists of edges whose faces form stips.
+        /// Returns lists of half-edges whose faces form stips.
         /// This is intended for use on quad meshes.
         /// </summary>
-        public List<List<HeEdge>> GetStrips(HeEdge start)
+        public List<List<HalfEdge>> GetStrips(HeFace start)
         {
-            Mesh.Edges.Validate(start);
+            Mesh.HalfEdges.Validate(start);
 
-            List<List<HeEdge>> strips = new List<List<HeEdge>>();
-            bool[] visited = new bool[Mesh.Faces.Count];
+            List<List<HalfEdge>> strips = new List<List<HalfEdge>>();
+            bool[] visited = new bool[Count];
 
-            Queue<HeEdge> q = new Queue<HeEdge>();
-            q.Enqueue(start);
+            Stack<HalfEdge> stack = new Stack<HalfEdge>();
+            stack.Push(start.First);
 
             // breadth first search
             do
             {
-                HeEdge first = q.Dequeue();
+                HalfEdge first = stack.Pop();
                 HeFace f = first.Face;
                 if (f == null || visited[f.Index]) continue; // don't start from boundary edges or those with visited faces
 
-                // backtrack to boundary edge
-                HeEdge e = first;
-                while (e.Twin.Face != null)
+                // backtrack to first encountered visited face or boundary
+                HalfEdge e = first;
+                f = e.Twin.Face;
+                while (f != null && !visited[f.Index])
                 {
                     e = e.Twin.Next.Next; // down
+                    f = e.Twin.Face;
                     if (e == first) break; // break if back at first edge
                 }
 
-                // create strip
-                List<HeEdge> strip = new List<HeEdge>();
-                strips.Add(strip);
+                // collect edges in strip
+                List<HalfEdge> strip = new List<HalfEdge>();
                 f = e.Face;
                 do
                 {
+                    // add left/right neighbours to stack
+                    stack.Push(e.Prev.Twin.Prev);
+                    stack.Push(e.Next.Twin.Next);
+
+                    // add current edge to strip and flag face as visited
                     strip.Add(e);
-                    visited[f.Index] = true; // flag face as visited
+                    visited[f.Index] = true;
 
-                    q.Enqueue(e.Prev.Twin.Prev); // enqueue left
-                    q.Enqueue(e.Next.Twin.Next); // enqueue right
-
-                    e = e.Next.Next.Twin; // up
+                    // advance to next edge
+                    e = e.Next.Next.Twin;
                     f = e.Face;
                 } while (f != null && !visited[f.Index]);
 
-            } while (q.Count > 0);
+                strips.Add(strip);
+            } while (stack.Count > 0);
 
             return strips;
         }
@@ -400,7 +416,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Orients each quad such that the first edge has the shortest diagonal in the face.
+        /// Orients each quad such that the first half-edge has the shortest diagonal in the face.
         /// This is intended for use on quad meshes.
         /// </summary>
         /// <param name="mesh"></param>
@@ -408,11 +424,11 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = 0; i < Count; i++)
             {
-                HeFace f = List[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
 
-                HeEdge e0 = f.First;
-                HeEdge e1 = e0.Next.Next;
+                HalfEdge e0 = f.First;
+                HalfEdge e1 = e0.Next.Next;
                 if (e0.Prev != e1.Next) continue; // quad check
 
                 // compare diagonals
@@ -582,10 +598,10 @@ namespace SpatialSlur.SlurMesh
         {
             SizeCheck(result);
 
-            HeEdgeList edges = Mesh.Edges;
+            HalfEdgeList edges = Mesh.HalfEdges;
             for (int i = 0; i < edges.Count; i += 2)
             {
-                HeEdge e = edges[i];
+                HalfEdge e = edges[i];
                 if (e.IsUnused) continue;
 
                 if (e.IsBoundary)
@@ -620,7 +636,7 @@ namespace SpatialSlur.SlurMesh
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = List[i].CountEdges();
+                    result[i] = this[i].CountEdges();
             });
         }
 
@@ -661,7 +677,7 @@ namespace SpatialSlur.SlurMesh
                 int i0 = queue.Dequeue();
                 int t0 = result[i0] + 1;
 
-                foreach (HeFace f in List[i0].AdjacentFaces)
+                foreach (HeFace f in this[i0].AdjacentFaces)
                 {
                     int i1 = f.Index;
               
@@ -679,10 +695,10 @@ namespace SpatialSlur.SlurMesh
         /// Returns the topological distance of all faces connected to a set of sources.
         /// </summary>
         /// <returns></returns>
-        public double[] GetFaceDepths(IList<int> sources, IList<double> edgeLengths)
+        public double[] GetFaceDepths(IList<int> sources, IList<double> halfEdgeLengths)
         {
             double[] result = new double[Count];
-            UpdateFaceDepths(sources, edgeLengths, result);
+            UpdateFaceDepths(sources, halfEdgeLengths, result);
             return result;
         }
 
@@ -691,10 +707,10 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        public void UpdateFaceDepths(IList<int> sources, IList<double> edgeLengths, IList<double> result)
+        public void UpdateFaceDepths(IList<int> sources, IList<double> halfEdgeLengths, IList<double> result)
         {
             SizeCheck(result);
-            Mesh.Edges.SizeCheck(edgeLengths);
+            Mesh.HalfEdges.SizeCheck(halfEdgeLengths);
 
             Queue<int> queue = new Queue<int>();
             result.Set(Double.PositiveInfinity);
@@ -712,13 +728,13 @@ namespace SpatialSlur.SlurMesh
                 int i0 = queue.Dequeue();
                 double t0 = result[i0];
 
-                foreach (HeEdge e in List[i0].Edges)
+                foreach (HalfEdge e in this[i0].Edges)
                 {
                     HeFace f = e.Twin.Face;
                     if (f == null) continue;
 
                     int i1 = f.Index;
-                    double t1 = t0 + edgeLengths[e.Index];
+                    double t1 = t0 + halfEdgeLengths[e.Index];
 
                     if (t1 < result[i1])
                     {
@@ -756,7 +772,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
                     result[i] = f.GetCenter();
                 }
@@ -825,7 +841,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates face normals as the average of edge normals in each face.
+        /// Calculates face normals as the average of half-edge normals in each face.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -842,10 +858,10 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Vec3d[] GetFaceNormals(IList<Vec3d> edgeNormals, bool unitize)
+        public Vec3d[] GetFaceNormals(IList<Vec3d> halfEdgeNormals, bool unitize)
         {
             Vec3d[] result = new Vec3d[Count];
-            UpdateFaceNormals(edgeNormals, unitize, result);
+            UpdateFaceNormals(halfEdgeNormals, unitize, result);
             return result;
         }
 
@@ -877,7 +893,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     if (f.IsTri)
@@ -891,7 +907,7 @@ namespace SpatialSlur.SlurMesh
                         Vec3d sum = new Vec3d();
                         int n = 0;
 
-                        foreach (HeEdge e in f.Edges)
+                        foreach (HalfEdge e in f.Edges)
                         {
                             sum += Vec3d.Cross(e.Prev.Span, e.Span);
                             n++;
@@ -915,7 +931,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     if (f.IsTri)
@@ -929,7 +945,7 @@ namespace SpatialSlur.SlurMesh
                         // general ngon case
                         Vec3d sum = new Vec3d();
                   
-                        foreach (HeEdge e in f.Edges)
+                        foreach (HalfEdge e in f.Edges)
                             sum += Vec3d.Cross(e.Prev.Span, e.Span);
                       
                         result[i] = sum / sum.Length ;
@@ -944,15 +960,15 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public void UpdateFaceNormals(IList<Vec3d> edgeNormals, bool unitize, IList<Vec3d> result)
+        public void UpdateFaceNormals(IList<Vec3d> halfEdgeNormals, bool unitize, IList<Vec3d> result)
         {
-            Mesh.Edges.SizeCheck(edgeNormals);
+            Mesh.HalfEdges.SizeCheck(halfEdgeNormals);
             SizeCheck(result);
 
             if (unitize)
-                UpdateFaceUnitNormals(edgeNormals, result);
+                UpdateFaceUnitNormals(halfEdgeNormals, result);
             else
-                UpdateFaceNormals(edgeNormals, result);
+                UpdateFaceNormals(halfEdgeNormals, result);
         }
 
 
@@ -961,19 +977,19 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        private void UpdateFaceNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
+        private void UpdateFaceNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     if (f.IsTri)
                     {
                         // simplified tri case
-                        result[i] = edgeNormals[f.First.Index];
+                        result[i] = halfEdgeNormals[f.First.Index];
                     }
                     else
                     {
@@ -981,9 +997,9 @@ namespace SpatialSlur.SlurMesh
                         Vec3d sum = new Vec3d();
                         int n = 0;
 
-                        foreach (HeEdge e in f.Edges)
+                        foreach (HalfEdge e in f.Edges)
                         {
-                            sum += edgeNormals[e.Index];
+                            sum += halfEdgeNormals[e.Index];
                             n++;
                         }
 
@@ -999,19 +1015,19 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        private void UpdateFaceUnitNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
+        private void UpdateFaceUnitNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     if (f.IsTri)
                     {
                         // simplified unitized tri case
-                        Vec3d v = edgeNormals[f.First.Index];
+                        Vec3d v = halfEdgeNormals[f.First.Index];
                         result[i] = v / v.Length;
                     }
                     else
@@ -1019,8 +1035,8 @@ namespace SpatialSlur.SlurMesh
                         // general ngon case
                         Vec3d sum = new Vec3d();
               
-                        foreach (HeEdge e in f.Edges)
-                            sum += edgeNormals[e.Index];
+                        foreach (HalfEdge e in f.Edges)
+                            sum += halfEdgeNormals[e.Index];
                
                         result[i] = sum / sum.Length;
                     }
@@ -1031,7 +1047,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Calculates face normals as the normal of the first edge in the face.
-        /// This method assumes all faces are triangular or planar.
+        /// This method assumes all faces are triangular.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
@@ -1071,7 +1087,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     result[i] = Vec3d.Cross(f.First.Span, f.First.Next.Span);
@@ -1091,7 +1107,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     Vec3d v = Vec3d.Cross(f.First.Span, f.First.Next.Span);
@@ -1137,7 +1153,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     if (f.IsTri)
@@ -1152,7 +1168,7 @@ namespace SpatialSlur.SlurMesh
                         Vec3d cen = f.GetCenter();
                         double sum = 0.0;
 
-                        foreach (HeEdge e in f.Edges)
+                        foreach (HalfEdge e in f.Edges)
                             sum += Vec3d.Cross(e.Start.Position - cen, e.Span).Length * 0.5;
 
                         result[i] = sum;
@@ -1175,7 +1191,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     if (f.IsTri)
@@ -1190,7 +1206,7 @@ namespace SpatialSlur.SlurMesh
                         Vec3d cen = faceCenters[i];
                         double sum = 0.0;
 
-                        foreach (HeEdge e in f.Edges)
+                        foreach (HalfEdge e in f.Edges)
                             sum += Vec3d.Cross(e.Start.Position - cen, e.Span).Length * 0.5;
 
                         result[i] = sum;
@@ -1224,7 +1240,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
                     // simplified tri case
@@ -1261,13 +1277,13 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeFace f = List[i];
+                    HeFace f = this[i];
                     if (f.IsUnused) continue;
 
-                    HeEdge e0 = f.First;
-                    HeEdge e1 = e0.Next;
-                    HeEdge e2 = e1.Next;
-                    HeEdge e3 = e2.Next;
+                    HalfEdge e0 = f.First;
+                    HalfEdge e1 = e0.Next;
+                    HalfEdge e2 = e1.Next;
+                    HalfEdge e3 = e2.Next;
                     if (e3 == e0) continue; // ensure face has at least 4 edges
 
                     if (e3.Next == e0)
@@ -1320,11 +1336,11 @@ namespace SpatialSlur.SlurMesh
             */
 
             // update edge-face refs
-            HeEdge ef = face.First;
+            HalfEdge ef = face.First;
             HeVertex vf = ef.Start;
 
             // can't just circulate face since edge connectivity may be changed within loop
-            HeEdgeList edges = Mesh.Edges;
+            HalfEdgeList edges = Mesh.HalfEdges;
             do
             {
                 if (ef.Twin.Face == null)
@@ -1344,18 +1360,18 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Removes a half edge pair, merging their two adajcent faces.
+        /// Removes a half-edge pair, merging their two adajcent faces.
         /// The face adjacent to the given halfedge is retained.
         /// </summary>
         /// <param name="edge"></param>
         /// <returns></returns>
-        public bool MergeFaces(HeEdge edge)
+        public bool MergeFaces(HalfEdge edge)
         {
-            HeEdgeList edges = Mesh.Edges;
+            HalfEdgeList edges = Mesh.HalfEdges;
             edges.Validate(edge);
      
-            HeEdge e0 = edge;
-            HeEdge e1 = e0.Twin;
+            HalfEdge e0 = edge;
+            HalfEdge e1 = e0.Twin;
 
             HeFace f0 = e0.Face;
             HeFace f1 = e1.Face; // face to be removed
@@ -1371,7 +1387,7 @@ namespace SpatialSlur.SlurMesh
                 e0.Next.MakeFirst();
 
             // update face refs for all edges in f1
-            foreach (HeEdge e in e1.CirculateFace.Skip(1)) 
+            foreach (HalfEdge e in e1.CirculateFace.Skip(1)) 
                 e.Face = f0;
 
             // remove edge pair shared between the two faces 
@@ -1399,15 +1415,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Splits a face by creating a new halfedge pair between the start vertices of the given halfedges.
+        /// Splits a face by creating a new half-edge pair between the start vertices of the given halfedges.
         /// Returns the new edge adjacent to the new face on success or null on failure.
         /// </summary>
         /// <param name="e0"></param>
         /// <param name="e1"></param>
         /// <returns></returns>
-        public HeEdge SplitFace(HeEdge e0, HeEdge e1)
+        public HalfEdge SplitFace(HalfEdge e0, HalfEdge e1)
         {
-            HeEdgeList edges = Mesh.Edges;
+            HalfEdgeList edges = Mesh.HalfEdges;
             edges.Validate(e0);
             edges.Validate(e1);
          
@@ -1416,15 +1432,15 @@ namespace SpatialSlur.SlurMesh
                 return null;
 
             // edges can't be consecutive
-            if (HeEdge.AreConsecutive(e0, e1)) 
+            if (HalfEdge.AreConsecutive(e0, e1)) 
                 return null;
       
             HeFace f0 = e0.Face;
             HeFace f1 = new HeFace();
             Add(f1);
 
-            HeEdge e2 = Mesh.Edges.AddPair(e0.Start, e1.Start);
-            HeEdge e3 = e2.Twin;
+            HalfEdge e2 = Mesh.HalfEdges.AddPair(e0.Start, e1.Start);
+            HalfEdge e3 = e2.Twin;
 
             // set edge-face refs
             e3.Face = f0;
@@ -1435,13 +1451,13 @@ namespace SpatialSlur.SlurMesh
             f1.First = e2;
   
             // update edge-edge refs
-            HeEdge.MakeConsecutive(e0.Prev, e2);
-            HeEdge.MakeConsecutive(e1.Prev, e3);
-            HeEdge.MakeConsecutive(e3, e0);
-            HeEdge.MakeConsecutive(e2, e1);
+            HalfEdge.MakeConsecutive(e0.Prev, e2);
+            HalfEdge.MakeConsecutive(e1.Prev, e3);
+            HalfEdge.MakeConsecutive(e3, e0);
+            HalfEdge.MakeConsecutive(e2, e1);
 
             // update face references of all edges in new loop
-            HeEdge e = e2.Next;
+            HalfEdge e = e2.Next;
             do
             {
                 e.Face = f1;
@@ -1464,16 +1480,16 @@ namespace SpatialSlur.SlurMesh
             HeVertex fc = Mesh.Vertices.Add(face.GetCenter());
 
             // hold first edge and vertex in the face
-            HeEdge e = face.First;
+            HalfEdge e = face.First;
             HeVertex v = e.Start;
 
             // create new edges and connect to existing ones
-            HeEdgeList edges = Mesh.Edges;
+            HalfEdgeList edges = Mesh.HalfEdges;
             do
             {
-                HeEdge e0 = edges.AddPair(e.Start, fc);
-                HeEdge.MakeConsecutive(e.Prev, e0);
-                HeEdge.MakeConsecutive(e0.Twin, e);
+                HalfEdge e0 = edges.AddPair(e.Start, fc);
+                HalfEdge.MakeConsecutive(e.Prev, e0);
+                HalfEdge.MakeConsecutive(e0.Twin, e);
                 e = e.Next;
             } while (e.Start != v);
 
@@ -1483,9 +1499,9 @@ namespace SpatialSlur.SlurMesh
             // connect new edges to eachother and create new faces where necessary
             do
             {
-                HeEdge e0 = e.Prev;
-                HeEdge e1 = e.Next;
-                HeEdge.MakeConsecutive(e1, e0);
+                HalfEdge e0 = e.Prev;
+                HalfEdge e1 = e.Next;
+                HalfEdge.MakeConsecutive(e1, e0);
 
                 // create new face if necessary
                 if (face == null)
@@ -1513,7 +1529,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="face"></param>
         /// <returns></returns>
-        public HeEdge Triangulate(HeFace face)
+        public HalfEdge Triangulate(HeFace face)
         {
             throw new NotImplementedException();
         }

@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurMesh
 {
     public class HeFace:HeElement
     {
-        private HeEdge _first; // first edge in face loop (doesn't matter which one)
+        private HalfEdge _first; // first half-edge in face loop (doesn't matter which one)
    
 
         /// <summary>
@@ -19,9 +19,9 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// Returns the first edge the face.
+        /// Returns the first half-edge in the face.
         /// </summary>
-        public HeEdge First
+        public HalfEdge First
         {
             get { return _first; }
             internal set { _first = value; }
@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                foreach (HeEdge e in Edges)
+                foreach (HalfEdge e in Edges)
                     if (e.Start.IsBoundary) return true;
                 return false;
             }
@@ -87,7 +87,7 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 if (IsUnused) yield break;
-                HeEdge e = _first;
+                HalfEdge e = _first;
 
                 // advance to the next edge until back at the first
                 do
@@ -100,14 +100,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Iterates over the face's edges.
+        /// Iterates over the face's half-edges.
         /// </summary>
-        public IEnumerable<HeEdge> Edges
+        public IEnumerable<HalfEdge> Edges
         {
             get
             {
                 if (IsUnused) yield break;
-                HeEdge e = _first;
+                HalfEdge e = _first;
 
                 // advance to the next edge until back at the first
                 do
@@ -129,7 +129,7 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 if (IsUnused) yield break;
-                HeEdge e = _first;
+                HalfEdge e = _first;
           
                 // advance to the next edge until back at the first
                 do
@@ -160,7 +160,7 @@ namespace SpatialSlur.SlurMesh
         {
             int count = 0;
 
-            foreach (HeEdge e in Edges)
+            foreach (HalfEdge e in Edges)
                 count++;
 
             return count;
@@ -175,7 +175,7 @@ namespace SpatialSlur.SlurMesh
         {
             int count = 0;
 
-            foreach (HeEdge e in Edges)
+            foreach (HalfEdge e in Edges)
                 if (e.Twin.Face == null) count++;
 
             return count;
@@ -198,16 +198,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Finds the edge between this face and another. 
+        /// Finds the half-edge between this face and another. 
         /// Returns null if no edge exists.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public HeEdge FindEdgeBetween(HeFace other)
+        public HalfEdge FindEdgeBetween(HeFace other)
         {
             if (IsUnused) return null;
 
-            foreach (HeEdge e in Edges)
+            foreach (HalfEdge e in Edges)
                 if (e.Twin.Face == other) return e;
 
             return null;
