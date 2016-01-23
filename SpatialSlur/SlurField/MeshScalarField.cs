@@ -11,7 +11,7 @@ using SpatialSlur.SlurMesh;
 namespace SpatialSlur.SlurField
 {
    /// <summary>
-   /// TODO research scalar field gradient calculation on polygon meshes
+   /// 
    /// </summary>
     public class MeshScalarField:MeshField<double>
     {
@@ -150,10 +150,10 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        public MeshScalarField GetLaplacian(IList<double> edgeWeights)
+        public MeshScalarField GetLaplacian(IList<double> halfEdgeWeights)
         {
             MeshScalarField result = new MeshScalarField((MeshField)this);
-            UpdateLaplacian(edgeWeights, result.Values);
+            UpdateLaplacian(halfEdgeWeights, result.Values);
             return result;
         }
  
@@ -185,7 +185,7 @@ namespace SpatialSlur.SlurField
                     double sum = 0.0;
                     int n = 0;
 
-                    foreach (HeEdge e in verts[i].IncomingEdges)
+                    foreach (HalfEdge e in verts[i].IncomingEdges)
                     {
                         sum += Values[e.Start.Index];
                         n++;
@@ -202,9 +202,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        public void UpdateLaplacian(IList<double> edgeWeights, MeshScalarField result)
+        public void UpdateLaplacian(IList<double> halfEdgeWeights, MeshScalarField result)
         {
-            UpdateLaplacian(edgeWeights, result.Values);
+            UpdateLaplacian(halfEdgeWeights, result.Values);
         }
 
 
@@ -212,10 +212,10 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="rate"></param>
-        public void UpdateLaplacian(IList<double> edgeWeights, IList<double> result)
+        public void UpdateLaplacian(IList<double> halfEdgeWeights, IList<double> result)
         {
             SizeCheck(result);
-            Mesh.Edges.SizeCheck(edgeWeights);
+            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
 
             HeVertexList verts = Mesh.Vertices;
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -225,8 +225,8 @@ namespace SpatialSlur.SlurField
                     double value = Values[i];
                     double sum = 0.0;
 
-                    foreach (HeEdge e in verts[i].OutgoingEdges)
-                        sum += (Values[e.End.Index] - value) * edgeWeights[e.Index];
+                    foreach (HalfEdge e in verts[i].OutgoingEdges)
+                        sum += (Values[e.End.Index] - value) * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
                 }
@@ -235,10 +235,9 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// calculates gradient based on the average of directional derivatives around each vertex
-        /// uses a normalized umbrella weighting scheme (Tutte scheme)
-        /// http://math.kennesaw.edu/~plaval/math2203/gradient.pdf
-        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
+        /// Naive calculation of gradient based on the average of directional derivatives around each vertex.
+        /// TODO further research into vertex-based mesh vector fields
+        /// http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
         /// </summary>
         /// <returns></returns>
         public MeshVectorField GetGradient()
@@ -250,17 +249,16 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// calculates gradient based on the weighted average of directional derivatives around each vertex
-        /// uses a user defined weighting scheme
-        /// http://math.kennesaw.edu/~plaval/math2203/gradient.pdf
-        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
+        /// Naive calculation of gradient based on the weighted sum of directional derivatives around each vertex.
+        /// TODO further research into vertex-based mesh vector fields
+        /// http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
         /// </summary>
-        /// <param name="edgeWeights"></param>
+        /// <param name="halfEdgeWeights"></param>
         /// <returns></returns>
-        public MeshVectorField GetGradient(IList<double> edgeWeights)
+        public MeshVectorField GetGradient(IList<double> halfEdgeWeights)
         {
             MeshVectorField result = new MeshVectorField(this);
-            UpdateGradient(edgeWeights, result);
+            UpdateGradient(halfEdgeWeights, result);
             return result;
         }
 
@@ -297,7 +295,7 @@ namespace SpatialSlur.SlurField
                     Vec3d sum = new Vec3d();
                     int n = 0;
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         Vec3d d = e.Span;
                         double m = 1.0 / d.Length;
@@ -318,9 +316,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        public void UpdateGradient(IList<double> edgeWeights, MeshVectorField result)
+        public void UpdateGradient(IList<double> halfEdgeWeights, MeshVectorField result)
         {
-            UpdateGradient(edgeWeights, result.Values);
+            UpdateGradient(halfEdgeWeights, result.Values);
         }
 
 
@@ -329,7 +327,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        public void UpdateGradient(IList<double> edgeWeights, IList<Vec3d> result)
+        public void UpdateGradient(IList<double> halfEdgeWeights, IList<Vec3d> result)
         {
             SizeCheck(result);
 
@@ -344,11 +342,11 @@ namespace SpatialSlur.SlurField
                     double value = Values[i];
                     Vec3d sum = new Vec3d();
 
-                    foreach (HeEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         Vec3d d = e.Span;
                         double m = 1.0 / d.Length;
-                        double w = edgeWeights[e.Index];
+                        double w = halfEdgeWeights[e.Index];
             
                         d *= (Values[e.End.Index] - value) * m * m * w; // unitized directional derivative
                         sum += d;

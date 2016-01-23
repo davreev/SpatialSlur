@@ -228,7 +228,7 @@ namespace SpatialSlur.SlurField
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
-                this.ExpandIndex(range.Item1, out i, out j);
+                ExpandIndex(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -253,7 +253,7 @@ namespace SpatialSlur.SlurField
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
-                this.ExpandIndex(range.Item1, out i, out j);
+                ExpandIndex(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -279,7 +279,7 @@ namespace SpatialSlur.SlurField
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
-                this.ExpandIndex(range.Item1, out i, out j);
+                ExpandIndex(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -305,7 +305,7 @@ namespace SpatialSlur.SlurField
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
-                this.ExpandIndex(range.Item1, out i, out j);
+                ExpandIndex(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -353,7 +353,7 @@ namespace SpatialSlur.SlurField
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
-                this.ExpandIndex(range.Item1, out i, out j);
+                ExpandIndex(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -401,7 +401,7 @@ namespace SpatialSlur.SlurField
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
-                this.ExpandIndex(range.Item1, out i, out j);
+                ExpandIndex(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {

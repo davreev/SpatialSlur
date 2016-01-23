@@ -369,29 +369,6 @@ namespace SpatialSlur.SlurField
         }
 
 
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(ScalarField2d result)
-        {
-            UpdateLaplacian(result.Values);
-        }
-
-
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(IList<double> result)
-        {
-            SizeCheck(result);
-            _getLaplacian(result);
-        }
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -554,29 +531,6 @@ namespace SpatialSlur.SlurField
             VectorField2d result = new VectorField2d(this);
             UpdateGradient(result.Values);
             return result;
-        }
-
-
-        [Obsolete("Use UpdateGradient")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rate"></param>
-        public void GetGradient(VectorField2d result)
-        {
-            UpdateGradient(result.Values);
-        }
-
-
-        [Obsolete("Use UpdateGradient")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rate"></param>
-        public void GetGradient(IList<Vec2d> result)
-        {
-            SizeCheck(result);
-            _getGradient(result);
         }
 
 

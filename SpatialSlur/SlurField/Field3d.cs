@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,7 +38,7 @@ namespace SpatialSlur.SlurField
         private Field3d(int countX, int countY, int countZ)
         {
             if (countX < 2 || countY < 2 || countZ < 2)
-                throw new System.ArgumentException("the field must have 2 or more values in each dimension");
+                throw new System.ArgumentException("The field must have 2 or more values in each dimension.");
 
             _nx = countX;
             _ny = countY;
@@ -89,7 +90,7 @@ namespace SpatialSlur.SlurField
             set
             {
                 if (!value.IsValid)
-                    throw new System.ArgumentException("the given domain must be valid");
+                    throw new System.ArgumentException("The given domain must be valid.");
 
                 _domain = value;
                 OnDomainChange();
@@ -260,6 +261,51 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
+        public Vec3d[] GetPointArray()
+        {
+            Vec3d[] result = new Vec3d[_n];
+            UpdatePointArray(result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        public void UpdatePointArray(IList<Vec3d> points)
+        {
+            SizeCheck(points);
+
+            Parallel.ForEach(Partitioner.Create(0, _n), range =>
+            {
+                int i, j, k;
+                ExpandIndex(range.Item1, out i, out j, out k);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == _nx) { j++; i = 0; }
+                    if (j == _ny) { k++; j = 0; }
+                    points[index] = new Vec3d(i * _dx + _from.x, j * _dy + _from.y, k * _dz + _from.z);
+                }
+            });
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        public void UpdatePointArray(Vec3d[] points)
+        {
+
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public abstract Field3d Duplicate();
 
 
@@ -304,25 +350,22 @@ namespace SpatialSlur.SlurField
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public int FlattenIndex(int i, int j, int k)
+        public int FlattenIndex(Vec3i index3)
         {
-            return i + j * _nx + k * _nxy;
+            return index3.x + index3.y * _nx + index3.z * _nxy;
         }
 
 
         /// <summary>
-        /// Converts a 1 dimensional index into a 3 dimensional index.
+        /// Converts a 3 dimensional index into a 1 dimensional index.
         /// </summary>
-        /// <param name="index"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <param name="k"></param>
-        public void ExpandIndex(int index, out int i, out int j, out int k)
+        /// <returns></returns>
+        public int FlattenIndex(int i, int j, int k)
         {
-            k = index / _nxy;
-            i = index - k * _nxy; // store remainder in i
-            j = i / _nx;
-            i -= j * _nx;
+            return i + j * _nx + k * _nxy;
         }
 
 
@@ -339,6 +382,22 @@ namespace SpatialSlur.SlurField
             int i = index - k * _nxy; // store remainder in i
             int j = i / _nx;
             return new Vec3i(i - j * _nx, j, k);
+        }
+
+
+        /// <summary>
+        /// Converts a 1 dimensional index into a 3 dimensional index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        public void ExpandIndex(int index, out int i, out int j, out int k)
+        {
+            k = index / _nxy;
+            i = index - k * _nxy; // store remainder in i
+            j = i / _nx;
+            i -= j * _nx;
         }
 
 

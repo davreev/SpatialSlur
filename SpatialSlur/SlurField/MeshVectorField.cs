@@ -11,7 +11,8 @@ using SpatialSlur.SlurMesh;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// 
+    /// TODO further research into vertex-based mesh vector fields
+    /// http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
     /// </summary>
     public class MeshVectorField:MeshField<Vec3d>
     {
