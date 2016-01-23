@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        public static Line ToLine(this HeEdge e)
+        public static Line ToLine(this HalfEdge e)
         {
             return new Line(e.Start.Position.ToPoint3d(), e.Span.ToVector3d());
         }
@@ -44,7 +44,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public static Line[] GetEdgeLines(this HeEdgeList list)
+        public static Line[] GetEdgeLines(this HalfEdgeList list)
         {
             Line[] result = new Line[list.Count];
 
@@ -52,7 +52,7 @@ namespace SpatialSlur.SlurMesh
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    HeEdge e = list[i];
+                    HalfEdge e = list[i];
                     if (e.IsUnused) continue;
                     result[i] = e.ToLine();
                 }
@@ -99,7 +99,7 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = list[i];
                 if (f.IsUnused) continue;
 
-                HeEdge e = f.First;
+                HalfEdge e = f.First;
 
                 HeVertex v0 = e.Start;
                 e = e.Next;
@@ -209,12 +209,12 @@ namespace SpatialSlur.SlurMesh
 
                 if (ne == 3)
                 {
-                    HeEdge e = f.First;
+                    HalfEdge e = f.First;
                     result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Prev.Start.Index);
                 }
                 else if (ne == 4)
                 {
-                    HeEdge e = f.First;
+                    HalfEdge e = f.First;
                     result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Next.Next.Start.Index, e.Prev.Start.Index);
                 }
                 else

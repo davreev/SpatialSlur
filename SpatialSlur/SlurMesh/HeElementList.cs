@@ -28,18 +28,20 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeMesh Mesh
+        /// <param name="mesh"></param>
+        internal HeElementList(HeMesh mesh, int capacity)
         {
-            get { return _mesh; }
+            _mesh = mesh;
+            _list = new List<T>(capacity);
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>
-        protected List<T> List
+        public HeMesh Mesh
         {
-            get { return _list; }
+            get { return _mesh; }
         }
 
 
@@ -189,7 +191,7 @@ namespace SpatialSlur.SlurMesh
         internal void SizeCheck<U>(IList<U> attributes)
         {
             if (attributes.Count != _list.Count)
-                throw new ArgumentException("the number of element attributes provided does not match the number of elements in the mesh");
+                throw new ArgumentException("The number of attributes provided does not match the number of elements in the mesh.");
         }
     }
 }

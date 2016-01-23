@@ -10,7 +10,7 @@ namespace SpatialSlur.SlurMesh
     public class HeVertex : HeElement
     {
         private Vec3d _position;
-        private HeEdge _outgoing;
+        private HalfEdge _outgoing;
 
 
         /// <summary>
@@ -44,10 +44,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns one of the edges starting at this vertex.
-        /// Note that if the vertex is on the mesh boundary, the outgoing edge will be as well (i.e. it will have a null face).
+        /// Returns one of the half-edges starting at this vertex.
+        /// Note that if the vertex is on the mesh boundary, the outgoing half-edge must have a null face reference.
         /// </summary>
-        public HeEdge Outgoing
+        public HalfEdge Outgoing
         {
             get { return _outgoing; }
             internal set { _outgoing = value; }
@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex has no outgoing edge.
+        /// Returns true if the vertex has no outgoing half-edge.
         /// </summary>
         public override bool IsUnused
         {
@@ -64,7 +64,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex has at least 2 outgoing edges.
+        /// Returns true if the vertex has at least 2 outgoing half-edges.
         /// Note that this assumes the vertex is used.
         /// </summary>
         internal override bool IsValid
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if the vertex lies on the mesh boundary.
-        /// Note that if this is true, the outgoing edge will also be on the boundary (i.e. it will have a null face).
+        /// Note that if this is true, the outgoing half-edge must have a null face reference.
         /// </summary>
         public override bool IsBoundary
         {
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex is has 2 outgoing edges.
+        /// Returns true if the vertex is has 2 outgoing half-edges.
         /// </summary>
         public bool IsDeg2
         {
@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex is has 3 outgoing edges.
+        /// Returns true if the vertex is has 3 outgoing half-edges.
         /// </summary>
         public bool IsDeg3
         {
@@ -139,7 +139,7 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 if (IsUnused) yield break;
-                HeEdge e = _outgoing;
+                HalfEdge e = _outgoing;
 
                 // circulate to the next edge until back at the first
                 do
@@ -153,14 +153,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Iterates over all outgoing edges.
+        /// Iterates over all outgoing half-edges.
         /// </summary>
-        public IEnumerable<HeEdge> OutgoingEdges
+        public IEnumerable<HalfEdge> OutgoingEdges
         {
             get
             {
                 if (IsUnused) yield break;
-                HeEdge e = _outgoing;
+                HalfEdge e = _outgoing;
 
                 // circulate to the next edge until back at the first
                 do
@@ -173,14 +173,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Iterates over all incoming edges.
+        /// Iterates over all incoming half-edges.
         /// </summary>
-        public IEnumerable<HeEdge> IncomingEdges
+        public IEnumerable<HalfEdge> IncomingEdges
         {
             get
             {
                 if (IsUnused) yield break;
-                HeEdge e = _outgoing;
+                HalfEdge e = _outgoing;
 
                 // circulate to the next edge until back at the first
                 do
@@ -202,7 +202,7 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 if (IsUnused) yield break;
-                HeEdge e = _outgoing;
+                HalfEdge e = _outgoing;
                 HeFace f = e.Face;
 
                 // circulate to the next edge until back at the first
@@ -223,7 +223,7 @@ namespace SpatialSlur.SlurMesh
         public int GetDegree()
         {
             if (IsUnused) return 0; // no nieghbours if unused
-            HeEdge e = _outgoing;
+            HalfEdge e = _outgoing;
             int count = 0;
 
             // circulate to the next edge until back at the first
@@ -238,16 +238,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Finds the outgoing edge connecting this vertex to another. 
-        /// Returns null if no edge exists.
+        /// Finds the outgoing half-edge connecting this vertex to another. 
+        /// Returns null if no such half-edge exists.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public HeEdge FindEdgeTo(HeVertex other)
+        public HalfEdge FindEdgeTo(HeVertex other)
         {
             if (IsUnused) return null;
 
-            foreach (HeEdge e in OutgoingEdges)
+            foreach (HalfEdge e in OutgoingEdges)
                 if (e.End == other) return e;
 
             return null;

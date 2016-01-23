@@ -346,6 +346,5 @@ namespace SpatialSlur.SlurCore
             other -= this;
             return other.ManhattanLength;
         }
-
     }
 }

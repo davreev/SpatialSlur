@@ -7,7 +7,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
-    public class HeEdge:HeElement
+    public class HalfEdge:HeElement
     {
         #region Static
 
@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="e0"></param>
         /// <param name="e1"></param>
-        internal static void MakeConsecutive(HeEdge e0, HeEdge e1)
+        internal static void MakeConsecutive(HalfEdge e0, HalfEdge e1)
         {
             e0.Next = e1;
             e1.Prev = e0;
@@ -29,7 +29,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="e0"></param>
         /// <param name="e1"></param>
         /// <returns></returns>
-        internal static bool AreConsecutive(HeEdge e0, HeEdge e1)
+        internal static bool AreConsecutive(HalfEdge e0, HalfEdge e1)
         {
             return (e0.Next == e1 || e1.Next == e0);
         }
@@ -40,7 +40,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="e0"></param>
         /// <param name="e1"></param>
-        internal static void MakeTwins(HeEdge e0, HeEdge e1)
+        internal static void MakeTwins(HalfEdge e0, HalfEdge e1)
         {
             e0.Twin = e1;
             e1.Twin = e0;
@@ -50,20 +50,20 @@ namespace SpatialSlur.SlurMesh
 
 
         private HeVertex _start;
-        private HeEdge _prev;
-        private HeEdge _next;
-        private HeEdge _twin;
+        private HalfEdge _prev;
+        private HalfEdge _next;
+        private HalfEdge _twin;
         private HeFace _face;
 
 
         /// <summary>
         ///
         /// </summary>
-        internal HeEdge() { }
+        internal HalfEdge() { }
 
 
         /// <summary>
-        /// Returns the vertex at the start of the half edge.
+        /// Returns the vertex at the start of the half-edge.
         /// </summary>
         public HeVertex Start
         {
@@ -73,29 +73,18 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the vertex at the end of the half edge.
+        /// Returns the vertex at the end of the half-edge.
         /// </summary>
         public HeVertex End
         {
             get { return _twin._start; }
         }
 
-
-        [Obsolete("use Prev property instead")]
-        /// <summary>
-        /// Returns the previous edge in the face.
-        /// </summary>
-        public HeEdge Previous
-        {
-            get { return _prev; }
-            internal set { _prev = value; }
-        }
-
         
         /// <summary>
-        /// Returns the previous edge in the face.
+        /// Returns the previous half-edge in the face.
         /// </summary>
-        public HeEdge Prev
+        public HalfEdge Prev
         {
             get { return _prev; }
             internal set { _prev = value; }
@@ -103,9 +92,9 @@ namespace SpatialSlur.SlurMesh
        
 
         /// <summary>
-        /// Returns the next edge in the face.
+        /// Returns the next half-edge in the face.
         /// </summary>
-        public HeEdge Next
+        public HalfEdge Next
         {
             get { return _next; }
             internal set { _next = value; }
@@ -113,9 +102,9 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// oppositely oriented adjacent edge
+        /// Returns the oppositely oriented adjacent half-edge
         /// </summary>
-        public HeEdge Twin
+        public HalfEdge Twin
         {
             get { return _twin; }
             internal set { _twin = value; }
@@ -123,7 +112,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the face to which this edge belongs.
+        /// Returns the face to which the half-edge belongs.
         /// </summary>
         public HeFace Face
         {
@@ -142,7 +131,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the edge and its twin have different faces.
+        /// Returns true if the half-edge and its twin have different faces.
         /// </summary>
         internal override bool IsValid
         {
@@ -151,7 +140,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the edge or its twin has no adjacent face.
+        /// Returns true if the half-edge or its twin has no adjacent face.
         /// </summary>
         public override bool IsBoundary
         {
@@ -160,7 +149,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns a vector which spans between the edge's vertices.
+        /// Returns a vector which spans from the start to the end of the half-edge.
         /// </summary>
         public Vec3d Span
         {
@@ -169,7 +158,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the length of the edge.
+        /// Returns the length of the half-edge.
         /// </summary>
         public double Length
         {
@@ -178,7 +167,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the edge starts at a degree 1 vertex.
+        /// Returns true if the half-edge starts at a degree 1 vertex.
         /// </summary>
         internal bool IsFromDeg1
         {
@@ -187,7 +176,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the edge starts at a degree 2 vertex
+        /// Returns true if the half-edge starts at a degree 2 vertex
         /// </summary>
         public bool IsFromDeg2
         {
@@ -196,7 +185,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the edge starts at a degree 3 vertex.
+        /// Returns true if the half-edge starts at a degree 3 vertex.
         /// </summary>
         public bool IsFromDeg3
         {
@@ -205,7 +194,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the edge is the outgoing edge of its start vertex.
+        /// Returns true if the half-edge is the first outgoing from its start vertex.
         /// </summary>
         public bool IsOutgoing
         {
@@ -214,7 +203,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the edge is the first in its face.
+        /// Returns true if the half-edge is the first in its face.
         /// </summary>
         public bool IsFirst
         {
@@ -232,7 +221,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Makes the edge the first in its face.
+        /// Makes the half-edge the first in its face.
         /// </summary>
         public void MakeFirst()
         {
@@ -241,7 +230,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Makes the edge the outgoing edge from its start vertex.
+        /// Makes the half-edge the first outgoing from its start vertex.
         /// </summary>
         internal void MakeOutgoing()
         {
@@ -250,13 +239,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the first boundary edge encountered when circulating around the start vertex.
-        /// Returns null if no boundary edge is found.
+        /// Returns the first boundary half-edge encountered when circulating the start vertex.
+        /// Returns null if no boundary half-edge is found.
         /// </summary>
         /// <returns></returns>
-        internal HeEdge FindBoundary()
+        internal HalfEdge FindBoundary()
         {
-            HeEdge e = this;
+            HalfEdge e = this;
             do
             {
                 if (e.Face == null) return e;
@@ -268,9 +257,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Circulates the face starting from this edge.
+        /// Circulates the face starting from this half-edge.
         /// </summary>
-        public IEnumerable<HeEdge> CirculateFace
+        public IEnumerable<HalfEdge> CirculateFace
         {
             get
             {
@@ -278,7 +267,7 @@ namespace SpatialSlur.SlurMesh
                 if (IsUnused) yield break;
 
                 // start on this edge
-                HeEdge e = this;
+                HalfEdge e = this;
 
                 // circulate to the next edge until back at the first
                 do
@@ -291,9 +280,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Circulates the start vertex starting from this edge.
+        /// Circulates the start vertex starting from this half-edge.
         /// </summary>
-        public IEnumerable<HeEdge> CirculateVertex
+        public IEnumerable<HalfEdge> CirculateVertex
         {
             get
             {
@@ -301,7 +290,7 @@ namespace SpatialSlur.SlurMesh
                 if (IsUnused) yield break;
 
                 // start on this edge
-                HeEdge e = this;
+                HalfEdge e = this;
 
                 // circulate to the next edge until back at the first
                 do
@@ -314,7 +303,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns an linearly interpolated point along the edge.
+        /// Returns an linearly interpolated point along the half-edge.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
