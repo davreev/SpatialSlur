@@ -31,16 +31,16 @@ namespace SpatialSlur.SlurMesh
                 hmv.Add(v);
 
             // add faces
-            foreach(int[] f in faces)
+            foreach(IList<int> f in faces)
                 hmf.Add(f);
               
             return hm;
         }
 
 
+        [Obsolete("Use extension method instead")]
         /// <summary>
         /// Creates an HeMesh instance from a Rhino mesh.
-        /// TODO isolate in factory class.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
@@ -70,9 +70,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        [Obsolete("Use method in RhinoUtil instead")]
         /// <summary>
         /// Creates a HeMesh instance from a collection of Rhino Polylines.
-        /// TODO Isolate in factor class.
         /// </summary>
         /// <param name="polylines"></param>
         /// <param name="tolerance"></param>

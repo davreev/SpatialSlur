@@ -488,8 +488,8 @@ namespace SpatialSlur.SlurField
                         if (i == CountX) { j++; i = 0; }
 
                         Vec2d p = d.Evaluate(new Vec2d(i * ti, j * tj));
-                        fp = other.FieldPointAt(p);
-                        _values[i] = other.Evaluate(fp);
+                        other.FieldPointAt(p, fp);
+                        _values[index] = other.Evaluate(fp);
                     }
                 });
         }

@@ -14,6 +14,37 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh ToHeMesh(this Mesh mesh)
+        {
+            HeMesh hm = new HeMesh();
+            var hmv = hm.Vertices;
+            var hmf = hm.Faces;
+
+            // add vertices
+            var mv = mesh.Vertices;
+            for (int i = 0; i < mv.Count; i++)
+                hmv.Add(mv[i].ToVec3d());
+
+            // add faces
+            var mf = mesh.Faces;
+            for (int i = 0; i < mf.Count; i++)
+            {
+                MeshFace f = mf[i];
+                if (f.IsQuad)
+                    hmf.Add(f.A, f.B, f.C, f.D);
+                else
+                    hmf.Add(f.A, f.B, f.C);
+            }
+
+            return hm;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
         public static Line ToLine(this HalfEdge e)
@@ -48,9 +79,11 @@ namespace SpatialSlur.SlurMesh
         {
             Line[] result = new Line[list.Count];
 
-            Parallel.ForEach(Partitioner.Create(0, list.Count), range =>
+            Parallel.ForEach(Partitioner.Create(0, list.Count >> 1), range =>
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                int i0 = range.Item1 << 1;
+                int i1 = range.Item2 << 1;
+                for (int i = i0; i < i1; i+=2)
                 {
                     HalfEdge e = list[i];
                     if (e.IsUnused) continue;

@@ -198,12 +198,12 @@ namespace SpatialSlur.SlurField
             {
                 case FieldBoundaryType.Constant:
                     _indexAt = IndexAtClamped;
-                    _index2At = ToIndex2AtClamped;
+                    _index2At = Index2AtClamped;
                     _fieldPointAt = FieldPointAtClamped;
                     break;
                 case FieldBoundaryType.Equal:
                     _indexAt = IndexAtClamped;
-                    _index2At = ToIndex2AtClamped;
+                    _index2At = Index2AtClamped;
                     _fieldPointAt = FieldPointAtClamped;
                     break;
                 case FieldBoundaryType.Periodic:
@@ -426,7 +426,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private Vec2i ToIndex2AtClamped(Vec2d point)
+        private Vec2i Index2AtClamped(Vec2d point)
         {
             int i = SlurMath.Clamp((int)Math.Round((point.x - _from.x) * _dxInv), _nx - 1);
             int j = SlurMath.Clamp((int)Math.Round((point.y - _from.y) * _dyInv), _ny - 1);

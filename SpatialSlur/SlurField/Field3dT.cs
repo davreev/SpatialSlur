@@ -534,8 +534,8 @@ namespace SpatialSlur.SlurField
                     if (j == CountY) { k++; j = 0; }
 
                     Vec3d p = d.Evaluate(new Vec3d(i * ti, j * tj, k * tk));
-                    fp = other.FieldPointAt(p);
-                    _values[i] = other.Evaluate(fp);
+                    other.FieldPointAt(p, fp);
+                    _values[index] = other.Evaluate(fp);
                 }
             });
         }

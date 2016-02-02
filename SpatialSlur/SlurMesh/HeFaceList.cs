@@ -841,14 +841,30 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates face normals as the average of half-edge normals in each face.
+        /// Calculates face normals as the area-weighted sum of half-edge normals in each face.
+        /// Face normals are unitized by default.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Vec3d[] GetFaceNormals(bool unitize)
+        public Vec3d[] GetFaceNormals()
         {
             Vec3d[] result = new Vec3d[Count];
-            UpdateFaceNormals(unitize, result);
+            UpdateFaceNormals(result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// Calculates face normals as the sum of half-edge normals in each face.
+        /// Half-edge normals can be scaled in advance for custom weighting.
+        /// Face normals are unitized by default.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public Vec3d[] GetFaceNormals(IList<Vec3d> halfEdgeNormals)
+        {
+            Vec3d[] result = new Vec3d[Count];
+            UpdateFaceNormals(halfEdgeNormals, result);
             return result;
         }
 
@@ -858,75 +874,10 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Vec3d[] GetFaceNormals(IList<Vec3d> halfEdgeNormals, bool unitize)
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateFaceNormals(halfEdgeNormals, unitize, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public void UpdateFaceNormals(bool unitize, IList<Vec3d> result)
+        public void UpdateFaceNormals(IList<Vec3d> result)
         {
             SizeCheck(result);
 
-            if (unitize)
-                UpdateFaceUnitNormals(result);
-            else
-                UpdateFaceNormals(result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateFaceNormals(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    if (f.IsTri)
-                    {
-                        // simplified tri case
-                        result[i] = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                    }
-                    else
-                    {
-                        // general ngon case
-                        Vec3d sum = new Vec3d();
-                        int n = 0;
-
-                        foreach (HalfEdge e in f.Edges)
-                        {
-                            sum += Vec3d.Cross(e.Prev.Span, e.Span);
-                            n++;
-                        }
-
-                        result[i] = sum / n;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateFaceUnitNormals(IList<Vec3d> result)
-        {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -938,17 +889,19 @@ namespace SpatialSlur.SlurMesh
                     {
                         // simplified tri case
                         Vec3d v = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                        result[i] = v / v.Length;
+                        v.Unitize();
+                        result[i] = v;
                     }
                     else
                     {
                         // general ngon case
                         Vec3d sum = new Vec3d();
-                  
+
                         foreach (HalfEdge e in f.Edges)
                             sum += Vec3d.Cross(e.Prev.Span, e.Span);
-                      
-                        result[i] = sum / sum.Length ;
+
+                        sum.Unitize();
+                        result[i] = sum;
                     }
                 }
             });
@@ -960,63 +913,10 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public void UpdateFaceNormals(IList<Vec3d> halfEdgeNormals, bool unitize, IList<Vec3d> result)
+        public void UpdateFaceNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
         {
-            Mesh.HalfEdges.SizeCheck(halfEdgeNormals);
             SizeCheck(result);
 
-            if (unitize)
-                UpdateFaceUnitNormals(halfEdgeNormals, result);
-            else
-                UpdateFaceNormals(halfEdgeNormals, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateFaceNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    if (f.IsTri)
-                    {
-                        // simplified tri case
-                        result[i] = halfEdgeNormals[f.First.Index];
-                    }
-                    else
-                    {
-                        // general ngon case
-                        Vec3d sum = new Vec3d();
-                        int n = 0;
-
-                        foreach (HalfEdge e in f.Edges)
-                        {
-                            sum += halfEdgeNormals[e.Index];
-                            n++;
-                        }
-
-                        result[i] = sum / n;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateFaceUnitNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
-        {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -1028,6 +928,7 @@ namespace SpatialSlur.SlurMesh
                     {
                         // simplified unitized tri case
                         Vec3d v = halfEdgeNormals[f.First.Index];
+                        v.Unitize();
                         result[i] = v / v.Length;
                     }
                     else
@@ -1037,8 +938,9 @@ namespace SpatialSlur.SlurMesh
               
                         foreach (HalfEdge e in f.Edges)
                             sum += halfEdgeNormals[e.Index];
-               
-                        result[i] = sum / sum.Length;
+
+                        sum.Unitize();
+                        result[i] = sum;
                     }
                 }
             });
@@ -1046,34 +948,18 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates face normals as the normal of the first edge in the face.
+        /// Calculates face normals as the normal of the first half-edge in the face.
+        /// Face normals are unitized by default.
         /// This method assumes all faces are triangular.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Vec3d[] GetFaceNormalsTri(bool unitize)
+        public Vec3d[] GetFaceNormalsTri()
         {
             Vec3d[] result = new Vec3d[Count];
-            UpdateFaceNormalsTri(unitize, result);
+            UpdateFaceNormalsTri(result);
             return result;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public void UpdateFaceNormalsTri(bool unitize, IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            if (unitize)
-                UpdateFaceUnitNormalsTri(result);
-            else
-                UpdateFaceNormalsTri(result);
-        }
-
 
 
         /// <summary>
@@ -1090,28 +976,9 @@ namespace SpatialSlur.SlurMesh
                     HeFace f = this[i];
                     if (f.IsUnused) continue;
 
-                    result[i] = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateFaceUnitNormalsTri(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
                     Vec3d v = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                    result[i] = v / v.Length;
+                    v.Unitize();
+                    result[i] = v;
                 }
             });
         }

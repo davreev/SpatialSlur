@@ -583,7 +583,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        public void FieldPointAtClamped(Vec3d point, FieldPoint3d result)
+        private void FieldPointAtClamped(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i, j, k;

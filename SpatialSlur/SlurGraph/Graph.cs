@@ -16,15 +16,15 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="pointPairs"></param>
+        /// <param name="endPoints"></param>
         /// <param name="epsilon"></param>
         /// <param name="nodePositions"></param>
         /// <returns></returns>
-        public static Graph CreateFromLineSegments(IList<Vec3d> pointPairs, double epsilon, bool allowDupEdges, out List<Vec3d> nodePositions)
+        public static Graph CreateFromLineSegments(IList<Vec3d> endPoints, double epsilon, bool allowDupEdges, out List<Vec3d> nodePositions)
         {
             int[] indexMap;
-            nodePositions = Vec3d.RemoveDuplicates(pointPairs, epsilon, out indexMap);
-            Graph result = new Graph(nodePositions.Count, pointPairs.Count >> 1);
+            nodePositions = Vec3d.RemoveDuplicates(endPoints, epsilon, out indexMap);
+            Graph result = new Graph(nodePositions.Count, endPoints.Count >> 1);
 
             if (allowDupEdges)
             {

@@ -21,7 +21,7 @@ namespace SpatialSlur.SlurData
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double Dot(VecKd v0, VecKd v1)
+        public static double InnerProduct(VecKd v0, VecKd v1)
         {
             v0.SizeCheck(v1);
 

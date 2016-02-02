@@ -785,74 +785,33 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the vertex normal as the average of edge normals around each vertex.
+        /// Calculates the vertex normal as the area-weighted sum of half-edge normals around each vertex.
+        /// Vertex normals are unitized by default.
+        /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Vec3d[] GetVertexNormals(bool unitize)
+        public Vec3d[] GetVertexNormals()
         {
             Vec3d[] result = new Vec3d[Count];
-            UpdateVertexNormals(unitize, result);
+            UpdateVertexNormals(result);
             return result;
         }
 
 
         /// <summary>
-        /// 
+        /// Calculates the vertex normals as the unitized sum of half-edge normals around each vertex.
+        /// Half-edge normals can be scaled in advance for custom weighting.
+        /// Vertex normals are unitized by default.
+        /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Vec3d[] GetVertexNormals(IList<Vec3d> halfEdgeNormals, bool unitize)
+        public Vec3d[] GetVertexNormals(IList<Vec3d> halfEdgeNormals)
         {
             Vec3d[] result = new Vec3d[Count];
-            UpdateVertexNormals(halfEdgeNormals, unitize, result);
+            UpdateVertexNormals(halfEdgeNormals, result);
             return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public void UpdateVertexNormals(bool unitize, IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            if (unitize)
-                UpdateVertexUnitNormals(result);
-            else
-                UpdateVertexNormals(result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateVertexNormals(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
-
-                    Vec3d sum = new Vec3d();
-                    int n = 0;
-
-                    foreach (HalfEdge e in v.OutgoingEdges)
-                    {
-                        if (e.Face == null) continue;
-                        sum += Vec3d.Cross(e.Prev.Span, e.Span);
-                        n++;
-                    }
-
-                    result[i] = sum / n;
-                }
-            });
         }
 
 
@@ -860,8 +819,10 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="result"></param>
-        private void UpdateVertexUnitNormals(IList<Vec3d> result)
+        public void UpdateVertexNormals(IList<Vec3d> result)
         {
+            SizeCheck(result);
+
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -877,7 +838,8 @@ namespace SpatialSlur.SlurMesh
                         sum += Vec3d.Cross(e.Prev.Span, e.Span);
                     }
 
-                    result[i] = sum / sum.Length;
+                    sum.Unitize();
+                    result[i] = sum;
                 }
             });
         }
@@ -888,25 +850,10 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public void UpdateVertexNormals(IList<Vec3d> halfEdgeNormals, bool unitize, IList<Vec3d> result)
+        public void UpdateVertexNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
         {
-            Mesh.HalfEdges.SizeCheck(halfEdgeNormals);
             SizeCheck(result);
 
-            if (unitize)
-                UpdateVertexUnitNormals(halfEdgeNormals, result);
-            else
-                UpdateVertexNormals(halfEdgeNormals, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateVertexNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
-        {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -915,44 +862,15 @@ namespace SpatialSlur.SlurMesh
                     if (v.IsUnused) continue;
 
                     Vec3d sum = new Vec3d();
-                    int n = 0;
 
                     foreach (HalfEdge e in v.OutgoingEdges)
                     {
                         if (e.Face == null) continue;
                         sum += halfEdgeNormals[e.Index];
-                        n++;
                     }
 
-                    result[i] = sum / n;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private void UpdateVertexUnitNormals(IList<Vec3d> edgeNormals, IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
-
-                    Vec3d sum = new Vec3d();
-
-                    foreach (HalfEdge e in v.OutgoingEdges)
-                    {
-                        if (e.Face == null) continue;
-                        sum += edgeNormals[e.Index];
-                    }
-
-                    result[i] = sum / sum.Length;
+                    sum.Unitize();
+                    result[i] = sum;
                 }
             });
         }

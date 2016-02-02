@@ -1733,7 +1733,7 @@ namespace SpatialSlur.SlurField
                 Vec3d n = Vec3d.Lerp(normals[v0], normals[v1], t);
 
                 mv.Add(p.x, p.y, p.z);
-                mn.Add(n.x, n.y, n.z);
+                mn.Add(-n.x, -n.y, -n.z); // negative gradient
             }
 
             // add faces
