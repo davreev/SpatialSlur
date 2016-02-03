@@ -94,6 +94,29 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        public int Degree
+        {
+            get
+            {
+                if (IsUnused) return 0; // no nieghbours if unused
+                HalfEdge e = _outgoing;
+                int count = 0;
+
+                // circulate to the next edge until back at the first
+                do
+                {
+                    count++;
+                    e = e.Twin.Next;
+                } while (e != _outgoing);
+
+                return count;
+            }
+        }
+
+
+        /// <summary>
         /// Returns true if the vertex is has 2 outgoing half-edges.
         /// </summary>
         public bool IsDeg2
@@ -216,6 +239,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        [Obsolete("Use Degree property instead.")]
         /// <summary>
         /// Returns the number of connected vertices.
         /// </summary>

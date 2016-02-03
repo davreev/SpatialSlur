@@ -58,6 +58,7 @@
     <Compile Include="SlurCore\ColorUtil.cs" />
     <Compile Include="SlurCore\GeometryUtil.cs" />
     <Compile Include="SlurCore\IListExtensions.cs" />
+    <Compile Include="SlurCore\RhinoFactory.cs" />
     <Compile Include="SlurCore\RhinoUtil.cs" />
     <Compile Include="SlurCore\Vec2i.cs" />
     <Compile Include="SlurCore\Domain.cs" />
