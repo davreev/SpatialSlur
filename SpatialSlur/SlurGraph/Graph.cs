@@ -26,6 +26,10 @@ namespace SpatialSlur.SlurGraph
             nodePositions = Vec3d.RemoveDuplicates(endPoints, epsilon, out indexMap);
             Graph result = new Graph(nodePositions.Count, endPoints.Count >> 1);
 
+            // add nodes
+            result.AddNodes(indexMap.Length);
+
+            // add edges
             if (allowDupEdges)
             {
                 for (int i = 0; i < indexMap.Length; i += 2)
