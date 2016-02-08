@@ -216,7 +216,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="boundingBox"></param>
+        /// <param name="bbox"></param>
+        /// <returns></returns>
         public static Domain2d ToDomain2d(this BoundingBox bbox)
         {
             Vec3d p0 = bbox.Min.ToVec3d();
@@ -242,7 +243,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="boundingBox"></param>
+        /// <param name="bbox"></param>
+        /// <returns></returns>
         public static Domain3d ToDomain3d(this BoundingBox bbox)
         {
             Vec3d p0 = bbox.Min.ToVec3d();
@@ -265,7 +267,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="p0"></param>
+        /// <param name="point"></param>
         /// <param name="other"></param>
         /// <param name="t"></param>
         /// <returns></returns>

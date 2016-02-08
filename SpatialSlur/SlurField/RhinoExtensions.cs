@@ -64,6 +64,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="field"></param>
         /// <param name="point"></param>
+        /// <param name="maxDist"></param>
+        /// <returns></returns>
         public static MeshPoint ClosestMeshPoint(this MeshField field, Point3d point, double maxDist)
         {
             return field.DisplayMesh.ClosestMeshPoint(point, maxDist);
@@ -97,11 +99,12 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO
+        /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
+        /// <param name="result"></param>
         public static void UpdatePointCloud<T>(this Field3d<T> field, Func<T, Color> mapper, PointCloud result)
         {
             throw new NotImplementedException();

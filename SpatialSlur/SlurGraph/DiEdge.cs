@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurGraph
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DiEdge
     {
         private DiNode _start;
@@ -19,6 +22,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
+        /// <param name="index"></param>
         internal DiEdge(DiNode start, DiNode end, int index)
         {
             _start = start;

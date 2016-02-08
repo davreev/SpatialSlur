@@ -44,6 +44,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="compare"></param>
+        /// <param name="capacity"></param>
         public PriorityQueue(Comparison<T> compare, int capacity = 1)
         {
             _heap = new T[capacity + 1];
@@ -126,7 +127,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
+        /// <param name="i"></param>
         private void Swim(int i)
         {
             int j = i >> 1;

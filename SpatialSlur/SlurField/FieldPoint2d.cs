@@ -7,6 +7,9 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurField
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FieldPoint2d
     {
         private readonly int[] _corners = new int[4]; // indices of cell corners
@@ -27,7 +30,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="u"></param>
         /// <param name="v"></param>
-        /// <param name="w"></param>
         public FieldPoint2d(double u, double v)
             : this()
         {
@@ -63,11 +65,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="u"></param>
         /// <param name="v"></param>
-        /// <param name="w"></param>
         public void SetWeights(double u, double v)
         {
             double u1 = 1 - u;

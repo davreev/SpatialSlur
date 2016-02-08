@@ -28,7 +28,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         public MeshScalarField(MeshField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -36,9 +37,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         public MeshScalarField(MeshScalarField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -108,8 +110,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="to"></param>
         public void Remap(Domain to)
         {
             Remap(new Domain(Values), to);
@@ -119,8 +120,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public void Remap(Domain from, Domain to)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -132,7 +133,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// uses a normalized umbrella weighting scheme (Tutte scheme)
+        /// Calculates the Laplacian using a normalized umbrella weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         /// <returns></returns>
@@ -145,10 +146,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// uses a user-defined weighting scheme
+        /// Calculates the Laplacian using a custom weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="halfEdgeWeights"></param>
         /// <returns></returns>
         public MeshScalarField GetLaplacian(IList<double> halfEdgeWeights)
         {
@@ -172,7 +173,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         public void UpdateLaplacian(IList<double> result)
         {
             SizeCheck(result);
@@ -200,8 +201,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="halfEdgeWeights"></param>
         /// <param name="result"></param>
-        /// <returns></returns>
         public void UpdateLaplacian(IList<double> halfEdgeWeights, MeshScalarField result)
         {
             UpdateLaplacian(halfEdgeWeights, result.Values);
@@ -211,7 +212,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="halfEdgeWeights"></param>
+        /// <param name="result"></param>
         public void UpdateLaplacian(IList<double> halfEdgeWeights, IList<double> result)
         {
             SizeCheck(result);
@@ -314,8 +316,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="halfEdgeWeights"></param>
         /// <param name="result"></param>
-        /// <returns></returns>
         public void UpdateGradient(IList<double> halfEdgeWeights, MeshVectorField result)
         {
             UpdateGradient(halfEdgeWeights, result.Values);
@@ -325,8 +327,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="halfEdgeWeights"></param>
         /// <param name="result"></param>
-        /// <returns></returns>
         public void UpdateGradient(IList<double> halfEdgeWeights, IList<Vec3d> result)
         {
             SizeCheck(result);

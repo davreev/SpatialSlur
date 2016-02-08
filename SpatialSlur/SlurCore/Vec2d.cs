@@ -7,6 +7,9 @@ using SpatialSlur.SlurData;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public struct Vec2d
     {
         #region Static
@@ -70,7 +73,6 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec2d operator -(Vec2d v)
         {
@@ -111,8 +113,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the dot product of two vectors.
         /// </summary>
-        /// <param name="vector"></param>
-        /// <param name="t"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
         public static double operator *(Vec2d v0, Vec2d v1)
         {
@@ -164,10 +166,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// reflects v0 about v1
+        /// 
         /// </summary>
-        /// <param name="?"></param>
-        /// <param name="?"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec2d Reflect(Vec2d v0, Vec2d v1)
         {
@@ -279,49 +281,6 @@ namespace SpatialSlur.SlurCore
             return result;
         }
 
-
-        [Obsolete("Use method in GeometryUtil instead")]
-        /// <summary>
-        /// returns the the entries of the covariance matrix in column-major order
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovariance(IList<Vec2d> vectors)
-        {
-            Vec2d mean;
-            return GetCovariance(vectors, out mean);
-        }
-
-
-        [Obsolete("Use method in GeometryUtil instead")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="mean"></param>
-        /// <returns></returns>
-        public static double[] GetCovariance(IList<Vec2d> vectors, out Vec2d mean)
-        {
-            // calculate mean
-            mean = new Vec2d();
-            foreach (Vec2d v in vectors) mean += v;
-            mean /= vectors.Count;
-
-            // calculate covariance matrix
-            double[] result = new double[4];
-            for (int i = 0; i < vectors.Count; i++)
-            {
-                Vec3d d = vectors[i] - mean;
-                result[0] += d.x * d.x;
-                result[1] += d.x * d.y;
-                result[3] += d.y * d.y;
-            }
-
-            // set symmetric values
-            result[2] = result[1];
-            return result;
-        }
-
         #endregion
 
 
@@ -411,11 +370,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// convert from euclidean to polar coordiantes
-        /// (x,y) -> (radius, theta)
+        /// Converts from euclidean to polar coordiantes
+        /// (x,y) = (radius, theta)
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <returns></returns>
         public Vec2d ToPolar()
         {
             return new Vec2d(Length, Math.Atan(y / x));
@@ -423,11 +381,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// convert from polar to euclidean coordiantes
-        /// (radius, theta) -> (x,y)
+        /// Converts from polar to euclidean coordiantes
+        /// (x,y) = (radius, theta)
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <returns></returns>
         public Vec2d ToEuclidean()
         {
             return new Vec2d(Math.Cos(y) * x, Math.Sin(y) * x);

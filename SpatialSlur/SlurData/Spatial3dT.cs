@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="binCount"></param>
         protected Spatial3d(int binCount)
         {
             if (binCount < 1)
@@ -61,6 +61,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
+        /// <param name="k"></param>
         protected abstract void Discretize(Vec3d point, out int i, out int j, out int k);
    
 
@@ -69,6 +70,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
+        /// <param name="k"></param>
         /// <returns></returns>
         protected abstract int ToIndex(int i, int j, int k);
 
@@ -97,9 +99,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
+        /// <param name="point"></param>
         /// <param name="item"></param>
         public void Insert(Vec3d point, T item)
         {
@@ -112,9 +112,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
+        /// <param name="domain"></param>
         /// <param name="item"></param>
         public void Insert(Domain3d domain, T item)
         {

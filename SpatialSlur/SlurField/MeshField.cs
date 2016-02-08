@@ -36,9 +36,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="field"></param>
+        /// <param name="duplicateMesh"></param>
         protected MeshField(MeshField field, bool duplicateMesh = false)
         {
             _mesh = (duplicateMesh) ? field._mesh.Duplicate() : field._mesh;
@@ -57,7 +58,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns true if the number of vertices in the associated mesh no longer matches the size of the field
+        /// Returns true if the number of vertices in the associated mesh no longer matches the size of the field
         /// </summary>
         public bool IsExpired
         {
@@ -153,7 +154,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="point"></param>
-        /// <param name="maxDistance"></param>
+        /// <returns></returns>
         public MeshPoint ClosestMeshPoint(Vec3d point)
         {
             return _displayMesh.ClosestMeshPoint(point.ToPoint3d(), 0.0);

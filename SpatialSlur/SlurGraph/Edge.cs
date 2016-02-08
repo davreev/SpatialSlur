@@ -22,6 +22,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
+        /// <param name="index"></param>
         internal Edge(Node start, Node end, int index)
         {
             _start = start;

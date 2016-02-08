@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public struct Domain3d
     {
         #region Static
@@ -23,7 +26,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
+        /// <param name="point"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
@@ -87,6 +90,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
+        /// <param name="z"></param>
         public Domain3d(Domain x, Domain y, Domain z)
         {
             this.x = x;
@@ -115,6 +119,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="x1"></param>
         /// <param name="y0"></param>
         /// <param name="y1"></param>
+        /// <param name="z0"></param>
+        /// <param name="z1"></param>
         public Domain3d(double x0, double x1, double y0, double y1, double z0, double z1)
         {
             x = new Domain(x0, x1);
@@ -151,21 +157,6 @@ namespace SpatialSlur.SlurCore
             get { return x.IsValid && y.IsValid && z.IsValid; }
         }
 
-        [Obsolete("Use From property instead")]
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vec3d P0
-        {
-            get { return new Vec3d(x.t0, y.t0, z.t0); }
-            set
-            {
-                x.t0 = value.x;
-                y.t0 = value.y;
-                z.t0 = value.z;
-            }
-        }
-
 
         /// <summary>
         /// 
@@ -178,22 +169,6 @@ namespace SpatialSlur.SlurCore
                 x.t0 = value.x;
                 y.t0 = value.y;
                 z.t0 = value.z;
-            }
-        }
-
-
-        [Obsolete("Use To property instead")]
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vec3d P1
-        {
-            get { return new Vec3d(x.t1, y.t1, z.t1); }
-            set
-            {
-                x.t1 = value.x;
-                y.t1 = value.y;
-                z.t1 = value.z;
             }
         }
 
@@ -274,7 +249,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="uv"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
         public Vec3d Evaluate(Vec3d point)
         {
@@ -288,7 +263,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="xyz"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
         public Vec3d Normalize(Vec3d point)
         {
@@ -352,8 +327,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
+        /// <param name="delta"></param>
         public void Translate(Vec3d delta)
         {
             x.Translate(delta.x);
@@ -365,8 +339,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
+        /// <param name="delta"></param>
         public void Expand(Vec3d delta)
         {
             x.Expand(delta.x);

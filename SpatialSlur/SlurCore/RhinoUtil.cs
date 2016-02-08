@@ -11,6 +11,9 @@ using Rhino.Geometry;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// General static utility methods for use in Rhino
+    /// </summary>
     public static class RhinoUtil
     {
         /// <summary>
@@ -18,7 +21,6 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
-        /// <param name="indexMap"></param>
         /// <returns></returns>
         public static List<Point3d> RemoveDuplicatePoints(IList<Point3d> points, double tolerance)
         {
@@ -48,6 +50,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
+        /// <param name="tree"></param>
         /// <returns></returns>
         public static List<Point3d> RemoveDuplicatePoints(IList<Point3d> points, double tolerance, out int[] indexMap, out RTree tree)
         {
@@ -82,7 +85,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// simple helper class for searching an RTree for duplicate points
+        /// Simple helper class for searching an RTree for duplicate points.
         /// </summary>
         private class SearchHelper
         {
@@ -109,28 +112,8 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        [Obsolete ("Use method in DisplayUtil instead.")]
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="colors"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static Color LerpSpectrum(IList<Color> colors, double t)
-        {
-            int last = colors.Count - 1;
-            t *= last;
-            int i = (int)Math.Floor(t);
-
-            if (i < 0) return colors[0];
-            else if (i >= last) return colors[last];
-
-            return colors[i].LerpTo(colors[i + 1], t - i);
-        }
-
-
-        /// <summary>
-        /// returns the the entries of the covariance matrix in column-major order
+        /// Returns the the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="vectors"></param>
         /// <returns></returns>
@@ -177,9 +160,9 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the the entries of the covariance matrix in column-major order
+        /// Returns the the entries of the covariance matrix in column-major order.
         /// </summary>
-        /// <param name="vectors"></param>
+        /// <param name="points"></param>
         /// <returns></returns>
         public static double[] GetCovariance(IList<Point3d> points)
         {
@@ -224,7 +207,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the entries of the laplacian matrix in column-major order
+        /// Returns the entries of the cotangent weighted laplacian matrix in column-major order.
         /// </summary>
         /// <returns></returns>
         public static double[] GetLaplacianMatrix(Mesh mesh)
@@ -255,7 +238,7 @@ namespace SpatialSlur.SlurCore
                     double a = Vector3d.CrossProduct(v0, v1).Length;
                     areas[i0] += a * t;
 
-                    // add to edge weights
+                    // add to edge cotangent weights
                     if (i1 > i0)
                         result[i0 * n + i1] += 0.5 * v0 * v1 / a;
                     else

@@ -18,9 +18,10 @@ namespace SpatialSlur.SlurField
         #region Static
 
         /// <summary>
-        /// returns a vector field of normalized rgb values
+        /// Returns a vector field of normalized RGB values
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="domain"></param>
+        /// <param name="bitmaps"></param>
         /// <returns></returns>
         public static VectorField3d CreateFromImages(Domain3d domain, IList<Bitmap> bitmaps)
         {
@@ -64,6 +65,7 @@ namespace SpatialSlur.SlurField
             return result;
             */
         }
+    
 
         #endregion
 
@@ -219,7 +221,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="fieldA"></param>
+        /// <param name="fieldB"></param>
         public void Cross(VectorField3d fieldA, VectorField3d fieldB)
         {
             Function(Vec3d.Cross, fieldA, fieldB);
@@ -229,7 +232,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
+        /// <param name="value"></param>
+        /// <param name="factor"></param>
         public void LerpTo(Vec3d value, double factor)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -260,8 +264,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
+        /// <param name="value"></param>
+        /// <param name="factors"></param>
         public void LerpTo(Vec3d value, ScalarField3d factors)
         {
             SizeCheck(factors);
@@ -304,29 +308,6 @@ namespace SpatialSlur.SlurField
         }
 
 
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(VectorField3d result)
-        {
-            GetLaplacian(result.Values);
-        }
-
-
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-            _getLaplacian(result);
-        }
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -351,7 +332,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianConstant(IList<Vec3d> result)
         {
             // inverse square step size for each dimension
@@ -405,7 +386,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianEqual(IList<Vec3d> result)
         {
             // inverse square step size for each dimension
@@ -459,7 +440,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianPeriodic(IList<Vec3d> result)
         {
             // inverse square step size for each dimension
@@ -513,7 +494,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
+        /// <returns></returns>
         public ScalarField3d GetDivergence()
         {
             ScalarField3d result = new ScalarField3d(this);
@@ -546,7 +527,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
+        /// <returns></returns>
         public VectorField3d GetCurl()
         {
             VectorField3d result = new VectorField3d((Field3d)this);

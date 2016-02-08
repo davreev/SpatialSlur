@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class SlurMath
     {
         public const double PI2 = Math.PI * 2.0;
@@ -80,9 +83,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="min"></param>
-        /// <param name="range"></param>
         /// <param name="t"></param>
+        /// <param name="range"></param>
         /// <returns></returns>
         public static double Clamp(double t, double range)
         {
@@ -93,9 +95,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="min"></param>
-        /// <param name="range"></param>  
         /// <param name="t"></param>
+        /// <param name="range"></param>
         /// <returns></returns>
         public static int Clamp(int t, int range)
         {
@@ -231,9 +232,11 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns fractional portion of t. Also returns the whole portion in an out parameter.
+        /// Returns fractional portion of t. 
+        /// Also returns the whole portion in an out parameter.
         /// </summary>
         /// <param name="t"></param>
+        /// <param name="whole"></param>
         /// <returns></returns>
         public static double Fract(double t, out int whole)
         {
@@ -268,11 +271,11 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Wraps t to the domain.
+        /// Wraps t to the domain defined by t0 and t1.
         /// </summary>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
         /// <param name="t"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
         /// <returns></returns>
         public static int Wrap(int t, int t0, int t1)
         {
@@ -410,7 +413,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// assumes 0 <= t < 1
+        /// Assumes t is between 0 and 1
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>

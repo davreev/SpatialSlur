@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="binCount"></param>
         protected Spatial2d(int binCount)
         {
             if (binCount < 1)
@@ -97,9 +97,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
+        /// <param name="point"></param>
         /// <param name="item"></param>
         public void Insert(Vec2d point, T item)
         {
@@ -112,9 +110,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
+        /// <param name="domain"></param>
         /// <param name="item"></param>
         public void Insert(Domain2d domain, T item)
         {

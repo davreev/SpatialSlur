@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurField
     {
         private Action<IList<Vec2d>> _getLaplacian;
         private Action<IList<double>> _getDivergence;
-        private Action<IList<Vec2d>> _getCurl;
+        // private Action<IList<Vec2d>> _getCurl;
 
 
         /// <summary>
@@ -169,30 +169,6 @@ namespace SpatialSlur.SlurField
         }
 
 
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(VectorField2d result)
-        {
-            UpdateLaplacian(result.Values);
-        }
-
-
-
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(IList<Vec2d> result)
-        {
-            SizeCheck(result);
-            _getLaplacian(result);
-        }
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -217,7 +193,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianConstant(IList<Vec2d> result)
         {
             // inverse square step size for each dimension
@@ -261,7 +237,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianEqual(IList<Vec2d> result)
         {
             // inverse square step size for each dimension
@@ -305,7 +281,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianPeriodic(IList<Vec2d> result)
         {
             // inverse square step size for each dimension

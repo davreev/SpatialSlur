@@ -8,9 +8,12 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurField
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DynamicScalarField3d : ScalarField3d
     {
-        protected readonly double[] _deltas;
+        private readonly double[] _deltas;
 
         // Delegates for boundary dependant functions
         private Action<double> _diffuse;
@@ -354,9 +357,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// applies thermal erosion
+        /// Simulates thermal erosion
         /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
         /// </summary>
+        /// <param name="slope"></param>
         /// <param name="rate"></param>
         public void Erode(double slope, double rate)
         {
@@ -367,6 +371,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="slope"></param>
         /// <param name="rate"></param>
         private void ErodeConstant(double slope, double rate)
         {
@@ -434,6 +439,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="slope"></param>
         /// <param name="rate"></param>
         private void ErodeEqual(double slope, double rate)
         {
@@ -513,6 +519,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="slope"></param>
         /// <param name="rate"></param>
         private void ErodePeriodic(double slope, double rate)
         {
@@ -580,7 +587,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="thresh"></param>
+        /// <param name="amount"></param>
         public void Bifurcate(double thresh, double amount)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -599,6 +607,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="thresh"></param>
+        /// <param name="lower"></param>
+        /// <param name="upper"></param>
         /// <param name="rate"></param>
         public void Bifurcate(double thresh, double lower, double upper, double rate)
         {
@@ -618,7 +629,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="amount"></param>
         public void Deposit(double amount)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -632,6 +643,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="target"></param>
         /// <param name="rate"></param>
         public void Deposit(double target, double rate)
         {
@@ -699,7 +711,8 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="point"></param>
-        /// <param name="amount"></param>
+        /// <param name="target"></param>
+        /// <param name="rate"></param>
         public void DepositAt(FieldPoint3d point, double target, double rate)
         {
             DepositAt(point, (target - Evaluate(point)) * rate);
@@ -709,6 +722,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="index"></param>
         /// <param name="rate"></param>
         public void DecayAt(int index, double rate)
         {
@@ -719,6 +733,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="point"></param>
         /// <param name="rate"></param>
         public void DecayAt(FieldPoint3d point, double rate)
         {

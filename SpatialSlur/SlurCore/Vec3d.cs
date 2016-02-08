@@ -7,6 +7,9 @@ using SpatialSlur.SlurData;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public struct Vec3d
     {
         #region Static
@@ -81,7 +84,6 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec3d operator -(Vec3d v)
         {
@@ -125,8 +127,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the dot product of two vectors.
         /// </summary>
-        /// <param name="vector"></param>
-        /// <param name="t"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
         public static double operator *(Vec3d v0, Vec3d v1)
         {
@@ -210,10 +212,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// reflects v0 about v1
+        /// Reflects v0 about v1
         /// </summary>
-        /// <param name="?"></param>
-        /// <param name="?"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec3d Reflect(Vec3d v0, Vec3d v1)
         {
@@ -234,12 +236,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// the given hash should be scaled appropriately for the point set
+        /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="hash"></param>
         /// <param name="epsilon"></param>
-        /// <param name="map"></param>
         /// <returns></returns>
         public static List<Vec3d> RemoveDuplicates(IList<Vec3d> points, double epsilon)
         {
@@ -253,7 +253,6 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="hash"></param>
         /// <param name="epsilon"></param>
         /// <param name="indexMap"></param>
         /// <returns></returns>
@@ -431,54 +430,6 @@ namespace SpatialSlur.SlurCore
             return result;
         }
 
-
-        [Obsolete("Use method in GeometryUtil instead")]
-        /// <summary>
-        /// returns the entries of the covariance matrix in column-major order
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovariance(IList<Vec3d> vectors)
-        {
-            Vec3d mean;
-            return GetCovariance(vectors, out mean);
-        }
-
-
-        [Obsolete("Use method in GeometryUtil instead")]
-        /// <summary>
-        /// returns the entries of the covariance matrix in column-major order
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovariance(IList<Vec3d> vectors, out Vec3d mean)
-        {
-            // calculate mean
-            mean = new Vec3d();
-            foreach (Vec3d v in vectors) mean += v;
-            mean /= vectors.Count;
-
-            // calculate covariance matrix
-            double[] result = new double[9];
-   
-            for (int i = 0; i < vectors.Count; i++)
-            {
-                Vec3d d = vectors[i] - mean;
-                result[0] += d.x * d.x;
-                result[1] += d.x * d.y;
-                result[2] += d.x * d.z;
-                result[4] += d.y * d.y;
-                result[5] += d.y * d.z;
-                result[8] += d.z * d.z;
-            }
-
-            // set symmetric values
-            result[3] = result[1];
-            result[6] = result[2];
-            result[7] = result[5];
-            return result;
-        }
-
         #endregion
 
 
@@ -490,6 +441,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
+        /// <param name="z"></param>
         public Vec3d(double x, double y, double z)
         {
             this.x = x;
@@ -561,6 +513,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
+        /// <param name="z"></param>
         public void Set(double x, double y, double z)
         {
             this.x = x;
@@ -570,11 +523,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// convert from euclidean to spherical coordiantes 
-        /// (x,y,z) -> (radius, azimuth, polar)
+        /// Converts from euclidean to spherical coordiantes.
+        /// (x,y,z) = (radius, azimuth, polar)
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <returns></returns>
         public Vec3d ToSpherical()
         {
             double r = this.Length;
@@ -583,11 +535,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// convert from spherical to euclidean coordiantes
-        /// (radius, azimuth, polar) -> (x,y,z)
+        /// Converts from spherical to euclidean coordiantes.
+        /// (x,y,z) = (radius, azimuth, polar)
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <returns></returns>
         public Vec3d ToEuclidean()
         {
             double rxy = Math.Sin(z) * x * x;

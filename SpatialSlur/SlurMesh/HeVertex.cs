@@ -7,6 +7,9 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HeVertex : HeElement
     {
         private Vec3d _position;
@@ -34,9 +37,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
+        /// <param name="position"></param>
         internal HeVertex(Vec3d position)
         {
             _position = position;
@@ -236,28 +237,6 @@ namespace SpatialSlur.SlurMesh
                     f = e.Face;
                 } while (e != _outgoing);
             }
-        }
-
-
-        [Obsolete("Use Degree property instead.")]
-        /// <summary>
-        /// Returns the number of connected vertices.
-        /// </summary>
-        /// <returns></returns>
-        public int GetDegree()
-        {
-            if (IsUnused) return 0; // no nieghbours if unused
-            HalfEdge e = _outgoing;
-            int count = 0;
-
-            // circulate to the next edge until back at the first
-            do
-            {
-                count++;
-                e = e.Twin.Next;
-            } while (e != _outgoing);
-
-            return count;
         }
 
 

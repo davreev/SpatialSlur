@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class HeElement
     {
         private int _index = -1;

@@ -151,10 +151,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Iterates through the positions of values in the field. 
+        /// Iterates through the coordinates of values in the field. 
         /// Note that these are not explicitly stored in memory.
         /// </summary>
-        public IEnumerable<Vec2d> Points
+        public IEnumerable<Vec2d> Coordinates
         {
             get
             {
@@ -216,13 +216,13 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns an array of coordinates for each value in the field.
         /// </summary>
         /// <returns></returns>
-        public Vec2d[] GetPointArray()
+        public Vec2d[] GetCoordinateArray()
         {
             Vec2d[] result = new Vec2d[_n];
-            UpdatePointArray(result);
+            UpdateCoordinateArray(result);
             return result;
         }
 
@@ -231,7 +231,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="points"></param>
-        public void UpdatePointArray(IList<Vec2d> points)
+        public void UpdateCoordinateArray(IList<Vec2d> points)
         {
             SizeCheck(points);
 
@@ -293,9 +293,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Converts a 2 dimensional index into a 1 dimensional index.
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
+        /// <param name="index2"></param>
         /// <returns></returns>
         public int FlattenIndex(Vec2i index2)
         {
@@ -308,7 +306,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        /// <param name="k"></param>
         /// <returns></returns>
         public int FlattenIndex(int i, int j)
         {
@@ -320,9 +317,7 @@ namespace SpatialSlur.SlurField
         /// Converts a 1 dimensional index into a 2 dimensional index.
         /// </summary>
         /// <param name="index"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
+        /// <returns></returns>
         public Vec2i ExpandIndex(int index)
         {
             int j = index / _nx;
@@ -337,7 +332,6 @@ namespace SpatialSlur.SlurField
         /// <param name="index"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        /// <param name="k"></param>
         public void ExpandIndex(int index, out int i, out int j)
         {
             j = index / _nx;

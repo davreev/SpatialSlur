@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurData
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CompareKd : IComparer<VecKd>
     {
         private int _k;
@@ -16,6 +19,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="k"></param>
+        /// <param name="epsilon"></param>
         public CompareKd(int k, double epsilon)
         {
             K = k;

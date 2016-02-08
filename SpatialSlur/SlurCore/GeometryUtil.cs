@@ -12,46 +12,16 @@ namespace SpatialSlur.SlurCore
     /// </summary>
     public static class GeometryUtil
     {
-        [Obsolete("Use GetShortestVector instead")]
-        /// <summary>
-        /// returns the volume gradient of a tetrahedron defined by the 4 given points
-        /// this is the same as finding the shortest vector between the two diagonals of the skew quadrilateral defined by the same 4 vertices
-        /// http://geomalgorithms.com/a07-_distance.html
-        /// </summary>
-        /// <param name="p0"></param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <param name="p3"></param>
-        /// <returns></returns>
-        public static Vec3d GetVolumeGradient(Vec3d p0, Vec3d p1, Vec3d p2, Vec3d p3)
-        {
-            Vec3d u = p2 - p0;
-            Vec3d v = p3 - p1;
-            Vec3d w = p0 - p1;
-
-            double uu = u * u;
-            double uv = u * v;
-            double vv = v * v;
-            double uw = u * w;
-            double vw = v * w;
-
-            double t = 1.0 / (uu * vv - uv * uv);
-            double tu = (uv * vw - vv * uw) * t;
-            double tv = (uu * vw - uv * uw) * t;
-
-            return w + tu * u - tv * v;
-        }
-
-
         /// <summary>
         /// Returns parameters for the closest pair of points along skew lines a and b.
         /// http://geomalgorithms.com/a07-_distance.html
         /// </summary>
-        /// <param name="p0"></param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <param name="p3"></param>
-        /// <returns></returns>
+        /// <param name="a0"></param>
+        /// <param name="a1"></param>
+        /// <param name="b0"></param>
+        /// <param name="b1"></param>
+        /// <param name="ta"></param>
+        /// <param name="tb"></param>
         public static void GetClosestPoints(Vec3d a0, Vec3d a1, Vec3d b0, Vec3d b1, out double ta, out double tb)
         {
             Vec3d u = a1 - a0;
@@ -75,10 +45,10 @@ namespace SpatialSlur.SlurCore
         /// This can also be understood as the volume gradient of the tetrahedron defined by skew lines a and b.
         /// http://geomalgorithms.com/a07-_distance.html
         /// </summary>
-        /// <param name="p0"></param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <param name="p3"></param>
+        /// <param name="a0"></param>
+        /// <param name="a1"></param>
+        /// <param name="b0"></param>
+        /// <param name="b1"></param>
         /// <returns></returns>
         public static Vec3d GetShortestVector(Vec3d a0, Vec3d a1, Vec3d b0, Vec3d b1)
         {
@@ -121,7 +91,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="point"></param>
         /// <param name="direction"></param>
-        /// <param name="unitNormal"></param>
+        /// <param name="origin"></param>
         /// <param name="unitNormal"></param>
         /// <returns></returns>
         public static Vec3d ProjectToPlane(Vec3d point, Vec3d direction, Vec3d origin, Vec3d unitNormal)
@@ -136,8 +106,6 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="func"></param>
         /// <param name="vector"></param>
-        /// <param name="v1"></param>
-        /// <param name="v2"></param>
         /// <param name="delta"></param>
         /// <returns></returns>
         public static Vec3d GetGradient(Func<Vec3d, double> func, Vec3d vector, double delta)
@@ -159,7 +127,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the entries of the covariance matrix in column-major order
+        /// Returns the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="vectors"></param>
         /// <returns></returns>
@@ -171,9 +139,10 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the entries of the covariance matrix in column-major order
+        /// Returns the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="vectors"></param>
+        /// <param name="mean"></param>
         /// <returns></returns>
         public static double[] GetCovariance(IList<Vec3d> vectors, out Vec3d mean)
         {

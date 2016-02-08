@@ -106,8 +106,9 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
+        /// <param name="point"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
         protected override void Discretize(Vec2d point, out int i, out int j)
         {
             i = SlurMath.Clamp((int)Math.Floor((point.x - _from.x) * _dxInv), _nx - 1);
@@ -120,7 +121,6 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        /// <param name="k"></param>
         /// <returns></returns>
         protected override int ToIndex(int i, int j)
         {

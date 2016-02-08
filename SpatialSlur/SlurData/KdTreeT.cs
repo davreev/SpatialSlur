@@ -170,8 +170,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="point"></param>
         private void DimCheck(VecKd point)
         {
             if (_k != point.K)
@@ -196,7 +195,7 @@ namespace SpatialSlur.SlurData
         /// The value associated with the given point is also returned in the out parameter on success.
         /// </summary>
         /// <param name="point"></param>
-        /// <param name="i"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public bool Contains(VecKd point, out T value)
         {
@@ -219,6 +218,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="node"></param>
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <returns></returns>
@@ -279,11 +279,14 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// TODO
+        /// 
         /// </summary>
         /// <param name="points"></param>
         /// <param name="values"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <param name="i"></param>
+        /// <returns></returns>
         private Node InsertBalanced(IList<VecKd> points, IList<T> values, int from, int to, int i)
         {
             // stopping conditions
@@ -445,6 +448,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="range"></param>
         /// <param name="result"></param>
+        /// <param name="i"></param>
         private void EuclideanSearch(Node node, VecKd point, double range, List<T> result, int i)
         {
             if (node == null) return;
@@ -495,6 +499,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="range"></param>
         /// <param name="result"></param>
+        /// <param name="i"></param>
         private void BoxSearch(Node node, VecKd point, VecKd range, List<T> result, int i)
         {
             if (node == null) return;
@@ -545,6 +550,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="range"></param>
         /// <param name="result"></param>
+        /// <param name="i"></param>
         private void ManhattanSearch(Node node, VecKd point, double range, List<T> result, int i)
         {
             if (node == null) return;
@@ -595,6 +601,7 @@ namespace SpatialSlur.SlurData
         /// Also returns the distance to the nearest value as an out parameter.
         /// </summary>
         /// <param name="point"></param>
+        /// <param name="distance"></param>
         /// <returns></returns>
         public T EuclideanNearest(VecKd point, out double distance)
         {
@@ -652,6 +659,7 @@ namespace SpatialSlur.SlurData
         /// Returns the nearest n values in the tree using a Euclidean distance metric.
         /// </summary>
         /// <param name="point"></param>
+        /// <param name="n"></param>
         /// <returns></returns>
         public T[] EuclideanNearestN(VecKd point, int n)
         {
@@ -673,6 +681,8 @@ namespace SpatialSlur.SlurData
         /// Also returns the respective distances as an out parameter.
         /// </summary>
         /// <param name="point"></param>
+        /// <param name="n"></param>
+        /// <param name="distances"></param>
         /// <returns></returns>
         public T[] EuclideanNearestN(VecKd point, int n, out double[] distances)
         {
@@ -698,6 +708,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="node"></param>
         /// <param name="point"></param>
+        /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
         private void EuclideanNearestN(Node node, VecKd point, int n, int i, SortedList<double, T> result)
@@ -753,6 +764,7 @@ namespace SpatialSlur.SlurData
         /// Also returns the distance to the nearest value as an out parameter.
         /// </summary>
         /// <param name="point"></param>
+        /// <param name="distance"></param>
         /// <returns></returns>
         public T ManhattanNearest(VecKd point, out double distance)
         {
@@ -810,6 +822,7 @@ namespace SpatialSlur.SlurData
         /// Returns the nearest n values in the tree using a Manhattan distance metric.
         /// </summary>
         /// <param name="point"></param>
+        /// <param name="n"></param>
         /// <returns></returns>
         public T[] ManhattanNearestN(VecKd point, int n)
         {
@@ -831,6 +844,8 @@ namespace SpatialSlur.SlurData
         /// Also returns the respective distances as an out parameter.
         /// </summary>
         /// <param name="point"></param>
+        /// <param name="n"></param>
+        /// <param name="distances"></param>
         /// <returns></returns>
         public T[] ManhattanNearestN(VecKd point, int n, out double[] distances)
         {
@@ -856,6 +871,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="node"></param>
         /// <param name="point"></param>
+        /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
         private void ManhattanNearestN(Node node, VecKd point, int n, int i, SortedList<double, T> result)
@@ -891,7 +907,6 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         private class Node
         {
             private Node _left, _right;

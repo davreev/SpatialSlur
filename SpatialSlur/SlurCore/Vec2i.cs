@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public struct Vec2i
     {
         #region Static
@@ -52,7 +55,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="?"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
         public static bool operator !=(Vec2i v0, Vec2i v1)
         {
@@ -92,7 +96,6 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec2i operator -(Vec2i v)
         {
@@ -133,8 +136,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the dot product of two vectors.
         /// </summary>
-        /// <param name="vector"></param>
-        /// <param name="t"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
         public static int operator *(Vec2i v0, Vec2i v1)
         {

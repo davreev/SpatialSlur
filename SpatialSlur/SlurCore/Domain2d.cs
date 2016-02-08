@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public struct Domain2d
     {
         #region Static
@@ -23,7 +26,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
+        /// <param name="point"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
@@ -145,21 +148,6 @@ namespace SpatialSlur.SlurCore
             get { return x.IsValid && y.IsValid; }
         }
 
-        
-        [Obsolete("Use From property instead")]
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vec2d P0
-        {
-            get { return new Vec2d(x.t0, y.t0); }
-            set
-            {
-                x.t0 = value.x;
-                y.t0 = value.y;
-            }
-        }
-
 
         /// <summary>
         /// 
@@ -171,21 +159,6 @@ namespace SpatialSlur.SlurCore
             {
                 x.t0 = value.x;
                 y.t0 = value.y;
-            }
-        }
-
-
-        [Obsolete("Use To property instead")]
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vec2d P1
-        {
-            get { return new Vec2d(x.t1, y.t1); }
-            set
-            {
-                x.t1 = value.x;
-                y.t1 = value.y;
             }
         }
 
@@ -265,7 +238,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="uv"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
         public Vec2d Evaluate(Vec2d point)
         {
@@ -278,7 +251,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="xyz"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
         public Vec2d Normalize(Vec2d point)
         {
@@ -339,8 +312,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
+        /// <param name="delta"></param>
         public void Translate(Vec2d delta)
         {
             x.Translate(delta.x);
@@ -351,8 +323,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
+        /// <param name="delta"></param>
         public void Expand(Vec2d delta)
         {
             x.Expand(delta.x);

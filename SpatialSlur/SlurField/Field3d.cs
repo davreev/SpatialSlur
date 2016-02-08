@@ -186,10 +186,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Iterates through the positions of values in the field. 
+        /// Iterates through the coordinates of values in the field. 
         /// Note that these are not explicitly stored in memory.
         /// </summary>
-        public IEnumerable<Vec3d> Points
+        public IEnumerable<Vec3d> Coordinates
         {
             get
             {
@@ -258,13 +258,13 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns an array of coordinates for each value in the field.
         /// </summary>
         /// <returns></returns>
-        public Vec3d[] GetPointArray()
+        public Vec3d[] GetCoordinateArray()
         {
             Vec3d[] result = new Vec3d[_n];
-            UpdatePointArray(result);
+            UpdateCoordinateArray(result);
             return result;
         }
 
@@ -273,7 +273,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="points"></param>
-        public void UpdatePointArray(IList<Vec3d> points)
+        public void UpdateCoordinateArray(IList<Vec3d> points)
         {
             SizeCheck(points);
 
@@ -290,17 +290,7 @@ namespace SpatialSlur.SlurField
                 }
             });
         }
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        public void UpdatePointArray(Vec3d[] points)
-        {
-
-        }
-
+     
 
         /// <summary>
         /// 
@@ -346,9 +336,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Converts a 3 dimensional index into a 1 dimensional index.
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
+        /// <param name="index3"></param>
         /// <returns></returns>
         public int FlattenIndex(Vec3i index3)
         {
@@ -373,9 +361,7 @@ namespace SpatialSlur.SlurField
         /// Converts a 1 dimensional index into a 3 dimensional index.
         /// </summary>
         /// <param name="index"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
+        /// <returns></returns>
         public Vec3i ExpandIndex(int index)
         {
             int k = index / _nxy;

@@ -7,6 +7,9 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HeFace:HeElement
     {
         private HalfEdge _first; // first half-edge in face loop (doesn't matter which one)
@@ -217,7 +220,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the average position of vertices in the face.
         /// </summary>
-        /// <param name="f"></param>
         /// <returns></returns>
         public Vec3d GetCenter()
         {

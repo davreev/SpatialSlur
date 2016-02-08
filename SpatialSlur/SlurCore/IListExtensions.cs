@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurCore
 {
+    /// <summary>
+    /// IList interface extension methods
+    /// </summary>
     public static class IListExtensions
     {
         /// <summary>
@@ -63,7 +66,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="value"></param>
+        /// <param name="other"></param>
         public static void Set<T>(this IList<T> list, IList<T> other)
         {
             Set(list, other, 0, list.Count);
@@ -71,11 +74,11 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// TODO test performance against lists of various lengths
+        /// TODO test parallel performance against list length.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="value"></param>
+        /// <param name="other"></param>
         /// <param name="index"></param>
         /// <param name="length"></param>
         public static void Set<T>(this IList<T> list, IList<T> other, int index, int length)
@@ -93,8 +96,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="value"></param>
+        /// <param name="other"></param>
         /// <param name="index"></param>
+        /// <param name="otherIndex"></param>
         /// <param name="length"></param>
         public static void Set<T>(this IList<T> list, IList<T> other, int index, int otherIndex, int length)
         {
@@ -111,8 +115,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="index"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
         public static T[] SubArray<T>(this IList<T> list, int index, int length)
         {
@@ -126,17 +130,20 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a new IList which excludes any elements for which the given delegate returns true.
+        /// Returns a new IList which includes any elements for which the given delegate returns true.
         /// </summary>
-        /// <param name="edges"></param>
-        public static T[] Compact<T>(this IList<T> list, Func<T, bool> exclude)
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="include"></param>
+        /// <returns></returns>
+        public static T[] Compact<T>(this IList<T> list, Func<T, bool> include)
         {
             int marker = 0;
 
             for (int i = 0; i < list.Count; i++)
             {
                 T t = list[i];
-                if (!exclude(t))
+                if (include(t))
                     list[marker++] = t;
             }
 
@@ -164,7 +171,6 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="seed"></param>
         public static void Shuffle<T>(this IList<T> list)
         {
             Shuffle(list, new Random());
@@ -188,7 +194,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="seed"></param>
+        /// <param name="random"></param>
         public static void Shuffle<T>(this IList<T> list, Random random)
         {
             for (int i = list.Count - 1; i > 0; i--)
@@ -202,6 +208,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Shifts a list of items in place.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
         /// <param name="offset"></param>
         public static void Shift<T>(this IList<T> list, int offset)
         {
@@ -217,7 +225,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Shifts a subset of a list of items in place.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
         /// <param name="offset"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public static void Shift<T>(this IList<T> list, int offset, int from, int to)
         {
             int n = to - from + 1;
@@ -234,8 +246,6 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
         public static void Reverse<T>(this IList<T> list)
         {
             Reverse(list, 0, list.Count - 1);
@@ -245,8 +255,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Reverses the order of the items within the specified range in place.
         /// </summary>
-        /// <param name="first"></param>
-        /// <param name="last"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public static void Reverse<T>(this IList<T> list, int from, int to)
         {
             while (to > from)
@@ -318,7 +330,8 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Returns the nth smallest item in linear amortized time.
-        /// Partially sorts the list such that the nth item is in the correct postition. All items to the left are <= the nth and those to the right are >= the nth.
+        /// Partially sorts the list such that the nth item is in the correct postition. 
+        /// All items to the left are less than or equal to the nth and those to the right are greater than or equal to the nth.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>

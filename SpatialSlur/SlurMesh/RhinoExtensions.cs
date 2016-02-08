@@ -9,8 +9,22 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class RhinoExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh ToHeMesh(this Mesh mesh)
+        {
+            return RhinoFactory.CreateHeMesh(mesh);
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -90,7 +104,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="list"></param>
         /// <returns></returns>
         public static Circle[] GetFaceCircumcircles(this HeFaceList list)
         {

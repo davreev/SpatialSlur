@@ -29,7 +29,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         public MeshVectorField(MeshField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -39,7 +40,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         public MeshVectorField(MeshVectorField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -155,16 +157,18 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
+        /// <param name="result"></param>
         public void Cross(MeshVectorField other, MeshVectorField result)
         {
             Cross(other, result.Values);
         }
 
 
-        /// <summary>up
+        /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
+        /// <param name="other"></param>
+        /// <param name="result"></param>
         public void Cross(MeshVectorField other, IList<Vec3d> result)
         {
             SizeCheck(other);

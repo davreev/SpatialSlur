@@ -7,6 +7,9 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurField
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FieldPoint3d
     {
         private readonly int[] _corners = new int[8]; // indices of cell corners

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurGraph
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DiNode
     {
         private readonly List<DiEdge> _outEdges;

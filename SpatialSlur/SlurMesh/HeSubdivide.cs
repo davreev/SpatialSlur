@@ -42,6 +42,7 @@ namespace SpatialSlur.SlurMesh
         /// http://w3.impa.br/~lcruz/courses/cma/surfaces.html
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="boundaryType"></param>
         public static void CatmullClark(HeMesh mesh, SmoothBoundaryType boundaryType)
         {
             var verts = mesh.Vertices;
@@ -355,6 +356,8 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="faceCenters"></param>
+        /// <param name="faceValues"></param>
         /// <returns></returns>
         public static HeMesh DualSkeleton(HeMesh mesh, IList<Vec3d> faceCenters, IList<double> faceValues)
         {
@@ -415,6 +418,8 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="faceCenters"></param>
+        /// <param name="faceValues"></param>
         /// <returns></returns>
         public static HeMesh DualSkeleton2(HeMesh mesh, IList<Vec3d> faceCenters, IList<double> faceValues)
         {

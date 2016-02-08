@@ -7,6 +7,9 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurField
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ImplicitSurfaces
     {
         /// <summary>

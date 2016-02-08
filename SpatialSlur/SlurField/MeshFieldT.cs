@@ -34,7 +34,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         protected MeshField(MeshField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -45,7 +46,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         protected MeshField(MeshField<T> other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -74,7 +76,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Sets this field to some function of itself.
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="func"></param>
         public void Function(Func<T, T> func)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -88,7 +90,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Sets this field to some function of another field.
         /// </summary>
-        /// <param name="result"></param>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="func"></param>
+        /// <param name="other"></param>
         public void Function<U>(Func<U, T> func, MeshField<U> other)
         {
             SizeCheck(other);
@@ -104,9 +108,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Sets this field to some function of itself and another field.
         /// </summary>
+        /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
         /// <param name="other"></param>
-        /// <returns></returns>
         public void Function<U>(Func<T, U, T> func, MeshField<U> other)
         {
             SizeCheck(other);
@@ -122,7 +126,11 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Sets this field to some function of two other fields.
         /// </summary>
-        /// <param name="result"></param>
+        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="func"></param>
+        /// <param name="otherU"></param>
+        /// <param name="otherV"></param>
         public void Function<U, V>(Func<U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
         {
             SizeCheck(otherU);
@@ -139,7 +147,11 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Sets this field to some function of itself and two other fields.
         /// </summary>
-        /// <param name="result"></param>
+        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="func"></param>
+        /// <param name="otherU"></param>
+        /// <param name="otherV"></param>
         public void Function<U, V>(Func<T, U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
         {
             SizeCheck(otherU);
@@ -156,7 +168,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="filter"></param>
+        /// <param name="mapper"></param>
         public void PaintDisplayMesh(Func<T, Color> mapper)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>

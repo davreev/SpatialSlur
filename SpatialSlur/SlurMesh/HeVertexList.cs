@@ -9,6 +9,9 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HeVertexList:HeElementList<HeVertex>
     {
         /// <summary>
@@ -35,7 +38,10 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         ///
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
         public HeVertex Add(double x, double y, double z)
         {
             HeVertex result = new HeVertex(x, y, z);
@@ -45,9 +51,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="position"></param>
+        /// <returns></returns>
         public HeVertex Add(Vec3d position)
         {
             HeVertex result = new HeVertex(position);
@@ -73,7 +80,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="deltas"></param>
         public void TranslateEach(IList<Vec3d> deltas)
         {
             SizeCheck(deltas);
@@ -244,7 +251,7 @@ namespace SpatialSlur.SlurMesh
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = this[i].GetDegree();
+                    result[i] = this[i].Degree;
             });
         }
 
@@ -370,9 +377,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
         /// <param name="values"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateMorseSmaleClassification(IList<double> values, IList<int> result)
         {
             SizeCheck(values);
@@ -460,9 +466,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faceCenters"></param>
+        /// <param name="halfEdgeAreas"></param>
         /// <param name="result"></param>
-        /// <returns></returns>
         public void UpdateVertexAreas(IList<double> halfEdgeAreas, IList<double> result)
         {
             SizeCheck(result);
@@ -530,10 +535,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the areas associated with each vertex.
-        /// Note that this method assumes all faces are triangular.
+        /// 
         /// </summary>
-        /// <param name="faceCenters"></param>
         /// <returns></returns>
         public double[] GetVertexAreasTri()
         {
@@ -546,9 +549,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faceCenters"></param>
         /// <param name="result"></param>
-        /// <returns></returns>
         public void UpdateVertexAreasTri(IList<double> result)
         {
             SizeCheck(result);
@@ -617,7 +618,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
+        /// <returns></returns>
+        public double[] GetMeanCurvature()
+        {
+            double[] result = new double[Count];
+            UpdateMeanCurvature(result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="result"></param>
+        public void UpdateMeanCurvature(IList<double> result)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <returns></returns>
         public double[] GetGaussianCurvature()
         {
@@ -629,8 +651,9 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns the gaussian curvature at each vertex.
+        /// This is calculated as the angle defect.
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="halfEdgeAngles"></param>
         /// <returns></returns>
         public double[] GetGaussianCurvature(IList<double> halfEdgeAngles)
         {
@@ -643,8 +666,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateGaussianCurvature(IList<double> result)
         {
             SizeCheck(result);
@@ -669,8 +691,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="halfEdgeAngles"></param>
+        /// <param name="result"></param>
         public void UpdateGaussianCurvature(IList<double> halfEdgeAngles, IList<double> result)
         {
             Mesh.HalfEdges.SizeCheck(halfEdgeAngles);
@@ -693,71 +715,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public double[] GetVertexDiagonalLengths()
-        {
-            double[] result = new double[Mesh.Edges.Count];
-            UpdateVertexDiagonalLengths(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateVertexDiagonalLengths(IList<double> result)
-        {
-            Mesh.Edges.SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = List[i];
-                    if (v.IsUnused) continue;
-                    int d = v.GetDegree();
-
-                    if (d > 4)
-                    {
-                        // general valence n case
-                        HeEdge e0 = v.Outgoing;
-                        HeEdge e1 = e0.Twin.Next.Twin.Next;
-
-                        do
-                        {
-                            result[e0.Index] = e0.End.VectorTo(e1.End).Length;
-                            e0 = e0.Twin.Next;
-                            e1 = e1.Twin.Next;
-                        } while (e0 != v.Outgoing);
-                    }
-                    else if (d == 4)
-                    {
-                        // simplified valence 4 case
-                        HeEdge e0 = v.Outgoing;
-                        HeEdge e1 = e0.Twin.Next.Twin.Next;
-
-                        for (int j = 0; j < 2; j++)
-                        {
-                            result[e0.Index] = e0.End.VectorTo(e1.End).Length;
-                            e0 = e0.Twin.Next;
-                            e1 = e1.Twin.Next;
-                        }
-                    }
-                }
-            });
-        }
-        */
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
         /// <returns></returns>
         public Vec3d[] GetVertexPositions()
         {
@@ -770,8 +730,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateVertexPositions(IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -789,7 +748,6 @@ namespace SpatialSlur.SlurMesh
         /// Vertex normals are unitized by default.
         /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
-        /// <param name="list"></param>
         /// <returns></returns>
         public Vec3d[] GetVertexNormals()
         {
@@ -805,7 +763,7 @@ namespace SpatialSlur.SlurMesh
         /// Vertex normals are unitized by default.
         /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="halfEdgeNormals"></param>
         /// <returns></returns>
         public Vec3d[] GetVertexNormals(IList<Vec3d> halfEdgeNormals)
         {
@@ -848,8 +806,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="halfEdgeNormals"></param>
+        /// <param name="result"></param>
         public void UpdateVertexNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -880,7 +838,6 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the Laplacian using a normalized umbrella weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
-        /// <param name="edgeWeights"></param>
         /// <returns></returns>
         public Vec3d[] GetVertexLaplacians()
         {
@@ -891,7 +848,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the Laplacian using a custom weighting scheme.
+        /// Calculates the Laplacian using custom edge weights scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         /// <param name="edgeWeights"></param>
@@ -907,7 +864,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
         public void UpdateVertexLaplacians(IList<Vec3d> result)
         {
@@ -966,6 +922,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="values"></param>
         /// <param name="halfEdgeWeights"></param>
         /// <param name="result"></param>
         public void UpdateVertexLaplacians(IList<double> values, IList<double> halfEdgeWeights, IList<double> result)
@@ -995,12 +952,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edgeWeights"></param>
+        /// <param name="values"></param>
+        /// <param name="halfEdgeWeights"></param>
         /// <param name="result"></param>
-        public void UpdateVertexLaplacians(IList<Vec3d> values, IList<double> edgeWeights, IList<Vec3d> result)
+        public void UpdateVertexLaplacians(IList<Vec3d> values, IList<double> halfEdgeWeights, IList<Vec3d> result)
         {
             SizeCheck(result);
-            Mesh.HalfEdges.SizeCheck(edgeWeights);
+            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -1013,7 +971,7 @@ namespace SpatialSlur.SlurMesh
                     Vec3d sum = new Vec3d();
 
                     foreach (HalfEdge e in v.OutgoingEdges)
-                        sum += (values[e.End.Index] - t) * edgeWeights[e.Index];
+                        sum += (values[e.End.Index] - t) * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
                 }
@@ -1078,7 +1036,9 @@ namespace SpatialSlur.SlurMesh
         /// Merges a pair of boundary vertices.
         /// That the first vertex is retained and the second is flagged as unused.
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
         public bool MergeVertices(HeVertex v0, HeVertex v1)
         {
             Validate(v0);

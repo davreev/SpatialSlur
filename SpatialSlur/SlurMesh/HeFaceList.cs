@@ -9,6 +9,9 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HeFaceList:HeElementList<HeFace>
     {
         /// <summary>
@@ -39,31 +42,33 @@ namespace SpatialSlur.SlurMesh
         /// <param name="v1"></param>
         /// <param name="v2"></param>
         /// <returns></returns>
-        public HeFace Add(int i0, int i1, int i2)
+        public HeFace Add(int v0, int v1, int v2)
         {
             HeVertexList verts = Mesh.Vertices;
-            return Add(new HeVertex[] { verts[i0], verts[i1], verts[i2]});
+            return Add(new HeVertex[] { verts[v0], verts[v1], verts[v2]});
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param> 
+        /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <param name="v2"></param>
+        /// <param name="v3"></param>
         /// <returns></returns>
-        public HeFace Add(int i0, int i1, int i2, int i3)
+        public HeFace Add(int v0, int v1, int v2, int v3)
         {
             HeVertexList verts = Mesh.Vertices;
-            return Add(new HeVertex[] { verts[i0], verts[i1], verts[i2], verts[i3]});
+            return Add(new HeVertex[] { verts[v0], verts[v1], verts[v2], verts[v3]});
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vertices"></param>
+        /// <param name="indices"></param>
+        /// <returns></returns>
         public HeFace Add(IList<int> indices)
         {
             HeVertexList verts = Mesh.Vertices;
@@ -419,7 +424,6 @@ namespace SpatialSlur.SlurMesh
         /// Orients each quad such that the first half-edge has the shortest diagonal in the face.
         /// This is intended for use on quad meshes.
         /// </summary>
-        /// <param name="mesh"></param>
         public void OrientQuadsToShortestDiagonal()
         {
             for (int i = 0; i < Count; i++)
@@ -446,8 +450,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Counts the number of faces adjacent to both given faces.
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
         /// <returns></returns>
         public int CountCommonNeighbours(HeFace f0, HeFace f1)
         {
@@ -479,8 +483,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns all faces adjacent to both given faces.
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
         /// <returns></returns>
         public IList<HeFace> GetCommonNeighbours(HeFace f0, HeFace f1)
         {
@@ -510,10 +514,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Counts the number of vertices shared by both given faces.
+        /// Counts the number of vertices shared by the two given faces.
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
         /// <returns></returns>
         public int CountCommonVertices(HeFace f0, HeFace f1)
         {
@@ -545,8 +549,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns all vertices shared by both given faces.
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
         /// <returns></returns>
         public IList<HeVertex> GetCommonVertices(HeFace f0, HeFace f1)
         {
@@ -749,7 +753,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
         /// <returns></returns>
         public Vec3d[] GetFaceCenters()
         {
@@ -762,8 +765,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateFaceCenters(IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -844,7 +846,6 @@ namespace SpatialSlur.SlurMesh
         /// Calculates face normals as the area-weighted sum of half-edge normals in each face.
         /// Face normals are unitized by default.
         /// </summary>
-        /// <param name="list"></param>
         /// <returns></returns>
         public Vec3d[] GetFaceNormals()
         {
@@ -859,7 +860,7 @@ namespace SpatialSlur.SlurMesh
         /// Half-edge normals can be scaled in advance for custom weighting.
         /// Face normals are unitized by default.
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="halfEdgeNormals"></param>
         /// <returns></returns>
         public Vec3d[] GetFaceNormals(IList<Vec3d> halfEdgeNormals)
         {
@@ -872,8 +873,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateFaceNormals(IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -911,8 +911,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="halfEdgeNormals"></param>
+        /// <param name="result"></param>
         public void UpdateFaceNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -952,7 +952,6 @@ namespace SpatialSlur.SlurMesh
         /// Face normals are unitized by default.
         /// This method assumes all faces are triangular.
         /// </summary>
-        /// <param name="list"></param>
         /// <returns></returns>
         public Vec3d[] GetFaceNormalsTri()
         {
@@ -965,8 +964,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         private void UpdateFaceNormalsTri(IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -1121,7 +1119,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
         /// <returns></returns>
         public double[] GetFacePlanarity()
         {
@@ -1132,10 +1129,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateFacePlanarity(IList<double> result)
         {
             SizeCheck(result);

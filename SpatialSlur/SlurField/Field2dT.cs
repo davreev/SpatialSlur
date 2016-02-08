@@ -84,10 +84,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Sets all values along the boundary of the field to a given constant
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="field"></param>
         /// <param name="value"></param>
         public void SetBoundary(T value)
         {
@@ -110,6 +108,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets a subset of this field to a given value.
         /// TODO
         /// </summary>
         /// <param name="value"></param>
@@ -124,7 +123,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Sets this field to some function of itself.
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="func"></param>
         public void Function(Func<T, T> func)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -138,7 +137,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Sets this field to some function of another field.
         /// </summary>
-        /// <param name="result"></param>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="func"></param>
+        /// <param name="other"></param>
         public void Function<U>(Func<U, T> func, Field2d<U> other)
         {
             SizeCheck(other);
@@ -169,11 +170,14 @@ namespace SpatialSlur.SlurField
         }
 
 
-
         /// <summary>
-        /// Sets this field to some function of two other fields.
+        ///  Sets this field to some function of two other fields.
         /// </summary>
-        /// <param name="result"></param>
+        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="func"></param>
+        /// <param name="otherU"></param>
+        /// <param name="otherV"></param>
         public void Function<U, V>(Func<U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
         {
             SizeCheck(otherU);
@@ -188,9 +192,13 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of itself and two other fields.
+        ///  Sets this field to some function of itself and two other fields.
         /// </summary>
-        /// <param name="result"></param>
+        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="func"></param>
+        /// <param name="otherU"></param>
+        /// <param name="otherV"></param>
         public void Function<U, V>(Func<T, U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
         {
             SizeCheck(otherU);
@@ -205,10 +213,12 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets a subset of this field to some function of itself.
         /// TODO
-        /// Sets this field to some function of itself.
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="func"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public void Function(Func<T, T> func, Vec2i from, Vec2i to)
         {
             throw new NotImplementedException();
@@ -216,9 +226,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its field points.
+        /// Sets this field to some function of its coordinates.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
         public void SpatialFunction(Func<Vec2d, T> func)
         {
@@ -241,9 +250,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its field points.
+        /// Sets this field to some function of its coordinates.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
         public void SpatialFunction(Func<double, double, T> func)
         {
@@ -266,10 +274,11 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its field points and another field.
+        /// Sets this field to some function of its coordinates and another field.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
+        /// <param name="other"></param>
         public void SpatialFunction<U>(Func<Vec2d, U, T> func, Field2d<U> other)
         {
             SizeCheck(other);
@@ -292,10 +301,11 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its field points and another field.
+        /// Sets this field to some function of its coordinates and another field.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
+        /// <param name="other"></param>
         public void SpatialFunction<U>(Func<double, double, U, T> func, Field2d<U> other)
         {
             SizeCheck(other);
@@ -318,11 +328,12 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets a subset of this field to some function of its field points.
         /// TODO
-        /// Sets this field to some function of its field points.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public void SpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to)
         {
             throw new NotImplementedException();
@@ -330,11 +341,12 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets a subset of this field to some function of its coordinates.
         /// TODO
-        /// Sets this field to some function of its field points.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public void SpatialFunction(Func<double, double, double, T> func, Vec2i from, Vec2i to)
         {
             throw new NotImplementedException();
@@ -342,7 +354,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its normalized field points.
+        /// Sets this field to some function of its normalized coordinates.
         /// </summary>
         /// <param name="func"></param>
         public void NormSpatialFunction(Func<Vec2d, T> func)
@@ -366,7 +378,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its normalized field points.
+        /// Sets this field to some function of its normalized coordinates.
         /// </summary>
         /// <param name="func"></param>
         public void NormSpatialFunction(Func<double, double, T> func)
@@ -389,9 +401,11 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its normalized field points and another field.
+        /// Sets this field to some function of its normalized coordinates and another field.
         /// </summary>
+        /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
+        /// <param name="other"></param>
         public void NormSpatialFunction<U>(Func<Vec2d, U, T> func, Field2d<U> other)
         {
             SizeCheck(other);
@@ -414,9 +428,11 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets this field to some function of its normalized field points and another field.
+        /// Sets this field to some function of its normalized coordinates and another field.
         /// </summary>
+        /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
+        /// <param name="other"></param>
         public void NormSpatialFunction<U>(Func<double, double, U, T> func, Field2d<U> other)
         {
             SizeCheck(other);
@@ -438,11 +454,11 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO
-        /// Sets this field to some function of its normalized field points.
+        /// Sets a subset of this field to some function of its normalized coordinates.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public void NormSpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to)
         {
             throw new NotImplementedException();
@@ -450,11 +466,12 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets a subset of this field to some function of its normalized coordinates and another field.
         /// TODO
-        /// Sets this field to some function of its normalized field points.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public void NormSpatialFunction(Func<double, double, T> func, Vec2i from, Vec2i to)
         {
             throw new NotImplementedException();

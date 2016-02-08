@@ -7,19 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-/// <summary>
-/// Static force methods that make use of hemesh topological querying for their calculation
-/// 
-/// Notes on threading
-/// Threaded force calculations are problematic since multiple threads need to write to the same entry in the resulting force array.
-/// This requires excessive locking ultimately resulting in performance loss.
-/// </summary>
-
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// Static methods for mesh relaxation.
+    /// Only handles the calculation of forces - integration is left up to the implementation.
+    /// </summary>
     public static class HePhysics
     {
-        // Delegates for boundary dependant methods
+        /// <summary>
+        /// Delegates for boundary dependant methods
+        /// </summary>
         private static Action<HeMesh, double, IList<Vec3d>>[] _lapSmooth = 
         { 
             LaplacianSmoothFixed, 
@@ -47,7 +45,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="target"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
         public static void ConstrainTo(HeMesh mesh, Mesh target, double strength, IList<Vec3d> forceSums)
         {
             HeVertexList verts = mesh.Vertices;
@@ -72,7 +71,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="target"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
         public static void ConstrainTo(HeMesh mesh, Brep target, double strength, IList<Vec3d> forceSums)
         {
             HeVertexList verts = mesh.Vertices;
@@ -96,9 +96,8 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="edgeLengths"></param>
-        /// <param name="restLength"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
         public static void ConstrainEdgeLengths(HeMesh mesh, double strength, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -123,9 +122,10 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="restLength"></param>
-        /// <returns></returns>
+        /// <param name="forceSums"></param>
         public static void ConstrainEdgeLengths(HeMesh mesh, double strength, IList<double> edgeLengths, double restLength, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -151,12 +151,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="restLengths"></param>
-        /// <returns></returns>
+        /// <param name="forceSums"></param>
         public static void ConstrainEdgeLengths(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> restLengths, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -186,9 +187,11 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
-        /// <param name="restLength"></param>
-        /// <returns></returns>
+        /// <param name="minLength"></param>
+        /// <param name="maxLength"></param>
+        /// <param name="forceSums"></param>
         public static void ConstrainEdgeLengths(HeMesh mesh, double strength, IList<double> edgeLengths, double minLength, double maxLength, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -226,9 +229,11 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
-        /// <param name="restLength"></param>
-        /// <returns></returns>
+        /// <param name="minLengths"></param>
+        /// <param name="maxLengths"></param>
+        /// <param name="forceSums"></param>
         public static void ConstrainEdgeLengths(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> minLengths, IList<double> maxLengths, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -268,200 +273,14 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
         /// <summary>
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="diagonalLengths"></param>
-        /// <param name="restLengths"></param>
-        /// <returns></returns>
-        public static void ConstrainFaceDiagonalLengths(HeMesh mesh, double strength, IList<double> diagonalLengths, double restLength, IList<Vec3d> forceSums)
-        {
-            mesh.Vertices.SizeCheck(forceSums);
-            mesh.Edges.SizeCheck(diagonalLengths);
-
-            //
-            foreach (HeFace f in mesh.Faces)
-            {
-                if (f.IsUnused) continue;
-                int ne = f.CountEdges();
-
-                if (ne > 4)
-                {
-                    // general ngon case
-                    foreach (HeEdge e in f.Edges)
-                    {
-                        HeVertex v0 = e.Start;
-                        HeVertex v1 = e.Next.End;
-
-                        Vec3d frc = v0.VectorTo(v1);
-                        double mag = diagonalLengths[e.Index];
-                        frc *= (mag - restLength) * strength / mag;
-
-                        forceSums[v0.Index] += frc;
-                        forceSums[v1.Index] -= frc;
-                    }
-                }
-                else if (ne == 4)
-                {
-                    // simplified quad case
-                    HeEdge e = f.First;
-                    for (int i = 0; i < 2; i++)
-                    {
-                        HeVertex v0 = e.Start;
-                        HeVertex v1 = e.Next.End;
-
-                        Vec3d frc = v0.VectorTo(v1);
-                        double mag = diagonalLengths[e.Index];
-                        frc *= (mag - restLength) * strength / mag;
-
-                        forceSums[v0.Index] += frc;
-                        forceSums[v1.Index] -= frc;
-                        e = e.Next;
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="diagonalLengths"></param>
-        /// <param name="restLengths"></param>
-        /// <returns></returns>
-        public static void ConstrainFaceDiagonalLengths(HeMesh mesh, double strength, IList<double> diagonalLengths, IList<double> restLengths, IList<Vec3d> forceSums)
-        {
-            mesh.Vertices.SizeCheck(forceSums);
-
-            HeEdgeList edges = mesh.Edges;
-            edges.SizeCheck(diagonalLengths);
-            edges.SizeCheck(restLengths);
-
-            //
-            foreach (HeFace f in mesh.Faces)
-            {
-                if (f.IsUnused) continue;
-                int ne = f.CountEdges();
-
-                if (ne > 4)
-                {
-                    // general ngon case
-                    foreach (HeEdge e in f.Edges)
-                    {
-                        HeVertex v0 = e.Start;
-                        HeVertex v1 = e.Next.End;
-
-                        Vec3d frc = v0.VectorTo(v1);
-                        double mag = diagonalLengths[e.Index];
-                        frc *= (mag - restLengths[e.Index]) * strength / mag;
-
-                        forceSums[v0.Index] += frc;
-                        forceSums[v1.Index] -= frc;
-                    }
-                }
-                else if (ne == 4)
-                {
-                    // simplified quad case
-                    HeEdge e = f.First;
-                    for (int i = 0; i < 2; i++)
-                    {
-                        HeVertex v0 = e.Start;
-                        HeVertex v1 = e.Next.End;
-
-                        Vec3d frc = v0.VectorTo(v1);
-                        double mag = diagonalLengths[e.Index];
-                        frc *= (mag - restLengths[e.Index]) * strength / mag;
-
-                        forceSums[v0.Index] += frc;
-                        forceSums[v1.Index] -= frc;
-                        e = e.Next;
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="diagonalLengths"></param>
-        /// <param name="restLengths"></param>
-        /// <returns></returns>
-        public static void ConstrainFaceDiagonalLengths(HeMesh mesh, double strength, IList<double> diagonalLengths, double minLength, double maxLength, IList<Vec3d> forceSums)
-        {
-            mesh.Vertices.SizeCheck(forceSums);
-            mesh.Edges.SizeCheck(diagonalLengths);
-
-            if (minLength > maxLength)
-                throw new ArgumentException("the given maximum length must be larger than the given minimum length");
-
-            //
-            foreach (HeFace f in mesh.Faces)
-            {
-                if (f.IsUnused) continue;
-                int ne = f.CountEdges();
-
-                if (ne > 4)
-                {
-                    // general ngon case
-                    foreach (HeEdge e in f.Edges)
-                    {
-                        HeVertex v0 = e.Start;
-                        HeVertex v1 = e.Next.End;
-
-                        Vec3d frc = v0.VectorTo(v1);
-                        double mag = diagonalLengths[e.Index];
-
-                        if (mag > maxLength)
-                            frc *= (mag - maxLength) * strength / mag;
-                        else if (mag < minLength)
-                            frc *= (mag - minLength) * strength / mag;
-                        else
-                            continue;
-
-                        forceSums[v0.Index] += frc;
-                        forceSums[v1.Index] -= frc;
-                    }
-                }
-                else if (ne == 4)
-                {
-                    // simplified quad case
-                    HeEdge e = f.First;
-                    for (int i = 0; i < 2; i++)
-                    {
-                        HeVertex v0 = e.Start;
-                        HeVertex v1 = e.Next.End;
-
-                        Vec3d frc = v0.VectorTo(v1);
-                        double mag = diagonalLengths[e.Index];
-
-                        if (mag > maxLength)
-                            frc *= (mag - maxLength) * strength / mag;
-                        else if (mag < minLength)
-                            frc *= (mag - minLength) * strength / mag;
-                        else
-                            continue;
-
-                        forceSums[v0.Index] += frc;
-                        forceSums[v1.Index] -= frc;
-                        e = e.Next;
-                    }
-                }
-            }
-        }
-        */
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="edgeLengths"></param>
         /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="halfEdgeAngles"></param>
+        /// <param name="restAngle"></param>
         /// <param name="forceSums"></param>
         public static void ConstrainHalfEdgeAngles(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> halfEdgeAngles, double restAngle, IList<Vec3d> forceSums)
         {
@@ -492,8 +311,10 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="edgeLengths"></param>
         /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="halfEdgeAngles"></param>
+        /// <param name="restAngles"></param>
         /// <param name="forceSums"></param>
         public static void ConstrainHalfEdgeAngles(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> halfEdgeAngles, IList<double> restAngles, IList<Vec3d> forceSums)
         {
@@ -525,8 +346,11 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="edgeLengths"></param>
         /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="halfEdgeAngles"></param>
+        /// <param name="minAngle"></param>
+        /// <param name="maxAngle"></param>
         /// <param name="forceSums"></param>
         public static void ConstrainHalfEdgeAngles(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> halfEdgeAngles, double minAngle, double maxAngle, IList<Vec3d> forceSums)
         {
@@ -567,9 +391,10 @@ namespace SpatialSlur.SlurMesh
         /// http://www.miralab.ch/repository/papers/165.pdf
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
+        /// <param name="faceNormals"></param>
         /// <param name="dihedralAngles"></param>
         /// <param name="restAngle"></param>
-        /// <param name="strength"></param>
         /// <param name="forceSums"></param>
         public static void ConstrainDihedralAngles(HeMesh mesh, double strength, IList<Vec3d> faceNormals, IList<double> dihedralAngles, double restAngle, IList<Vec3d> forceSums)
         {
@@ -581,9 +406,10 @@ namespace SpatialSlur.SlurMesh
         /// http://www.miralab.ch/repository/papers/165.pdf
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="dihedralAngles"></param>
-        /// <param name="restAngle"></param>
         /// <param name="strength"></param>
+        /// <param name="faceNormals"></param>
+        /// <param name="dihedralAngles"></param>
+        /// <param name="restAngles"></param>
         /// <param name="forceSums"></param>
         public static void ConstrainDihedralAngles(HeMesh mesh, double strength, IList<Vec3d> faceNormals, IList<double> dihedralAngles, IList<double> restAngles, IList<Vec3d> forceSums)
         {
@@ -597,7 +423,9 @@ namespace SpatialSlur.SlurMesh
         /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
         /// </summary>
         /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="forceSums"></param>
         public static void CirclePack(HeMesh mesh, double strength, IList<double> edgeLengths, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -651,9 +479,10 @@ namespace SpatialSlur.SlurMesh
         /// Adjusts edge lengths to match a pair of radii associated with its end vertices.
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="vertexRadii"></param>
-        /// <returns></returns>
+        /// <param name="forceSums"></param>
         public static void CirclePack(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> vertexRadii, IList<Vec3d> forceSums)
         {
             HeVertexList verts = mesh.Vertices;
@@ -689,7 +518,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
+        /// <param name="boundaryType"></param>
         public static void LaplacianSmooth(HeMesh mesh, double strength, IList<Vec3d> forceSums, SmoothBoundaryType boundaryType = SmoothBoundaryType.Fixed)
         {
             _lapSmooth[(int)boundaryType](mesh, strength, forceSums);
@@ -965,7 +796,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
+        /// <param name="boundaryType"></param>
         public static void LaplacianFair(HeMesh mesh, double strength, IList<Vec3d> forceSums, SmoothBoundaryType boundaryType = SmoothBoundaryType.Fixed)
         {
             _lapFair[(int)boundaryType](mesh, strength, forceSums);
@@ -1130,8 +963,8 @@ namespace SpatialSlur.SlurMesh
         /// Adjusts edge lengths towards the average around their vertex.
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
-        /// <param name="?"></param>
         /// <param name="forceSums"></param>
         public static void EqualizeVertexEdgeLengths(HeMesh mesh, double strength, IList<double> edgeLengths, IList<Vec3d> forceSums)
         {
@@ -1176,8 +1009,9 @@ namespace SpatialSlur.SlurMesh
         /// Adjust edge lengths towards the average within their face.
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
-        /// <returns></returns>
+        /// <param name="forceSums"></param>
         public static void EqualizeFaceEdgeLengths(HeMesh mesh, double strength, IList<double> edgeLengths, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -1220,8 +1054,9 @@ namespace SpatialSlur.SlurMesh
         /// Adjusts edge angles towards the average around their vertex.
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
-        /// <param name="?"></param>
+        /// <param name="edgeAngles"></param>
         /// <param name="forceSums"></param>
         public static void EqualizeVertexEdgeAngles(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> edgeAngles, IList<Vec3d> forceSums)
         {
@@ -1266,8 +1101,10 @@ namespace SpatialSlur.SlurMesh
         /// Adjusts edge angles towards the average within their face.
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
         /// <param name="edgeLengths"></param>
-        /// <returns></returns>
+        /// <param name="edgeAngles"></param>
+        /// <param name="forceSums"></param>
         public static void EqualizeFaceEdgeAngles(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> edgeAngles, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -1311,9 +1148,8 @@ namespace SpatialSlur.SlurMesh
         /// http://www.eecs.berkeley.edu/~sequin/CS285/PAPERS/Pottmann_FrFrm_arch.pdf
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="meshB"></param>
-        /// <param name="edgeLengths"></param>
         /// <param name="strength"></param>
+        /// <param name="vectors"></param>
         /// <param name="forceSums"></param>
         public static void AlignEdges(HeMesh mesh, double strength, IList<Vec3d> vectors, IList<Vec3d> forceSums)
         {
@@ -1348,7 +1184,8 @@ namespace SpatialSlur.SlurMesh
         /// Pulls vertices within each face to a common plane.
         /// </summary>
         /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
         public static void PlanarizeFaces(HeMesh mesh, double strength, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -1411,7 +1248,8 @@ namespace SpatialSlur.SlurMesh
         /// Ignores non-quad faces.
         /// </summary>
         /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
         public static void PlanarizeQuads(HeMesh mesh, double strength, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -1449,9 +1287,12 @@ namespace SpatialSlur.SlurMesh
         /// TODO
         /// </summary>
         /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
         public static void PlanarizeVertices(HeMesh mesh, double strength, IList<Vec3d> forceSums)
         {
+            throw new NotImplementedException();
+
             mesh.Vertices.SizeCheck(forceSums);
 
             /*
@@ -1515,8 +1356,10 @@ namespace SpatialSlur.SlurMesh
         /// Note that this method should be used in conjunction with planarize.
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="halfEdgeAngles"></param>
+        /// <param name="forceSums"></param>
         public static void Circularize(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> halfEdgeAngles, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -1569,11 +1412,12 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Experimental alternative method.
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="halfEdgeAngles"></param>
+        /// <param name="forceSums"></param>
         public static void Circularize2(HeMesh mesh, double strength, IList<double> halfEdgeAngles, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -1616,15 +1460,15 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-
         /// <summary>
         /// Adjusts faces around each internal degree 4 vertex to be tangent to a common cone.
-        /// Intended for use on quadrilateral meshes.
+        /// Intended for use on quad meshes.
         /// Note that this method should be used in conjunction with planarize.
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
         /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="halfEdgeAngles"></param>
         /// <param name="forceSums"></param>
         public static void Conicalize(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> halfEdgeAngles, IList<Vec3d> forceSums)
         {
@@ -1685,11 +1529,11 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Experimental alternative method.
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
         /// <param name="strength"></param>
+        /// <param name="halfEdgeAngles"></param>
         /// <param name="forceSums"></param>
         public static void Conicalize2(HeMesh mesh, double strength, IList<double> halfEdgeAngles, IList<Vec3d> forceSums)
         {
@@ -1750,11 +1594,11 @@ namespace SpatialSlur.SlurMesh
         /// Adjusts edge lengths to make quad faces tangential.
         /// Note that opposite sides of a tangential quad have equal sums.
         /// http://en.wikipedia.org/wiki/Tangential_quadrilateral
-        /// 
-        /// combine with physical smooth to produce circle packing quad meshes
         /// </summary>
         /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="forceSums"></param>
         public static void Tangentialize(HeMesh mesh, double strength, IList<double> edgeLengths, IList<Vec3d> forceSums)
         {
             mesh.Vertices.SizeCheck(forceSums);
@@ -1807,8 +1651,8 @@ namespace SpatialSlur.SlurMesh
         /// Minimizes gaussian curvature at interior vertices.
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="edgeAngles"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="forceSums"></param>
         public static void Developablize(HeMesh mesh, double strength, IList<Vec3d> forceSums)
         {
             HeVertexList verts = mesh.Vertices;
@@ -1847,8 +1691,9 @@ namespace SpatialSlur.SlurMesh
         /// Minimizes gaussian curvature at interior vertices.
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="edgeAngles"></param>
-        /// <returns></returns>
+        /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
+        /// <param name="forceSums"></param>
         public static void Developablize(HeMesh mesh, double strength, IList<double> edgeLengths, IList<Vec3d> forceSums)
         {
             HeVertexList verts = mesh.Vertices;
@@ -1888,8 +1733,10 @@ namespace SpatialSlur.SlurMesh
         /// Minimizes gaussian curvature at interior vertices.
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="strength"></param>
+        /// <param name="edgeLengths"></param>
         /// <param name="halfEdgeAngles"></param>
-        /// <returns></returns>
+        /// <param name="forceSums"></param>
         public static void Developablize(HeMesh mesh, double strength, IList<double> edgeLengths, IList<double> halfEdgeAngles, IList<Vec3d> forceSums)
         {
             HeVertexList verts = mesh.Vertices;

@@ -18,6 +18,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="pointPairs"></param>
         /// <param name="epsilon"></param>
+        /// <param name="allowDupEdges"></param>
         /// <param name="nodePositions"></param>
         /// <returns></returns>
         public static DiGraph CreateFromLineSegments(IList<Vec3d> pointPairs, double epsilon, bool allowDupEdges, out List<Vec3d> nodePositions)
@@ -56,7 +57,6 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="capacity"></param>
         public DiGraph()
         {
             _nodes = new List<DiNode>();
@@ -67,7 +67,8 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vertexCount"></param>
+        /// <param name="nodeCapacity"></param>
+        /// <param name="edgeCapacity"></param>
         public DiGraph(int nodeCapacity, int edgeCapacity)
         {
             _nodes = new List<DiNode>(nodeCapacity);
@@ -262,7 +263,6 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Removes all flagged nodes.
         /// </summary>
-        /// <param name="edges"></param>
         private void CompactNodes()
         {
             int marker = 0;
@@ -284,7 +284,6 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Removes all flagged edges.
         /// </summary>
-        /// <param name="edges"></param>
         private void CompactEdges()
         {
             int marker = 0;
@@ -368,6 +367,8 @@ namespace SpatialSlur.SlurGraph
         /// <param name="result"></param>
         public void UpdateNodeDepths(IList<int> sources, IList<int> result)
         {
+            NodeSizeCheck(result);
+
             // set values to infinity
             result.Set(int.MaxValue);
 
@@ -402,7 +403,6 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Gets the topological distance of each node from a given set of source nodes via breadth first search.
         /// </summary>
-        /// <param name="graph"></param>
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <returns></returns>
@@ -417,12 +417,14 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="graph"></param>
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
         public void UpdateNodeDistances(IList<int> sources, IList<double> edgeLengths, IList<double> result)
         {
+            EdgeSizeCheck(edgeLengths);
+            NodeSizeCheck(result);
+
             result.Set(Double.PositiveInfinity);
 
             // set sources to zero and enqueue
@@ -470,9 +472,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="nodeValues"></param>
         /// <param name="result"></param>
         public void UpdateLaplacian(IList<double> nodeValues, IList<double> result)
         {
+            NodeSizeCheck(nodeValues);
+            NodeSizeCheck(result);
+
             Parallel.ForEach(Partitioner.Create(0, _nodes.Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -505,9 +511,15 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="nodeValues"></param>
+        /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
         public void UpdateLaplacian(IList<double> nodeValues, IList<double> edgeWeights, IList<double> result)
         {
+            NodeSizeCheck(nodeValues);
+            EdgeSizeCheck(edgeWeights);
+            NodeSizeCheck(result);
+
             Parallel.ForEach(Partitioner.Create(0, _nodes.Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -529,7 +541,6 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="graph"></param>
         /// <param name="nodeCoords"></param>
         /// <returns></returns>
         public double[] GetEdgeLengths(IList<Vec3d> nodeCoords)
@@ -547,6 +558,9 @@ namespace SpatialSlur.SlurGraph
         /// <param name="result"></param>
         public void UpdateEdgeLengths(IList<Vec3d> nodeCoords, IList<double> result)
         {
+            NodeSizeCheck(nodeCoords);
+            EdgeSizeCheck(result);
+
             Parallel.ForEach(Partitioner.Create(0, _edges.Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -556,6 +570,28 @@ namespace SpatialSlur.SlurGraph
                     result[i] = nodeCoords[e.Start.Index].DistanceTo(nodeCoords[e.End.Index]);
                 }
             });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attributes"></param>
+        private void NodeSizeCheck<T>(IList<T> attributes)
+        {
+            if (attributes.Count != _nodes.Count)
+                throw new ArgumentException("The number of attributes provided does not match the number of nodes in the graph.");
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attributes"></param>
+        private void EdgeSizeCheck<T>(IList<T> attributes)
+        {
+            if (attributes.Count != _edges.Count)
+                throw new ArgumentException("The number of attributes provided does not match the number of edges in the graph.");
         }
     }
 }

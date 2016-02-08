@@ -900,10 +900,10 @@ namespace SpatialSlur.SlurField
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
+        /// <param name="domain"></param>
         /// <param name="nx"></param>
         /// <param name="ny"></param>
         /// <param name="nz"></param>
-        /// <param name="box"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
         public static Mesh Evaluate(IList<double> values, Domain3d domain, int nx, int ny, int nz, double thresh)
@@ -1609,8 +1609,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
+        /// <param name="nxy"></param>
         /// <returns></returns>
         private static int[] GetIndexOffsets(int nx, int nxy)
         {
@@ -1657,9 +1656,7 @@ namespace SpatialSlur.SlurField
         /// <param name="index"></param>
         /// <param name="nx"></param>
         /// <param name="nxy"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
+        /// <returns></returns>
         private static Vec3i ExpandIndex(int index, int nx, int nxy)
         {
             int k = index / nxy;
@@ -1709,6 +1706,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="corners"></param>
         /// <param name="values"></param>
+        /// <param name="normals"></param>
         /// <param name="caseIndex"></param>
         /// <param name="thresh"></param>
         /// <param name="result"></param>

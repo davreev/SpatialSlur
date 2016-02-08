@@ -18,10 +18,11 @@ namespace SpatialSlur.SlurField
         #region Static
 
         /// <summary>
+        /// Returns a scalar field of normalized brightness values
         /// TODO
-        /// returns a scalar field of normalized brightness values
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="domain"></param>
+        /// <param name="bitmaps"></param>
         /// <returns></returns>
         public static ScalarField3d CreateFromImages(Domain3d domain, IList<Bitmap> bitmaps)
         {
@@ -169,7 +170,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="values"></param>
         public void Add(IList<double> values)
         {
             SizeCheck(values);
@@ -186,6 +187,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
+        /// <param name="result"></param>
         public void Add(ScalarField3d other, ScalarField3d result)
         {
             Add(other.Values, result.Values);
@@ -195,7 +197,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="values"></param>
+        /// <param name="result"></param>
         public void Add(IList<double> values, IList<double> result)
         {
             SizeCheck(values);
@@ -221,7 +224,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="values"></param>
         public void Multiply(IList<double> values)
         {
             SizeCheck(values);
@@ -238,6 +241,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
+        /// <param name="result"></param>
         public void Multiply(ScalarField3d other, ScalarField3d result)
         {
             Multiply(other.Values, result.Values);
@@ -247,7 +251,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="values"></param>
+        /// <param name="result"></param>
         public void Multiply(IList<double> values, IList<double> result)
         {
             SizeCheck(values);
@@ -263,7 +268,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
+        /// <param name="value"></param>
+        /// <param name="factor"></param>
         public void LerpTo(double value, double factor)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -294,8 +300,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
+        /// <param name="value"></param>
+        /// <param name="factors"></param>
         public void LerpTo(double value, ScalarField3d factors)
         {
             SizeCheck(factors);
@@ -351,8 +357,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="to"></param>
         public void Remap(Domain to)
         {
             Remap(new Domain(Values), to);
@@ -362,8 +367,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public void Remap(Domain from, Domain to)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -384,30 +389,6 @@ namespace SpatialSlur.SlurField
             UpdateLaplacian(result.Values);
             return result;
         }
-
-
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(ScalarField3d result)
-        {
-            GetLaplacian(result.Values);
-        }
-
-
-        [Obsolete("Use UpdateLaplacian")]
-        /// <summary>
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(IList<double> result)
-        {
-            SizeCheck(result);
-            _getLaplacian(result);
-        }
-
 
 
         /// <summary>
@@ -434,7 +415,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianConstant(IList<double> result)
         {
             // inverse square step size for each dimension
@@ -488,7 +469,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianEqual(IList<double> result)
         {
             // inverse square step size for each dimension
@@ -542,7 +523,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         private void GetLaplacianPeriodic(IList<double> result)
         {
             // inverse square step size for each dimension
@@ -605,33 +586,10 @@ namespace SpatialSlur.SlurField
         }
 
 
-        [Obsolete("Use UpdateGradient")]
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
-        public void GetGradient(VectorField3d result)
-        {
-            GetGradient(result.Values);
-        }
-
-
-        [Obsolete("Use UpdateGradient")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rate"></param>
-        public void GetGradient(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-            _getGradient(result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         public void UpdateGradient(VectorField3d result)
         {
             UpdateGradient(result.Values);
@@ -641,7 +599,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="result"></param>
         public void UpdateGradient(IList<Vec3d> result)
         {
             SizeCheck(result);

@@ -95,7 +95,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="other"></param>
         public VecKd(VecKd other)
             : this(other.K)
         {
@@ -172,8 +172,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="other"></param>
         private void SizeCheck(VecKd other)
         {
             if (K != other.K)
@@ -195,6 +194,8 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
         public bool Equals(VecKd other, double epsilon)
         {
             SizeCheck(other);
@@ -210,6 +211,8 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
         public bool Equals(VecKd other, VecKd epsilon)
         {
             SizeCheck(other);
@@ -329,7 +332,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void Add(VecKd other, VecKd result)
         {
             SizeCheck(other);
@@ -358,7 +361,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void Subtract(VecKd other, VecKd result)
         {
             SizeCheck(other);
@@ -385,7 +388,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="factor"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void Scale(double factor, VecKd result)
         {
             SizeCheck(result);
@@ -415,7 +418,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <param name="factor"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void AddScaled(VecKd other, double factor, VecKd result)
         {
             SizeCheck(other);

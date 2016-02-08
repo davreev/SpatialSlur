@@ -9,7 +9,10 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
-    public class HalfEdgeList:HeElementList<HalfEdge>
+    /// <summary>
+    /// 
+    /// </summary>
+    public class HalfEdgeList : HeElementList<HalfEdge>
     {
         /// <summary>
         /// 
@@ -79,7 +82,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the length of each half-edge in the mesh.
         /// </summary>
-        /// <param name="mesh"></param>
         /// <returns></returns>
         public double[] GetHalfEdgeLengths()
         {
@@ -92,8 +94,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateHalfEdgeLengths(IList<double> result)
         {
             SizeCheck(result);
@@ -118,9 +119,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the length of each edge (pair of half-edges) in the mesh.
+        /// Returns the length of each edge in the mesh.
         /// </summary>
-        /// <param name="mesh"></param>
         /// <returns></returns>
         public double[] GetEdgeLengths()
         {
@@ -133,8 +133,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateEdgeLengths(IList<double> result)
         {
             HalfSizeCheck(result);
@@ -150,7 +149,7 @@ namespace SpatialSlur.SlurMesh
             });
         }
 
-        
+
         /// <summary>
         /// Returns the angle between each half-edge and its previous.
         /// </summary>
@@ -219,7 +218,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns a dihedral angle at each edge (pair of half-edges) in the mesh.
+        /// Returns a dihedral angle at each pair of half-edges in the mesh.
         /// </summary>
         /// <returns></returns>
         public double[] GetDihedralAngles(IList<Vec3d> faceNormals)
@@ -238,7 +237,7 @@ namespace SpatialSlur.SlurMesh
         {
             SizeCheck(result);
             Mesh.Faces.SizeCheck(faceNormals);
-       
+
             Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -255,7 +254,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns the area associated with each halfedge.
-        /// TODO Look into alternate formulations.
+        /// This is calculated as W in the diagram below.
         /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
         /// </summary>
         /// <param name="faceCenters"></param>
@@ -298,14 +297,14 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns the cotangent of each half-edge.
-        /// Assumes triangle mesh.
+        /// Intended for use on triangle meshes.
         /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
         /// </summary>
         /// <returns></returns>
-        public double[] GetCotangents()
+        public double[] GetHalfEdgeCotangents()
         {
             double[] result = new double[Count];
-            UpdateCotangents(result);
+            UpdateHalfEdgeCotangents(result);
             return result;
         }
 
@@ -314,7 +313,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateCotangents(IList<double> result)
+        public void UpdateHalfEdgeCotangents(IList<double> result)
         {
             SizeCheck(result);
 
@@ -334,12 +333,12 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the cotangent weight for each half-edge.
-        /// Assumes triangle mesh.
-        /// http://www.multires.caltech.edu/pubs/diffGeoOps.pdf
-        /// http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf
+        /// Returns a symmetric cotangent weight for each half-edge.
+        /// Intended for use on triangle meshes.
+        /// Note that this implementation doesn't consider vertex areas.
+        /// http://reuter.mit.edu/papers/reuter-smi09.pdf
+        /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
-        /// <param name="edgeAngles"></param>
         /// <returns></returns>
         public double[] GetCotanWeights()
         {
@@ -352,6 +351,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="result"></param>
         public void UpdateCotanWeights(IList<double> result)
         {
             SizeCheck(result);
@@ -375,7 +375,6 @@ namespace SpatialSlur.SlurMesh
                     }
 
                     e = e.Twin;
-
                     if (e.Face != null)
                     {
                         Vec3d v0 = e.Prev.Span;
@@ -392,17 +391,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the area normalized cotangent weight for each half-edge.
-        /// Assumes triangle mesh.
-        /// http://www.multires.caltech.edu/pubs/diffGeoOps.pdf
-        /// http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf
+        /// Returns the a symmetric area-dependent cotangent weight for each half-edge.
+        /// Intended for use on triangle meshes.
+        /// Symmetric derivation of the Laplace-Beltrami operator detailed in
+        /// http://reuter.mit.edu/papers/reuter-smi09.pdf
         /// </summary>
-        /// <param name="edgeAngles"></param>
         /// <returns></returns>
-        public double[] GetAreaCotanWeights()
+        public double[] GetCotanWeights2()
         {
             double[] result = new double[Count];
-            UpdateAreaCotanWeights(result);
+            UpdateCotanWeights2(result);
             return result;
         }
 
@@ -410,102 +408,87 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public void UpdateAreaCotanWeights(IList<double> result)
+        /// <param name="vertexAreas"></param>
+        /// <returns></returns>
+        public double[] GetCotanWeights2(out double[] vertexAreas)
+        {
+            double[] result = new double[Count];
+            UpdateCotanWeights2(result, out vertexAreas);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        public void UpdateCotanWeights2(IList<double> result)
+        {
+            double[] vertexAreas;
+            UpdateCotanWeights2(result, out vertexAreas);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="vertexAreas"></param>
+        public void UpdateCotanWeights2(IList<double> result, out double[] vertexAreas)
         {
             SizeCheck(result);
 
-            double[] areas = new double[Mesh.Vertices.Count];
+            vertexAreas = new double[Mesh.Vertices.Count];
             HeFaceList faces = Mesh.Faces;
-            double t = 1.0 / 3.0;
+            double t = 1.0 / 6.0;
 
-            // Can't parallelize due to multiple threads potentially writing to the same array address
-            // TODO consider parallel alternatives
-            for (int i = 0; i < faces.Count; i++)
+            // calculate cotangent weights and vertex areas
+            for (int i = 0; i < Count; i += 2)
             {
-                HeFace f = faces[i];
-                if (f.IsUnused) continue;
+                HalfEdge e = this[i];
+                if (e.IsUnused) continue;
+                double w = 0.0;
 
-                foreach (HalfEdge e in f.Edges)
+                if (e.Face != null)
                 {
                     Vec3d v0 = e.Prev.Span;
                     Vec3d v1 = e.Next.Twin.Span;
-
-                    // add to vertex areas
                     double a = Vec3d.Cross(v0, v1).Length;
-                    areas[e.Start.Index] += 0.5 * a * t; // 1/3rd the triangular area
-
-                    // add to edge weights
-                    double w = 0.5 * v0 * v1 / a;
-                    result[e.Index] += w;
-                    result[e.Twin.Index] += w;
+                    vertexAreas[e.Start.Index] += a * t; // 1/3rd the triangular area (or 1/6th the parallelgram area)
+                    w += v0 * v1 / a;
                 }
+
+                e = e.Twin;
+                if (e.Face != null)
+                {
+                    Vec3d v0 = e.Prev.Span;
+                    Vec3d v1 = e.Next.Twin.Span;
+                    double a = Vec3d.Cross(v0, v1).Length;
+                    vertexAreas[e.Start.Index] += a * t; // 1/3rd the triangular area (or 1/6th the parallelgram area)
+                    w += v0 * v1 / a;
+                }
+
+                result[i] = w * 0.5; // cache weight with first edge of each pair
             }
 
-            // normalize weights with vertex areas
-            Parallel.ForEach(Partitioner.Create(0, Count / 2), range =>
+            // divide weights by vertex areas
+            double[] areas = vertexAreas; // can't use out parameter within lambda statement
+            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
             {
-                int i0 = range.Item1 * 2;
-                int i1 = range.Item2 * 2;
+                int i0 = range.Item1 << 1;
+                int i1 = range.Item2 << 1;
 
                 for (int i = i0; i < i1; i += 2)
                 {
-                    HeVertex v0 = this[i].Start;
-                    HeVertex v1 = this[i + 1].Start;
-
-                    double w = result[i] / Math.Sqrt(areas[v0.Index] * areas[v1.Index]);
-                    result[i] = w;
-                    result[i + 1] = w;
-                }
-            });
-        }
-
-
-        /*
-        /// <summary>
-        /// returns the cotangent weight for each halfedge pair
-        /// assumes triangle mesh
-        /// 
-        /// http://www.multires.caltech.edu/pubs/diffGeoOps.pdf
-        /// http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf
-        /// </summary>
-        /// <param name="edgeAngles"></param>
-        /// <returns></returns>
-        public double[] GetCotanWeights()
-        {
-            double[] result = new double[Count];
-            GetCotanWeights(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void GetCotanWeights(IList<double> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count / 2), range =>
-            {
-                int i0 = range.Item1 * 2;
-                int i1 = range.Item2 * 2;
-
-                for (int i = i0; i < i1; i += 2)
-                {
-                    HeEdge e = List[i];
+                    HalfEdge e = this[i];
                     if (e.IsUnused) continue;
 
-                    double w = 0.0;
-                    if (e.Face != null) w += SlurMath.Cotan(Vec3d.Angle(e.Prev.Span, e.Next.Twin.Span));
-
-                    e = e.Twin;
-                    if (e.Face != null) w += SlurMath.Cotan(Vec3d.Angle(e.Prev.Span, e.Next.Twin.Span));
-
-                    w *= 0.5;
+                    double w = result[i] / Math.Sqrt(areas[e.Start.Index] * areas[e.End.Index]); // symmetric area weighting
                     result[i] = w;
                     result[i + 1] = w;
                 }
             });
         }
-        */
 
 
         /// <summary>
@@ -544,7 +527,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the span vector for each half-edge in the mesh.
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="unitize"></param>
         /// <returns></returns>
         public Vec3d[] GetHalfEdgeVectors(bool unitize)
         {
@@ -557,8 +540,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="unitize"></param>
+        /// <param name="result"></param>
         public void UpdateHalfEdgeVectors(bool unitize, IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -587,7 +570,7 @@ namespace SpatialSlur.SlurMesh
         /// These are calculated as the cross product of each edge and its previous.
         /// Note that these are used in the calculation of both vertex and face normals.
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="unitize"></param>
         /// <returns></returns>
         public Vec3d[] GetHalfEdgeNormals(bool unitize)
         {
@@ -600,8 +583,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="unitize"></param>
+        /// <param name="result"></param>
         public void UpdateHalfEdgeNormals(bool unitize, IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -616,8 +599,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         private void UpdateHalfEdgeNormals(IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -634,10 +616,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         private void UpdateHalfEdgeUnitNormals(IList<Vec3d> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -658,8 +639,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <param name="edgeLengths"></param>
         /// <param name="unitize"></param>
         /// <returns></returns>
         public Vec3d[] GetHalfEdgeBisectors(bool unitize)
@@ -673,10 +652,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <param name="edgeLengths"></param>
         /// <param name="unitize"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public void UpdateHalfEdgeBisectors(bool unitize, IList<Vec3d> result)
         {
             SizeCheck(result);
@@ -793,7 +770,7 @@ namespace SpatialSlur.SlurMesh
 
             HalfEdge e0 = edge;
             HalfEdge e1 = e0.Twin;
-        
+
             HeVertex v0 = e0.Start;
             HeVertex v1 = e1.Start;
             //HeVertex v2 = Mesh.Vertices.Add(v0.Position);
@@ -804,7 +781,7 @@ namespace SpatialSlur.SlurMesh
 
             // update edge-vertex references
             e1.Start = v2;
-    
+
             // update edge-face references
             e2.Face = e0.Face;
             e3.Face = e1.Face;

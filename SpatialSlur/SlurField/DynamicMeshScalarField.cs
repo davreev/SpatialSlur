@@ -10,9 +10,12 @@ using SpatialSlur.SlurMesh;
 
 namespace SpatialSlur.SlurField
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DynamicMeshScalarField : MeshScalarField
     {
-        protected readonly double[] _deltas;
+        private readonly double[] _deltas;
 
 
         /// <summary>
@@ -29,7 +32,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         public DynamicMeshScalarField(MeshField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -40,7 +44,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         public DynamicMeshScalarField(MeshScalarField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -51,7 +56,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="other"></param>
+        /// <param name="duplicateMesh"></param>
         public DynamicMeshScalarField(DynamicMeshScalarField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
@@ -140,6 +146,7 @@ namespace SpatialSlur.SlurField
         /// http://www.igl.ethz.ch/projects/Laplacian-mesh-processing/Laplacian-mesh-optimization/lmo.pdf
         /// </summary>
         /// <param name="rate"></param>
+        /// <param name="halfEdgeWeights"></param>
         public void Diffuse(double rate, IList<double> halfEdgeWeights)
         {
             Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
@@ -164,7 +171,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
+        /// <param name="amount"></param>
         public void Deposit(double amount)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -178,6 +185,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="target"></param>
         /// <param name="rate"></param>
         public void Deposit(double target, double rate)
         {
@@ -206,6 +214,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="thresh"></param>
         /// <param name="rate"></param>
         public void Bifurcate(double thresh, double rate)
         {
@@ -264,7 +273,8 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="point"></param>
-        /// <param name="amount"></param>
+        /// <param name="target"></param>
+        /// <param name="rate"></param>
         public void DepositAt(MeshPoint point, double target, double rate)
         {
             DepositAt(point, (target - Evaluate(point)) * rate);
@@ -274,6 +284,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="index"></param>
         /// <param name="rate"></param>
         public void DecayAt(int index, double rate)
         {
@@ -284,6 +295,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="point"></param>
         /// <param name="rate"></param>
         public void DecayAt(MeshPoint point, double rate)
         {

@@ -9,6 +9,9 @@ using Rhino.Geometry;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HeMesh
     {
         #region Static

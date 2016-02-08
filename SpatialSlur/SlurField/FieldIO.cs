@@ -11,9 +11,11 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurField
 {
+    /// <summary>
+    /// Various methods for exporting and importing field data.
+    /// </summary>
     public static class FieldIO
     {
-
         /// <summary>
         /// 
         /// </summary>
@@ -61,12 +63,15 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Allows for supersampling of the field.
+        /// Allows for supersampling of the field
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <param name="path"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="layers"></param>
         public static void SaveAsImageStack<T>(Field3d<T> field, Func<T, Color> mapper, string path, int width, int height, int layers)
         {
             Rectangle rect = new Rectangle(0, 0, width, height);
@@ -161,13 +166,14 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO test
         /// Allows for supersampling of the field.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <param name="path"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         public static void SaveAsImage<T>(Field2d<T> field, Func<T, Color> mapper, string path, int width, int height)
         {
             Rectangle rect = new Rectangle(0, 0, width, height);

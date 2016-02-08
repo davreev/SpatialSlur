@@ -8,6 +8,10 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class HeElementList<T>:IEnumerable<T> where T : HeElement
     {
         private readonly HeMesh _mesh;
@@ -29,6 +33,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="capacity"></param>
         internal HeElementList(HeMesh mesh, int capacity)
         {
             _mesh = mesh;
