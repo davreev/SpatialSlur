@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurMesh
     public class HeVertex : HeElement
     {
         private Vec3d _position;
-        private HalfEdge _outgoing;
+        private HalfEdge _first;
 
 
         /// <summary>
@@ -45,13 +45,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns one of the half-edges starting at this vertex.
-        /// Note that if the vertex is on the mesh boundary, the outgoing half-edge must have a null face reference.
+        /// Returns the first half-edge starting at this vertex.
+        /// Note that if the vertex is on the mesh boundary, the first half-edge must have a null face reference.
         /// </summary>
-        public HalfEdge Outgoing
+        public HalfEdge First
         {
-            get { return _outgoing; }
-            internal set { _outgoing = value; }
+            get { return _first; }
+            internal set { _first = value; }
         }
 
 
@@ -60,7 +60,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public override bool IsUnused
         {
-            get { return _outgoing == null; }
+            get { return _first == null; }
         }
 
 
@@ -70,7 +70,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         internal override bool IsValid
         {
-            get { return !_outgoing.IsFromDeg1; }
+            get { return !_first.IsFromDegree1; }
         }
 
 
@@ -80,7 +80,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public override bool IsBoundary
         {
-            get { return _outgoing.Face == null; }
+            get { return _first.Face == null; }
         }
 
 
@@ -102,7 +102,7 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 if (IsUnused) return 0; // no nieghbours if unused
-                HalfEdge e = _outgoing;
+                HalfEdge e = _first;
                 int count = 0;
 
                 // circulate to the next edge until back at the first
@@ -110,7 +110,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     count++;
                     e = e.Twin.Next;
-                } while (e != _outgoing);
+                } while (e != _first);
 
                 return count;
             }
@@ -120,18 +120,18 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the vertex is has 2 outgoing half-edges.
         /// </summary>
-        public bool IsDeg2
+        public bool IsDegree2
         {
-            get { return _outgoing.IsFromDeg2; }
+            get { return _first.IsFromDegree2; }
         }
 
 
         /// <summary>
         /// Returns true if the vertex is has 3 outgoing half-edges.
         /// </summary>
-        public bool IsDeg3
+        public bool IsDegree3
         {
-            get { return _outgoing.IsFromDeg3; }
+            get { return _first.IsFromDegree3; }
         }
 
 
@@ -140,7 +140,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         internal override void MakeUnused()
         {
-            _outgoing = null;
+            _first = null;
         }
 
      
@@ -163,7 +163,7 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 if (IsUnused) yield break;
-                HalfEdge e = _outgoing;
+                HalfEdge e = _first;
 
                 // circulate to the next edge until back at the first
                 do
@@ -171,7 +171,7 @@ namespace SpatialSlur.SlurMesh
                     e = e.Twin;
                     yield return e.Start;
                     e = e.Next;
-                } while (e != _outgoing);
+                } while (e != _first);
             }
         }
 
@@ -179,19 +179,19 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Iterates over all outgoing half-edges.
         /// </summary>
-        public IEnumerable<HalfEdge> OutgoingEdges
+        public IEnumerable<HalfEdge> OutgoingHalfEdges
         {
             get
             {
                 if (IsUnused) yield break;
-                HalfEdge e = _outgoing;
+                HalfEdge e = _first;
 
                 // circulate to the next edge until back at the first
                 do
                 {
                     yield return e;
                     e = e.Twin.Next;
-                } while (e != _outgoing);
+                } while (e != _first);
             }
         }
 
@@ -199,12 +199,12 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Iterates over all incoming half-edges.
         /// </summary>
-        public IEnumerable<HalfEdge> IncomingEdges
+        public IEnumerable<HalfEdge> IncomingHalfEdges
         {
             get
             {
                 if (IsUnused) yield break;
-                HalfEdge e = _outgoing;
+                HalfEdge e = _first;
 
                 // circulate to the next edge until back at the first
                 do
@@ -212,7 +212,7 @@ namespace SpatialSlur.SlurMesh
                     e = e.Twin;
                     yield return e;
                     e = e.Next;
-                } while (e != _outgoing);
+                } while (e != _first);
             }
         }
 
@@ -226,7 +226,7 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 if (IsUnused) yield break;
-                HalfEdge e = _outgoing;
+                HalfEdge e = _first;
                 HeFace f = e.Face;
 
                 // circulate to the next edge until back at the first
@@ -235,7 +235,7 @@ namespace SpatialSlur.SlurMesh
                     if (f != null) yield return f;
                     e = e.Twin.Next;
                     f = e.Face;
-                } while (e != _outgoing);
+                } while (e != _first);
             }
         }
 
@@ -246,11 +246,11 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public HalfEdge FindEdgeTo(HeVertex other)
+        public HalfEdge FindHalfEdgeTo(HeVertex other)
         {
             if (IsUnused) return null;
 
-            foreach (HalfEdge e in OutgoingEdges)
+            foreach (HalfEdge e in OutgoingHalfEdges)
                 if (e.End == other) return e;
 
             return null;

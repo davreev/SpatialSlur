@@ -343,7 +343,7 @@ namespace SpatialSlur.SlurMesh
                 int i0 = queue.Dequeue();
                 double t0 = result[i0];
 
-                foreach (HalfEdge e in this[i0].IncomingEdges)
+                foreach (HalfEdge e in this[i0].IncomingHalfEdges)
                 {
                     int i1 = e.Start.Index;
                     double t1 = t0 + halfEdgeLengths[e.Index];
@@ -392,7 +392,7 @@ namespace SpatialSlur.SlurMesh
                     double t0 = values[i];
 
                     // check first neighbour
-                    HalfEdge first = v0.Outgoing.Twin;
+                    HalfEdge first = v0.First.Twin;
                     double t1 = values[first.Start.Index];
 
                     bool last = (t1 < t0); // was the last neighbour lower?
@@ -483,7 +483,7 @@ namespace SpatialSlur.SlurMesh
                     if (v.IsUnused) continue;
 
                     double sum = 0.0;
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                     {
                         if (e.Face == null) continue;
                         sum += halfEdgeAreas[e.Index];
@@ -517,13 +517,13 @@ namespace SpatialSlur.SlurMesh
 
                     double sum = 0.0;
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                     {
                         if (e.Face == null) continue;
 
                         Vec3d v0 = e.Span * 0.5;
                         Vec3d v1 = faceCenters[e.Face.Index] - e.Start.Position;
-                        Vec3d v2 = e.Prev.Twin.Span * 0.5;
+                        Vec3d v2 = e.Previous.Twin.Span * 0.5;
 
                         sum += (Vec3d.Cross(v0, v1).Length + Vec3d.Cross(v1, v2).Length) * 0.5;
                     }
@@ -602,10 +602,10 @@ namespace SpatialSlur.SlurMesh
                     double sum = 0.0;
                     int n = 0;
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                     {
                         if (e.Face == null) continue; // skip boundary edges
-                        sum += (halfEdgeLengths[e.Index] + halfEdgeLengths[e.Prev.Index] - halfEdgeLengths[e.Next.Index]) * 0.5;
+                        sum += (halfEdgeLengths[e.Index] + halfEdgeLengths[e.Previous.Index] - halfEdgeLengths[e.Next.Index]) * 0.5;
                         n++;
                     }
 
@@ -679,8 +679,8 @@ namespace SpatialSlur.SlurMesh
                     if (v.IsUnused || v.IsBoundary) continue;
 
                     double sum = 0.0;
-                    foreach (HalfEdge e in v.OutgoingEdges)
-                        sum += Vec3d.Angle(e.Span, e.Prev.Twin.Span);
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
+                        sum += Vec3d.Angle(e.Span, e.Previous.Twin.Span);
 
                     result[i] = Math.Abs(sum - SlurMath.PI2);
                 }
@@ -706,7 +706,7 @@ namespace SpatialSlur.SlurMesh
                     if (v.IsUnused || v.IsBoundary) continue;
 
                     double sum = 0.0;
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                         sum += halfEdgeAngles[e.Index];
 
                     result[i] = Math.Abs(sum - SlurMath.PI2);
@@ -790,10 +790,10 @@ namespace SpatialSlur.SlurMesh
 
                     Vec3d sum = new Vec3d();
                  
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                     {
                         if (e.Face == null) continue;
-                        sum += Vec3d.Cross(e.Prev.Span, e.Span);
+                        sum += Vec3d.Cross(e.Previous.Span, e.Span);
                     }
 
                     sum.Unitize();
@@ -821,7 +821,7 @@ namespace SpatialSlur.SlurMesh
 
                     Vec3d sum = new Vec3d();
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                     {
                         if (e.Face == null) continue;
                         sum += halfEdgeNormals[e.Index];
@@ -879,7 +879,7 @@ namespace SpatialSlur.SlurMesh
                     Vec3d sum = new Vec3d();
                     int n = 0;
 
-                    foreach (HalfEdge e in v.IncomingEdges)
+                    foreach (HalfEdge e in v.IncomingHalfEdges)
                     {
                         sum += e.Start.Position;
                         n++;
@@ -910,7 +910,7 @@ namespace SpatialSlur.SlurMesh
 
                     Vec3d sum = new Vec3d();
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                         sum += e.Span * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
@@ -940,7 +940,7 @@ namespace SpatialSlur.SlurMesh
                     double t = values[i];
                     double sum = 0.0;
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                         sum += (values[e.End.Index] - t) * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
@@ -970,7 +970,7 @@ namespace SpatialSlur.SlurMesh
                     Vec3d t = values[i];
                     Vec3d sum = new Vec3d();
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                         sum += (values[e.End.Index] - t) * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
@@ -994,7 +994,7 @@ namespace SpatialSlur.SlurMesh
             Validate(vertex);
 
             // simplified process for interior degree 2 vertices
-            if (vertex.IsDeg2 && !vertex.IsBoundary)
+            if (vertex.IsDegree2 && !vertex.IsBoundary)
                 RemoveSimple(vertex);
 
             HeFaceList faces = Mesh.Faces;
@@ -1012,7 +1012,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         private void RemoveSimple(HeVertex vertex)
         {
-            HalfEdge e0 = vertex.Outgoing;
+            HalfEdge e0 = vertex.First;
             HalfEdge e1 = e0.Twin;
 
             HeVertex v0 = vertex; // to be removed
@@ -1020,10 +1020,10 @@ namespace SpatialSlur.SlurMesh
 
             // update vertex-edge refs if necesasry
             e1.Next.Start = v1;
-            if (e1.IsOutgoing) v1.Outgoing = e1.Next;
+            if (e1.IsFirstFromVertex) v1.First = e1.Next;
 
-            HalfEdge.MakeConsecutive(e0.Prev, e0.Next);
-            HalfEdge.MakeConsecutive(e1.Prev, e1.Next);
+            HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
+            HalfEdge.MakeConsecutive(e1.Previous, e1.Next);
 
             //flag for removal
             v0.MakeUnused();
@@ -1047,11 +1047,11 @@ namespace SpatialSlur.SlurMesh
             // both vertices must be on the mesh boundary
             if (!(v0.IsBoundary && v1.IsBoundary)) return false;
 
-            HalfEdge e0 = v0.Outgoing;
-            HalfEdge e1 = v1.Outgoing; // to be removed
+            HalfEdge e0 = v0.First;
+            HalfEdge e1 = v1.First; // to be removed
 
-            HalfEdge e2 = e0.Prev;
-            HalfEdge e3 = e1.Prev;
+            HalfEdge e2 = e0.Previous;
+            HalfEdge e3 = e1.Previous;
     
             // if vertices are consecutive, just collapse the edge between them
             if (e0.Next == e1) 
@@ -1060,7 +1060,7 @@ namespace SpatialSlur.SlurMesh
                 return Mesh.HalfEdges.CollapseEdge(e1);
 
             // update edge-vertex refs for all edges emanating from v1
-            foreach (HalfEdge e in v1.OutgoingEdges) 
+            foreach (HalfEdge e in v1.OutgoingHalfEdges) 
                 e.Start = v0;
        
             // update edge-edge refs
@@ -1075,10 +1075,10 @@ namespace SpatialSlur.SlurMesh
 
                 // update edge-face-edge refs
                 e0.Face = e3.Face;
-                if (e3.IsFirst) e0.MakeFirst();
+                if (e3.IsFirstInFace) e0.MakeFirstInFace();
 
                 // update vertex-edge ref since e0 is no longer a boundary edge
-                v0.Outgoing = e1;
+                v0.First = e1;
             }
 
             if (e1.Next == e2)
@@ -1088,7 +1088,7 @@ namespace SpatialSlur.SlurMesh
 
                 // update face-edge refs
                 e1.Face = e2.Face;
-                if (e2.IsFirst) e1.MakeFirst();
+                if (e2.IsFirstInFace) e1.MakeFirstInFace();
             }
 
             // flag elements for removal
@@ -1136,21 +1136,21 @@ namespace SpatialSlur.SlurMesh
             } while (e != e1);
 
             // update vertex-edge refs if necessary
-            if (v0.Outgoing.Start == v1)
+            if (v0.First.Start == v1)
             {
                 // if v0's outgoing edge now emanates from v1, then can assume v1 is now on the boundary if v0 was originally
-                v1.Outgoing = v0.Outgoing;
-                v0.Outgoing = e2;
+                v1.First = v0.First;
+                v0.First = e2;
             }
             else
             {
-                v1.Outgoing = e3;
+                v1.First = e3;
             }
 
             // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0.Prev, e2);
+            HalfEdge.MakeConsecutive(e0.Previous, e2);
             HalfEdge.MakeConsecutive(e2, e0);
-            HalfEdge.MakeConsecutive(e1.Prev, e3);
+            HalfEdge.MakeConsecutive(e1.Previous, e3);
             HalfEdge.MakeConsecutive(e3, e1);
 
             return e2;
@@ -1203,8 +1203,8 @@ namespace SpatialSlur.SlurMesh
             } while (e != e1);
 
             // update vertex-edge refs
-            e0.MakeOutgoing();
-            e1.MakeOutgoing();
+            e0.MakeFirstFromVertex();
+            e1.MakeFirstFromVertex();
 
             /*
             // update vertex-edge refs if necessary

@@ -104,7 +104,7 @@ namespace SpatialSlur.SlurMesh
                 if (j == n) j = 0; // wrap j 
 
                 // search for existing edge between vertices
-                HalfEdge e = vertices[i].FindEdgeTo(vertices[j]);
+                HalfEdge e = vertices[i].FindHalfEdgeTo(vertices[j]);
 
                 // if the edge does exist, it can't already have a face
                 if (e == null)
@@ -155,17 +155,17 @@ namespace SpatialSlur.SlurMesh
                 // check if edges are newly created (new edges will have null refs to previous and/or next)
                 int mask = 0;
                 if (e0.Next == null) mask |= 1; // e0 is new
-                if (e1.Prev == null) mask |= 2; // e1 is new
+                if (e1.Previous == null) mask |= 2; // e1 is new
 
                 if (mask == 0)
                 {
                     // neither edge is new
                     // update v1's outgoing edge if necessary 
                     HalfEdge e = null;
-                    if (e1.IsOutgoing)
+                    if (e1.IsFirstFromVertex)
                     {
                         e = e1.FindBoundary(); // find the next boundary edge around v1
-                        if (e != null) v1.Outgoing = e;
+                        if (e != null) v1.First = e;
                     }
 
                     // if the two existing edges aren't consecutive then deal with non-manifold vertex http://www.pointclouds.org/blog/nvcs/
@@ -179,8 +179,8 @@ namespace SpatialSlur.SlurMesh
                         if (e == null)
                             throw new InvalidOperationException(String.Format("No second boundary edge was found around vertex {0}. Face creation failed.", v1.Index));
 
-                        HalfEdge.MakeConsecutive(e.Prev, e0.Next);
-                        HalfEdge.MakeConsecutive(e1.Prev, e);
+                        HalfEdge.MakeConsecutive(e.Previous, e0.Next);
+                        HalfEdge.MakeConsecutive(e1.Previous, e);
                         HalfEdge.MakeConsecutive(e0, e1);
                     }
                 }
@@ -192,8 +192,8 @@ namespace SpatialSlur.SlurMesh
                     {
                         case 1:
                             // e0 is new, e1 is old
-                            HalfEdge.MakeConsecutive(e1.Prev, e0.Twin);
-                            v1.Outgoing = e0.Twin;
+                            HalfEdge.MakeConsecutive(e1.Previous, e0.Twin);
+                            v1.First = e0.Twin;
                             break;
                         case 2:
                             // e1 is new, e0 is old
@@ -210,10 +210,10 @@ namespace SpatialSlur.SlurMesh
                             {
                                 // if v1 is already in use (has an outgoing edge)
                                 // deal with non-manifold case
-                                HalfEdge.MakeConsecutive(v1.Outgoing.Prev, e0.Twin);
-                                HalfEdge.MakeConsecutive(e1.Twin, v1.Outgoing);
+                                HalfEdge.MakeConsecutive(v1.First.Previous, e0.Twin);
+                                HalfEdge.MakeConsecutive(e1.Twin, v1.First);
                             }
-                            v1.Outgoing = e0.Twin;
+                            v1.First = e0.Twin;
                             break;
                     }
 
@@ -258,13 +258,13 @@ namespace SpatialSlur.SlurMesh
                     if (f == null || visited[f.Index]) continue; // skip boundary edges or those whose face has already been visited
 
                     // turn face and flag as visited
-                    e.MakeFirst();
+                    e.MakeFirstInFace();
                     visited[f.Index] = true;
 
                     // add next edges to stack (preference one direction over other for consistent uv directionality where possible)
                     stack.Push(e.Twin.Next.Next); // down
                     stack.Push(e.Next.Next.Twin); // up
-                    stack.Push(e.Prev.Twin.Prev); // left
+                    stack.Push(e.Previous.Twin.Previous); // left
                     stack.Push(e.Next.Twin.Next); // right
                 } while (stack.Count > 0);
             }
@@ -290,13 +290,13 @@ namespace SpatialSlur.SlurMesh
                 if (f == null || visited[f.Index]) continue; // skip boundary edges or those whose face has already been visited
 
                 // turn face and flag as visited
-                e.MakeFirst();
+                e.MakeFirstInFace();
                 visited[f.Index] = true;
 
                 // add next edges to stack (preference one direction over other for consistent uv directionality where possible)
                 stack.Push(e.Twin.Next.Next); // down
                 stack.Push(e.Next.Next.Twin); // up
-                stack.Push(e.Prev.Twin.Prev); // left
+                stack.Push(e.Previous.Twin.Previous); // left
                 stack.Push(e.Next.Twin.Next); // right
             } while (stack.Count > 0);
         }
@@ -339,7 +339,7 @@ namespace SpatialSlur.SlurMesh
                 do
                 {
                     // add left/right neighbours to stack
-                    stack.Push(e.Prev.Twin.Prev);
+                    stack.Push(e.Previous.Twin.Previous);
                     stack.Push(e.Next.Twin.Next);
 
                     // add current edge to strip and flag face as visited
@@ -433,7 +433,7 @@ namespace SpatialSlur.SlurMesh
 
                 HalfEdge e0 = f.First;
                 HalfEdge e1 = e0.Next.Next;
-                if (e0.Prev != e1.Next) continue; // quad check
+                if (e0.Previous != e1.Next) continue; // quad check
 
                 // compare diagonals
                 Vec3d p0 = e0.Start.Position;
@@ -442,7 +442,7 @@ namespace SpatialSlur.SlurMesh
                 Vec3d p3 = e1.End.Position;
 
                 if (p0.SquareDistanceTo(p2) > p1.SquareDistanceTo(p3))
-                    e0.Next.MakeFirst();
+                    e0.Next.MakeFirstInFace();
             }
         }
 
@@ -548,6 +548,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns all vertices shared by both given faces.
+        /// TODO use visited mask instead of changing indices
         /// </summary>
         /// <param name="f0"></param>
         /// <param name="f1"></param>
@@ -732,7 +733,7 @@ namespace SpatialSlur.SlurMesh
                 int i0 = queue.Dequeue();
                 double t0 = result[i0];
 
-                foreach (HalfEdge e in this[i0].Edges)
+                foreach (HalfEdge e in this[i0].HalfEdges)
                 {
                     HeFace f = e.Twin.Face;
                     if (f == null) continue;
@@ -897,8 +898,8 @@ namespace SpatialSlur.SlurMesh
                         // general ngon case
                         Vec3d sum = new Vec3d();
 
-                        foreach (HalfEdge e in f.Edges)
-                            sum += Vec3d.Cross(e.Prev.Span, e.Span);
+                        foreach (HalfEdge e in f.HalfEdges)
+                            sum += Vec3d.Cross(e.Previous.Span, e.Span);
 
                         sum.Unitize();
                         result[i] = sum;
@@ -936,7 +937,7 @@ namespace SpatialSlur.SlurMesh
                         // general ngon case
                         Vec3d sum = new Vec3d();
               
-                        foreach (HalfEdge e in f.Edges)
+                        foreach (HalfEdge e in f.HalfEdges)
                             sum += halfEdgeNormals[e.Index];
 
                         sum.Unitize();
@@ -1033,7 +1034,7 @@ namespace SpatialSlur.SlurMesh
                         Vec3d cen = f.GetCenter();
                         double sum = 0.0;
 
-                        foreach (HalfEdge e in f.Edges)
+                        foreach (HalfEdge e in f.HalfEdges)
                             sum += Vec3d.Cross(e.Start.Position - cen, e.Span).Length * 0.5;
 
                         result[i] = sum;
@@ -1071,7 +1072,7 @@ namespace SpatialSlur.SlurMesh
                         Vec3d cen = faceCenters[i];
                         double sum = 0.0;
 
-                        foreach (HalfEdge e in f.Edges)
+                        foreach (HalfEdge e in f.HalfEdges)
                             sum += Vec3d.Cross(e.Start.Position - cen, e.Span).Length * 0.5;
 
                         result[i] = sum;
@@ -1211,7 +1212,7 @@ namespace SpatialSlur.SlurMesh
                 else
                 {
                     ef.Face = null;
-                    ef.MakeOutgoing();
+                    ef.MakeFirstFromVertex();
                 }
                 ef = ef.Next;
             } while (!ef.IsUnused && ef.Start != vf);
@@ -1246,8 +1247,8 @@ namespace SpatialSlur.SlurMesh
                 return Remove(f0);
 
             // update edge ref for f0 if necessary
-            if (e0.IsFirst) 
-                e0.Next.MakeFirst();
+            if (e0.IsFirstInFace) 
+                e0.Next.MakeFirstInFace();
 
             // update face refs for all edges in f1
             foreach (HalfEdge e in e1.CirculateFace.Skip(1)) 
@@ -1258,14 +1259,14 @@ namespace SpatialSlur.SlurMesh
 
             // clean up any valence 1 vertices created in the process
             e0 = e0.Next;
-            while (e0.IsFromDeg1)
+            while (e0.IsFromDegree1)
             {
                 edges.RemovePair(e0);
                 e0 = e0.Next;
             }
 
             e1 = e1.Next;
-            while (e1.IsFromDeg1)
+            while (e1.IsFromDegree1)
             {
                 edges.RemovePair(e1);
                 e1 = e1.Next;
@@ -1314,8 +1315,8 @@ namespace SpatialSlur.SlurMesh
             f1.First = e2;
   
             // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0.Prev, e2);
-            HalfEdge.MakeConsecutive(e1.Prev, e3);
+            HalfEdge.MakeConsecutive(e0.Previous, e2);
+            HalfEdge.MakeConsecutive(e1.Previous, e3);
             HalfEdge.MakeConsecutive(e3, e0);
             HalfEdge.MakeConsecutive(e2, e1);
 
@@ -1351,18 +1352,18 @@ namespace SpatialSlur.SlurMesh
             do
             {
                 HalfEdge e0 = edges.AddPair(e.Start, fc);
-                HalfEdge.MakeConsecutive(e.Prev, e0);
+                HalfEdge.MakeConsecutive(e.Previous, e0);
                 HalfEdge.MakeConsecutive(e0.Twin, e);
                 e = e.Next;
             } while (e.Start != v);
 
             e = face.First; // reset to first edge in face
-            fc.Outgoing = e.Prev; // set outgoing edge for the central vertex
+            fc.First = e.Previous; // set outgoing edge for the central vertex
 
             // connect new edges to eachother and create new faces where necessary
             do
             {
-                HalfEdge e0 = e.Prev;
+                HalfEdge e0 = e.Previous;
                 HalfEdge e1 = e.Next;
                 HalfEdge.MakeConsecutive(e1, e0);
 

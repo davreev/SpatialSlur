@@ -226,12 +226,12 @@ namespace SpatialSlur.SlurMesh
                 if (ne == 3)
                 {
                     HalfEdge e = f.First;
-                    result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Prev.Start.Index);
+                    result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Previous.Start.Index);
                 }
                 else if (ne == 4)
                 {
                     HalfEdge e = f.First;
-                    result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Next.Next.Start.Index, e.Prev.Start.Index);
+                    result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Next.Next.Start.Index, e.Previous.Start.Index);
                 }
                 else
                 {

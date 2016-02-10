@@ -22,7 +22,7 @@ namespace SpatialSlur.SlurMesh
         internal static void MakeConsecutive(HalfEdge e0, HalfEdge e1)
         {
             e0.Next = e1;
-            e1.Prev = e0;
+            e1.Previous = e0;
         }
 
 
@@ -87,7 +87,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the previous half-edge in the face.
         /// </summary>
-        public HalfEdge Prev
+        public HalfEdge Previous
         {
             get { return _prev; }
             internal set { _prev = value; }
@@ -172,7 +172,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the half-edge starts at a degree 1 vertex.
         /// </summary>
-        internal bool IsFromDeg1
+        internal bool IsFromDegree1
         {
             get { return _twin == _prev; }
         }
@@ -181,7 +181,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the half-edge starts at a degree 2 vertex
         /// </summary>
-        public bool IsFromDeg2
+        public bool IsFromDegree2
         {
             get { return _twin._next == _prev._twin; }
         }
@@ -190,7 +190,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the half-edge starts at a degree 3 vertex.
         /// </summary>
-        public bool IsFromDeg3
+        public bool IsFromDegree3
         {
             get { return _twin._next._twin == _prev._twin._prev; }
         }
@@ -199,16 +199,16 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the half-edge is the first outgoing from its start vertex.
         /// </summary>
-        public bool IsOutgoing
+        public bool IsFirstFromVertex
         {
-            get { return this == _start.Outgoing; }
+            get { return this == _start.First; }
         }
 
 
         /// <summary>
         /// Returns true if the half-edge is the first in its face.
         /// </summary>
-        public bool IsFirst
+        public bool IsFirstInFace
         {
             get { return _face != null && this == _face.First; }
         }
@@ -224,20 +224,20 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Makes the half-edge the first in its face.
+        /// Makes the half-edge the first outgoing from its start vertex.
         /// </summary>
-        public void MakeFirst()
+        internal void MakeFirstFromVertex()
         {
-            if (_face != null) _face.First = this;
+            _start.First = this;
         }
 
 
         /// <summary>
-        /// Makes the half-edge the first outgoing from its start vertex.
+        /// Makes the half-edge the first in its face.
         /// </summary>
-        internal void MakeOutgoing()
+        public void MakeFirstInFace()
         {
-            _start.Outgoing = this;
+            if (_face != null) _face.First = this;
         }
 
 
@@ -306,7 +306,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns an linearly interpolated point along the half-edge.
+        /// Returns a linearly interpolated point along the half-edge.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>

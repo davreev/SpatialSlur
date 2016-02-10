@@ -186,7 +186,7 @@ namespace SpatialSlur.SlurField
                     double sum = 0.0;
                     int n = 0;
 
-                    foreach (HalfEdge e in verts[i].IncomingEdges)
+                    foreach (HalfEdge e in verts[i].IncomingHalfEdges)
                     {
                         sum += Values[e.Start.Index];
                         n++;
@@ -227,7 +227,7 @@ namespace SpatialSlur.SlurField
                     double value = Values[i];
                     double sum = 0.0;
 
-                    foreach (HalfEdge e in verts[i].OutgoingEdges)
+                    foreach (HalfEdge e in verts[i].OutgoingHalfEdges)
                         sum += (Values[e.End.Index] - value) * halfEdgeWeights[e.Index];
 
                     result[i] = sum;
@@ -297,7 +297,7 @@ namespace SpatialSlur.SlurField
                     Vec3d sum = new Vec3d();
                     int n = 0;
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                     {
                         Vec3d d = e.Span;
                         double m = 1.0 / d.Length;
@@ -344,7 +344,7 @@ namespace SpatialSlur.SlurField
                     double value = Values[i];
                     Vec3d sum = new Vec3d();
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                     {
                         Vec3d d = e.Span;
                         double m = 1.0 / d.Length;

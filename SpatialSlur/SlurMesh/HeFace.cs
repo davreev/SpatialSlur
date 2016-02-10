@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     public class HeFace:HeElement
     {
-        private HalfEdge _first; // first half-edge in face loop (doesn't matter which one)
+        private HalfEdge _first;
    
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         internal override bool IsValid
         {
-            get { return _first.Prev != _first.Next; }
+            get { return _first.Previous != _first.Next; }
         }
 
 
@@ -57,7 +57,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                foreach (HalfEdge e in Edges)
+                foreach (HalfEdge e in HalfEdges)
                     if (e.Start.IsBoundary) return true;
                 return false;
             }
@@ -69,7 +69,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public bool IsTri
         {
-            get { return _first.Prev == _first.Next.Next; }
+            get { return _first.Previous == _first.Next.Next; }
         }
 
 
@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public bool IsQuad
         {
-            get { return _first.Prev.Prev == _first.Next.Next; }
+            get { return _first.Previous.Previous == _first.Next.Next; }
         }
 
 
@@ -105,7 +105,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Iterates over the face's half-edges.
         /// </summary>
-        public IEnumerable<HalfEdge> Edges
+        public IEnumerable<HalfEdge> HalfEdges
         {
             get
             {
@@ -163,7 +163,7 @@ namespace SpatialSlur.SlurMesh
         {
             int count = 0;
 
-            foreach (HalfEdge e in Edges)
+            foreach (HalfEdge e in HalfEdges)
                 count++;
 
             return count;
@@ -178,7 +178,7 @@ namespace SpatialSlur.SlurMesh
         {
             int count = 0;
 
-            foreach (HalfEdge e in Edges)
+            foreach (HalfEdge e in HalfEdges)
                 if (e.Twin.Face == null) count++;
 
             return count;
@@ -201,8 +201,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Finds the half-edge between this face and another. 
-        /// Returns null if no edge exists.
+        /// Finds the edge between this face and another.
+        /// Returns the half-edge adjacent to this face or null if no edge exists.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -210,7 +210,7 @@ namespace SpatialSlur.SlurMesh
         {
             if (IsUnused) return null;
 
-            foreach (HalfEdge e in Edges)
+            foreach (HalfEdge e in HalfEdges)
                 if (e.Twin.Face == other) return e;
 
             return null;

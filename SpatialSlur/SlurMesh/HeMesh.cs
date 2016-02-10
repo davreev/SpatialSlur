@@ -237,7 +237,7 @@ namespace SpatialSlur.SlurMesh
                 if (v0.IsUnused) continue;
 
                 HeVertex v1 = result._vertices[i];
-                v1.Outgoing = result._halfEdges[v0.Outgoing.Index];
+                v1.First = result._halfEdges[v0.First.Index];
             }
 
             // link faces to edges
@@ -255,7 +255,7 @@ namespace SpatialSlur.SlurMesh
             {
                 HalfEdge e0 = _halfEdges[i];
                 HalfEdge e1 = result._halfEdges[i];
-                e1.Prev = result._halfEdges[e0.Prev.Index];
+                e1.Previous = result._halfEdges[e0.Previous.Index];
                 e1.Next = result._halfEdges[e0.Next.Index];
                 e1.Twin = result._halfEdges[e0.Twin.Index];
 
@@ -295,7 +295,7 @@ namespace SpatialSlur.SlurMesh
                 if (v0.IsUnused) continue;
 
                 HeVertex v1 = _vertices[i + nv];
-                v1.Outgoing = _halfEdges[v0.Outgoing.Index + ne];
+                v1.First = _halfEdges[v0.First.Index + ne];
             }
 
             // link new faces to new edges
@@ -313,7 +313,7 @@ namespace SpatialSlur.SlurMesh
             {
                 HalfEdge e0 = other._halfEdges[i];
                 HalfEdge e1 = _halfEdges[i + ne];
-                e1.Prev = _halfEdges[e0.Prev.Index + ne];
+                e1.Previous = _halfEdges[e0.Previous.Index + ne];
                 e1.Next = _halfEdges[e0.Next.Index + ne];
                 e1.Twin = _halfEdges[e0.Twin.Index + ne];
 
@@ -459,7 +459,7 @@ namespace SpatialSlur.SlurMesh
 
                 double wsum = 0.0;
 
-                foreach (HalfEdge e in v.OutgoingEdges)
+                foreach (HalfEdge e in v.OutgoingHalfEdges)
                 {
                     int j = e.End.Index;
                     result[i * nv + j] = -1.0;
@@ -492,7 +492,7 @@ namespace SpatialSlur.SlurMesh
 
                 double wsum = 0.0;
 
-                foreach (HalfEdge e in v.OutgoingEdges)
+                foreach (HalfEdge e in v.OutgoingHalfEdges)
                 {
                     int j = e.End.Index;
                     double w = halfEdgeWeights[e.Index];

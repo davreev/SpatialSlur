@@ -188,7 +188,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     HalfEdge e = this[i];
                     if (e.IsUnused) continue;
-                    result[i] = Vec3d.Angle(e.Span, e.Prev.Twin.Span);
+                    result[i] = Vec3d.Angle(e.Span, e.Previous.Twin.Span);
                 }
             });
         }
@@ -210,7 +210,7 @@ namespace SpatialSlur.SlurMesh
                     HalfEdge e0 = this[i];
                     if (e0.IsUnused) continue;
 
-                    HalfEdge e1 = e0.Prev.Twin;
+                    HalfEdge e1 = e0.Previous.Twin;
                     result[i] = Math.Acos((e0.Span / edgeLengths[i]) * (e1.Span / edgeLengths[e1.Index]));
                 }
             });
@@ -287,7 +287,7 @@ namespace SpatialSlur.SlurMesh
 
                     Vec3d v0 = e.Span * 0.5;
                     Vec3d v1 = faceCenters[e.Face.Index] - e.Start.Position;
-                    Vec3d v2 = e.Prev.Span * -0.5;
+                    Vec3d v2 = e.Previous.Span * -0.5;
 
                     result[i] = (Vec3d.Cross(v0, v1).Length + Vec3d.Cross(v1, v2).Length) * 0.5;
                 }
@@ -324,7 +324,7 @@ namespace SpatialSlur.SlurMesh
                     HalfEdge e = this[i];
                     if (e.IsUnused) continue;
 
-                    Vec3d v0 = e.Prev.Span;
+                    Vec3d v0 = e.Previous.Span;
                     Vec3d v1 = e.Next.Twin.Span;
                     result[i] = v0 * v1 / Vec3d.Cross(v0, v1).Length;
                 }
@@ -369,7 +369,7 @@ namespace SpatialSlur.SlurMesh
 
                     if (e.Face != null)
                     {
-                        Vec3d v0 = e.Prev.Span;
+                        Vec3d v0 = e.Previous.Span;
                         Vec3d v1 = e.Next.Twin.Span;
                         w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
                     }
@@ -377,7 +377,7 @@ namespace SpatialSlur.SlurMesh
                     e = e.Twin;
                     if (e.Face != null)
                     {
-                        Vec3d v0 = e.Prev.Span;
+                        Vec3d v0 = e.Previous.Span;
                         Vec3d v1 = e.Next.Twin.Span;
                         w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
                     }
@@ -451,7 +451,7 @@ namespace SpatialSlur.SlurMesh
 
                 if (e.Face != null)
                 {
-                    Vec3d v0 = e.Prev.Span;
+                    Vec3d v0 = e.Previous.Span;
                     Vec3d v1 = e.Next.Twin.Span;
                     double a = Vec3d.Cross(v0, v1).Length;
                     vertexAreas[e.Start.Index] += a * t; // 1/3rd the triangular area (or 1/6th the parallelgram area)
@@ -461,7 +461,7 @@ namespace SpatialSlur.SlurMesh
                 e = e.Twin;
                 if (e.Face != null)
                 {
-                    Vec3d v0 = e.Prev.Span;
+                    Vec3d v0 = e.Previous.Span;
                     Vec3d v1 = e.Next.Twin.Span;
                     double a = Vec3d.Cross(v0, v1).Length;
                     vertexAreas[e.Start.Index] += a * t; // 1/3rd the triangular area (or 1/6th the parallelgram area)
@@ -510,13 +510,13 @@ namespace SpatialSlur.SlurMesh
 
                     double sum = 0.0;
 
-                    foreach (HalfEdge e in v.OutgoingEdges)
+                    foreach (HalfEdge e in v.OutgoingHalfEdges)
                         sum += halfEdgeWeights[e.Index];
 
                     if (sum > 0.0)
                     {
                         sum = 1.0 / sum;
-                        foreach (HalfEdge e in v.OutgoingEdges)
+                        foreach (HalfEdge e in v.OutgoingHalfEdges)
                             halfEdgeWeights[e.Index] *= sum;
                     }
                 }
@@ -609,7 +609,7 @@ namespace SpatialSlur.SlurMesh
                     HalfEdge e = this[i];
                     if (e.IsUnused) continue;
 
-                    result[i] = Vec3d.Cross(e.Prev.Span, e.Span);
+                    result[i] = Vec3d.Cross(e.Previous.Span, e.Span);
                 }
             });
         }
@@ -628,7 +628,7 @@ namespace SpatialSlur.SlurMesh
                     HalfEdge e = this[i];
                     if (e.IsUnused) continue;
 
-                    Vec3d v = Vec3d.Cross(e.Prev.Span, e.Span);
+                    Vec3d v = Vec3d.Cross(e.Previous.Span, e.Span);
                     v.Unitize();
                     result[i] = v;
                 }
@@ -680,7 +680,7 @@ namespace SpatialSlur.SlurMesh
                     if (e.IsUnused) continue;
 
                     Vec3d v0 = e.Span;
-                    Vec3d v1 = e.Prev.Span;
+                    Vec3d v1 = e.Previous.Span;
 
                     v0 = (v0 / v0.Length - v1 / v1.Length) * 0.5;
                     result[i] = v0;
@@ -704,7 +704,7 @@ namespace SpatialSlur.SlurMesh
                     if (e.IsUnused) continue;
 
                     Vec3d v0 = e.Span;
-                    Vec3d v1 = e.Prev.Span;
+                    Vec3d v1 = e.Previous.Span;
 
                     v0 = (v0 / v0.Length - v1 / v1.Length) * 0.5;
                     v0.Unitize();
@@ -738,20 +738,20 @@ namespace SpatialSlur.SlurMesh
             HalfEdge e0 = edge;
             HalfEdge e1 = e0.Twin;
 
-            if (e0.IsFromDeg1)
+            if (e0.IsFromDegree1)
                 e0.Start.MakeUnused(); // flag degree 1 vertex as unused
             else
             {
-                HalfEdge.MakeConsecutive(e0.Prev, e1.Next); // update edge-edge refs
-                if (e0.IsOutgoing) e1.Next.MakeOutgoing(); // update vertex-edge ref if necessary
+                HalfEdge.MakeConsecutive(e0.Previous, e1.Next); // update edge-edge refs
+                if (e0.IsFirstFromVertex) e1.Next.MakeFirstFromVertex(); // update vertex-edge ref if necessary
             }
 
-            if (e1.IsFromDeg1)
+            if (e1.IsFromDegree1)
                 e1.Start.MakeUnused(); // flag degree 1 vertex as unused
             else
             {
-                HalfEdge.MakeConsecutive(e1.Prev, e0.Next); // update edge-edge refs
-                if (e1.IsOutgoing) e0.Next.MakeOutgoing(); // update vertex-edge ref if necessary
+                HalfEdge.MakeConsecutive(e1.Previous, e0.Next); // update edge-edge refs
+                if (e1.IsFirstFromVertex) e0.Next.MakeFirstFromVertex(); // update vertex-edge ref if necessary
             }
 
             // flag elements for removal
@@ -787,19 +787,19 @@ namespace SpatialSlur.SlurMesh
             e3.Face = e1.Face;
 
             // update vertex-edge references if necessary
-            if (v1.Outgoing == e1)
+            if (v1.First == e1)
             {
-                v1.Outgoing = e3;
-                v2.Outgoing = e1;
+                v1.First = e3;
+                v2.First = e1;
             }
             else
             {
-                v2.Outgoing = e2;
+                v2.First = e2;
             }
 
             // update edge-edge references
             HalfEdge.MakeConsecutive(e2, e0.Next);
-            HalfEdge.MakeConsecutive(e1.Prev, e3);
+            HalfEdge.MakeConsecutive(e1.Previous, e3);
             HalfEdge.MakeConsecutive(e0, e2);
             HalfEdge.MakeConsecutive(e3, e1);
 
@@ -859,25 +859,25 @@ namespace SpatialSlur.SlurMesh
                 return false;
 
             // update edge-vertex refs of all edges emanating from the vertex which is being removed
-            foreach (HalfEdge e in v0.OutgoingEdges) e.Start = v1;
+            foreach (HalfEdge e in v0.OutgoingHalfEdges) e.Start = v1;
 
             // update vertex-edge ref for the remaining vertex if necessary
-            if (e1.IsOutgoing) e1.Next.MakeOutgoing();
+            if (e1.IsFirstFromVertex) e1.Next.MakeFirstFromVertex();
 
             // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0.Prev, e0.Next);
-            HalfEdge.MakeConsecutive(e1.Prev, e1.Next);
+            HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
+            HalfEdge.MakeConsecutive(e1.Previous, e1.Next);
 
             // update face-edge refs if necessary and deal with potential collapse by merging
             if (f0 != null)
             {
-                if (e0.IsFirst) e0.Next.MakeFirst();
+                if (e0.IsFirstInFace) e0.Next.MakeFirstInFace();
                 if (!f0.IsValid) Mesh.Faces.MergeFaces(f0.First);
             }
 
             if (f1 != null)
             {
-                if (e1.IsFirst) e1.Next.MakeFirst();
+                if (e1.IsFirstInFace) e1.Next.MakeFirstInFace();
                 if (!f1.IsValid) Mesh.Faces.MergeFaces(f1.First);
             }
 
@@ -907,11 +907,11 @@ namespace SpatialSlur.SlurMesh
             HalfEdge e3 = e1.Next;
 
             // don't allow for the creation of valence 1 vertices
-            if (e0.IsFromDeg2 || e1.IsFromDeg2) return false;
+            if (e0.IsFromDegree2 || e1.IsFromDegree2) return false;
 
             // update vertex-edge refs if necessary
-            if (e0.IsOutgoing) e0.Start.Outgoing = e3;
-            if (e1.IsOutgoing) e1.Start.Outgoing = e2;
+            if (e0.IsFirstFromVertex) e0.Start.First = e3;
+            if (e1.IsFirstFromVertex) e1.Start.First = e2;
 
             // update edge-vertex refs
             e0.Start = e3.End;
@@ -921,8 +921,8 @@ namespace SpatialSlur.SlurMesh
             HeFace f1 = e1.Face;
 
             // update face-edge refs if necessary
-            if (e2.IsFirst) f0.First = e2.Next;
-            if (e3.IsFirst) f1.First = e3.Next;
+            if (e2.IsFirstInFace) f0.First = e2.Next;
+            if (e3.IsFirstInFace) f1.First = e3.Next;
 
             // update edge-face refs
             e2.Face = f1;
@@ -931,8 +931,8 @@ namespace SpatialSlur.SlurMesh
             // update edge-edge refs
             HalfEdge.MakeConsecutive(e0, e2.Next);
             HalfEdge.MakeConsecutive(e1, e3.Next);
-            HalfEdge.MakeConsecutive(e1.Prev, e2);
-            HalfEdge.MakeConsecutive(e0.Prev, e3);
+            HalfEdge.MakeConsecutive(e1.Previous, e2);
+            HalfEdge.MakeConsecutive(e0.Previous, e3);
             HalfEdge.MakeConsecutive(e2, e1);
             HalfEdge.MakeConsecutive(e3, e0);
             return true;
