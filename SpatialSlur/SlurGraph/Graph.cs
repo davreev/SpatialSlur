@@ -550,12 +550,12 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodeCoords"></param>
+        /// <param name="nodePositions"></param>
         /// <returns></returns>
-        public double[] GetEdgeLengths(IList<Vec3d> nodeCoords)
+        public double[] GetEdgeLengths(IList<Vec3d> nodePositions)
         {
             double[] result = new double[_edges.Count];
-            UpdateEdgeLengths(nodeCoords, result);
+            UpdateEdgeLengths(nodePositions, result);
             return result;
         }
 
@@ -563,11 +563,11 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodeCoords"></param>
+        /// <param name="nodePositions"></param>
         /// <param name="result"></param>
-        public void UpdateEdgeLengths(IList<Vec3d> nodeCoords, IList<double> result)
+        public void UpdateEdgeLengths(IList<Vec3d> nodePositions, IList<double> result)
         {
-            NodeSizeCheck(nodeCoords);
+            NodeSizeCheck(nodePositions);
             EdgeSizeCheck(result);
 
             Parallel.ForEach(Partitioner.Create(0, _edges.Count), range =>
@@ -576,7 +576,7 @@ namespace SpatialSlur.SlurGraph
                 {
                     var e = _edges[i];
                     if (e.IsRemoved) continue;
-                    result[i] = nodeCoords[e.Start.Index].DistanceTo(nodeCoords[e.End.Index]);
+                    result[i] = nodePositions[e.Start.Index].DistanceTo(nodePositions[e.End.Index]);
                 }
             });
         }

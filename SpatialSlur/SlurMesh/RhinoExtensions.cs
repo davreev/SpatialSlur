@@ -28,24 +28,24 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="edge"></param>
         /// <returns></returns>
-        public static Line ToLine(this HalfEdge e)
+        public static Line ToLine(this HalfEdge edge)
         {
-            return new Line(e.Start.Position.ToPoint3d(), e.Span.ToVector3d());
+            return new Line(edge.Start.Position.ToPoint3d(), edge.Span.ToVector3d());
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="f"></param>
+        /// <param name="face"></param>
         /// <returns></returns>
-        public static Polyline ToPolyline(this HeFace f)
+        public static Polyline ToPolyline(this HeFace face)
         {
             Polyline result = new Polyline();
 
-            foreach (HeVertex v in f.Vertices)
+            foreach (HeVertex v in face.Vertices)
                 result.Add(v.Position.ToPoint3d());
         
             result.Add(result.First);

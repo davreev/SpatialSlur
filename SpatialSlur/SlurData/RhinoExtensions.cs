@@ -15,13 +15,13 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="vector"></param>
         /// <returns></returns>
-        public static VecKd ToVecKd(this Vector2d v)
+        public static VecKd ToVecKd(this Vector2d vector)
         {
             VecKd result = new VecKd(2);
-            result[0] = v.X;
-            result[1] = v.Y;
+            result[0] = vector.X;
+            result[1] = vector.Y;
             return result;
         }
 
@@ -29,14 +29,14 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="vector"></param>
         /// <returns></returns>
-        public static VecKd ToVecKd(this Vector3d v)
+        public static VecKd ToVecKd(this Vector3d vector)
         {
             VecKd result = new VecKd(3);
-            result[0] = v.X;
-            result[1] = v.Y;
-            result[2] = v.Z;
+            result[0] = vector.X;
+            result[1] = vector.Y;
+            result[2] = vector.Z;
             return result;
         }
 
@@ -44,13 +44,13 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="p"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
-        public static VecKd ToVecKd(this Point2d p)
+        public static VecKd ToVecKd(this Point2d point)
         {
             VecKd result = new VecKd(2);
-            result[0] = p.X;
-            result[1] = p.Y;
+            result[0] = point.X;
+            result[1] = point.Y;
             return result;
         }
 
@@ -58,14 +58,14 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="p"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
-        public static VecKd ToVecKd(this Point3d p)
+        public static VecKd ToVecKd(this Point3d point)
         {
             VecKd result = new VecKd(3);
-            result[0] = p.X;
-            result[1] = p.Y;
-            result[2] = p.Z;
+            result[0] = point.X;
+            result[1] = point.Y;
+            result[2] = point.Z;
             return result;
         }
     }

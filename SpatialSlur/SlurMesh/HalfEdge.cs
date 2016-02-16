@@ -196,6 +196,33 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Returns true if the half-edge is in a degenerate face.
+        /// </summary>
+        internal bool IsInDegenerate
+        {
+            get { return _next == _prev; }
+        }
+
+
+        /// <summary>
+        /// Returns true if the half-edge is in a triangular face.
+        /// </summary>
+        public bool IsInTri
+        {
+            get { return _next._next == _prev; }
+        }
+
+
+        /// <summary>
+        /// Returns true if the half-edge is in a quadrilateral face.
+        /// </summary>
+        public bool IsInQuad
+        {
+            get { return _next._next == _prev._prev; }
+        }
+   
+
+        /// <summary>
         /// Returns true if the half-edge is the first from its start vertex.
         /// </summary>
         public bool IsFirstFromStart

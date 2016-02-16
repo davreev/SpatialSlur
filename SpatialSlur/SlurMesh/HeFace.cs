@@ -46,7 +46,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         internal override bool IsValid
         {
-            get { return _first.Previous != _first.Next; }
+            get { return !_first.IsInDegenerate; }
         }
 
 
@@ -69,7 +69,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public bool IsTri
         {
-            get { return _first.Previous == _first.Next.Next; }
+            get { return _first.IsInTri; }
         }
 
 
@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public bool IsQuad
         {
-            get { return _first.Previous.Previous == _first.Next.Next; }
+            get { return _first.IsInQuad; }
         }
 
 
