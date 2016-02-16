@@ -743,7 +743,7 @@ namespace SpatialSlur.SlurMesh
             else
             {
                 HalfEdge.MakeConsecutive(e0.Previous, e1.Next); // update edge-edge refs
-                if (e0.IsFirstFromVertex) e1.Next.MakeFirstFromVertex(); // update vertex-edge ref if necessary
+                if (e0.IsFirstFromStart) e1.Next.MakeFirstFromStart(); // update vertex-edge ref if necessary
             }
 
             if (e1.IsFromDegree1)
@@ -751,7 +751,7 @@ namespace SpatialSlur.SlurMesh
             else
             {
                 HalfEdge.MakeConsecutive(e1.Previous, e0.Next); // update edge-edge refs
-                if (e1.IsFirstFromVertex) e0.Next.MakeFirstFromVertex(); // update vertex-edge ref if necessary
+                if (e1.IsFirstFromStart) e0.Next.MakeFirstFromStart(); // update vertex-edge ref if necessary
             }
 
             // flag elements for removal
@@ -862,7 +862,7 @@ namespace SpatialSlur.SlurMesh
             foreach (HalfEdge e in v0.OutgoingHalfEdges) e.Start = v1;
 
             // update vertex-edge ref for the remaining vertex if necessary
-            if (e1.IsFirstFromVertex) e1.Next.MakeFirstFromVertex();
+            if (e1.IsFirstFromStart) e1.Next.MakeFirstFromStart();
 
             // update edge-edge refs
             HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
@@ -910,8 +910,8 @@ namespace SpatialSlur.SlurMesh
             if (e0.IsFromDegree2 || e1.IsFromDegree2) return false;
 
             // update vertex-edge refs if necessary
-            if (e0.IsFirstFromVertex) e0.Start.First = e3;
-            if (e1.IsFirstFromVertex) e1.Start.First = e2;
+            if (e0.IsFirstFromStart) e0.Start.First = e3;
+            if (e1.IsFirstFromStart) e1.Start.First = e2;
 
             // update edge-vertex refs
             e0.Start = e3.End;

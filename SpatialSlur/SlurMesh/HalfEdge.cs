@@ -51,11 +51,10 @@ namespace SpatialSlur.SlurMesh
 
         #endregion
 
-
-        private HeVertex _start;
         private HalfEdge _prev;
         private HalfEdge _next;
         private HalfEdge _twin;
+        private HeVertex _start;
         private HeFace _face;
 
 
@@ -63,25 +62,6 @@ namespace SpatialSlur.SlurMesh
         ///
         /// </summary>
         internal HalfEdge() { }
-
-
-        /// <summary>
-        /// Returns the vertex at the start of the half-edge.
-        /// </summary>
-        public HeVertex Start
-        {
-            get { return _start; }
-            internal set { _start = value; }
-        }
-
-
-        /// <summary>
-        /// Returns the vertex at the end of the half-edge.
-        /// </summary>
-        public HeVertex End
-        {
-            get { return _twin._start; }
-        }
 
         
         /// <summary>
@@ -111,6 +91,25 @@ namespace SpatialSlur.SlurMesh
         {
             get { return _twin; }
             internal set { _twin = value; }
+        }
+
+
+        /// <summary>
+        /// Returns the vertex at the start of the half-edge.
+        /// </summary>
+        public HeVertex Start
+        {
+            get { return _start; }
+            internal set { _start = value; }
+        }
+
+
+        /// <summary>
+        /// Returns the vertex at the end of the half-edge.
+        /// </summary>
+        public HeVertex End
+        {
+            get { return _twin._start; }
         }
 
 
@@ -197,9 +196,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the half-edge is the first outgoing from its start vertex.
+        /// Returns true if the half-edge is the first from its start vertex.
         /// </summary>
-        public bool IsFirstFromVertex
+        public bool IsFirstFromStart
         {
             get { return this == _start.First; }
         }
@@ -226,7 +225,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Makes the half-edge the first outgoing from its start vertex.
         /// </summary>
-        internal void MakeFirstFromVertex()
+        internal void MakeFirstFromStart()
         {
             _start.First = this;
         }
@@ -285,7 +284,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Circulates the start vertex starting from this half-edge.
         /// </summary>
-        public IEnumerable<HalfEdge> CirculateVertex
+        public IEnumerable<HalfEdge> CirculateStart
         {
             get
             {

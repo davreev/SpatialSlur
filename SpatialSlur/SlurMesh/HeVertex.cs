@@ -118,7 +118,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex is has 2 outgoing half-edges.
+        /// Returns true if the vertex has 2 outgoing half-edges.
         /// </summary>
         public bool IsDegree2
         {
@@ -127,7 +127,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex is has 3 outgoing half-edges.
+        /// Returns true if the vertex has 3 outgoing half-edges.
         /// </summary>
         public bool IsDegree3
         {

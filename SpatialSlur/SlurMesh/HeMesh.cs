@@ -41,7 +41,61 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        [Obsolete("Use extension method instead")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="sides"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static HeMesh CreateFromPolygons(IList<IList<Vec3d>> polygons, double tolerance)
+        {
+            List<Vec3d> points = new List<Vec3d>();
+            List<int> sides = new List<int>();
+
+            // get all polyline points
+            foreach (IList<Vec3d> poly in polygons)
+            {
+                int n = poly.Count;
+                if (n < 3) continue;  // skip invalid polygons
+
+                points.AddRange(poly);
+                sides.Add(n);
+            }
+
+            return HeMesh.CreateFromPolygons(points, sides, tolerance);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="sides"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static HeMesh CreateFromPolygons(IList<Vec3d> points, IList<int> sides, double tolerance)
+        {
+            int[] indexMap;
+            List<Vec3d> verts = Vec3d.RemoveDuplicates(points, tolerance, out indexMap);
+            IList<int>[] faces = new IList<int>[sides.Count];
+
+            // get face arrays
+            int marker = 0;
+            for (int i = 0; i < sides.Count; i++)
+            {
+                int n = sides[i];
+                faces[i] = new ArraySegment<int>(indexMap, marker, n);
+                marker += n;
+            }
+
+            // create from face vertex data
+            return CreateFromFaceVertexData(verts, faces);
+        }
+
+
+        /*
+        [Obsolete("Use RhinoFactory creation method instead.")]
         /// <summary>
         /// Creates an HeMesh instance from a Rhino mesh.
         /// </summary>
@@ -73,7 +127,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        [Obsolete("Use method in RhinoUtil instead")]
+        [Obsolete("Use RhinoFactory creation method instead.")]
         /// <summary>
         /// Creates a HeMesh instance from a collection of Rhino Polylines.
         /// </summary>
@@ -115,6 +169,7 @@ namespace SpatialSlur.SlurMesh
             // create from face vertex data
             return CreateFromFaceVertexData(verts, faces);
         }
+        */
 
         #endregion
 

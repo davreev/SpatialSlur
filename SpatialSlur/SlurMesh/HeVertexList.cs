@@ -1020,7 +1020,7 @@ namespace SpatialSlur.SlurMesh
 
             // update vertex-edge refs if necesasry
             e1.Next.Start = v1;
-            if (e1.IsFirstFromVertex) v1.First = e1.Next;
+            if (e1.IsFirstFromStart) v1.First = e1.Next;
 
             HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
             HalfEdge.MakeConsecutive(e1.Previous, e1.Next);
@@ -1203,8 +1203,8 @@ namespace SpatialSlur.SlurMesh
             } while (e != e1);
 
             // update vertex-edge refs
-            e0.MakeFirstFromVertex();
-            e1.MakeFirstFromVertex();
+            e0.MakeFirstFromStart();
+            e1.MakeFirstFromStart();
 
             /*
             // update vertex-edge refs if necessary

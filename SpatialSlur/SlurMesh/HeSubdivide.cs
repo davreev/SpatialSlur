@@ -241,10 +241,12 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// TODO
+        /// Allows use of crease information.
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="count"></param>
+        /// <param name="edgeStatus"></param>
         private static void CCMoveOldVertsCrease(HeVertexList vertices, int count, IList<int> edgeStatus)
         {
             for (int i = 0; i < count; i++)
@@ -400,8 +402,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
-        /// <param name="faceValues"></param>
+        /// <param name="halfEdgePoints"></param>
         /// <returns></returns>
         public static HeMesh DualSkeleton(HeMesh mesh, IList<Vec3d> halfEdgePoints)
         {
@@ -446,15 +447,15 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
+        /// <param name="facePoints"></param>
         /// <param name="faceValues"></param>
         /// <returns></returns>
-        public static HeMesh DualSkeleton(HeMesh mesh, IList<Vec3d> faceCenters, IList<double> faceValues)
+        public static HeMesh DualSkeleton(HeMesh mesh, IList<Vec3d> facePoints, IList<double> faceValues)
         {
             HeFaceList faces = mesh.Faces;
             HalfEdgeList edges = mesh.HalfEdges;
 
-            faces.SizeCheck(faceCenters);
+            faces.SizeCheck(facePoints);
             faces.SizeCheck(faceValues);
 
             HeMesh result = new HeMesh();
@@ -473,7 +474,7 @@ namespace SpatialSlur.SlurMesh
                 else
                 {
                     int fi = f.Index;
-                    result.Vertices.Add(Vec3d.Lerp(p, faceCenters[fi], faceValues[fi]));
+                    result.Vertices.Add(Vec3d.Lerp(p, facePoints[fi], faceValues[fi]));
                 }
             }
 
@@ -508,22 +509,22 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
+        /// <param name="facePoints"></param>
         /// <param name="faceValues"></param>
         /// <returns></returns>
-        public static HeMesh DualSkeleton2(HeMesh mesh, IList<Vec3d> faceCenters, IList<double> faceValues)
+        public static HeMesh DualSkeleton2(HeMesh mesh, IList<Vec3d> facePoints, IList<double> faceValues)
         {
             HeFaceList faces = mesh.Faces;
             HalfEdgeList edges = mesh.HalfEdges;
 
-            faces.SizeCheck(faceCenters);
+            faces.SizeCheck(facePoints);
             faces.SizeCheck(faceValues);
 
             HeMesh result = new HeMesh();
 
             // add one new vertex per face
             for (int i = 0; i < faces.Count; i++)
-                result.Vertices.Add(faceCenters[i]);
+                result.Vertices.Add(facePoints[i]);
 
             // add one new vertex per edge
             for (int i = 0; i < edges.Count; i++)
@@ -539,7 +540,7 @@ namespace SpatialSlur.SlurMesh
                 else
                 {
                     int fi = f.Index;
-                    result.Vertices.Add(Vec3d.Lerp(p, faceCenters[fi], faceValues[fi]));
+                    result.Vertices.Add(Vec3d.Lerp(p, facePoints[fi], faceValues[fi]));
                 }
             }
 
@@ -566,22 +567,22 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="faceCenters"></param>
-        /// <param name="faceValues"></param>
+        /// <param name="facePoints"></param>
+        /// <param name="halfEdgePoints"></param>
         /// <returns></returns>
-        public static HeMesh DualSkeleton2(HeMesh mesh, IList<Vec3d> faceCenters, IList<Vec3d> halfEdgePoints)
+        public static HeMesh DualSkeleton2(HeMesh mesh, IList<Vec3d> facePoints, IList<Vec3d> halfEdgePoints)
         {
             HeFaceList faces = mesh.Faces;
             HalfEdgeList edges = mesh.HalfEdges;
 
-            faces.SizeCheck(faceCenters);
+            faces.SizeCheck(facePoints);
             edges.SizeCheck(halfEdgePoints);
 
             HeMesh result = new HeMesh();
 
             // add one new vertex per face
             for (int i = 0; i < faces.Count; i++)
-                result.Vertices.Add(faceCenters[i]);
+                result.Vertices.Add(facePoints[i]);
 
             // add one new vertex per edge
             for (int i = 0; i < edges.Count; i++)

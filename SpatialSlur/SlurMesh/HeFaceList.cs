@@ -162,7 +162,7 @@ namespace SpatialSlur.SlurMesh
                     // neither edge is new
                     // update v1's outgoing edge if necessary 
                     HalfEdge e = null;
-                    if (e1.IsFirstFromVertex)
+                    if (e1.IsFirstFromStart)
                     {
                         e = e1.FindBoundary(); // find the next boundary edge around v1
                         if (e != null) v1.First = e;
@@ -1212,7 +1212,7 @@ namespace SpatialSlur.SlurMesh
                 else
                 {
                     ef.Face = null;
-                    ef.MakeFirstFromVertex();
+                    ef.MakeFirstFromStart();
                 }
                 ef = ef.Next;
             } while (!ef.IsUnused && ef.Start != vf);

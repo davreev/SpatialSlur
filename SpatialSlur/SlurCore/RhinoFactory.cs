@@ -54,10 +54,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static HeMesh CreateHeMesh(IEnumerable<Polyline> polylines, double tolerance)
         {
-            List<Vec3d> faceVerts = new List<Vec3d>();
-            List<int> nSides = new List<int>();
+            List<Vec3d> points = new List<Vec3d>();
+            List<int> sides = new List<int>();
 
-            // get all polyline vertices
+            // get all polyline points
             foreach (Polyline p in polylines)
             {
                 int n = p.Count - 1;
@@ -65,27 +65,12 @@ namespace SpatialSlur.SlurCore
 
                 // collect all points in the loop
                 for (int i = 0; i < n; i++)
-                    faceVerts.Add(p[i].ToVec3d());
+                    points.Add(p[i].ToVec3d());
 
-                nSides.Add(n);
+                sides.Add(n);
             }
 
-            // remove duplicate points
-            int[] faceIndices;
-            List<Vec3d> verts = Vec3d.RemoveDuplicates(faceVerts, tolerance, out faceIndices);
-            IList<int>[] faces = new IList<int>[nSides.Count];
-
-            // get face arrays
-            int marker = 0;
-            for (int i = 0; i < nSides.Count; i++)
-            {
-                int n = nSides[i];
-                faces[i] = new ArraySegment<int>(faceIndices, marker, n);
-                marker += n;
-            }
-
-            // create from face vertex data
-            return HeMesh.CreateFromFaceVertexData(verts, faces);
+            return HeMesh.CreateFromPolygons(points, sides, tolerance);
         }
 
 
