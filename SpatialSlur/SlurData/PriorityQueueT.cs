@@ -5,11 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ * 
+ * For a max priority queue, simply invert the comparer delegate.
+ */
+
 namespace SpatialSlur.SlurData
 {
     /// <summary>
     /// Simple heap-based implementation of a min priority queue.
-    /// For a max priority queue, simply invert the given comparer delegate.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class PriorityQueue<T>

@@ -8,11 +8,19 @@ using Rhino.Geometry;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 
+
+/*
+ * Notes
+ * TODO further research into vertex-based mesh vector fields
+ * 
+ * References
+ * http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
+ */
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// TODO further research into vertex-based mesh vector fields
-    /// http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
+    /// 
     /// </summary>
     public class MeshVectorField:MeshField<Vec3d>
     {
@@ -45,26 +53,6 @@ namespace SpatialSlur.SlurField
         public MeshVectorField(MeshVectorField other, bool duplicateMesh = false)
             : base(other, duplicateMesh)
         {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override MeshField Duplicate()
-        {
-            return new MeshVectorField(this);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override MeshField DuplicateDeep()
-        {
-            return new MeshVectorField(this, true);
         }
 
 

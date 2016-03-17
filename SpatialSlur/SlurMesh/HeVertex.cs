@@ -10,6 +10,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class HeVertex : HeElement
     {
         private Vec3d _position;

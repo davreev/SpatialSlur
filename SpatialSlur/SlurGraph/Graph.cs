@@ -5,12 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
+
 
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
-    /// Adjacency list implementation of an undirected graph.
+    /// Adjacency list implementation of an undirected graph where nodes and edges are explicitly represented.
     /// </summary>
+    [Serializable]
     public class Graph
     {
         /// <summary>
@@ -28,7 +31,7 @@ namespace SpatialSlur.SlurGraph
             Graph result = new Graph(nodePositions.Count, endPoints.Count >> 1);
 
             // add nodes
-            result.AddNodes(indexMap.Length);
+            result.AddNodes(nodePositions.Count);
 
             // add edges
             if (allowDupEdges)
@@ -44,6 +47,60 @@ namespace SpatialSlur.SlurGraph
                     int i1 = indexMap[i + 1];
                     if (!result.HasEdge(i0, i1)) result.AddEdge(i0, i1);
                 }
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static Graph CreateFromMesh(HeMesh mesh)
+        {
+            var verts = mesh.Vertices;
+            var edges = mesh.HalfEdges;
+            Graph result = new Graph(verts.Count, edges.Count >> 1);
+   
+            // add nodes
+            for (int i = 0; i < verts.Count; i++)
+                result.AddNode();
+
+            // add edges
+            for(int i = 0; i < edges.Count; i+=2)
+            {
+                HalfEdge e = edges[i];
+                if (e.IsUnused) continue;
+                result.AddEdge(e.Start.Index, e.End.Index);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static Graph CreateFromMeshDual(HeMesh mesh)
+        {
+            var faces = mesh.Faces;
+            var edges = mesh.HalfEdges;
+            Graph result = new Graph(faces.Count, edges.Count >> 1);
+
+            // add nodes
+            for (int i = 0; i < faces.Count; i++)
+                result.AddNode();
+
+            // add edges
+            for (int i = 0; i < edges.Count; i+=2)
+            {
+                HalfEdge e = edges[i];
+                if (e.IsUnused || e.IsBoundary) continue;
+                result.AddEdge(e.Face.Index, e.Twin.Face.Index);
             }
 
             return result;
@@ -162,7 +219,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Node GetNode(int index)
+        public Node NodeAt(int index)
         {
             return _nodes[index];
         }
@@ -173,7 +230,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Edge GetEdge(int index)
+        public Edge EdgeAt(int index)
         {
             return _edges[index];
         }
@@ -354,6 +411,67 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
+        /// Returns the number of neighbours shared by nodes i and j
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="nodeMask"></param>
+        /// <returns></returns>
+        public int CountCommonNeighbours(int i, int j, IList<bool> nodeMask)
+        {
+            Node ni = _nodes[i];
+            Node nj = _nodes[j];
+
+            // set neighbours of ni
+            foreach (Node n in ni.ConnectedNodes)
+                nodeMask[n.Index] = false;
+
+            // flag neighbours of nj
+            foreach (Node n in nj.ConnectedNodes)
+                nodeMask[n.Index] = true;
+
+            // collect flagged neighbours of v0
+            int count = 0;
+            foreach (Node n in ni.ConnectedNodes)
+                if(nodeMask[n.Index]) count++;
+
+            return count;
+        }
+
+
+        /// <summary>
+        /// Returns the indices of neighbours shared by nodes i and j
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="nodeMask"></param>
+        /// <returns></returns>
+        public List<int> GetCommonNeighbours(int i, int j, IList<bool> nodeMask)
+        {
+            Node ni = _nodes[i];
+            Node nj = _nodes[j];
+
+            // set neighbours of ni
+            foreach (Node n in ni.ConnectedNodes)
+                nodeMask[n.Index] = false;
+
+            // flag neighbours of nj
+            foreach (Node n in nj.ConnectedNodes)
+                nodeMask[n.Index] = true;
+
+            // collect flagged neighbours of v0
+            List<int> result = new List<int>();
+            foreach (Node n in ni.ConnectedNodes)
+            {
+                int id = n.Index;
+                if (nodeMask[id]) result.Add(id);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
         /// Gets the topological depth of each node from a given set of source nodes via breadth first search.
         /// </summary>
         /// <param name="sources"></param>
@@ -390,10 +508,10 @@ namespace SpatialSlur.SlurGraph
             while (queue.Count > 0)
             {
                 int i = queue.Dequeue();
-                var ni = _nodes[i];
+                Node ni = _nodes[i];
                 int tj = result[i] + 1;
 
-                foreach (var nj in ni.ConnectedNodes)
+                foreach (Node nj in ni.ConnectedNodes)
                 {
                     int j = nj.Index;
                     if (tj < result[j])

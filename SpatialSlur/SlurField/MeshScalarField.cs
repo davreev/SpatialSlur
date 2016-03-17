@@ -48,37 +48,17 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override MeshField Duplicate()
-        {
-            return new MeshScalarField(this);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override MeshField DuplicateDeep()
-        {
-            return new MeshScalarField(this, true);
-        }
-
-
-        /// <summary>
-        /// returns the interpolated value at a given point in the field
+        /// Returns the interpolated value at a given point in the field
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
         public override double Evaluate(MeshPoint point)
         {
             MeshFace face = DisplayMesh.Faces[point.FaceIndex];
-            double result = 0;
-            int count = (face.IsQuad) ? 4 : 3;
+            double result = 0.0;
 
-            for (int i = 0; i < count; i++)
+            int n = (face.IsQuad) ? 4 : 3;
+            for (int i = 0; i < n; i++)
                 result += Values[face[i]] * point.T[i];
 
             return result;
@@ -399,6 +379,35 @@ namespace SpatialSlur.SlurField
                         result[i] = sum / n;
                     }
                 });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="faceValues"></param>
+        public void SetVertexMeans(IList<double> faceValues)
+        {
+            HeVertexList verts = Mesh.Vertices;
+       
+            Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    HeVertex v = verts[i];
+                    if (v.IsUnused) continue;
+
+                    double sum = 0.0;
+                    int n = 0;
+                    foreach(HeFace f in v.SurroundingFaces)
+                    {
+                        sum += faceValues[f.Index];
+                        n++;
+                    }
+
+                    Values[i] = sum / n;
+                }
+            });
         }
     }
 }

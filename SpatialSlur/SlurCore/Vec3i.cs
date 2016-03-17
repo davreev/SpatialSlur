@@ -9,9 +9,9 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public struct Vec3i
     {
-
         #region Static
 
         /// <summary>

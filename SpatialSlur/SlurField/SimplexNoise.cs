@@ -5,10 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+
+/*
+ * Notes
+ * 
+ * References
+ * http://webstaff.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
+ */
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// http://webstaff.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
+    /// 
     /// </summary>
     public static class SimplexNoise
     {
@@ -65,13 +73,12 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// shuffles the permutation table
-        /// the same seed value will always produce the same table
+        /// Sets the permutation table.
+        /// By default the table is set to seed 0.
         /// </summary>
         /// <param name="seed"></param>
         public static void SetPermutation(int seed)
         {
-            // assign permutation table and shuffle
             for (int i = 0; i < 256; i++)
                 _perm[i] = i;
 
@@ -350,7 +357,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         private static int ToGradIndex(int i, int j)
         {
-            return GetPermAt(i + GetPermAt(j)) & 7;
+            return PermAt(i + PermAt(j)) & 7;
         }
 
 
@@ -363,7 +370,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         private static int ToGradIndex(int i, int j, int k)
         {
-            return GetPermAt(i + GetPermAt(j + GetPermAt(k))) % 12;
+            return PermAt(i + PermAt(j + PermAt(k))) % 12;
         }
 
 
@@ -372,7 +379,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        private static int GetPermAt(int index)
+        private static int PermAt(int index)
         {
             return _perm[index & 255]; // bitwise wrapping
         }

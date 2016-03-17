@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// IList interface extension methods
+    /// IList interface extension methods.
     /// </summary>
     public static class IListExtensions
     {

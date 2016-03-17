@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Consolidates common functionality from SpatialHash and SpatialGrid.
+    /// Abstract base class consolidating common functionality from SpatialHash and SpatialGrid.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public abstract class Spatial3d<T>

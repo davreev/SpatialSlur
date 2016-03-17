@@ -403,40 +403,69 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="halfEdgePoints"></param>
+        /// <param name="closeFaces"></param>
+        /// <param name="closeVertices"></param>
         /// <returns></returns>
-        public static HeMesh DualSkeleton(HeMesh mesh, IList<Vec3d> halfEdgePoints)
+        public static HeMesh BevelEdges(HeMesh mesh, IList<Vec3d> halfEdgePoints, bool closeVertices, bool closeFaces)
         {
-            HeFaceList faces = mesh.Faces;
-            HalfEdgeList edges = mesh.HalfEdges;
-
+            var faces = mesh.Faces;
+            var edges = mesh.HalfEdges;
+            var verts = mesh.Vertices;
             edges.SizeCheck(halfEdgePoints);
+
             HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
 
             // add one new vertex per edge
             for (int i = 0; i < edges.Count; i++)
-                result.Vertices.Add(halfEdgePoints[i]);
+                newVerts.Add(halfEdgePoints[i]);
 
-            // add nodal faces
-            for (int i = 0; i < faces.Count; i++)
-            {
-                HeFace f = faces[i];
-
-                // collect indices of face edges
-                List<int> fi = new List<int>();
-                foreach (HalfEdge e in f.HalfEdges)
-                    fi.Add(e.Index);
-
-                result.Faces.Add(fi);
-            }
-
-            // add edge faces
+            // add edge faces (1 per edge in the original mesh)
             for (int i = 0; i < edges.Count; i += 2)
             {
                 HalfEdge e0 = edges[i];
                 if (e0.IsBoundary) continue;
 
                 HalfEdge e1 = e0.Twin;
-                result.Faces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
+                newFaces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
+            }
+
+            // add vertex faces (1 per vertex in the original mesh)
+            if (closeVertices)
+            {
+                for (int i = 0; i < verts.Count; i++)
+                {
+                    HeVertex v = verts[i];
+                    if (v.IsBoundary) continue;
+
+                    // circulate vertex in reverse for consistent face windings
+                    List<int> vi = new List<int>();
+                    HalfEdge e = v.First;
+                    do
+                    {
+                        vi.Add(e.Index);
+                        e = e.Previous.Twin;
+                    } while (e != v.First);
+
+                    newFaces.Add(vi);
+                }
+            }
+
+            // add face faces (1 per face in the original mesh)
+            if (closeFaces)
+            {
+                for (int i = 0; i < faces.Count; i++)
+                {
+                    HeFace f = faces[i];
+
+                    // collect indices of face edges
+                    List<int> vi = new List<int>();
+                    foreach (HalfEdge e in f.HalfEdges)
+                        vi.Add(e.Index);
+
+                    newFaces.Add(vi);
+                }
             }
 
             return result;
@@ -448,165 +477,86 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="facePoints"></param>
-        /// <param name="faceValues"></param>
+        /// <param name="vertexValues"></param>
+        /// <param name="closeVertices"></param>
+        /// <param name="closeFaces"></param>
         /// <returns></returns>
-        public static HeMesh DualSkeleton(HeMesh mesh, IList<Vec3d> facePoints, IList<double> faceValues)
+        public static HeMesh BevelEdges(HeMesh mesh, IList<Vec3d> facePoints, IList<double> vertexValues, bool closeVertices, bool closeFaces)
         {
-            HeFaceList faces = mesh.Faces;
-            HalfEdgeList edges = mesh.HalfEdges;
-
+            var verts = mesh.Vertices;
+            var edges = mesh.HalfEdges;
+            var faces = mesh.Faces;
+            verts.SizeCheck(vertexValues);
             faces.SizeCheck(facePoints);
-            faces.SizeCheck(faceValues);
 
             HeMesh result = new HeMesh();
+            HeVertexList newVerts = result.Vertices;
+            HeFaceList newFaces = result.Faces;
 
             // add one new vertex per edge
             for (int i = 0; i < edges.Count; i++)
             {
                 HalfEdge e = edges[i];
                 HeFace f = e.Face;
-                Vec3d p = e.Start.Position;
 
                 if (f == null)
-                {
-                    result.Vertices.Add(p);
-                }
+                    newVerts.Add(new Vec3d()); // add placholder vertex to retain list order
                 else
-                {
-                    int fi = f.Index;
-                    result.Vertices.Add(Vec3d.Lerp(p, facePoints[fi], faceValues[fi]));
-                }
+                    newVerts.Add(Vec3d.Lerp(e.Start.Position, facePoints[f.Index], vertexValues[e.Start.Index]));
             }
 
-            // add nodal faces
-            for (int i = 0; i < faces.Count; i++)
-            {
-                HeFace f = faces[i];
-
-                // collect indices of face edges
-                List<int> fi = new List<int>();
-                foreach (HalfEdge e in f.HalfEdges)
-                    fi.Add(e.Index);
-
-                result.Faces.Add(fi);
-            }
-
-            // add edge faces
+            // add edge faces (1 per edge in the original mesh)
             for (int i = 0; i < edges.Count; i += 2)
             {
                 HalfEdge e0 = edges[i];
                 if (e0.IsBoundary) continue;
 
                 HalfEdge e1 = e0.Twin;
-                result.Faces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
+                newFaces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
             }
 
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="facePoints"></param>
-        /// <param name="faceValues"></param>
-        /// <returns></returns>
-        public static HeMesh DualSkeleton2(HeMesh mesh, IList<Vec3d> facePoints, IList<double> faceValues)
-        {
-            HeFaceList faces = mesh.Faces;
-            HalfEdgeList edges = mesh.HalfEdges;
-
-            faces.SizeCheck(facePoints);
-            faces.SizeCheck(faceValues);
-
-            HeMesh result = new HeMesh();
-
-            // add one new vertex per face
-            for (int i = 0; i < faces.Count; i++)
-                result.Vertices.Add(facePoints[i]);
-
-            // add one new vertex per edge
-            for (int i = 0; i < edges.Count; i++)
+            // add vertex faces (1 per vertex in the original mesh)
+            if (closeVertices)
             {
-                HalfEdge e = edges[i];
-                HeFace f = e.Face;
-                Vec3d p = e.Start.Position;
+                for (int i = 0; i < verts.Count; i++)
+                {
+                    HeVertex v = verts[i];
+                    if (v.IsBoundary) continue;
 
-                if (f == null)
-                {
-                    result.Vertices.Add(p);
-                }
-                else
-                {
-                    int fi = f.Index;
-                    result.Vertices.Add(Vec3d.Lerp(p, facePoints[fi], faceValues[fi]));
+                    // circulate vertex in reverse for consistent face windings
+                    List<int> vi = new List<int>();
+                    HalfEdge e = v.First;
+                    do
+                    {
+                        vi.Add(e.Index);
+                        e = e.Previous.Twin;
+                    } while (e != v.First);
+
+                    newFaces.Add(vi);
                 }
             }
 
-            // add faces
-            int nf = faces.Count;
-            for (int i = 0; i < edges.Count; i += 2)
+            // add face faces (1 per face in the original mesh)
+            if (closeFaces)
             {
-                HalfEdge e0 = edges[i];
-                if (e0.IsBoundary) continue;
+                for (int i = 0; i < faces.Count; i++)
+                {
+                    HeFace f = faces[i];
 
-                HalfEdge e1 = e0.Twin;
-                HeFace f0 = e0.Face;
-                HeFace f1 = e1.Face;
+                    // collect indices of face edges
+                    List<int> vi = new List<int>();
+                    foreach (HalfEdge e in f.HalfEdges)
+                        vi.Add(e.Index);
 
-                result.Faces.Add(f0.Index, e0.Index + nf, e1.Next.Index + nf, f1.Index);
-                result.Faces.Add(f1.Index, e1.Index + nf, e0.Next.Index + nf, f0.Index);
+                    newFaces.Add(vi);
+                }
             }
 
             return result;
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="facePoints"></param>
-        /// <param name="halfEdgePoints"></param>
-        /// <returns></returns>
-        public static HeMesh DualSkeleton2(HeMesh mesh, IList<Vec3d> facePoints, IList<Vec3d> halfEdgePoints)
-        {
-            HeFaceList faces = mesh.Faces;
-            HalfEdgeList edges = mesh.HalfEdges;
-
-            faces.SizeCheck(facePoints);
-            edges.SizeCheck(halfEdgePoints);
-
-            HeMesh result = new HeMesh();
-
-            // add one new vertex per face
-            for (int i = 0; i < faces.Count; i++)
-                result.Vertices.Add(facePoints[i]);
-
-            // add one new vertex per edge
-            for (int i = 0; i < edges.Count; i++)
-                result.Vertices.Add(halfEdgePoints[i]);
-
-            // add faces
-            int nf = faces.Count;
-            for (int i = 0; i < edges.Count; i += 2)
-            {
-                HalfEdge e0 = edges[i];
-                if (e0.IsBoundary) continue;
-
-                HalfEdge e1 = e0.Twin;
-                HeFace f0 = e0.Face;
-                HeFace f1 = e1.Face;
-
-                result.Faces.Add(f0.Index, e0.Index + nf, e1.Next.Index + nf, f1.Index);
-                result.Faces.Add(f1.Index, e1.Index + nf, e0.Next.Index + nf, f0.Index);
-            }
-
-            return result;
-        }
-
-
+        [Obsolete("Use BevelEdges() instead")]
         /// <summary>
         /// 
         /// </summary>
@@ -615,46 +565,313 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public static HeMesh BevelEdges(HeMesh mesh, IList<Vec3d> halfEdgePoints)
         {
-            HalfEdgeList edges = mesh.HalfEdges;
+            var verts = mesh.Vertices;
+            var edges = mesh.HalfEdges;
             edges.SizeCheck(halfEdgePoints);
 
+            HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
+
+            // add vertices (1 per halfedge in the original mesh)
+            for (int i = 0; i < edges.Count; i++)
+                newVerts.Add(halfEdgePoints[i]);
+
+            // add edge faces (1 per edge in the original mesh)
+            for (int i = 0; i < edges.Count; i += 2)
+            {
+                HalfEdge e0 = edges[i];
+                if (e0.IsBoundary) continue;
+
+                HalfEdge e1 = e0.Twin;
+                newFaces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
+            }
+
+            // add vertex faces (1 per vertex in the original mesh)
+            for (int i = 0; i < verts.Count; i++)
+            {
+                HeVertex v = verts[i];
+                if (v.IsBoundary) continue;
+
+                // circulate vertex in reverse for consistent face windings
+                List<int> vi = new List<int>();
+                HalfEdge e = v.First;
+                do
+                {
+                    vi.Add(e.Index);
+                    e = e.Previous.Twin;
+                } while (e != v.First);
+
+                newFaces.Add(vi);
+            }
+
+            return result;
+        }
+
+
+        [Obsolete("Use BevelEdges() instead")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="facePoints"></param>
+        /// <param name="vertexValues"></param>
+        /// <returns></returns>
+        public static HeMesh BevelEdges(HeMesh mesh, IList<Vec3d> facePoints, IList<double> vertexValues)
+        {
             HeVertexList verts = mesh.Vertices;
-            int ne = edges.Count;
-            int nv = verts.Count;
+            HalfEdgeList edges = mesh.HalfEdges;
+            verts.SizeCheck(vertexValues);
+            mesh.Faces.SizeCheck(facePoints);
 
             HeMesh result = new HeMesh();
             HeVertexList newVerts = result.Vertices;
             HeFaceList newFaces = result.Faces;
 
-            // add vertices (1 per halfedge in the original mesh)
-            for (int i = 0; i < ne; i++)
-                newVerts.Add(halfEdgePoints[i]);
-
-            // add edge faces (1 per edge in the original mesh)
-            for (int i = 0; i < ne; i += 2)
+            // add one new vertex per edge
+            for (int i = 0; i < edges.Count; i++)
             {
                 HalfEdge e = edges[i];
-                int i1 = e.Twin.Next.Index;
-                int i2 = e.Twin.Index;
-                int i3 = e.Next.Index;
-                newFaces.Add(i, i1, i2, i3);
+                HeFace f = e.Face;
+
+                if (f == null)
+                    newVerts.Add(new Vec3d()); // add placholder vertex to retain list order
+                else
+                    newVerts.Add(Vec3d.Lerp(e.Start.Position, facePoints[f.Index], vertexValues[e.Start.Index]));
             }
 
-            // add node faces (1 per node in the original mesh)
-            for (int i = 0; i < nv; i++)
+            // add edge faces (1 per edge in the original mesh)
+            for (int i = 0; i < edges.Count; i += 2)
+            {
+                HalfEdge e0 = edges[i];
+                if (e0.IsBoundary) continue;
+
+                HalfEdge e1 = e0.Twin;
+                newFaces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
+            }
+
+            // add vertex faces (1 per vertex in the original mesh)
+            for (int i = 0; i < verts.Count; i++)
             {
                 HeVertex v = verts[i];
-                List<int> ids = new List<int>();
+                if (v.IsBoundary) continue;
 
                 // circulate vertex in reverse for consistent face windings
+                List<int> vi = new List<int>();
                 HalfEdge e = v.First;
                 do
                 {
-                    ids.Add(e.Index);
+                    vi.Add(e.Index);
                     e = e.Previous.Twin;
                 } while (e != v.First);
 
-                newFaces.Add(ids);
+                newFaces.Add(vi);
+            }
+
+            return result;
+        }
+
+
+        [Obsolete("Use BevelEdges() instead")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="halfEdgePoints"></param>
+        /// <returns></returns>
+        public static HeMesh BevelDual(HeMesh mesh, IList<Vec3d> halfEdgePoints)
+        {
+            var faces = mesh.Faces;
+            var edges = mesh.HalfEdges;
+            edges.SizeCheck(halfEdgePoints);
+
+            HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
+
+            // add one new vertex per edge
+            for (int i = 0; i < edges.Count; i++)
+                newVerts.Add(halfEdgePoints[i]);
+
+            // add edge faces (1 per edge in the original mesh)
+            for (int i = 0; i < edges.Count; i += 2)
+            {
+                HalfEdge e0 = edges[i];
+                if (e0.IsBoundary) continue;
+
+                HalfEdge e1 = e0.Twin;
+                newFaces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
+            }
+
+            // add face faces (1 per face in the original mesh)
+            for (int i = 0; i < faces.Count; i++)
+            {
+                HeFace f = faces[i];
+           
+                // collect indices of face edges
+                List<int> vi = new List<int>();
+                foreach (HalfEdge e in f.HalfEdges)
+                    vi.Add(e.Index);
+
+                newFaces.Add(vi);
+            }
+
+            return result;
+        }
+
+
+        [Obsolete("Use BevelEdges() instead")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="facePoints"></param>
+        /// <param name="faceValues"></param>
+        /// <returns></returns>
+        public static HeMesh BevelDual(HeMesh mesh, IList<Vec3d> facePoints, IList<double> faceValues)
+        {
+            var faces = mesh.Faces;
+            var edges = mesh.HalfEdges;
+            faces.SizeCheck(facePoints);
+            faces.SizeCheck(faceValues);
+
+            HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
+
+            // add one new vertex per edge
+            for (int i = 0; i < edges.Count; i++)
+            {
+                HalfEdge e = edges[i];
+                HeFace f = e.Face;
+                int fi = f.Index;
+           
+                if (f == null)
+                    newVerts.Add(new Vec3d()); // add placholder vertex to retain list order
+                else
+                    newVerts.Add(Vec3d.Lerp(e.Start.Position, facePoints[fi], faceValues[fi]));
+            }
+
+            // add edge faces (1 per edge in the original mesh)
+            for (int i = 0; i < edges.Count; i += 2)
+            {
+                HalfEdge e0 = edges[i];
+                if (e0.IsBoundary) continue;
+
+                HalfEdge e1 = e0.Twin;
+                newFaces.Add(e0.Next.Index, e0.Index, e1.Next.Index, e1.Index);
+            }
+
+            // add face faces (1 per face in the original mesh)
+            for (int i = 0; i < faces.Count; i++)
+            {
+                HeFace f = faces[i];
+       
+                // collect indices of face edges
+                List<int> vi = new List<int>();
+                foreach (HalfEdge e in f.HalfEdges)
+                    vi.Add(e.Index);
+
+                newFaces.Add(vi);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="facePoints"></param>
+        /// <param name="faceValues"></param>
+        /// <returns></returns>
+        public static HeMesh FrameDual(HeMesh mesh, IList<Vec3d> facePoints, IList<double> faceValues)
+        {
+            var faces = mesh.Faces;
+            var edges = mesh.HalfEdges;
+            faces.SizeCheck(facePoints);
+            faces.SizeCheck(faceValues);
+
+            HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
+
+            // add one new vertex per face
+            for (int i = 0; i < faces.Count; i++)
+                newVerts.Add(facePoints[i]);
+
+            // add one new vertex per edge
+            for (int i = 0; i < edges.Count; i++)
+            {
+                HalfEdge e = edges[i];
+                HeFace f = e.Face;
+                int fi = f.Index;
+
+                if (f == null)
+                    result.Vertices.Add(new Vec3d()); // add placholder vertex to retain list order
+                else
+                    result.Vertices.Add(Vec3d.Lerp(e.Start.Position, facePoints[fi], faceValues[fi]));
+            }
+
+            // add faces
+            int nf = faces.Count;
+            for (int i = 0; i < edges.Count; i += 2)
+            {
+                HalfEdge e0 = edges[i];
+                if (e0.IsBoundary) continue;
+
+                HalfEdge e1 = e0.Twin;
+                HeFace f0 = e0.Face;
+                HeFace f1 = e1.Face;
+
+                newFaces.Add(f0.Index, e0.Index + nf, e1.Next.Index + nf, f1.Index);
+                newFaces.Add(f1.Index, e1.Index + nf, e0.Next.Index + nf, f0.Index);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="facePoints"></param>
+        /// <param name="halfEdgePoints"></param>
+        /// <returns></returns>
+        public static HeMesh FrameDual(HeMesh mesh, IList<Vec3d> facePoints, IList<Vec3d> halfEdgePoints)
+        {
+            var faces = mesh.Faces;
+            var edges = mesh.HalfEdges;
+            faces.SizeCheck(facePoints);
+            edges.SizeCheck(halfEdgePoints);
+
+            HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
+
+            // add one new vertex per face
+            for (int i = 0; i < faces.Count; i++)
+                newVerts.Add(facePoints[i]);
+
+            // add one new vertex per edge
+            for (int i = 0; i < edges.Count; i++)
+                newVerts.Add(halfEdgePoints[i]);
+
+            // add faces
+            int nf = faces.Count;
+            for (int i = 0; i < edges.Count; i += 2)
+            {
+                HalfEdge e0 = edges[i];
+                if (e0.IsBoundary) continue;
+
+                HalfEdge e1 = e0.Twin;
+                HeFace f0 = e0.Face;
+                HeFace f1 = e1.Face;
+
+                newFaces.Add(f0.Index, e0.Index + nf, e1.Next.Index + nf, f1.Index);
+                newFaces.Add(f1.Index, e1.Index + nf, e0.Next.Index + nf, f0.Index);
             }
 
             return result;

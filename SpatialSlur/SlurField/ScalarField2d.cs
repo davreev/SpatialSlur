@@ -13,6 +13,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ScalarField2d:Field2d<double>
     {
         // Delegates for boundary dependant methods
@@ -75,16 +76,6 @@ namespace SpatialSlur.SlurField
                     _getGradient = GetGradientPeriodic;
                     break;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override Field2d Duplicate()
-        {
-            return new ScalarField2d(this);
         }
 
 

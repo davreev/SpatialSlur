@@ -57,6 +57,7 @@
     <Compile Include="SlurCore\ColorUtil.cs" />
     <Compile Include="SlurCore\GeometryUtil.cs" />
     <Compile Include="SlurCore\IListExtensions.cs" />
+    <Compile Include="SlurCore\IOUtil.cs" />
     <Compile Include="SlurCore\RhinoFactory.cs" />
     <Compile Include="SlurCore\RhinoUtil.cs" />
     <Compile Include="SlurCore\Vec2i.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="SlurMesh\HeSubdivide.cs" />
     <Compile Include="SlurMesh\HeVertex.cs" />
     <Compile Include="SlurMesh\HeVertexList.cs" />
+    <Compile Include="SlurMesh\MeshIO.cs" />
     <Compile Include="SlurMesh\RhinoExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SlurField\RhinoExtensions.cs" />

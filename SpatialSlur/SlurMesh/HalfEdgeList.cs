@@ -12,6 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class HalfEdgeList : HeElementList<HalfEdge>
     {
         /// <summary>
@@ -546,6 +547,21 @@ namespace SpatialSlur.SlurMesh
         {
             SizeCheck(result);
 
+            if (unitize)
+                UpdateHalfEdgeUnitVectors(result);
+            else
+                UpdateHalfEdgeVectors(result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        private void UpdateHalfEdgeUnitVectors(IList<Vec3d> result)
+        {
+            SizeCheck(result);
+
             Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
             {
                 int i0 = range.Item1 << 1;
@@ -557,7 +573,33 @@ namespace SpatialSlur.SlurMesh
                     if (e.IsUnused) continue;
 
                     Vec3d v = e.Span;
-                    if (unitize) v.Unitize();
+                    v.Unitize();
+                    result[i] = v;
+                    result[i + 1] = -v;
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        private void UpdateHalfEdgeVectors(IList<Vec3d> result)
+        {
+            SizeCheck(result);
+
+            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
+            {
+                int i0 = range.Item1 << 1;
+                int i1 = range.Item2 << 1;
+
+                for (int i = i0; i < i1; i += 2)
+                {
+                    HalfEdge e = this[i];
+                    if (e.IsUnused) continue;
+
+                    Vec3d v = e.Span;
                     result[i] = v;
                     result[i + 1] = -v;
                 }
@@ -671,7 +713,6 @@ namespace SpatialSlur.SlurMesh
         /// <param name="result"></param>
         private void UpdateHalfEdgeBisectors(IList<Vec3d> result)
         {
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -695,7 +736,6 @@ namespace SpatialSlur.SlurMesh
         /// <param name="result"></param>
         private void UpdateHalfEdgeUnitBisectors(IList<Vec3d> result)
         {
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -828,7 +868,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Collapses the given half edge by merging the vertices at either end.
-        /// The start vertex is retained and the end vertex is flagged as unused.
+        /// The start vertex of the given half-edge is removed.
         /// Return true on success.
         /// </summary>
         /// <param name="edge"></param>
@@ -845,39 +885,39 @@ namespace SpatialSlur.SlurMesh
             HeFace f0 = e0.Face;
             HeFace f1 = e1.Face;
 
-            /*
             // avoids creation of non-manifold vertices
             if (!e0.IsBoundary && (v0.IsBoundary && v1.IsBoundary))
                 return false;
-            */
-
+         
+            /*
             // avoids creation of non-manifold edges
             int allow = 0; // the number of common neighbours allowed between v0 and v1
             if (f0 != null && f0.IsTri) allow++;
             if (f1 != null && f1.IsTri) allow++;
             if (Mesh.Vertices.CountCommonNeighbours(v0, v1) > allow)
                 return false;
+            */
 
-            // update edge-vertex refs of all edges emanating from the vertex which is being removed
+            // update vertex refs of all edges emanating from v0
             foreach (HalfEdge e in v0.OutgoingHalfEdges) e.Start = v1;
 
-            // update vertex-edge ref for the remaining vertex if necessary
-            if (e1.IsFirstFromStart) e1.Next.MakeFirstFromStart();
+            // update edge ref of v1 if necessary
+            if (v1.First == e1) v1.First = e1.Next;
 
             // update edge-edge refs
             HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
             HalfEdge.MakeConsecutive(e1.Previous, e1.Next);
 
-            // update face-edge refs if necessary and deal with potential collapse by merging
+            // update edge refs of faces if necessary and deal with potential collapse by merging
             if (f0 != null)
             {
-                if (e0.IsFirstInFace) e0.Next.MakeFirstInFace();
+                if (f0.First == e0) f0.First = e0.Next;
                 if (!f0.IsValid) Mesh.Faces.MergeFaces(f0.First);
             }
 
             if (f1 != null)
             {
-                if (e1.IsFirstInFace) e1.Next.MakeFirstInFace();
+                if (f1.First == e1) f1.First = e1.Next;
                 if (!f1.IsValid) Mesh.Faces.MergeFaces(f1.First);
             }
 
@@ -886,6 +926,17 @@ namespace SpatialSlur.SlurMesh
             e1.MakeUnused();
             v0.MakeUnused();
             return true;
+        }
+
+
+        /// <summary>
+        /// TODO
+        /// Simplified collapse method for triangular meshes
+        /// </summary>
+        /// <param name="edge"></param>
+        public bool CollapseEdgeTri(HalfEdge edge)
+        {
+            throw new NotImplementedException();
         }
 
 

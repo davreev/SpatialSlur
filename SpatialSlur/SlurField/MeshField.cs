@@ -42,7 +42,7 @@ namespace SpatialSlur.SlurField
         /// <param name="duplicateMesh"></param>
         protected MeshField(MeshField field, bool duplicateMesh = false)
         {
-            _mesh = (duplicateMesh) ? field._mesh.Duplicate() : field._mesh;
+            _mesh = (duplicateMesh) ? new HeMesh(field._mesh) : field._mesh;
             _n = field._n;
             RebuildDisplayMesh();
         }
@@ -84,22 +84,6 @@ namespace SpatialSlur.SlurField
         {
             get { return _displayMesh; }
         }
-
-
-        /// <summary>
-        /// returns a shallow copy of the field
-        /// the new field will reference the same underlying mesh
-        /// </summary>
-        /// <returns></returns>
-        public abstract MeshField Duplicate();
-
-
-        /// <summary>
-        /// returns a deep copy of the field
-        /// the new field will reference a copy of the underlying mesh
-        /// </summary>
-        /// <returns></returns>
-        public abstract MeshField DuplicateDeep();
 
 
         /// <summary>

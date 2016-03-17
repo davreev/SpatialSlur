@@ -4,11 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ * TODO make generic for attaching attributes
+ */
+
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
-    /// TODO make generic for attaching attributes
+    /// 
     /// </summary>
+    [Serializable]
     public class Node
     {
         private readonly List<Edge> _edges;
@@ -143,7 +149,7 @@ namespace SpatialSlur.SlurGraph
             for (int i = 0; i < _edges.Count; i++)
             {
                 Edge e = _edges[i];
-                if (e.Other(this) == other && !e.IsRemoved)
+                if (!e.IsRemoved && e.Other(this) == other)
                     return e;
             }
 

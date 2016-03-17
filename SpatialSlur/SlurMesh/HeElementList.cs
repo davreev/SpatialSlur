@@ -12,6 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public abstract class HeElementList<T>:IEnumerable<T> where T : HeElement
     {
         private readonly HeMesh _mesh;

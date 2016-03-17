@@ -12,6 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class HeVertexList:HeElementList<HeVertex>
     {
         /// <summary>
@@ -127,12 +128,42 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Counts the number of vertices connected to both given vertices.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="vertexMask"></param>
+        /// <returns></returns>
+        public int CountCommonNeighbours(HeVertex v0, HeVertex v1, IList<bool> vertexMask)
+        {
+            Validate(v0);
+            Validate(v1);
+            SizeCheck(vertexMask);
+
+            // set neighbours of v0
+            foreach (HeVertex v in v0.ConnectedVertices)
+                vertexMask[v.Index] = false;
+
+            // flag neighbours of v1
+            foreach (HeVertex v in v1.ConnectedVertices)
+                vertexMask[v.Index] = true;
+            
+            // count flagged neighbours of v0
+            int count = 0;
+            foreach (HeVertex v in v0.ConnectedVertices)
+                if (vertexMask[v.Index]) count++;
+
+            return count;
+        }
+
+
+        /// <summary>
         /// Returns all vertices connected to both given vertices.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public IList<HeVertex> GetCommonNeighbours(HeVertex v0, HeVertex v1)
+        public List<HeVertex> GetCommonNeighbours(HeVertex v0, HeVertex v1)
         {
             Validate(v0);
             Validate(v1);
@@ -154,6 +185,36 @@ namespace SpatialSlur.SlurMesh
             // reset indices of flagged vertices
             foreach (int i in indices)
                 Mesh.Vertices[i].Index = i;
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns all vertices connected to both given vertices.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="vertexMask"></param>
+        /// <returns></returns>
+        public List<HeVertex> GetCommonNeighbours(HeVertex v0, HeVertex v1, IList<bool> vertexMask)
+        {
+            Validate(v0);
+            Validate(v1);
+            SizeCheck(vertexMask);
+
+            // set neighbours of v0
+            foreach (HeVertex v in v0.ConnectedVertices)
+                vertexMask[v.Index] = false;
+
+            // flag neighbours of v1
+            foreach (HeVertex v in v1.ConnectedVertices)
+                vertexMask[v.Index] = true;
+
+            // collect flagged neighbours of v0
+            List<HeVertex> result = new List<HeVertex>();
+            foreach (HeVertex v in v0.ConnectedVertices)
+                if (vertexMask[v.Index]) result.Add(v);
 
             return result;
         }
@@ -193,12 +254,42 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Counts the number of faces that surround both given vertices.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="faceMask"></param>
+        /// <returns></returns>
+        public int CountCommonFaces(HeVertex v0, HeVertex v1, bool[] faceMask)
+        {
+            Validate(v0);
+            Validate(v1);
+            Mesh.Faces.SizeCheck(faceMask);
+
+            // set neighbours of v0
+            foreach (HeFace f in v0.SurroundingFaces)
+                faceMask[f.Index] = false;
+
+            // flag neighbours of v1
+            foreach (HeFace f in v1.SurroundingFaces)
+                faceMask[f.Index] = true;
+
+            // count flagged neighbours of v0
+            int count = 0;
+            foreach (HeFace f in v0.SurroundingFaces)
+                if (faceMask[f.Index]) count++;
+
+            return count;
+        }
+
+
+        /// <summary>
         /// Returns all faces that surround both given vertices.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public IList<HeFace> GetCommonFaces(HeVertex v0, HeVertex v1)
+        public List<HeFace> GetCommonFaces(HeVertex v0, HeVertex v1)
         {
             Validate(v0);
             Validate(v1);
@@ -220,6 +311,36 @@ namespace SpatialSlur.SlurMesh
             // reset indices of flagged faces
             foreach (int i in indices)
                 Mesh.Faces[i].Index = i;
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns all faces that surround both given vertices.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="faceMask"></param>
+        /// <returns></returns>
+        public List<HeFace> GetCommonFaces(HeVertex v0, HeVertex v1, IList<bool> faceMask)
+        {
+            Validate(v0);
+            Validate(v1);
+            SizeCheck(faceMask);
+
+            // set neighbours of v0
+            foreach (HeFace f in v0.SurroundingFaces)
+                faceMask[f.Index] = false;
+
+            // flag neighbours of v1
+            foreach (HeFace f in v1.SurroundingFaces)
+                faceMask[f.Index] = true;
+
+            // collect flagged neighbours of v0
+            List<HeFace> result = new List<HeFace>();
+            foreach (HeFace f in v0.SurroundingFaces)
+                if (faceMask[f.Index]) result.Add(f);
 
             return result;
         }

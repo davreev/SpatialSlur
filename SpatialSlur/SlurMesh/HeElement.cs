@@ -9,6 +9,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public abstract class HeElement
     {
         private int _index = -1;

@@ -11,6 +11,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class DynamicScalarField2d : ScalarField2d
     {
         private readonly double[] _deltas;
@@ -29,7 +30,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField2d(Domain2d domain, int countX, int countY, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
             : base(domain, countX, countY, boundaryType)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
         }
 
 
@@ -40,7 +41,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField2d(Field2d other)
             : base(other)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
         }
 
 
@@ -51,7 +52,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField2d(ScalarField2d other)
             : base(other)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
         }
 
 
@@ -62,7 +63,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField2d(DynamicScalarField2d other)
             : base(other)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
             _deltas.Set(other._deltas);
         }
 
@@ -100,16 +101,6 @@ namespace SpatialSlur.SlurField
             }
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override Field2d Duplicate()
-        {
-            return new DynamicScalarField2d(this);
-        }
-        
 
         /// <summary>
         /// 

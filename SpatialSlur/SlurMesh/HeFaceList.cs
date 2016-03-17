@@ -12,6 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class HeFaceList:HeElementList<HeFace>
     {
         /// <summary>
@@ -87,24 +88,21 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertices"></param>
         private HeFace Add(IList<HeVertex> vertices)
         {
-            // don't allow degenerate faces
-            if (vertices.Count < 3) return null;
-
-            // all vertices must be unused or on boundary
-            foreach (HeVertex v in vertices)
-                if (!(v.IsUnused || v.IsBoundary)) return null;
-
-            // edges of the new face
             int n = vertices.Count;
-            HalfEdge[] faceLoop = new HalfEdge[n];
+            if (n < 3) return null; // don't allow degenerate faces
 
-            // gather any existing edges in the face loop
+            // collect all existing half-edges in the new face
+            HalfEdge[] faceLoop = new HalfEdge[n];
             for (int i = 0, j = 1; i < n; i++, j++)
             {
-                if (j == n) j = 0; // wrap j 
+                if (j == n) j = 0; // wrap j
 
-                // search for existing edge between vertices
-                HalfEdge e = vertices[i].FindHalfEdgeTo(vertices[j]);
+                // all vertices must be unused or on boundary
+                HeVertex v = vertices[i];
+                if (!(v.IsUnused || v.IsBoundary)) return null; 
+
+                // search for an existing half-edge between consecutive vertices
+                HalfEdge e = v.FindHalfEdgeTo(vertices[j]); 
 
                 // if the edge does exist, it can't already have a face
                 if (e == null)
@@ -117,7 +115,7 @@ namespace SpatialSlur.SlurMesh
 
             /*
             // avoids creation of non-manifold vertices
-            // if two consecutive new edges share a used vertex then that vertex will be non-manifold upon adding the face
+            // if two consecutive new half-edges share a used vertex then that vertex will be non-manifold upon adding the face
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
@@ -126,14 +124,14 @@ namespace SpatialSlur.SlurMesh
             }
             */
 
-            // create any missing edge pairs in the face loop and assign the new face
+            // create any missing half-edge pairs in the face loop and assign the new face
             HeFace result = new HeFace();
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
                 HalfEdge e = faceLoop[i];
 
-                // if missing an edge, add a new edge pair between the vertices
+                // if missing a half-edge, add a pair between consecutive vertices
                 if (e == null)
                 {
                     e = Mesh.HalfEdges.AddPair(vertices[i], vertices[j]);
@@ -143,7 +141,7 @@ namespace SpatialSlur.SlurMesh
                 e.Face = result; // assign the new face
             }
 
-            // link consecutive edges
+            // link consecutive half-edges
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
@@ -152,42 +150,36 @@ namespace SpatialSlur.SlurMesh
                 HeVertex v0 = e0.Start;
                 HeVertex v1 = e1.Start;
 
-                // check if edges are newly created (new edges will have null refs to previous and/or next)
+                // check if half-edges are newly created
+                // new half-edges will have null previous or next refs
                 int mask = 0;
                 if (e0.Next == null) mask |= 1; // e0 is new
                 if (e1.Previous == null) mask |= 2; // e1 is new
 
                 if (mask == 0)
                 {
-                    // neither edge is new
-                    // update v1's outgoing edge if necessary 
-                    HalfEdge e = null;
-                    if (e1.IsFirstFromStart)
-                    {
-                        e = e1.FindBoundary(); // find the next boundary edge around v1
-                        if (e != null) v1.First = e;
-                    }
-
-                    // if the two existing edges aren't consecutive then deal with non-manifold vertex http://www.pointclouds.org/blog/nvcs/
+                    // neither half-edge is new
+                    // if the two existing half-edges aren't consecutive, then deal with non-manifold vertex as per http://www.pointclouds.org/blog/nvcs/
+                    // otherwise, update the first half-edge from v1 if necessary
                     if (e0.Next != e1)
                     {
-                        // find the next boundary edge around v1 if it hasn't been done already
-                        if (e == null)
-                            e = e1.FindBoundary();
-
-                        // if no other boundary edge was found then something went horribly wrong
-                        if (e == null)
-                            throw new InvalidOperationException(String.Format("No second boundary edge was found around vertex {0}. Face creation failed.", v1.Index));
-
+                        HalfEdge e = e1.FindBoundary(); // find the next boundary half-edge around v1 (must exist if half-edges aren't consecutive)
+                        v1.First = e;
+               
                         HalfEdge.MakeConsecutive(e.Previous, e0.Next);
                         HalfEdge.MakeConsecutive(e1.Previous, e);
                         HalfEdge.MakeConsecutive(e0, e1);
                     }
+                    else if (e1.IsFirstFromStart)
+                    {
+                        HalfEdge e = e1.FindBoundary(); // find the next boundary half-edge around v1
+                        if (e != null) v1.First = e;
+                    }
                 }
                 else
                 {
-                    // at least one edge is new
-                    // update edge-edge refs for outer edges depending on case
+                    // at least one half-edge is new
+                    // update refs for twin half-edges depending on case
                     switch (mask)
                     {
                         case 1:
@@ -200,16 +192,15 @@ namespace SpatialSlur.SlurMesh
                             HalfEdge.MakeConsecutive(e1.Twin, e0.Next);
                             break;
                         case 3:
-                            // both edges are new
+                            // both half-edges are new
                             if (v1.IsUnused)
                             {
-                                // if v1 has no outgoing edge
+                                // if v1 has no outgoing half-edge
                                 HalfEdge.MakeConsecutive(e1.Twin, e0.Twin);
                             }
                             else
                             {
-                                // if v1 is already in use (has an outgoing edge)
-                                // deal with non-manifold case
+                                // if v1 is already in use deal with non-manifold case
                                 HalfEdge.MakeConsecutive(v1.First.Previous, e0.Twin);
                                 HalfEdge.MakeConsecutive(e1.Twin, v1.First);
                             }
@@ -217,16 +208,12 @@ namespace SpatialSlur.SlurMesh
                             break;
                     }
 
-                    // update edge-edge refs for inner edges
-                    HalfEdge.MakeConsecutive(e0, e1);
+                    HalfEdge.MakeConsecutive(e0, e1); // update refs for inner half-edges
                 }
             }
 
-            // set face-edge ref
-            result.First = faceLoop[0];
-
-            // add to face list and return
-            Add(result);
+            result.First = faceLoop[0]; // set first half-edge in face
+            Add(result); // add face to list
             return result;
         }
 
@@ -481,12 +468,42 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Counts the number of faces adjacent to both given faces.
+        /// </summary>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        /// <param name="faceMask"></param>
+        /// <returns></returns>
+        public int CountCommonNeighbours(HeFace f0, HeFace f1, IList<bool> faceMask)
+        {
+            Validate(f0);
+            Validate(f1);
+            SizeCheck(faceMask);
+
+            // set neighbours of f0
+            foreach (HeFace f in f0.AdjacentFaces)
+                faceMask[f.Index] = false;
+
+            // flag neighbours of f1
+            foreach (HeFace f in f1.AdjacentFaces)
+                faceMask[f.Index] = true;
+
+            // count flagged neighbours of f0
+            int count = 0;
+            foreach (HeFace f in f0.AdjacentFaces)
+                if (faceMask[f.Index]) count++;
+
+            return count;
+        }
+
+
+        /// <summary>
         /// Returns all faces adjacent to both given faces.
         /// </summary>
         /// <param name="f0"></param>
         /// <param name="f1"></param>
         /// <returns></returns>
-        public IList<HeFace> GetCommonNeighbours(HeFace f0, HeFace f1)
+        public List<HeFace> GetCommonNeighbours(HeFace f0, HeFace f1)
         {
             Validate(f0);
             Validate(f1);
@@ -508,6 +525,36 @@ namespace SpatialSlur.SlurMesh
             // reset indices of flagged vertices
             foreach (int i in indices)
                 Mesh.Faces[i].Index = i;
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns all faces adjacent to both given faces.
+        /// </summary>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        /// <param name="faceMask"></param>
+        /// <returns></returns>
+        public List<HeFace> GetCommonNeighbours(HeFace f0, HeFace f1, IList<bool> faceMask)
+        {
+            Validate(f0);
+            Validate(f1);
+            SizeCheck(faceMask);
+
+            // set neighbours of f0
+            foreach (HeFace f in f0.AdjacentFaces)
+                faceMask[f.Index] = false;
+
+            // flag neighbours of f1
+            foreach (HeFace f in f1.AdjacentFaces)
+                faceMask[f.Index] = true;
+
+            // count flagged neighbours of f0
+            List<HeFace> result = new List<HeFace>();
+            foreach (HeFace f in f0.AdjacentFaces)
+                if (faceMask[f.Index]) result.Add(f);
 
             return result;
         }
@@ -547,13 +594,42 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Counts the number of vertices shared by the two given faces.
+        /// </summary>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        /// <param name="vertexMask"></param>
+        /// <returns></returns>
+        public int CountCommonVertices(HeFace f0, HeFace f1, IList<bool> vertexMask)
+        {
+            Validate(f0);
+            Validate(f1);
+            Mesh.Vertices.SizeCheck(vertexMask);
+
+            // set neighbours of f0
+            foreach (HeVertex v in f0.Vertices)
+                vertexMask[v.Index] = false;
+
+            // flag neighbours of f1
+            foreach (HeVertex v in f1.Vertices)
+                vertexMask[v.Index] = true;
+
+            // count flagged neighbours of f0
+            int count = 0;
+            foreach (HeVertex v in f0.Vertices)
+                if (vertexMask[v.Index]) count++;
+
+            return count;
+        }
+
+
+        /// <summary>
         /// Returns all vertices shared by both given faces.
-        /// TODO use visited mask instead of changing indices
         /// </summary>
         /// <param name="f0"></param>
         /// <param name="f1"></param>
         /// <returns></returns>
-        public IList<HeVertex> GetCommonVertices(HeFace f0, HeFace f1)
+        public List<HeVertex> GetCommonVertices(HeFace f0, HeFace f1)
         {
             Validate(f0);
             Validate(f1);
@@ -575,6 +651,36 @@ namespace SpatialSlur.SlurMesh
             // reset indices of flagged vertices
             foreach (int i in indices)
                 Mesh.Vertices[i].Index = i;
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns all vertices shared by both given faces.
+        /// </summary>
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        /// <param name="vertexMask"></param>
+        /// <returns></returns>
+        public List<HeVertex> GetCommonVertices(HeFace f0, HeFace f1, IList<bool> vertexMask)
+        {
+            Validate(f0);
+            Validate(f1);
+            Mesh.Vertices.SizeCheck(vertexMask);
+
+            // set neighbours of f0
+            foreach (HeVertex v in f0.Vertices)
+                vertexMask[v.Index] = false;
+
+            // flag neighbours of f1
+            foreach (HeVertex v in f1.Vertices)
+                vertexMask[v.Index] = true;
+
+            // count flagged neighbours of f0
+            List<HeVertex> result = new List<HeVertex>();
+            foreach (HeVertex v in f0.Vertices)
+                if (vertexMask[v.Index]) result.Add(v);
 
             return result;
         }
@@ -1384,6 +1490,32 @@ namespace SpatialSlur.SlurMesh
             } while (e.Start != v);
 
             return fc;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <returns></returns>
+        public HeFace FillHole(HalfEdge edge)
+        {
+            HalfEdgeList edges = Mesh.HalfEdges;
+            edges.Validate(edge);
+
+            // edge can't already have a face
+            if (edge.Face != null)
+                return null;
+
+            // create new face
+            HeFace f = new HeFace();
+            f.First = edge;
+
+            // assign to edges
+            foreach (HalfEdge e in edge.CirculateFace)
+                e.Face = f;
+
+            return f;
         }
 
 

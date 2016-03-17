@@ -6,11 +6,27 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes 
+ * 
+ * TODO rename Deposit and Decay methods
+ * those which modify the delta array
+ * AddDelta
+ * LerpToDelta
+ * 
+ * DeltaAdd
+ * DeltaLerpTo
+ * DeltaAddAt
+ * DeltaLerpToAt
+ * ex. AddToDelta, LerpDeltaTo
+ */
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class DynamicScalarField3d : ScalarField3d
     {
         private readonly double[] _deltas;
@@ -31,7 +47,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField3d(Domain3d domain, int countX, int countY, int countZ, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
             : base(domain, countX, countY, countZ, boundaryType)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
         }
 
 
@@ -42,7 +58,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField3d(Field3d other)
             : base(other)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
         }
 
 
@@ -53,7 +69,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField3d(ScalarField3d other)
             : base(other)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
         }
 
 
@@ -64,7 +80,7 @@ namespace SpatialSlur.SlurField
         public DynamicScalarField3d(DynamicScalarField3d other)
             : base(other)
         {
-            _deltas = new double[Count];
+            _deltas = new double[Count + 1];
             _deltas.Set(other._deltas);
         }
 
@@ -100,16 +116,6 @@ namespace SpatialSlur.SlurField
                     _erode = ErodePeriodic;
                     break;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override Field3d Duplicate()
-        {
-            return new DynamicScalarField3d(this);
         }
 
 
@@ -655,6 +661,7 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -667,6 +674,7 @@ namespace SpatialSlur.SlurField
                     _deltas[i] -= Values[i] * rate;
             });
         }
+        */
 
 
         /// <summary>
@@ -678,7 +686,7 @@ namespace SpatialSlur.SlurField
         {
             _deltas[index] += amount;
         }
-
+ 
 
         /// <summary>
         /// 
@@ -705,7 +713,7 @@ namespace SpatialSlur.SlurField
         {
             DepositAt(index, (target - Values[index]) * rate);
         }
-
+     
 
         /// <summary>
         /// 
@@ -719,6 +727,7 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -739,5 +748,6 @@ namespace SpatialSlur.SlurField
         {
             DepositAt(point, -Evaluate(point) * rate);
         }
+        */
     }
 }

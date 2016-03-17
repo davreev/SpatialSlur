@@ -998,11 +998,13 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static Mesh Evaluate(IList<double> values, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
         {
-            // ensure the number of values matches the given dimensions
             int nxy = nx * ny;
             int n = nxy * nz;
-            if (values.Count != n)
-                throw new System.ArgumentException("The specified dimensions must match the number of values.");
+
+            /*
+            if (values.Count < n)
+                throw new System.ArgumentException("Insufficient number of values provided.");
+            */
 
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
@@ -1180,14 +1182,16 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static Mesh Evaluate(IList<double> values, IList<Vec3d> normals, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
         {
-            if (values.Count != normals.Count)
-                throw new System.ArgumentException("Must provide an equal number of values and normals.");
-
-            // ensure the number of values matches the given dimensions
             int nxy = nx * ny;
             int n = nxy * nz;
-            if (values.Count != n)
-                throw new System.ArgumentException("The specified dimensions must match the number of values.");
+
+            /*
+            if (values.Count < n)
+                throw new System.ArgumentException("Insufficient number of values provided.");
+
+            if (normals.Count < n)
+                throw new System.ArgumentException("Insufficient number of normals provided.");
+            */
 
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
@@ -1283,33 +1287,6 @@ namespace SpatialSlur.SlurField
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
-        /// <param name="normals"></param>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate(IList<IList<double>> values, IList<IList<Vec3d>> normals, Domain3d domain, int nx, int ny, double thresh)
-        {
-            // get voxel dimensions
-            double dx = domain.x.Span / (nx - 1);
-            double dy = domain.y.Span / (ny - 1);
-            double dz = domain.z.Span / (values.Count - 1);
-
-            // get isosurface
-            Mesh result = Evaluate(values, normals, dx, dy, dz, nx, ny, thresh);
-
-            // move to domain origin
-            Vec3d v = domain.From;
-            result.Translate(v.x, v.y, v.z);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
-        /// </summary>
-        /// <param name="values"></param>
         /// <param name="nx"></param>
         /// <param name="ny"></param>
         /// <param name="thresh"></param>
@@ -1317,21 +1294,6 @@ namespace SpatialSlur.SlurField
         public static Mesh Evaluate(IList<IList<double>> values, int nx, int ny, double thresh)
         {
             return Evaluate(values, 1.0, 1.0, 1.0, nx, ny, thresh);
-        }
-
-
-        /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="normals"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate(IList<IList<double>> values, IList<IList<Vec3d>> normals, int nx, int ny, double thresh)
-        {
-            return Evaluate(values, normals, 1.0, 1.0, 1.0, nx, ny, thresh);
         }
 
 
@@ -1369,10 +1331,6 @@ namespace SpatialSlur.SlurField
                 {
                     IList<double> vals0 = values[z];
                     IList<double> vals1 = values[z + 1];
-
-                    // check layer sizes
-                    if(vals0.Count != nxy || vals1.Count != nxy)
-                        throw new System.ArgumentException("The specified dimensions must match the number of values in each layer.");
                     
                     for (int y = 0; y < ny - 1; y++)
                     {
@@ -1420,111 +1378,6 @@ namespace SpatialSlur.SlurField
 
             return result;
         }
-
-       
-        /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="normals"></param>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        /// <param name="dz"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate(IList<IList<double>> values, IList<IList<Vec3d>> normals, double dx, double dy, double dz, int nx, int ny, double thresh)
-        {
-            int nxy = nx * ny; // expected number of values per layer
-
-            // get offsets
-            int[] indexOffsets = GetIndexOffsets(nx, nxy);
-            Vec3d[] cornerOffsets = GetCornerOffsets(dx, dy, dz);
-
-            // resulting mesh
-            Mesh result = new Mesh();
-            Object locker = new Object();
-
-            // process voxels in layers
-            Parallel.ForEach(Partitioner.Create(0, values.Count - 1), range =>
-            {
-                Vec3d[] voxelCorners = new Vec3d[8];
-                Vec3d[] voxelNormals = new Vec3d[8];
-                double[] voxelValues = new double[8];
-                Mesh layer = new Mesh();
-
-                for (int z = range.Item1; z < range.Item2; z++)
-                {
-                    IList<double> vals0 = values[z];
-                    IList<double> vals1 = values[z + 1];
-                    IList<Vec3d> norms0 = normals[z];
-                    IList<Vec3d> norms1 = normals[z + 1];
-
-                    // check layer sizes
-                    if (vals0.Count != norms0.Count || vals1.Count != norms1.Count)
-                        throw new System.ArgumentException("Must provide an equal number of values and normals.");
-
-                    if (vals0.Count != nxy || vals1.Count != nxy)
-                        throw new System.ArgumentException("The specified dimensions must match the number of values in each layer.");
-
-                    for (int y = 0; y < ny - 1; y++)
-                    {
-                        for (int x = 0; x < nx - 1; x++)
-                        {
-                            int index = x + y * nx;
-
-                            // get case and set voxel values
-                            int caseIndex = 0;
-                            for (int i = 0; i < 4; i++)
-                            {
-                                double t = vals0[index + indexOffsets[i]];
-                                if (t < thresh) caseIndex |= (1 << i);
-                                voxelValues[i] = t;
-                            }
-
-                            for (int i = 4; i < 8; i++)
-                            {
-                                double t = vals1[index + indexOffsets[i - 4]];
-                                if (t < thresh) caseIndex |= (1 << i);
-                                voxelValues[i] = t;
-                            }
-
-                            // if current voxel isn't on thresholdold, move to the next
-                            if (caseIndex == 0 || caseIndex == 255) continue;
-
-                            // set voxel corners and normals
-                            Vec3d p0 = new Vec3d(x * dx, y * dy, z * dz);
-                            for (int i = 0; i < 4; i++)
-                            {
-                                voxelCorners[i] = p0 + cornerOffsets[i];
-                                voxelNormals[i] = norms0[index + indexOffsets[i]];
-                            }
-
-                            for (int i = 4; i < 8; i++)
-                            {
-                                voxelCorners[i] = p0 + cornerOffsets[i];
-                                voxelNormals[i] = norms1[index + indexOffsets[i - 4]];
-                            }
-
-                            // mesh current voxel
-                            MeshVoxel(voxelCorners, voxelValues, voxelNormals, caseIndex, thresh, layer);
-                        }
-                    }
-                }
-
-                // append layer
-                if (layer.Vertices.Count > 0)
-                {
-                    layer.Normals.UnitizeNormals(); // Rhino meshes must have unit normals to be considered valid
-
-                    lock (locker)
-                        result.Append(layer);
-                }
-            });
-
-            return result;
-        }
       
 
         /// <summary>
@@ -1539,15 +1392,16 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static Mesh Evaluate(IList<Vec3d> points, IList<double> values, int nx, int ny, int nz, double thresh)
         {
-            // must have an equal number of values and points
-            if (values.Count != points.Count)
-                throw new System.ArgumentException("Must provide an equal number of values and points.");
-
-            // ensure the number of values matches the given dimensions
             int nxy = nx * ny;
             int n = nxy * nz;
-            if (values.Count != n)
-                throw new System.ArgumentException("The specified dimensions must match the number of values.");
+   
+            /*
+            if (points.Count < n)
+                throw new System.ArgumentException("Insufficient number of points provided.");
+
+            if (values.Count < n)
+                throw new System.ArgumentException("Insufficient number of values provided.");
+             */
 
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);

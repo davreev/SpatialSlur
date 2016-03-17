@@ -13,10 +13,11 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public abstract class Field3d
     {
         private Domain3d _domain;
-        private Vec3d _from; // cached for convenience
+        private double _x0, _y0, _z0; // cached for convenience
 
         private FieldBoundaryType _boundaryType;
         private double _dx, _dy, _dz;
@@ -186,14 +187,15 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Iterates through the coordinates of values in the field. 
-        /// Note that these are not explicitly stored in memory.
+        /// Iterates through the coordinates of each value in the field. 
+        /// Note that these are calculated on the fly and not explicitly stored in memory.
+        /// If you need to cache them, call GetCoordinates or UpdateCoordinates instead.
         /// </summary>
         public IEnumerable<Vec3d> Coordinates
         {
             get
             {
-                Vec3d p = _from;
+                Vec3d p = new Vec3d(_x0, _y0, _z0);
 
                 for (int i = 0; i < _nz; i++)
                 {
@@ -204,10 +206,10 @@ namespace SpatialSlur.SlurField
                             yield return p;
                             p.x += _dx;
                         }
-                        p.x = _from.x; // reset x
+                        p.x = _x0; // reset x
                         p.y += _dy;
                     }
-                    p.y = _from.y; // reset y
+                    p.y = _y0; // reset y
                     p.z += _dz;
                 }
             }
@@ -219,7 +221,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         protected void OnDomainChange()
         {
-            _from = _domain.From;
+            _x0 = _domain.x.t0;
+            _y0 = _domain.y.t0;
+            _z0 = _domain.z.t0;
 
             _dx = _domain.x.Span / (_nx - 1);
             _dy = _domain.y.Span / (_ny - 1);
@@ -239,32 +243,32 @@ namespace SpatialSlur.SlurField
             switch (_boundaryType)
             {
                 case FieldBoundaryType.Constant:
-                    _indexAt = IndexAtClamped;
-                    _index3At = Index3AtClamped;
-                    _fieldPointAt = FieldPointAtClamped;
+                    _indexAt = IndexAtConstant;
+                    _index3At = Index3AtConstant;
+                    _fieldPointAt = FieldPointAtConstant;
                     break;
                 case FieldBoundaryType.Equal:
-                    _indexAt = IndexAtClamped;
-                    _index3At = Index3AtClamped;
-                    _fieldPointAt = FieldPointAtClamped;
+                    _indexAt = IndexAtEqual;
+                    _index3At = Index3AtEqual;
+                    _fieldPointAt = FieldPointAtEqual;
                     break;
                 case FieldBoundaryType.Periodic:
-                    _indexAt = IndexAtWrapped;
-                    _index3At = Index3AtWrapped;
-                    _fieldPointAt = FieldPointAtWrapped;
+                    _indexAt = IndexAtPeriodic;
+                    _index3At = Index3AtPeriodic;
+                    _fieldPointAt = FieldPointAtPeriodic;
                     break;
             }
         }
 
 
         /// <summary>
-        /// Returns an array of coordinates for each value in the field.
+        /// Returns coordinates of all values in the field.
         /// </summary>
         /// <returns></returns>
-        public Vec3d[] GetCoordinateArray()
+        public Vec3d[] GetCoordinates()
         {
             Vec3d[] result = new Vec3d[_n];
-            UpdateCoordinateArray(result);
+            UpdateCoordinates(result);
             return result;
         }
 
@@ -273,7 +277,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="points"></param>
-        public void UpdateCoordinateArray(IList<Vec3d> points)
+        public void UpdateCoordinates(IList<Vec3d> points)
         {
             SizeCheck(points);
 
@@ -286,18 +290,11 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == _nx) { j++; i = 0; }
                     if (j == _ny) { k++; j = 0; }
-                    points[index] = new Vec3d(i * _dx + _from.x, j * _dy + _from.y, k * _dz + _from.z);
+                    points[index] = new Vec3d(i * _dx + _x0, j * _dy + _y0, k * _dz + _z0);
                 }
             });
         }
      
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public abstract Field3d Duplicate();
-
 
         /// <summary>
         /// 
@@ -406,9 +403,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int IndexAtUnchecked(Vec3d point)
         {
-            int i = (int)Math.Round((point.x - _from.x) * _dxInv);
-            int j = (int)Math.Round((point.y - _from.y) * _dyInv);
-            int k = (int)Math.Round((point.z - _from.z) * _dzInv);
+            int i = (int)Math.Round((point.x - _x0) * _dxInv);
+            int j = (int)Math.Round((point.y - _y0) * _dyInv);
+            int k = (int)Math.Round((point.z - _z0) * _dzInv);
             return FlattenIndex(i, j, k);
         }
 
@@ -418,11 +415,16 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private int IndexAtClamped(Vec3d point)
+        private int IndexAtConstant(Vec3d point)
         {
-            int i = SlurMath.Clamp((int)Math.Round((point.x - _from.x) * _dxInv), _nx - 1);
-            int j = SlurMath.Clamp((int)Math.Round((point.y - _from.y) * _dyInv), _ny - 1);
-            int k = SlurMath.Clamp((int)Math.Round((point.z - _from.z) * _dzInv), _nz - 1);
+            int i = (int)Math.Round((point.x - _x0) * _dxInv);
+            int j = (int)Math.Round((point.y - _y0) * _dyInv);
+            int k = (int)Math.Round((point.z - _z0) * _dzInv);
+
+            // return index of boundary value if out of bounds
+            if (i < 0 || j < 0 || k < 0 || i >= _nx || j >= _ny || k >= _nz)
+                return _n;
+
             return FlattenIndex(i, j, k);
         }
 
@@ -432,11 +434,25 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private int IndexAtWrapped(Vec3d point)
+        private int IndexAtEqual(Vec3d point)
         {
-            int i = SlurMath.Mod2((int)Math.Round((point.x - _from.x) * _dxInv), _nx);
-            int j = SlurMath.Mod2((int)Math.Round((point.y - _from.y) * _dyInv), _ny);
-            int k = SlurMath.Mod2((int)Math.Round((point.z - _from.z) * _dzInv), _nz);
+            int i = SlurMath.Clamp((int)Math.Round((point.x - _x0) * _dxInv), _nx - 1);
+            int j = SlurMath.Clamp((int)Math.Round((point.y - _y0) * _dyInv), _ny - 1);
+            int k = SlurMath.Clamp((int)Math.Round((point.z - _z0) * _dzInv), _nz - 1);
+            return FlattenIndex(i, j, k);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        private int IndexAtPeriodic(Vec3d point)
+        {
+            int i = SlurMath.Mod2((int)Math.Round((point.x - _x0) * _dxInv), _nx);
+            int j = SlurMath.Mod2((int)Math.Round((point.y - _y0) * _dyInv), _ny);
+            int k = SlurMath.Mod2((int)Math.Round((point.z - _z0) * _dzInv), _nz);
             return FlattenIndex(i, j, k);
         }
 
@@ -460,9 +476,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public Vec3i Index3AtUnchecked(Vec3d point)
         {
-            int i = (int)Math.Round((point.x - _from.x) * _dxInv);
-            int j = (int)Math.Round((point.y - _from.y) * _dyInv);
-            int k = (int)Math.Round((point.z - _from.z) * _dzInv);
+            int i = (int)Math.Round((point.x - _x0) * _dxInv);
+            int j = (int)Math.Round((point.y - _y0) * _dyInv);
+            int k = (int)Math.Round((point.z - _z0) * _dzInv);
             return new Vec3i(i, j, k);
         }
 
@@ -472,11 +488,30 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private Vec3i Index3AtClamped(Vec3d point)
+        private Vec3i Index3AtConstant(Vec3d point)
         {
-            int i = SlurMath.Clamp((int)Math.Round((point.x - _from.x) * _dxInv), _nx - 1);
-            int j = SlurMath.Clamp((int)Math.Round((point.y - _from.y) * _dyInv), _ny - 1);
-            int k = SlurMath.Clamp((int)Math.Round((point.z - _from.z) * _dzInv), _nz - 1);
+            int i = (int)Math.Round((point.x - _x0) * _dxInv);
+            int j = (int)Math.Round((point.y - _y0) * _dyInv);
+            int k = (int)Math.Round((point.z - _z0) * _dzInv);
+
+            // return 3d index of boundary value if out of bounds
+            if (i < 0 || j < 0 || k < 0 || i >= _nx || j >= _ny || k >= _nz)
+                return new Vec3i(_nx, _ny, _nz);
+
+            return new Vec3i(i, j, k);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        private Vec3i Index3AtEqual(Vec3d point)
+        {
+            int i = SlurMath.Clamp((int)Math.Round((point.x - _x0) * _dxInv), _nx - 1);
+            int j = SlurMath.Clamp((int)Math.Round((point.y - _y0) * _dyInv), _ny - 1);
+            int k = SlurMath.Clamp((int)Math.Round((point.z - _z0) * _dzInv), _nz - 1);
             return new Vec3i(i, j, k);
         }
      
@@ -486,11 +521,11 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private Vec3i Index3AtWrapped(Vec3d point)
+        private Vec3i Index3AtPeriodic(Vec3d point)
         {
-            int i = SlurMath.Mod2((int)Math.Round((point.x - _from.x) * _dxInv), _nx);
-            int j = SlurMath.Mod2((int)Math.Round((point.y - _from.y) * _dyInv), _ny);
-            int k = SlurMath.Mod2((int)Math.Round((point.z - _from.z) * _dzInv), _nz);
+            int i = SlurMath.Mod2((int)Math.Round((point.x - _x0) * _dxInv), _nx);
+            int j = SlurMath.Mod2((int)Math.Round((point.y - _y0) * _dyInv), _ny);
+            int k = SlurMath.Mod2((int)Math.Round((point.z - _z0) * _dzInv), _nz);
             return new Vec3i(i, j, k);
         }
 
@@ -542,9 +577,9 @@ namespace SpatialSlur.SlurField
         {
             // convert to grid space and separate fractional and whole components
             int i, j, k;
-            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i);
-            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j);
-            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k);
+            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i);
+            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
+            double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k);
 
             // set corner indices
             int index = FlattenIndex(i, j, k);
@@ -565,17 +600,57 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// TODO test
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="result"></param>
+        private void FieldPointAtConstant(Vec3d point, FieldPoint3d result)
+        {
+            // convert to grid space and separate fractional and whole components
+            int i, j, k;
+            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i);
+            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
+            double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k);
+
+            // bit mask (1 = out of bounds, 0 = in bounds)
+            int mask = 0;
+            if (i < 0 || i >= _nx) mask |= 1;
+            if (j < 0 || j >= _ny) mask |= 2;
+            if (k < 0 || k >= _nz) mask |= 4;
+            if (i < -1 || i >= _nx - 1) mask |= 8;
+            if (j < -1 || j >= _ny - 1) mask |= 16;
+            if (k < -1 || k >= _nz - 1) mask |= 32;
+
+            // set corner indices
+            int index = FlattenIndex(i, j, k);
+            int[] corners = result.Corners;
+
+            corners[0] = ((mask & 7) > 0) ? _n : index; // 000 111
+            corners[1] = ((mask & 14) > 0) ? _n : index + 1; // 001 110
+            corners[2] = ((mask & 28) > 0) ? _n : index + 1 + _nx; // 011 100
+            corners[3] = ((mask & 21) > 0) ? _n : index + _nx; // 010 101
+            corners[4] = ((mask & 35) > 0) ? _n : index + _nxy; // 100 011
+            corners[5] = ((mask & 42) > 0) ? _n : index + 1 + _nxy; // 101 010
+            corners[6] = ((mask & 56) > 0) ? _n : index + 1 + _nx + _nxy; // 111 000
+            corners[7] = ((mask & 49) > 0) ? _n : index + _nx + _nxy; // 110 001
+
+            // compute weights using fractional components
+            result.SetWeights(u, v, w);
+        }
+
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        private void FieldPointAtClamped(Vec3d point, FieldPoint3d result)
+        private void FieldPointAtEqual(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i, j, k;
-            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i);
-            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j);
-            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k);
+            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i);
+            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
+            double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k);
 
             // offsets
             int di = 1;
@@ -584,13 +659,13 @@ namespace SpatialSlur.SlurField
 
             // clamp whole components and adjust offsets if necessary
             if (i < 0) { i = 0; di = 0; }
-            else if (i > _nx - 2) { i = _nx - 1; di = 0; }
+            else if (i >= _nx - 1) { i = _nx - 1; di = 0; }
 
             if (j < 0) { j = 0; dj = 0; }
-            else if (j > _ny - 2) { j = _ny - 1; dj = 0; }
+            else if (j >= _ny - 1) { j = _ny - 1; dj = 0; }
 
             if (k < 0) { k = 0; dk = 0; }
-            else if (k > _nz - 2) { k = _nz - 1; dk = 0; }
+            else if (k >= _nz - 1) { k = _nz - 1; dk = 0; }
 
             // set corner indices
             int index = FlattenIndex(i, j, k);
@@ -615,13 +690,13 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        private void FieldPointAtWrapped(Vec3d point, FieldPoint3d result)
+        private void FieldPointAtPeriodic(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i, j, k;
-            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i);
-            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j);
-            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k);
+            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i);
+            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
+            double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k);
 
             // wrap whole components
             i = SlurMath.Mod2(i, _nx);
@@ -658,13 +733,13 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        private void FieldPointAtClamped2(Vec3d point, FieldPoint3d result)
+        private void FieldPointAtEqual2(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i0, j0, k0;
-            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i0);
-            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j0);
-            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k0);
+            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i0);
+            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j0);
+            double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k0);
 
             int[] corners = result.Corners;
             int index = 0;
@@ -695,13 +770,13 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        private void FieldPointAtWrapped2(Vec3d point, FieldPoint3d result)
+        private void FieldPointAtPeriodic2(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
             int i0, j0, k0;
-            double u = SlurMath.Fract((point.x - _from.x) * _dxInv, out i0);
-            double v = SlurMath.Fract((point.y - _from.y) * _dyInv, out j0);
-            double w = SlurMath.Fract((point.z - _from.z) * _dzInv, out k0);
+            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i0);
+            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j0);
+            double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k0);
 
             int[] corners = result.Corners;
             int index = 0;

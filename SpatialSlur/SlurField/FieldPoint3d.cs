@@ -73,9 +73,9 @@ namespace SpatialSlur.SlurField
         /// <param name="w"></param>
         public void SetWeights(double u, double v, double w)
         {
-            double u1 = 1 - u;
-            double v1 = 1 - v;
-            double w1 = 1 - w;
+            double u1 = 1.0 - u;
+            double v1 = 1.0 - v;
+            double w1 = 1.0 - w;
 
             _weights[0] = u1 * v1 * w1;
             _weights[1] = u * v1 * w1;

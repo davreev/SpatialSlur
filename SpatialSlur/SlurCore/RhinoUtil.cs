@@ -12,7 +12,7 @@ using Rhino.Geometry;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// General static utility methods for use in Rhino
+    /// General purpose static utility methods for use in Rhino.
     /// </summary>
     public static class RhinoUtil
     {

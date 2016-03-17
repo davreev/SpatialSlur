@@ -5,16 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ * Search methods may return the contents of the same bin multiple times since different points may hash to the same index.
+ * Similarly, insertion methods may add the given item to the same bin multiple times.
+ * 
+ * References
+ * http://www.beosil.com/download/CollisionDetectionHashing_VMV03.pdf
+ */
 
 namespace SpatialSlur.SlurData
 {
     /// <summary>
     /// Spatial hash for broad phase collision detection between dynamic objects.
-    /// http://www.beosil.com/download/CollisionDetectionHashing_VMV03.pdf
-    /// 
-    /// Notes
-    /// Search methods may return the contents of the same bin multiple times since different points may hash to the same index.
-    /// Similarly, insertion methods may add the given item to the same bin multiple times.
     /// </summary>
     public class SpatialHash2d<T>:Spatial2d<T>
     {

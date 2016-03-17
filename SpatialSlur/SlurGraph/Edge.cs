@@ -4,11 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ * TODO make generic for attaching attributes
+ */
+
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
-    /// TODO make generic for attaching attributes
+    /// 
     /// </summary>
+    [Serializable]
     public class Edge
     {
         private Node _start;

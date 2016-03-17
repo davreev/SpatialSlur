@@ -12,10 +12,10 @@ namespace SpatialSlur.SlurField
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public abstract class Field2d<T> : Field2d 
     {
         private readonly T[] _values;
-        private T _boundaryValue;
 
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace SpatialSlur.SlurField
         protected Field2d(Domain2d domain, int countX, int countY, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
             : base(domain, countX, countY, boundaryType)
         {
-            _values = new T[Count];
+            _values = new T[Count + 1];
         }
 
 
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurField
         protected Field2d(Field2d other)
             : base(other)
         {
-            _values = new T[Count];
+            _values = new T[Count + 1];
         }
 
 
@@ -50,9 +50,8 @@ namespace SpatialSlur.SlurField
         protected Field2d(Field2d<T> other)
             : base(other)
         {
-            _values = new T[Count];
+            _values = new T[Count + 1];
             _values.Set(other._values);
-            _boundaryValue = other._boundaryValue;
         }
 
 
@@ -64,14 +63,15 @@ namespace SpatialSlur.SlurField
             get { return _values; }
         }
 
-       
+
         /// <summary>
-        /// only applies when BoundaryType is set to Constant
+        /// Gets or sets the value used outside the domain of the field.
+        /// This only applies when BoundaryType is set to Constant.
         /// </summary>
         public T BoundaryValue
         {
-            get { return _boundaryValue; }
-            set { _boundaryValue = value; }
+            get { return _values[Count]; }
+            set { _values[Count] = value; }
         }
 
 

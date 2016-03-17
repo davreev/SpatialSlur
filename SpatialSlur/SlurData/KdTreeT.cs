@@ -5,24 +5,25 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ * Left subtree is strictly less than
+ * Right subtree is equal or greater than
+ * 
+ * KdTree search performance degrades at higher dimensions
+ * In general the number of nodes should be larger than 2^k for decent performance.
+ * 
+ * TODO Compare to array-based implementation
+ * 
+ * References
+ * https://www.cs.umd.edu/class/spring2008/cmsc420/L19.kd-trees.pdf
+ * http://www.cs.umd.edu/~meesh/420/Notes/MountNotes/lecture18-kd2.pdf
+ */
+
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Pointer-based KdTree implementation.
-    /// 
-    /// Notes
-    /// Left subtrees are strictly less than.
-    /// Right subtrees are equal or greater than.
-    /// 
-    /// KdTree search performance degrades at higher dimensions.
-    /// In general the number of nodes should be larger than 2^k for decent performance.
-    /// 
-    /// TODO
-    /// Compare to array-based implementation
-    /// 
-    /// References
-    /// https://www.cs.umd.edu/class/spring2008/cmsc420/L19.kd-trees.pdf
-    /// http://www.cs.umd.edu/~meesh/420/Notes/MountNotes/lecture18-kd2.pdf
+    /// Implementation of a generic k-dimensional binary search tree.
     /// </summary>
     public class KdTree<T>
     {

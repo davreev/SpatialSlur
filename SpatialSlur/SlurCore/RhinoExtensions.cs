@@ -9,7 +9,7 @@ using Rhino.Geometry;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// 
+    /// Various extenions methods for Rhino objects.
     /// </summary>
     public static class RhinoExtensions
     {

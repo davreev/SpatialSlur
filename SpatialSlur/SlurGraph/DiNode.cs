@@ -9,6 +9,7 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class DiNode
     {
         private readonly List<DiEdge> _outEdges;
@@ -197,7 +198,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Searched for an edge from this node no another.
+        /// Searched for an edge from this node to another.
         /// Returns null if no edge exists.
         /// </summary>
         /// <param name="other"></param>
@@ -207,7 +208,7 @@ namespace SpatialSlur.SlurGraph
             for (int i = 0; i < _outEdges.Count; i++)
             {
                 DiEdge e = _outEdges[i];
-                if (e.End == other && !e.IsRemoved)
+                if (!e.IsRemoved && e.End == other)
                     return e;
             }
 

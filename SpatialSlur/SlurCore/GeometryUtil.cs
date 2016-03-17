@@ -8,7 +8,7 @@ using SpatialSlur.SlurData;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// a catch-all static class for stray general purpose geometry methods
+    /// General purpose static geometry methods.
     /// </summary>
     public static class GeometryUtil
     {
@@ -66,7 +66,6 @@ namespace SpatialSlur.SlurCore
             double tu = (uv * vw - vv * uw) * t;
             double tv = (uu * vw - uv * uw) * t;
 
-            //return w + tu * u - tv * v; // flipped
             return tv * v - tu * u - w;
         }
 
@@ -80,9 +79,22 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d ReflectInPlane(Vec3d point, Vec3d origin, Vec3d unitNormal)
         {
-            Vec3d d = point - origin;
-            d -= 2.0 * (d * unitNormal) * unitNormal;
-            return d + origin;
+            double t = (origin - point) * unitNormal * 2.0;
+            return point + unitNormal * t;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="origin"></param>
+        /// <param name="unitNormal"></param>
+        /// <returns></returns>
+        public static Vec3d ProjectToPlane(Vec3d point, Vec3d origin, Vec3d unitNormal)
+        {
+            double t = (origin - point) * unitNormal;
+            return point + unitNormal * t;
         }
 
 
@@ -174,7 +186,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the the entries of the covariance matrix in column-major order
+        /// Returns the the entries of the covariance matrix in column-major order
         /// </summary>
         /// <param name="vectors"></param>
         /// <returns></returns>

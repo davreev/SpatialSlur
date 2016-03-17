@@ -10,6 +10,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public struct Vec2d
     {
         #region Static
@@ -457,12 +458,15 @@ namespace SpatialSlur.SlurCore
         public bool Unitize()
         {
             double d = SquareLength;
-            if (d == 0.0) return false;
-        
-            d = 1.0 / Math.Sqrt(d);
-            x *= d;
-            y *= d;
-            return true;
+            if (d > 0.0)
+            {
+                d = 1.0 / Math.Sqrt(d);
+                x *= d;
+                y *= d;
+                return true;
+            }
+
+            return false;
         }
 
 

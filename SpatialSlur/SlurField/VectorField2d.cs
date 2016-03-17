@@ -13,6 +13,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     ///
     /// </summary>
+    [Serializable]
     public class VectorField2d:Field2d<Vec2d>
     {
         private Action<IList<Vec2d>> _getLaplacian;
@@ -81,16 +82,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public override Field2d Duplicate()
-        {
-            return new VectorField2d(this);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
         public override Vec2d Evaluate(FieldPoint2d point)
@@ -145,14 +136,42 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// unitizes all vectors in the field
+        /// Unitizes all vectors in the field
         /// </summary>
         public void Unitize()
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] /= Values[i].Length;
+                    Values[i].Unitize();
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Unitize(VectorField2d result)
+        {
+            Unitize(result.Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Unitize(IList<Vec2d> result)
+        {
+            SizeCheck(result);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    Vec2d v = Values[i];
+                    v.Unitize();
+                    result[i] = v;
+                }
             });
         }
 

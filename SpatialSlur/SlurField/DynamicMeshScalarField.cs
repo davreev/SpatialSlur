@@ -78,26 +78,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public override MeshField Duplicate()
-        {
-            return new DynamicMeshScalarField(this);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override MeshField DuplicateDeep()
-        {
-            return new DynamicMeshScalarField(this, true);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="timeStep"></param>
         public void Update(double timeStep)
         {

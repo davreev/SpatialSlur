@@ -9,6 +9,7 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class DiEdge
     {
         private DiNode _start;

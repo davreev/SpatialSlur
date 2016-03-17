@@ -17,17 +17,17 @@ namespace SpatialSlur.SlurField
     public static class FieldIO
     {
         /// <summary>
-        /// 
+        /// Saves the given field as a stack of images.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="path"></param>
-        public static void SaveAsImageStack<T>(Field3d<T> field, Func<T, Color> mapper, string path)
+        public static void SaveAsImageStack<T>(string path, Field3d<T> field, Func<T, Color> mapper, ImageFormat format)
         {
             Rectangle rect = new Rectangle(0, 0, field.CountX, field.CountY);
             PixelFormat pf = PixelFormat.Format32bppArgb;
-            int bpp = Bitmap.GetPixelFormatSize(pf) / 8; // bytes per pixel
+            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
 
             Parallel.For(0, field.CountZ, z =>
                 {
@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurField
                             }
 
                             bmp.UnlockBits(bmpData);
-                            bmp.Save(String.Format("{0}_{1}.png", path, z));
+                            bmp.Save(String.Format("{0}_{1}", path, z), format);
                         }
                     }
                 });
@@ -63,20 +63,21 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Allows for supersampling of the field
+        /// Saves the given field as a stack of images.
+        /// Allows specification of a different resolution than the given field.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="path"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <param name="layers"></param>
-        public static void SaveAsImageStack<T>(Field3d<T> field, Func<T, Color> mapper, string path, int width, int height, int layers)
+        public static void SaveAsImageStack<T>(string path, Field3d<T> field, Func<T, Color> mapper, ImageFormat format, int width, int height, int layers)
         {
             Rectangle rect = new Rectangle(0, 0, width, height);
             PixelFormat pf = PixelFormat.Format32bppArgb;
-            int bpp = Bitmap.GetPixelFormatSize(pf) / 8; // bytes per pixel
+            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
 
             Domain3d domain = field.Domain;
             double tx = 1.0 / (width - 1);
@@ -115,7 +116,7 @@ namespace SpatialSlur.SlurField
                             }
 
                             bmp.UnlockBits(bmpData);
-                            bmp.Save(String.Format("{0}_{1}.png", path, z));
+                            bmp.Save(String.Format("{0}_{1}", path, z), format);
                         }
                     }
                 });
@@ -123,17 +124,17 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO test
+        /// Saves the given field as an image.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="path"></param>
-        public static void SaveAsImage<T>(Field2d<T> field, Func<T, Color> mapper, string path)
+        public static void SaveAsImage<T>(string path, Field2d<T> field, Func<T, Color> mapper, ImageFormat format)
         {
             Rectangle rect = new Rectangle(0, 0, field.CountX, field.CountY);
             PixelFormat pf = PixelFormat.Format32bppArgb;
-            int bpp = Bitmap.GetPixelFormatSize(pf) / 8; // bytes per pixel
+            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
 
             using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, pf))
             {
@@ -159,26 +160,28 @@ namespace SpatialSlur.SlurField
                     });
 
                     bmp.UnlockBits(bmpData);
-                    bmp.Save(String.Format("{0}.png", path));
+                    bmp.Save(path, format);
                 }
             }
         }
 
 
         /// <summary>
-        /// Allows for supersampling of the field.
+        /// Saves the given field as an image.
+        /// Allows specification of a different resolution than the given field.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="path"></param>
+        /// <param name="format"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public static void SaveAsImage<T>(Field2d<T> field, Func<T, Color> mapper, string path, int width, int height)
+        public static void SaveAsImage<T>(string path, Field2d<T> field, Func<T, Color> mapper, ImageFormat format, int width, int height)
         {
             Rectangle rect = new Rectangle(0, 0, width, height);
             PixelFormat pf = PixelFormat.Format32bppArgb;
-            int bpp = Bitmap.GetPixelFormatSize(pf) / 8; // bytes per pixel
+            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
 
             Domain2d domain = field.Domain;
             double tx = 1.0 / (width - 1);
@@ -212,7 +215,7 @@ namespace SpatialSlur.SlurField
                     });
 
                     bmp.UnlockBits(bmpData);
-                    bmp.Save(String.Format("{0}.png", path));
+                    bmp.Save(path, format);
                 }
             }
         }

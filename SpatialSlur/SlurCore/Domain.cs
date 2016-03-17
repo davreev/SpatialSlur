@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// represents a domain defined by two numerical extremes
+    ///
     /// </summary>
+    [Serializable]
     public struct Domain
     {
         #region Static

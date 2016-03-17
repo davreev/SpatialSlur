@@ -5,12 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
+
 
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
-    /// Adjacency list implementation of a directed graph.
+    /// Adjacency list implementation of a directed graph where nodes and edges are explicitly represented.
     /// </summary>
+    [Serializable]
     public class DiGraph
     {
         /// <summary>
@@ -28,7 +31,7 @@ namespace SpatialSlur.SlurGraph
             DiGraph result = new DiGraph(nodePositions.Count, pointPairs.Count >> 1);
 
             // add nodes
-            result.AddNodes(indexMap.Length);
+            result.AddNodes(nodePositions.Count);
 
             // add edges
             if (allowDupEdges)
@@ -44,6 +47,60 @@ namespace SpatialSlur.SlurGraph
                     int i1 = indexMap[i + 1];
                     if(!result.HasEdge(i0, i1)) result.AddEdge(i0, i1);
                 }
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static Graph CreateFromMesh(HeMesh mesh)
+        {
+            var verts = mesh.Vertices;
+            var edges = mesh.HalfEdges;
+            Graph result = new Graph(verts.Count, edges.Count);
+
+            // add nodes
+            for (int i = 0; i < verts.Count; i++)
+                result.AddNode();
+
+            // add edges
+            for (int i = 0; i < edges.Count; i++)
+            {
+                HalfEdge e = edges[i];
+                if (e.IsUnused) continue;
+                result.AddEdge(e.Start.Index, e.End.Index);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static Graph CreateFromMeshDual(HeMesh mesh)
+        {
+            var faces = mesh.Faces;
+            var edges = mesh.HalfEdges;
+            Graph result = new Graph(faces.Count, edges.Count);
+
+            // add nodes
+            for (int i = 0; i < faces.Count; i++)
+                result.AddNode();
+
+            // add edges
+            for (int i = 0; i < edges.Count; i++)
+            {
+                HalfEdge e = edges[i];
+                if (e.IsUnused || e.IsBoundary) continue;
+                result.AddEdge(e.Face.Index, e.Twin.Face.Index);
             }
 
             return result;
@@ -162,7 +219,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public DiNode GetNode(int index)
+        public DiNode NodeAt(int index)
         {
             return _nodes[index];
         }
@@ -173,7 +230,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public DiEdge GetEdge(int index)
+        public DiEdge EdgeAt(int index)
         {
             return _edges[index];
         }

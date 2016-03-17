@@ -10,6 +10,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class HeFace:HeElement
     {
         private HalfEdge _first;

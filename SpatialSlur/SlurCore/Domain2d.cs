@@ -9,6 +9,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public struct Domain2d
     {
         #region Static

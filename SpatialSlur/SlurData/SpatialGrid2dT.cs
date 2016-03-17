@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Simple voxel grid for broad phase collision detection between dynamic objects.
+    /// Simple grid for broad phase collision detection between dynamic objects.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class SpatialGrid2d<T>:Spatial2d<T>

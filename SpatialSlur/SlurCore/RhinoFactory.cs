@@ -11,7 +11,7 @@ using Rhino.Geometry;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Static methods for creating SpatialSlur objects from Rhino objects
+    /// Static methods for creating SpatialSlur objects from Rhino objects.
     /// </summary>
     public static class RhinoFactory
     {

@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
-    /// Static methods for mesh relaxation.
-    /// Only handles the calculation of forces - integration is left up to the implementation.
+    /// Static methods for mesh relaxation and optimization.
+    /// Only handles the calculation of forces - integration must be handled in implementation.
     /// </summary>
     public static class HePhysics
     {
