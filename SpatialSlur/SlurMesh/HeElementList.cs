@@ -174,7 +174,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
-        public U[] CompactAttributes<U>(IList<U> attributes)
+        public U[] CompactAttributes<U>(U[] attributes)
         {
             SizeCheck(attributes);
             int marker = 0;

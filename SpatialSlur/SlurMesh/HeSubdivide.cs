@@ -95,11 +95,13 @@ namespace SpatialSlur.SlurMesh
                 HeVertex fv = verts[nv + i]; // face vertex
 
                 // ensure first edge in face starts at an old vertex
-                if (f.First.Start.Index >= nv)
-                    f.First.Previous.MakeFirstInFace();
-
+                HalfEdge e0 = f.First;
+                if (e0.Start.Index < nv) 
+                    e0 = e0.Next;
+                else 
+                    f.First = e0.Previous;
+        
                 // create new edges to face centers and link up to old edges
-                HalfEdge e0 = f.First.Next;
                 HeVertex v0 = e0.Start;
                 do
                 {
@@ -328,11 +330,13 @@ namespace SpatialSlur.SlurMesh
                 HeVertex fv = verts[nv + i]; // face vertex
 
                 // ensure first edge in face starts at an old vertex
-                if (f.First.Start.Index >= nv)
-                    f.First.Previous.MakeFirstInFace();
+                HalfEdge e0 = f.First;
+                if (e0.Start.Index < nv)
+                    e0 = e0.Next;
+                else
+                    f.First = e0.Previous;
 
                 // create new edges to face centers and link up to old edges
-                HalfEdge e0 = f.First.Next;
                 HeVertex v0 = e0.Start;
                 do
                 {

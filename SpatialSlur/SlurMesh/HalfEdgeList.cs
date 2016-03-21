@@ -768,9 +768,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
         /// <summary>
         /// Removes a pair of edges from the mesh.
-        /// Note that this method does not update any face-edge references.
         /// </summary>
         /// <param name="edge"></param>
         internal void RemovePair(HalfEdge edge)
@@ -778,20 +778,64 @@ namespace SpatialSlur.SlurMesh
             HalfEdge e0 = edge;
             HalfEdge e1 = e0.Twin;
 
+            HeVertex v0 = e0.Start;
+            HeVertex v1 = e1.Start;
+
+            HeFace f0 = e0.Face;
+            HeFace f1 = e1.Face;
+
             if (e0.IsFromDegree1)
-                e0.Start.MakeUnused(); // flag degree 1 vertex as unused
+                v0.MakeUnused(); // flag degree 1 vertex as unused
             else
             {
                 HalfEdge.MakeConsecutive(e0.Previous, e1.Next); // update edge-edge refs
-                if (e0.IsFirstFromStart) e1.Next.MakeFirstFromStart(); // update vertex-edge ref if necessary
+                if (e0 == v0.First) v0.First = e1.Next; // update vertex-edge ref if necessary
+                if (f0 != null && e0 == f0.First) f0.First = e0.Next; // update face-edge ref if necessary
             }
 
             if (e1.IsFromDegree1)
-                e1.Start.MakeUnused(); // flag degree 1 vertex as unused
+                v1.MakeUnused(); // flag degree 1 vertex as unused
             else
             {
                 HalfEdge.MakeConsecutive(e1.Previous, e0.Next); // update edge-edge refs
-                if (e1.IsFirstFromStart) e0.Next.MakeFirstFromStart(); // update vertex-edge ref if necessary
+                if (e1 == v1.First) v1.First = e0.Next; // update vertex-edge ref if necessary
+                if (f1 != null && e1 == f1.First) f1.First = e1.Next; // update face-edge ref if necessary
+            }
+
+            // flag elements for removal
+            e0.MakeUnused();
+            e1.MakeUnused();
+        }
+        */
+
+
+        /// <summary>
+        /// Removes a pair of edges from the mesh.
+        /// Note that this method does not update face-edge references.
+        /// </summary>
+        /// <param name="edge"></param>
+        internal void RemovePair(HalfEdge edge)
+        {
+            HalfEdge e0 = edge;
+            HalfEdge e1 = e0.Twin;
+
+            HeVertex v0 = e0.Start;
+            HeVertex v1 = e1.Start;
+
+            if (e0.IsFromDegree1)
+                v0.MakeUnused(); // flag degree 1 vertex as unused
+            else
+            {
+                HalfEdge.MakeConsecutive(e0.Previous, e1.Next); // update edge-edge refs
+                if (e0 == v0.First) v0.First = e1.Next; // update vertex-edge ref if necessary
+            }
+
+            if (e1.IsFromDegree1)
+                v1.MakeUnused(); // flag degree 1 vertex as unused
+            else
+            {
+                HalfEdge.MakeConsecutive(e1.Previous, e0.Next); // update edge-edge refs
+                if (e1 == v1.First) v1.First = e0.Next; // update vertex-edge ref if necessary
             }
 
             // flag elements for removal
@@ -902,7 +946,7 @@ namespace SpatialSlur.SlurMesh
             foreach (HalfEdge e in v0.OutgoingHalfEdges) e.Start = v1;
 
             // update edge ref of v1 if necessary
-            if (v1.First == e1) v1.First = e1.Next;
+            if (v1.First == e1) v1.First = e1.Next; // maintains vertex boundary condition
 
             // update edge-edge refs
             HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
@@ -912,31 +956,22 @@ namespace SpatialSlur.SlurMesh
             if (f0 != null)
             {
                 if (f0.First == e0) f0.First = e0.Next;
-                if (!f0.IsValid) Mesh.Faces.MergeFaces(f0.First);
+                if (!f0.IsValid) Mesh.Faces.MergeInvalidFace(e0.Next);
             }
 
             if (f1 != null)
             {
                 if (f1.First == e1) f1.First = e1.Next;
-                if (!f1.IsValid) Mesh.Faces.MergeFaces(f1.First);
+                if (!f1.IsValid) Mesh.Faces.MergeInvalidFace(e1.Next);
             }
+
+            // TODO cleanup potential degree 1 verts?
 
             // flag elements for removal
             e0.MakeUnused();
             e1.MakeUnused();
             v0.MakeUnused();
             return true;
-        }
-
-
-        /// <summary>
-        /// TODO
-        /// Simplified collapse method for triangular meshes
-        /// </summary>
-        /// <param name="edge"></param>
-        public bool CollapseEdgeTri(HalfEdge edge)
-        {
-            throw new NotImplementedException();
         }
 
 
@@ -954,15 +989,19 @@ namespace SpatialSlur.SlurMesh
 
             HalfEdge e0 = edge;
             HalfEdge e1 = e0.Twin;
-            HalfEdge e2 = e0.Next;
-            HalfEdge e3 = e1.Next;
-
+   
             // don't allow for the creation of valence 1 vertices
             if (e0.IsFromDegree2 || e1.IsFromDegree2) return false;
 
+            HalfEdge e2 = e0.Next;
+            HalfEdge e3 = e1.Next;
+
+            HeVertex v0 = e0.Start;
+            HeVertex v1 = e1.Start;
+
             // update vertex-edge refs if necessary
-            if (e0.IsFirstFromStart) e0.Start.First = e3;
-            if (e1.IsFirstFromStart) e1.Start.First = e2;
+            if (e0 == v0.First) v0.First = e3;
+            if (e1 == v1.First) v1.First = e2;
 
             // update edge-vertex refs
             e0.Start = e3.End;
@@ -972,8 +1011,8 @@ namespace SpatialSlur.SlurMesh
             HeFace f1 = e1.Face;
 
             // update face-edge refs if necessary
-            if (e2.IsFirstInFace) f0.First = e2.Next;
-            if (e3.IsFirstInFace) f1.First = e3.Next;
+            if (e2 == f0.First) f0.First = e2.Next;
+            if (e3 == f1.First) f1.First = e3.Next;
 
             // update edge-face refs
             e2.Face = f1;

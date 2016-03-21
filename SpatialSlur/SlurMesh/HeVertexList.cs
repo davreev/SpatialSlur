@@ -1135,16 +1135,18 @@ namespace SpatialSlur.SlurMesh
         {
             HalfEdge e0 = vertex.First;
             HalfEdge e1 = e0.Twin;
+            HalfEdge e2 = e1.Next;
 
             HeVertex v0 = vertex; // to be removed
             HeVertex v1 = e1.Start;
 
             // update vertex-edge refs if necesasry
-            e1.Next.Start = v1;
-            if (e1.IsFirstFromStart) v1.First = e1.Next;
+            if (e1 == v1.First) v1.First = e2;
+            e2.Start = v1;
 
+            // update edge-edge refs
             HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
-            HalfEdge.MakeConsecutive(e1.Previous, e1.Next);
+            HalfEdge.MakeConsecutive(e1.Previous, e2);
 
             //flag for removal
             v0.MakeUnused();
@@ -1154,8 +1156,9 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// TODO rework implementation
         /// Merges a pair of boundary vertices.
-        /// That the first vertex is retained and the second is flagged as unused.
+        /// The first vertex is flagged as unused.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -1169,51 +1172,39 @@ namespace SpatialSlur.SlurMesh
             if (!(v0.IsBoundary && v1.IsBoundary)) return false;
 
             HalfEdge e0 = v0.First;
-            HalfEdge e1 = v1.First; // to be removed
+            HalfEdge e1 = v1.First;
 
             HalfEdge e2 = e0.Previous;
             HalfEdge e3 = e1.Previous;
     
             // if vertices are consecutive, just collapse the edge between them
-            if (e0.Next == e1) 
+            if (e0 == e3) 
                 return Mesh.HalfEdges.CollapseEdge(e0);
-            else if(e1.Next == e0)
+            else if(e1 == e2)
                 return Mesh.HalfEdges.CollapseEdge(e1);
 
             // update edge-vertex refs for all edges emanating from v1
-            foreach (HalfEdge e in v1.OutgoingHalfEdges) 
-                e.Start = v0;
+            foreach (HalfEdge e in v0.OutgoingHalfEdges) 
+                e.Start = v1;
        
             // update edge-edge refs
             HalfEdge.MakeConsecutive(e3, e0);
             HalfEdge.MakeConsecutive(e2, e1);
 
-            // deal with potential collapsed boundary loops on either side of the merge
-            if (e0.Next == e3)
-            {
-                e3 = e3.Twin;
-                Mesh.HalfEdges.RemovePair(e3);
-
-                // update edge-face-edge refs
-                e0.Face = e3.Face;
-                if (e3.IsFirstInFace) e0.MakeFirstInFace();
-
-                // update vertex-edge ref since e0 is no longer a boundary edge
-                v0.First = e1;
-            }
-
+            // deal with potential collapse of boundary loops on either side of the merge
             if (e1.Next == e2)
             {
-                e2 = e2.Twin;
-                Mesh.HalfEdges.RemovePair(e2);
+                Mesh.Faces.MergeInvalidFace(e1);
+                v1.First = e0; // maintain boundary status of v1
+            }
 
-                // update face-edge refs
-                e1.Face = e2.Face;
-                if (e2.IsFirstInFace) e1.MakeFirstInFace();
+            if (e0.Next == e3)
+            {
+                Mesh.Faces.MergeInvalidFace(e0);
             }
 
             // flag elements for removal
-            v1.MakeUnused();
+            v0.MakeUnused();
             return true;
         }
 

@@ -23,6 +23,7 @@ namespace SpatialSlur.SlurField
         /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
+        /// <param name="format"></param>
         public static void SaveAsImageStack<T>(string path, Field3d<T> field, Func<T, Color> mapper, ImageFormat format)
         {
             Rectangle rect = new Rectangle(0, 0, field.CountX, field.CountY);
@@ -70,6 +71,7 @@ namespace SpatialSlur.SlurField
         /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
+        /// <param name="format"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <param name="layers"></param>
@@ -130,6 +132,7 @@ namespace SpatialSlur.SlurField
         /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
+        /// <param name="format"></param>
         public static void SaveAsImage<T>(string path, Field2d<T> field, Func<T, Color> mapper, ImageFormat format)
         {
             Rectangle rect = new Rectangle(0, 0, field.CountX, field.CountY);

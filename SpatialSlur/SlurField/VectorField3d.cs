@@ -256,8 +256,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fieldA"></param>
-        /// <param name="fieldB"></param>
+        /// <param name="other"></param>
+        /// <param name="result"></param>
         public void Cross(VectorField3d other, VectorField3d result)
         {
             SizeCheck(other);
@@ -274,8 +274,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fieldA"></param>
-        /// <param name="fieldB"></param>
+        /// <param name="vectors"></param>
+        /// <param name="result"></param>
         public void Cross(IList<Vec3d> vectors, IList<Vec3d> result)
         {
             SizeCheck(vectors);
@@ -331,7 +331,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="vectors"></param>
         /// <param name="factor"></param>
         public void LerpTo(IList<Vec3d> vectors, double factor)
         {
@@ -387,7 +387,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="vectors"></param>
         /// <param name="factors"></param>
         public void LerpTo(IList<Vec3d> vectors, IList<double> factors)
         {

@@ -1001,11 +1001,6 @@ namespace SpatialSlur.SlurField
             int nxy = nx * ny;
             int n = nxy * nz;
 
-            /*
-            if (values.Count < n)
-                throw new System.ArgumentException("Insufficient number of values provided.");
-            */
-
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
             Vec3d[] cornerOffsets = GetCornerOffsets(dx, dy, dz);
@@ -1184,14 +1179,6 @@ namespace SpatialSlur.SlurField
         {
             int nxy = nx * ny;
             int n = nxy * nz;
-
-            /*
-            if (values.Count < n)
-                throw new System.ArgumentException("Insufficient number of values provided.");
-
-            if (normals.Count < n)
-                throw new System.ArgumentException("Insufficient number of normals provided.");
-            */
 
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
@@ -1395,14 +1382,6 @@ namespace SpatialSlur.SlurField
             int nxy = nx * ny;
             int n = nxy * nz;
    
-            /*
-            if (points.Count < n)
-                throw new System.ArgumentException("Insufficient number of points provided.");
-
-            if (values.Count < n)
-                throw new System.ArgumentException("Insufficient number of values provided.");
-             */
-
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
         
