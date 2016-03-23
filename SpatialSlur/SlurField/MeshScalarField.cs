@@ -156,8 +156,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateLaplacian(IList<double> result)
         {
-            SizeCheck(result);
-
             HeVertexList verts = Mesh.Vertices;
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -196,7 +194,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateLaplacian(IList<double> halfEdgeWeights, IList<double> result)
         {
-            SizeCheck(result);
             Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
 
             HeVertexList verts = Mesh.Vertices;
@@ -263,8 +260,6 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public void UpdateGradient(IList<Vec3d> result)
         {
-            SizeCheck(result);
-
             HeVertexList verts = Mesh.Vertices;
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -311,8 +306,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateGradient(IList<double> halfEdgeWeights, IList<Vec3d> result)
         {
-            SizeCheck(result);
-
             HeVertexList verts = Mesh.Vertices;
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {

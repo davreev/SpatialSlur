@@ -164,8 +164,6 @@ namespace SpatialSlur.SlurField
         /// <param name="values"></param>
         public void Add(IList<double> values)
         {
-            SizeCheck(values);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -192,8 +190,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void Add(IList<double> values, IList<double> result)
         {
-            SizeCheck(values);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -218,8 +214,6 @@ namespace SpatialSlur.SlurField
         /// <param name="values"></param>
         public void Multiply(IList<double> values)
         {
-            SizeCheck(values);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -246,8 +240,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void Multiply(IList<double> values, IList<double> result)
         {
-            SizeCheck(values);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -289,8 +281,6 @@ namespace SpatialSlur.SlurField
         /// <param name="factor"></param>
         public void LerpTo(IList<double> values, double factor)
         {
-            SizeCheck(values);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -317,8 +307,6 @@ namespace SpatialSlur.SlurField
         /// <param name="factors"></param>
         public void LerpTo(double value, IList<double> factors)
         {
-            SizeCheck(factors);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -345,9 +333,6 @@ namespace SpatialSlur.SlurField
         /// <param name="factors"></param>
         public void LerpTo(IList<double> values, IList<double> factors)
         {
-            SizeCheck(values);
-            SizeCheck(factors);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -431,7 +416,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateLaplacian(IList<double> result)
         {
-            SizeCheck(result);
             _getLaplacian(result);
         }
 
@@ -626,7 +610,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateGradient(IList<Vec3d> result)
         {
-            SizeCheck(result);
             _getGradient(result);
         }
     

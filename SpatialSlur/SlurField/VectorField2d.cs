@@ -125,8 +125,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void GetMagnitudes(IList<double> result)
         {
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -162,8 +160,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void Unitize(IList<Vec2d> result)
         {
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -204,7 +200,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateLaplacian(IList<Vec2d> result)
         {
-            SizeCheck(result);
             _getLaplacian(result);
         }
 
@@ -370,7 +365,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateDivergence(IList<double> result)
         {
-            SizeCheck(result);
             _getDivergence(result);
         }
 
@@ -531,7 +525,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateCurl(IList<Vec2d> result)
         {
-            SizeCheck(result);
             throw new NotImplementedException();
         }
 

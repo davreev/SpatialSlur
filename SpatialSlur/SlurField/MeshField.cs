@@ -86,6 +86,7 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -105,8 +106,9 @@ namespace SpatialSlur.SlurField
         protected void SizeCheck<T>(IList<T> list)
         {
             if (list.Count != _n)
-                throw new ArgumentException("The number of items in the given list must match the number of values in the field.");
+                throw new ArgumentException("The number of items in the given list cannot be less than the number of values in the field.");
         }
+        */
 
         
         /*

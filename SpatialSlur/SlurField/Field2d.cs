@@ -236,8 +236,6 @@ namespace SpatialSlur.SlurField
         /// <param name="points"></param>
         public void UpdateCoordinates(IList<Vec2d> points)
         {
-            SizeCheck(points);
-
             Parallel.ForEach(Partitioner.Create(0, _n), range =>
             {
                 int i, j;
@@ -249,29 +247,6 @@ namespace SpatialSlur.SlurField
                     points[index] = new Vec2d(i * _dx + _x0, j * _dy + _y0);
                 }
             });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        protected void SizeCheck(Field2d other)
-        {
-            if(!ResolutionEquals(other))
-                throw new ArgumentException("The two fields must have the same resolution.");
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        protected void SizeCheck<T>(IList<T> list)
-        {
-            if (list.Count != _n)
-                throw new ArgumentException("The size of the given list must match the number of values in the field.");
         }
 
 

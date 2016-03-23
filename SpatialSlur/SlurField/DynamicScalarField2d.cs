@@ -514,7 +514,6 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /*
         /// <summary>
         /// 
         /// </summary>
@@ -527,7 +526,6 @@ namespace SpatialSlur.SlurField
                     _deltas[i] -= Values[i] * rate;
             });
         }
-        */
 
 
         /// <summary>
@@ -580,7 +578,6 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /*
         /// <summary>
         /// 
         /// </summary>
@@ -601,7 +598,5 @@ namespace SpatialSlur.SlurField
         {
             DepositAt(point, -Evaluate(point) * rate);
         }
-        */
-
     }
 }

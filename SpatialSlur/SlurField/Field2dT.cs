@@ -142,8 +142,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Function<U>(Func<U, T> func, Field2d<U> other)
         {
-            SizeCheck(other);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -160,8 +158,6 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public void Function<U>(Func<T, U, T> func, Field2d<U> other)
         {
-            SizeCheck(other);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -180,9 +176,6 @@ namespace SpatialSlur.SlurField
         /// <param name="otherV"></param>
         public void Function<U, V>(Func<U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
         {
-            SizeCheck(otherU);
-            SizeCheck(otherV);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -201,9 +194,6 @@ namespace SpatialSlur.SlurField
         /// <param name="otherV"></param>
         public void Function<U, V>(Func<T, U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
         {
-            SizeCheck(otherU);
-            SizeCheck(otherV);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -281,7 +271,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void SpatialFunction<U>(Func<Vec2d, U, T> func, Field2d<U> other)
         {
-            SizeCheck(other);
             double x0 = Domain.x.t0;
             double y0 = Domain.y.t0;
      
@@ -308,7 +297,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void SpatialFunction<U>(Func<double, double, U, T> func, Field2d<U> other)
         {
-            SizeCheck(other);
             double x0 = Domain.x.t0;
             double y0 = Domain.y.t0;
 
@@ -408,7 +396,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void NormSpatialFunction<U>(Func<Vec2d, U, T> func, Field2d<U> other)
         {
-            SizeCheck(other);
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
 
@@ -435,7 +422,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void NormSpatialFunction<U>(Func<double, double, U, T> func, Field2d<U> other)
         {
-            SizeCheck(other);
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
 

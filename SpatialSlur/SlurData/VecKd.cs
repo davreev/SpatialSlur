@@ -23,8 +23,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public static double InnerProduct(VecKd v0, VecKd v1)
         {
-            v0.SizeCheck(v1);
-
             double result = 0.0;
             for (int i = 0; i < v0.K; i++)
                 result += v0[i] * v1[i];
@@ -169,6 +167,7 @@ namespace SpatialSlur.SlurData
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -178,6 +177,7 @@ namespace SpatialSlur.SlurData
             if (K != other.K)
                 throw new System.ArgumentException("The vectors must be the same size.");
         }
+        */
 
 
         /// <summary>
@@ -198,8 +198,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public bool Equals(VecKd other, double epsilon)
         {
-            SizeCheck(other);
-
             for (int i = 0; i < K; i++)
                 if (Math.Abs(other[i] - this[i]) >= epsilon) return false;
 
@@ -215,9 +213,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public bool Equals(VecKd other, VecKd epsilon)
         {
-            SizeCheck(other);
-            SizeCheck(epsilon);
-
             for (int i = 0; i < K; i++)
                 if (Math.Abs(other[i] - this[i]) >= epsilon[i]) return false;
 
@@ -284,8 +279,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public double SquareDistanceTo(VecKd other)
         {
-            SizeCheck(other);
-
             double result = 0.0;
             for (int i = 0; i < K; i++)
             {
@@ -304,8 +297,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public double ManhattanDistanceTo(VecKd other)
         {
-            SizeCheck(other);
-
             double result = 0.0;
             for (int i = 0; i < K; i++)
                 result += Math.Abs(other[i] - this[i]);
@@ -321,8 +312,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public void Add(VecKd other)
         {
-            SizeCheck(other);
-
             for (int i = 0; i < K; i++)
                 this[i] += other[i];
         }
@@ -335,9 +324,6 @@ namespace SpatialSlur.SlurData
         /// <param name="result"></param>
         public void Add(VecKd other, VecKd result)
         {
-            SizeCheck(other);
-            SizeCheck(result);
-
             for (int i = 0; i < K; i++)
                 result[i] = this[i] + other[i];
         }
@@ -350,8 +336,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public void Subtract(VecKd other)
         {
-            SizeCheck(other);
-
             for (int i = 0; i < K; i++)
                 this[i] -= other[i];
         }
@@ -364,9 +348,6 @@ namespace SpatialSlur.SlurData
         /// <param name="result"></param>
         public void Subtract(VecKd other, VecKd result)
         {
-            SizeCheck(other);
-            SizeCheck(result);
-
             for (int i = 0; i < K; i++)
                 result[i] = this[i] - other[i];
         }
@@ -391,8 +372,6 @@ namespace SpatialSlur.SlurData
         /// <param name="result"></param>
         public void Scale(double factor, VecKd result)
         {
-            SizeCheck(result);
-
             for (int i = 0; i < K; i++)
                 result[i] = this[i] * factor;
         }
@@ -406,8 +385,6 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public void AddScaled(VecKd other, double factor)
         {
-            SizeCheck(other);
-
             for (int i = 0; i < K; i++)
                 this[i] += other[i] * factor;
         }
@@ -421,9 +398,6 @@ namespace SpatialSlur.SlurData
         /// <param name="result"></param>
         public void AddScaled(VecKd other, double factor, VecKd result)
         {
-            SizeCheck(other);
-            SizeCheck(result);
-
             for (int i = 0; i < K; i++)
                 result[i] = this[i] + other[i] * factor;
         }
@@ -458,8 +432,6 @@ namespace SpatialSlur.SlurData
         /// <param name="factor"></param>
         public void LerpTo(VecKd other, double factor)
         {
-            SizeCheck(other);
-
             for (int i = 0; i < K; i++)
             {
                 double x = this[i];
@@ -476,9 +448,6 @@ namespace SpatialSlur.SlurData
         /// <param name="result"></param>
         public void LerpTo(VecKd other, double factor, VecKd result)
         {
-            SizeCheck(other);
-            SizeCheck(result);
-
             for (int i = 0; i < K; i++)
             {
                 double x = this[i];

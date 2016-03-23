@@ -95,8 +95,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Function<U>(Func<U, T> func, MeshField<U> other)
         {
-            SizeCheck(other);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -113,8 +111,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Function<U>(Func<T, U, T> func, MeshField<U> other)
         {
-            SizeCheck(other);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -133,9 +129,6 @@ namespace SpatialSlur.SlurField
         /// <param name="otherV"></param>
         public void Function<U, V>(Func<U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
         {
-            SizeCheck(otherU);
-            SizeCheck(otherV);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -154,9 +147,6 @@ namespace SpatialSlur.SlurField
         /// <param name="otherV"></param>
         public void Function<U, V>(Func<T, U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
         {
-            SizeCheck(otherU);
-            SizeCheck(otherV);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)

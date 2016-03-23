@@ -102,8 +102,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateMagnitudes(IList<double> result)
         {
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -131,8 +129,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Cross(MeshVectorField other)
         {
-            SizeCheck(other);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -159,9 +155,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void Cross(MeshVectorField other, IList<Vec3d> result)
         {
-            SizeCheck(other);
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)

@@ -176,8 +176,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void GetMagnitudes(IList<double> result)
         {
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -213,8 +211,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void Unitize(IList<Vec3d> result)
         {
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -243,8 +239,6 @@ namespace SpatialSlur.SlurField
         /// <param name="vectors"></param>
         public void Cross(IList<Vec3d> vectors)
         {
-            SizeCheck(vectors);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -260,9 +254,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void Cross(VectorField3d other, VectorField3d result)
         {
-            SizeCheck(other);
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -278,9 +269,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void Cross(IList<Vec3d> vectors, IList<Vec3d> result)
         {
-            SizeCheck(vectors);
-            SizeCheck(result);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -335,8 +323,6 @@ namespace SpatialSlur.SlurField
         /// <param name="factor"></param>
         public void LerpTo(IList<Vec3d> vectors, double factor)
         {
-            SizeCheck(vectors);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -363,8 +349,6 @@ namespace SpatialSlur.SlurField
         /// <param name="factors"></param>
         public void LerpTo(Vec3d value, IList<double> factors)
         {
-            SizeCheck(factors);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -391,9 +375,6 @@ namespace SpatialSlur.SlurField
         /// <param name="factors"></param>
         public void LerpTo(IList<Vec3d> vectors, IList<double> factors)
         {
-            SizeCheck(vectors);
-            SizeCheck(factors);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -430,7 +411,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void UpdateLaplacian(IList<Vec3d> result)
         {
-            SizeCheck(result);
             _getLaplacian(result);
         }
 
