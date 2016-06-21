@@ -28,7 +28,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="capacity"></param>
-        public PriorityQueue(int capacity = 1)
+        public PriorityQueue(int capacity = 2)
             :this(Comparer<T>.Default.Compare, capacity)
         {
         }
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="comparer"></param>
         /// <param name="capacity"></param>
-        public PriorityQueue(IComparer<T> comparer, int capacity = 1)
+        public PriorityQueue(IComparer<T> comparer, int capacity = 2)
             : this(comparer.Compare, capacity)
         {
         }
@@ -50,7 +50,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="compare"></param>
         /// <param name="capacity"></param>
-        public PriorityQueue(Comparison<T> compare, int capacity = 1)
+        public PriorityQueue(Comparison<T> compare, int capacity = 2)
         {
             _heap = new T[capacity + 1];
             _n = 0;
@@ -84,7 +84,7 @@ namespace SpatialSlur.SlurData
             get
             {
                 if (IsEmpty)
-                    throw new InvalidOperationException("The queue is empty");
+                    throw new InvalidOperationException("The queue is empty.");
 
                 return _heap[1];
             }
@@ -112,10 +112,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public T RemoveMin()
         {
-            if (IsEmpty)
-                throw new InvalidOperationException("The queue is empty");
-
-            T min = _heap[1];
+            T min = Min;
             _heap.Swap(1, _n);
 
             _heap[_n--] = default(T); // avoids object loitering when T is a reference type

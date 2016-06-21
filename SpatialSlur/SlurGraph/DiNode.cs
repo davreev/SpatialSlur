@@ -4,79 +4,79 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class DiNode
+    public class DiNode : GraphElement
     {
-        private readonly List<DiEdge> _outEdges;
-        private readonly List<DiEdge> _inEdges;
-        //private N _data;
-        private int _index = -1;
-        private int _outDegree; // explicitly store degree to keep up with edge/node removal
-        private int _inDegree;
-
-
+        private DiEdge[] _inEdges, _outEdges;
+        private int _inCount, _outCount;
+        private int _inDegree, _outDegree; // explicitly store degree to keep up with edge removal
+    
+  
         /// <summary>
         /// 
         /// </summary>
-        internal DiNode(int index)
+        internal DiNode(int inCapacity, int outCapacity)
         {
-            _outEdges = new List<DiEdge>();
-            _inEdges = new List<DiEdge>();
-            _index = index;
-        }
-
-
-        /// <summary>
-        /// Iterates over all nodes that this node connects to (i.e. those at the end of outgoing edges).
-        /// Skips nodes which have been flagged for removal.
-        /// </summary>
-        public IEnumerable<DiNode> ConnectedTo
-        {
-            get
-            {
-                for (int i = 0; i < _outEdges.Count; i++)
-                {
-                    DiEdge e = _outEdges[i];
-                    if (!e.IsRemoved) yield return e.End;
-                }
-            }
+            _inEdges = new DiEdge[inCapacity];
+            _outEdges = new DiEdge[outCapacity];
         }
 
 
         /// <summary>
         /// Iterates over all nodes that connect to this node (i.e. those at the start of incoming edges).
-        /// Skips nodes which have been flagged for removal.
+        /// Skips nodes connected by unused edges.
         /// </summary>
-        public IEnumerable<DiNode> ConnectedFrom
+        public IEnumerable<DiNode> InNeighbours
         {
             get
             {
-                for (int i = 0; i < _inEdges.Count; i++)
+                for (int i = 0; i < _inCount; i++)
                 {
                     DiEdge e = _inEdges[i];
-                    if (!e.IsRemoved) yield return e.Start;
+                    if (!e.IsUnused) yield return e.Start;
                 }
             }
         }
 
 
         /// <summary>
-        /// Iterates edges starting at this node.
-        /// Skips edges which have been flagged for removal.
+        /// Iterates over all nodes that this node connects to (i.e. those at the end of outgoing edges).
+        /// Skips nodes connected by unused edges.
         /// </summary>
-        public IEnumerable<DiEdge> OutgoingEdges
+        public IEnumerable<DiNode> OutNeighbours
         {
             get
             {
-                for (int i = 0; i < _outEdges.Count; i++)
+                for (int i = 0; i < _outCount; i++)
                 {
                     DiEdge e = _outEdges[i];
-                    if (!e.IsRemoved) yield return e;
+                    if (!e.IsUnused) yield return e.End;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Iterates edges ending at this node.
+        /// Skips unused edges.
+        /// </summary>
+        public IEnumerable<DiEdge> InEdges
+        {
+            get
+            {
+                for (int i = 0; i < _inCount; i++)
+                {
+                    DiEdge e = _inEdges[i];
+                    if (!e.IsUnused) yield return e;
                 }
             }
         }
@@ -84,18 +84,28 @@ namespace SpatialSlur.SlurGraph
 
         /// <summary>
         /// Iterates edges starting at this node.
-        /// Skips edges which have been flagged for removal.
+        /// Skips unused edges.
         /// </summary>
-        public IEnumerable<DiEdge> IncomingEdges
+        public IEnumerable<DiEdge> OutEdges
         {
             get
             {
-                for (int i = 0; i < _inEdges.Count; i++)
+                for (int i = 0; i < _outCount; i++)
                 {
-                    DiEdge e = _inEdges[i];
-                    if (!e.IsRemoved) yield return e;
+                    DiEdge e = _outEdges[i];
+                    if (!e.IsUnused) yield return e;
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Returns the number of edges ending at this node.
+        /// </summary>
+        public int InDegree
+        {
+            get { return _inDegree; }
+            internal set { _inDegree = value; }
         }
 
 
@@ -109,51 +119,72 @@ namespace SpatialSlur.SlurGraph
         }
 
 
-
         /// <summary>
-        /// Returns the number of edges ending at this node.
+        /// 
         /// </summary>
-        public int InDegree
+        public int InEdgeCount
         {
-            get { return _inDegree; }
-            internal set { _inDegree = value; }
+            get { return _inCount; }
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public int OutEdgeCount
+        {
+            get { return _outCount; }
+        }
+
 
         /// <summary>
-        /// Returns the index of the node within the graph's node list.
-        /// This will be set to -1 if the node is removed.
+        /// 
         /// </summary>
-        public int Index
+        public int InEdgeCapacity
         {
-            get { return _index; }
-            internal set { _index = value; }
+            get { return _inEdges.Length; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int OutEdgeCapacity
+        {
+            get { return _outEdges.Length; }
         }
 
 
         /// <summary>
         /// Returns true if this node has been flagged for removal.
         /// </summary>
-        public bool IsRemoved
+        public override bool IsUnused
         {
-            get { return _index == -1; }
+            get { return _outDegree == 0 && _inDegree == 0; }
         }
 
 
         /// <summary>
-        /// Flags the node and all incoming and outgoing edges for removal.
+        /// 
         /// </summary>
-        public void Remove()
+        internal void OnRemove()
         {
-            if (IsRemoved) return; // check if already flagged
-            _index = -1;
+            // remove all in edges
+            for (int i = 0; i < _inCount; i++)
+            {
+                DiEdge e = _inEdges[i];
+                if (!e.IsUnused) e.OnRemove();
+            }
 
-            for (int i = 0; i < _outEdges.Count; i++)
-                _outEdges[i].Remove();
+            // remove all out edges
+            for (int i = 0; i < _outCount; i++)
+            {
+                DiEdge e = _outEdges[i];
+                if (!e.IsUnused) e.OnRemove();
+            }
 
-            for (int i = 0; i < _inEdges.Count; i++)
-                _inEdges[i].Remove();
+            // reset edge lists
+            _outCount = _inCount = 0;
         }
 
 
@@ -162,27 +193,34 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         internal void Compact()
         {
-            Compact(_outEdges);
-            Compact(_inEdges);
+            Compact(ref _inEdges, ref _inCount);
+            Compact(ref _outEdges, ref _outCount);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edges"></param>
-        private void Compact(List<DiEdge> edges)
+        private void Compact(ref DiEdge[] edges, ref int count)
         {
             int marker = 0;
 
-            for (int i = 0; i < edges.Count; i++)
+            for (int i = 0; i < count; i++)
             {
                 DiEdge e = edges[i];
-                if (!e.IsRemoved)
+                if (!e.IsUnused)
                     edges[marker++] = e;
             }
 
-            edges.RemoveRange(marker, edges.Count - marker); // trim list to include only used elements
+            count = marker;
+
+            // trim array if length is greater than twice _n
+            int maxLength = Math.Max(count << 1, 2);
+            if (edges.Length > maxLength)
+                Array.Resize(ref edges, maxLength);
+
+            // prevent object loitering
+            Array.Clear(edges, count, edges.Length - count);
         }
 
 
@@ -205,10 +243,10 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         public DiEdge FindEdgeTo(DiNode other)
         {
-            for (int i = 0; i < _outEdges.Count; i++)
+            for (int i = 0; i < _outCount; i++)
             {
                 DiEdge e = _outEdges[i];
-                if (!e.IsRemoved && e.End == other)
+                if (!e.IsUnused && e.End == other)
                     return e;
             }
 
@@ -217,13 +255,26 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// 
+        /// Returns the outgoing edge at the given index.
+        /// Note that this may return unused edges.
         /// </summary>
-        /// <param name="edge"></param>
-        internal void AddOutEdge(DiEdge edge)
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public DiEdge OutEdgeAt(int index)
         {
-            _outEdges.Add(edge);
-            _outDegree++;
+            return _outEdges[index];
+        }
+
+
+        /// <summary>
+        /// Returns the incoming edge at the given index.
+        /// Note that this may return unused edges.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public DiEdge InEdgeAt(int index)
+        {
+            return _inEdges[index];
         }
 
 
@@ -233,8 +284,27 @@ namespace SpatialSlur.SlurGraph
         /// <param name="edge"></param>
         internal void AddInEdge(DiEdge edge)
         {
-            _inEdges.Add(edge);
+            // resize if necessary
+            if (_inCount == _inEdges.Length)
+                Array.Resize(ref _inEdges, _inEdges.Length << 1);
+
+            _inEdges[_inCount++] = edge;
             _inDegree++;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="edge"></param>
+        internal void AddOutEdge(DiEdge edge)
+        {
+            // resize if necessary
+            if (_outCount == _outEdges.Length)
+                Array.Resize(ref _outEdges, _outEdges.Length << 1);
+
+            _outEdges[_outCount++] = edge;
+            _outDegree++;
         }
     }
 }

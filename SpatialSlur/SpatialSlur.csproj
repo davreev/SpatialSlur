@@ -41,7 +41,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="RhinoCommon">
-      <HintPath>C:\Program Files\Rhinoceros 5.0 (64-bit)\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5.0 (64-bit)\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -69,6 +69,7 @@
     <Compile Include="SlurCore\Vec2d.cs" />
     <Compile Include="SlurCore\Vec3d.cs" />
     <Compile Include="SlurCore\Vec3i.cs" />
+    <Compile Include="SlurCore\Vec4d.cs" />
     <Compile Include="SlurData\CompareKd.cs" />
     <Compile Include="SlurData\Spatial2dT.cs" />
     <Compile Include="SlurData\Spatial3dT.cs" />
@@ -99,13 +100,21 @@
     <Compile Include="SlurField\ImplicitSurfaces.cs" />
     <Compile Include="SlurField\PerlinNoise.cs" />
     <Compile Include="SlurGraph\DiEdge.cs" />
+    <Compile Include="SlurGraph\DiEdgeList.cs" />
     <Compile Include="SlurGraph\DiGraph.cs" />
     <Compile Include="SlurGraph\DiNode.cs" />
+    <Compile Include="SlurGraph\DiNodeList.cs" />
     <Compile Include="SlurGraph\Edge.cs" />
+    <Compile Include="SlurGraph\EdgeList.cs" />
     <Compile Include="SlurGraph\Graph.cs" />
+    <Compile Include="SlurGraph\GraphElement.cs" />
+    <Compile Include="SlurGraph\GraphElementList.cs" />
     <Compile Include="SlurGraph\Node.cs" />
-    <Compile Include="SlurMesh\HalfEdge.cs" />
-    <Compile Include="SlurMesh\HalfEdgeList.cs" />
+    <Compile Include="SlurGraph\GraphAttributes.cs" />
+    <Compile Include="SlurGraph\NodeList.cs" />
+    <Compile Include="SlurGraph\RhinoExtensions.cs" />
+    <Compile Include="SlurMesh\Halfedge.cs" />
+    <Compile Include="SlurMesh\HalfedgeList.cs" />
     <Compile Include="SlurMesh\HeElement.cs" />
     <Compile Include="SlurMesh\HeElementList.cs" />
     <Compile Include="SlurMesh\HeFace.cs" />
@@ -114,6 +123,7 @@
     <Compile Include="SlurMesh\HePhysics.cs" />
     <Compile Include="SlurMesh\HeSubdivide.cs" />
     <Compile Include="SlurMesh\HeVertex.cs" />
+    <Compile Include="SlurMesh\HeAttributes.cs" />
     <Compile Include="SlurMesh\HeVertexList.cs" />
     <Compile Include="SlurMesh\MeshIO.cs" />
     <Compile Include="SlurMesh\RhinoExtensions.cs" />
@@ -125,6 +135,7 @@
     <Compile Include="SlurCore\SlurMath.cs" />
     <Compile Include="SlurField\VectorField2d.cs" />
     <Compile Include="SlurField\VectorField3d.cs" />
+    <Compile Include="SlurMesh\SmoothBoundaryType.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

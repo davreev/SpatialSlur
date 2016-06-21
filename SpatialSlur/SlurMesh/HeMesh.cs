@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 using Rhino.Geometry;
 
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurMesh
 {
@@ -26,19 +29,19 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public static HeMesh CreateFromFaceVertexData(IList<Vec3d> vertices, IList<IList<int>> faces)
         {
-            HeMesh hm = new HeMesh();
-            var hmv = hm.Vertices;
-            var hmf = hm.Faces;
+            HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
 
             // add vertices
             foreach (Vec3d v in vertices)
-                hmv.Add(v);
+                newVerts.Add(v);
 
             // add faces
             foreach(IList<int> f in faces)
-                hmf.Add(f);
+                newFaces.Add(f);
               
-            return hm;
+            return result;
         }
 
 
@@ -51,7 +54,7 @@ namespace SpatialSlur.SlurMesh
         public static HeMesh CreateFromPolygons(IList<IList<Vec3d>> polygons, double tolerance)
         {
             List<Vec3d> points = new List<Vec3d>();
-            List<int> sides = new List<int>();
+            List<int> nsides = new List<int>();
 
             // get all polyline points
             foreach (IList<Vec3d> poly in polygons)
@@ -60,10 +63,10 @@ namespace SpatialSlur.SlurMesh
                 if (n < 3) continue;  // skip invalid polygons
 
                 points.AddRange(poly);
-                sides.Add(n);
+                nsides.Add(n);
             }
 
-            return HeMesh.CreateFromPolygons(points, sides, tolerance);
+            return HeMesh.CreateFromPolygons(points, nsides, tolerance);
         }
 
 
@@ -71,121 +74,42 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="sides"></param>
+        /// <param name="pointsPerPolygon"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static HeMesh CreateFromPolygons(IList<Vec3d> points, IList<int> sides, double tolerance)
+        public static HeMesh CreateFromPolygons(IList<Vec3d> points, IList<int> pointsPerPolygon, double tolerance)
         {
             int[] indexMap;
             List<Vec3d> verts = Vec3d.RemoveDuplicates(points, tolerance, out indexMap);
-            IList<int>[] faces = new IList<int>[sides.Count];
+            IList<int>[] faces = new IList<int>[pointsPerPolygon.Count];
 
             // get face arrays
             int marker = 0;
-            for (int i = 0; i < sides.Count; i++)
+            for (int i = 0; i < pointsPerPolygon.Count; i++)
             {
-                int n = sides[i];
+                int n = pointsPerPolygon[i];
                 faces[i] = new ArraySegment<int>(indexMap, marker, n);
                 marker += n;
             }
 
-            // create from face vertex data
             return CreateFromFaceVertexData(verts, faces);
         }
-
-
-        /*
-        [Obsolete("Use RhinoFactory creation method instead.")]
-        /// <summary>
-        /// Creates an HeMesh instance from a Rhino mesh.
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static HeMesh CreateFromRhinoMesh(Mesh mesh)
-        {
-            HeMesh hm = new HeMesh();
-            var hmv = hm.Vertices;
-            var hmf = hm.Faces;
-
-            // add vertices
-            var mv = mesh.Vertices;
-            for (int i = 0; i < mv.Count; i++)
-                hmv.Add(mv[i].ToVec3d());
-
-            // add faces
-            var mf = mesh.Faces;
-            for (int i = 0; i < mf.Count; i++)
-            {
-                MeshFace f = mf[i];
-                if (f.IsQuad)
-                    hmf.Add(f.A, f.B, f.C, f.D);
-                else
-                    hmf.Add(f.A, f.B, f.C);
-            }
-
-            return hm;
-        }
-
-
-        [Obsolete("Use RhinoFactory creation method instead.")]
-        /// <summary>
-        /// Creates a HeMesh instance from a collection of Rhino Polylines.
-        /// </summary>
-        /// <param name="polylines"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static HeMesh CreateFromPolylines(IEnumerable<Polyline> polylines, double tolerance)
-        {
-            List<Vec3d> faceVerts = new List<Vec3d>();
-            List<int> nSides = new List<int>();
-
-            // get all polyline vertices
-            foreach (Polyline p in polylines)
-            {
-                int n = p.Count - 1;
-                if (!p.IsClosed || n < 3) continue;  // skip open or invalid loops
-
-                // collect all points in the loop
-                for (int i = 0; i < n; i++)
-                    faceVerts.Add(p[i].ToVec3d());
-
-                nSides.Add(n);
-            }
-
-            // remove duplicate points
-            int[] faceIndices;
-            List<Vec3d> verts = Vec3d.RemoveDuplicates(faceVerts, tolerance, out faceIndices);
-            IList<int>[] faces = new IList<int>[nSides.Count];
-
-            // get face arrays
-            int marker = 0;
-            for (int i = 0; i < nSides.Count; i++)
-            {
-                int n = nSides[i];
-                faces[i] = new ArraySegment<int>(faceIndices, marker, n);
-                marker += n;
-            }
-
-            // create from face vertex data
-            return CreateFromFaceVertexData(verts, faces);
-        }
-        */
 
         #endregion
 
 
-        private HeVertexList _vertices;
-        private HalfEdgeList _halfEdges;
+        private HeVertexList _verts;
+        private HalfedgeList _hedges;
         private HeFaceList _faces;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public HeMesh() 
+        public HeMesh()
         {
-            _vertices = new HeVertexList(this);
-            _halfEdges = new HalfEdgeList(this);
+            _verts = new HeVertexList(this);
+            _hedges = new HalfedgeList(this);
             _faces = new HeFaceList(this);
         }
 
@@ -193,10 +117,10 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeMesh(int vertexCapacity, int halfEdgeCapacity, int faceCapacity)
+        public HeMesh(int vertexCapacity, int halfedgeCapacity, int faceCapacity)
         {
-            _vertices = new HeVertexList(this, vertexCapacity);
-            _halfEdges = new HalfEdgeList(this, halfEdgeCapacity);
+            _verts = new HeVertexList(this, vertexCapacity);
+            _hedges = new HalfedgeList(this, halfedgeCapacity);
             _faces = new HeFaceList(this, faceCapacity);
         }
 
@@ -206,60 +130,60 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeMesh(HeMesh other)
         {
-            var otherVerts = other._vertices;
-            var otherEdges = other._halfEdges;
+            var otherVerts = other._verts;
+            var otherHedges = other._hedges;
             var otherFaces = other._faces;
          
             // create element lists
-            _vertices = new HeVertexList(this, otherVerts.Count);
-            _halfEdges = new HalfEdgeList(this, otherEdges.Count);
+            _verts = new HeVertexList(this, otherVerts.Count);
+            _hedges = new HalfedgeList(this, otherHedges.Count);
             _faces = new HeFaceList(this, otherFaces.Count);
             
             // add new elements
             for (int i = 0; i < otherVerts.Count; i++ )
-                _vertices.Add(new HeVertex(otherVerts[i].Position));
+                _verts.Add(new HeVertex(otherVerts[i].Position));
 
-            for (int i = 0; i < otherEdges.Count; i++)
-                _halfEdges.Add(new HalfEdge());
+            for (int i = 0; i < otherHedges.Count; i++)
+                _hedges.Add(new Halfedge());
 
             for (int i = 0; i < otherFaces.Count; i++)
                 _faces.Add(new HeFace());
 
-            // link vertices to edges
+            // link vertices to halfedges
             for (int i = 0; i < otherVerts.Count; i++)
             {
                 HeVertex v0 = otherVerts[i];
                 if (v0.IsUnused) continue;
 
-                HeVertex v1 = _vertices[i];
-                v1.First = _halfEdges[v0.First.Index];
+                HeVertex v1 = _verts[i];
+                v1.First = _hedges[v0.First.Index];
             }
 
-            // link faces to edges
+            // link faces to halfedges
             for (int i = 0; i < otherFaces.Count; i++)
             {
                 HeFace f0 = otherFaces[i];
                 if (f0.IsUnused) continue;
 
                 HeFace f1 = _faces[i];
-                f1.First = _halfEdges[f0.First.Index];
+                f1.First = _hedges[f0.First.Index];
             }
 
-            // link edges to vertices, faces, and other edges
-            for (int i = 0; i < otherEdges.Count; i++)
+            // link edges to vertices, faces, and other halfedges
+            for (int i = 0; i < otherHedges.Count; i++)
             {
-                HalfEdge e0 = otherEdges[i];
-                HalfEdge e1 = _halfEdges[i];
+                Halfedge he0 = otherHedges[i];
+                Halfedge he1 = _hedges[i];
 
-                e1.Previous = _halfEdges[e0.Previous.Index];
-                e1.Next = _halfEdges[e0.Next.Index];
-                e1.Twin = _halfEdges[e0.Twin.Index];
+                he1.Previous = _hedges[he0.Previous.Index];
+                he1.Next = _hedges[he0.Next.Index];
+                he1.Twin = _hedges[he0.Twin.Index];
 
-                if (e0.Start != null) 
-                    e1.Start = _vertices[e0.Start.Index];
+                if (he0.Start != null) 
+                    he1.Start = _verts[he0.Start.Index];
 
-                if (e0.Face != null) 
-                    e1.Face = _faces[e0.Face.Index];
+                if (he0.Face != null) 
+                    he1.Face = _faces[he0.Face.Index];
             }
         }
 
@@ -269,16 +193,16 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeVertexList Vertices
         {
-            get { return _vertices; }
+            get { return _verts; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public HalfEdgeList HalfEdges
+        public HalfedgeList Halfedges
         { 
-            get { return _halfEdges; }
+            get { return _hedges; }
         }
 
 
@@ -296,7 +220,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public int EulerNumber
         {
-            get { return _vertices.Count - (_halfEdges.Count >> 1) + _faces.Count; }
+            get { return _verts.Count - (_hedges.Count >> 1) + _faces.Count; }
         }
 
 
@@ -306,7 +230,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("HeMesh (V:{0} HE:{1} F:{2})", _vertices.Count, _halfEdges.Count, _faces.Count);
+            return String.Format("HeMesh (V:{0} HE:{1} F:{2})", _verts.Count, _hedges.Count, _faces.Count);
         }
 
 
@@ -315,8 +239,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public void Compact()
         {
-            _vertices.Compact();
-            _halfEdges.Compact();
+            _verts.Compact();
+            _hedges.Compact();
             _faces.Compact();
         }
 
@@ -329,24 +253,13 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="vertexAttributes"></param>
-        /// <param name="edgeAttributes"></param>
+        /// <param name="halfedgeAttributes"></param>
         /// <param name="faceAttributes"></param>
-        public void CompactAttributes<V, E, F>(List<V> vertexAttributes, List<E> edgeAttributes, List<F> faceAttributes)
+        public void CompactAttributes<V, E, F>(List<V> vertexAttributes, List<E> halfedgeAttributes, List<F> faceAttributes)
         {
-            _vertices.CompactAttributes(vertexAttributes);
-            _halfEdges.CompactAttributes(edgeAttributes);
+            _verts.CompactAttributes(vertexAttributes);
+            _hedges.CompactAttributes(halfedgeAttributes);
             _faces.CompactAttributes(faceAttributes);
-        }
-
-
-        [Obsolete("Use copy constructor instead")]
-        /// <summary>
-        /// Returns a deep copy of the mesh.
-        /// </summary>
-        /// <returns></returns>
-        public HeMesh Duplicate()
-        {
-            return new HeMesh(this);
         }
 
 
@@ -356,78 +269,90 @@ namespace SpatialSlur.SlurMesh
         /// <param name="other"></param>
         public void Append(HeMesh other)
         {
-            var otherVerts = other._vertices;
-            var otherEdges = other._halfEdges;
+            var otherVerts = other._verts;
+            var otherHedges = other._hedges;
             var otherFaces = other._faces;
 
             // cache current number of elements
-            int nv = _vertices.Count;
-            int ne = _halfEdges.Count;
+            int nv = _verts.Count;
+            int ne = _hedges.Count;
             int nf = _faces.Count;
 
-            // append elements
+            // append new elements
             for (int i = 0; i < otherVerts.Count; i++)
-                _vertices.Add(new HeVertex(otherVerts[i].Position));
+                _verts.Add(new HeVertex(otherVerts[i].Position));
 
-            for (int i = 0; i < otherEdges.Count; i++)
-                _halfEdges.Add(new HalfEdge());
+            for (int i = 0; i < otherHedges.Count; i++)
+                _hedges.Add(new Halfedge());
 
             for (int i = 0; i < otherFaces.Count; i++)
                 _faces.Add(new HeFace());
 
-            // link new vertices to new edges
+            // link new vertices to new halfedges
             for (int i = 0; i < otherVerts.Count; i++)
             {
                 HeVertex v0 = otherVerts[i];
                 if (v0.IsUnused) continue;
 
-                HeVertex v1 = _vertices[i + nv];
-                v1.First = _halfEdges[v0.First.Index + ne];
+                HeVertex v1 = _verts[i + nv];
+                v1.First = _hedges[v0.First.Index + ne];
             }
 
-            // link new faces to new edges
+            // link new faces to new halfedges
             for (int i = 0; i < otherFaces.Count; i++)
             {
                 HeFace f0 = otherFaces[i];
                 if (f0.IsUnused) continue;
 
                 HeFace f1 = _faces[i + nf];
-                f1.First = _halfEdges[f0.First.Index + ne];
+                f1.First = _hedges[f0.First.Index + ne];
             }
 
-            // link new edges to new vertices, edges, and faces
-            for (int i = 0; i < otherEdges.Count; i++)
+            // link new edges to new vertices, halfedges, and faces
+            for (int i = 0; i < otherHedges.Count; i++)
             {
-                HalfEdge e0 = other._halfEdges[i];
-                HalfEdge e1 = _halfEdges[i + ne];
+                Halfedge he0 = other._hedges[i];
+                Halfedge he1 = _hedges[i + ne];
 
-                e1.Previous = _halfEdges[e0.Previous.Index + ne];
-                e1.Next = _halfEdges[e0.Next.Index + ne];
-                e1.Twin = _halfEdges[e0.Twin.Index + ne];
+                he1.Previous = _hedges[he0.Previous.Index + ne];
+                he1.Next = _hedges[he0.Next.Index + ne];
+                he1.Twin = _hedges[he0.Twin.Index + ne];
 
-                if (e0.Start != null) 
-                    e1.Start = _vertices[e0.Start.Index + nv];
+                if (he0.Start != null) 
+                    he1.Start = _verts[he0.Start.Index + nv];
 
-                if (e0.Face != null) 
-                    e1.Face = _faces[e0.Face.Index + nf];
+                if (he0.Face != null) 
+                    he1.Face = _faces[he0.Face.Index + nf];
             }
         }
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public List<HeMesh> SplitDisjoint(HeMesh mesh)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
         /// Triangulates all non-triangular faces in the mesh.
-        /// Quads are triangulated by creating an edge between the first and third vertex (can be controlled by orienting faces beforehand).
+        /// Quads are triangulated by creating an edge between the first and third vertex.
         /// N-gons are triangulated by adding a new vertex at the face center.
-        /// TODO add support for different triangulation schemes
         /// </summary>
         public void Triangulate()
         {
+            // TODO add support for different triangulation schemes
             for (int i = 0; i < _faces.Count; i++)
             {
                 HeFace f = _faces[i];
                 if (f.IsUnused) continue;
 
-                int ne = f.CountEdges();
+                int ne = f.Degree;
 
                 if (ne == 4)
                     _faces.SplitFace(f.First, f.First.Next.Next);
@@ -439,26 +364,36 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns the dual of the mesh.
-        /// TODO implement more direct dual creation for closed meshes by spinning edges.
         /// </summary>
         public HeMesh GetDual()
         {
+            // TODO implement more direct dual creation
+            // spinning edges for closed meshes
+            // or adding edge pairs directly rather than adding face by face
             HeMesh result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
 
-            // add vertices from face centers
+            // add new vertices (1 per face)
             foreach (HeFace f in _faces)
-                result._vertices.Add(f.GetCenter());
-            
-            // add faces by circulating vertices
-            foreach (HeVertex v in _vertices)
             {
-                if (v.IsBoundary) continue;
+                if (f.IsUnused)
+                    newVerts.Add(new Vec3d()); // add dummy vertex for unused elements
+                else
+                    newVerts.Add(f.GetCenter());
+            }
 
-                List<int> indices = new List<int>();
+            // add new faces by circulating old vertices
+            var fv = new List<HeVertex>();
+            foreach (HeVertex v in _verts)
+            {
+                if (v.IsUnused || v.IsBoundary) continue;
+
                 foreach (HeFace f in v.SurroundingFaces)
-                    indices.Add(f.Index);
+                    fv.Add(newVerts[f.Index]);
 
-                result.Faces.Add(indices);
+                newFaces.AddImpl(fv);
+                fv.Clear();
             }
 
             return result;
@@ -529,89 +464,91 @@ namespace SpatialSlur.SlurMesh
         }
         */
 
-        
+
         /// <summary>
-        /// Returns the entries of the laplacian matrix in column-major order.
+        /// Returns true if the given vertex belongs to this mesh.
         /// </summary>
+        /// <param name="vertex"></param>
         /// <returns></returns>
-        public double[] GetLaplacianMatrix()
+        public bool Owns(HeVertex vertex)
         {
-            int nv = _vertices.Count;
-            double[] result = new double[nv * nv];
-
-            for (int i = 0; i < nv; i++)
-            {
-                HeVertex v = _vertices[i];
-                if (v.IsUnused) continue;
-
-                double wsum = 0.0;
-
-                foreach (HalfEdge e in v.OutgoingHalfEdges)
-                {
-                    int j = e.End.Index;
-                    result[i * nv + j] = -1.0;
-                    wsum++;
-                }
-
-                result[i + i * nv] = wsum;
-            }
-
-            return result;
+            return _verts.Owns(vertex);
         }
 
 
         /// <summary>
-        /// 
+        /// Returns true if the given halfedge belongs to this mesh.
         /// </summary>
-        /// <param name="halfEdgeWeights"></param>
+        /// <param name="halfedge"></param>
         /// <returns></returns>
-        public double[] GetLaplacianMatrix(IList<double> halfEdgeWeights)
+        public bool Owns(Halfedge halfedge)
         {
-            _halfEdges.SizeCheck(halfEdgeWeights);
-
-            int nv = _vertices.Count;
-            double[] result = new double[nv * nv];
-
-            for (int i = 0; i < nv; i++)
-            {
-                HeVertex v = _vertices[i];
-                if (v.IsUnused) continue;
-
-                double wsum = 0.0;
-
-                foreach (HalfEdge e in v.OutgoingHalfEdges)
-                {
-                    int j = e.End.Index;
-                    double w = halfEdgeWeights[e.Index];
-                    result[i * nv + j] = -w;
-                    wsum += w;
-                }
-
-                result[i * nv + i] = wsum;
-            }
-
-            return result;
+            return _hedges.Owns(halfedge);
         }
 
 
         /// <summary>
-        /// Returns a single edge from each hole in the mesh.
+        /// Returns true if the given face belongs to this mesh.
         /// </summary>
+        /// <param name="face"></param>
         /// <returns></returns>
-        public List<HalfEdge> GetHoles()
+        public bool Owns(HeFace face)
         {
-            throw new NotImplementedException();
+            return _faces.Owns(face);
         }
 
 
         /// <summary>
         /// Returns the number of holes in the mesh.
-        /// A hole refers to a closed loop of consecutive half-edges with no face reference.
         /// </summary>
         /// <returns></returns>
-        public int CountHoles()
+        public int CountHoles(IList<int> edgeIds, int searchId)
         {
-            throw new NotImplementedException();
+            int result = 0;
+            int currTag = _hedges.NextTag;
+
+            for (int i = 0; i < _hedges.Count; i++)
+            {
+                var he = _hedges[i];
+                if (he.IsUnused || he.Face != null || he.Tag == currTag) continue;
+
+                result++;
+
+                do
+                {
+                    he.Tag = currTag;
+                    he = he.Next;
+                } while (he.Tag != currTag);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns the first halfedge from each hole in the mesh.
+        /// </summary>
+        /// <returns></returns>
+        public List<Halfedge> GetHoles()
+        {
+            List<Halfedge> result = new List<Halfedge>();
+            int currTag = _hedges.NextTag;
+
+            for (int i = 0; i < _hedges.Count; i++)
+            {
+                var he = _hedges[i];
+                if (he.IsUnused || he.Face != null || he.Tag == currTag) continue;
+
+                result.Add(he);
+
+                do
+                {
+                    he.Tag = currTag;
+                    he = he.Next;
+                } while (he.Tag != currTag);
+            }
+
+            return result;
         }
     }
 }

@@ -22,7 +22,6 @@ namespace SpatialSlur.SlurField
         // permutation table
         private static readonly int[] _perm = new int[256];
 
-
         // 2d gradient table
         private static readonly double[][] _grad2 = 
         {
@@ -36,7 +35,6 @@ namespace SpatialSlur.SlurField
           new double[]{0, -1},
         };
 
-       
         // 3d gradient table
         private static readonly double[][] _grad3 = 
         {
@@ -66,7 +64,6 @@ namespace SpatialSlur.SlurField
 
         /// <summary>
         /// Sets the permutation table.
-        /// By default the table is set to seed 0.
         /// </summary>
         /// <param name="seed"></param>
         public static void SetPermutation(int seed)
@@ -91,7 +88,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns noise value at given coordinates
+        /// Returns the noise value at the given coordinates.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -104,20 +101,20 @@ namespace SpatialSlur.SlurField
             y = SlurMath.Fract(y, out j);
 
             // calculate noise contributions from each corner
-            double n00 = Grad(i, j, x, y);
-            double n01 = Grad(i, j + 1, x, y - 1.0);
-            double n10 = Grad(i + 1, j, x - 1.0, y);
-            double n11 = Grad(i + 1, j + 1, x - 1.0, y - 1.0);
+            double n00 = Dot(_grad2[ToIndex(i, j)], x, y);
+            double n10 = Dot(_grad2[ToIndex(i + 1, j)], x - 1.0, y);
+            double n01 = Dot(_grad2[ToIndex(i, j + 1)], x, y - 1.0);
+            double n11 = Dot(_grad2[ToIndex(i + 1, j + 1)], x - 1.0, y - 1.0);
 
             // eased values for x and y
-            x = SlurMath.SmootherStep(x);
-            y = SlurMath.SmootherStep(y);
+            x = SlurMath.HermiteC2(x);
+            y = SlurMath.HermiteC2(y);
 
             // bilinear interpolation
             return SlurMath.Lerp(
-                SlurMath.Lerp(n00,n10,x),
-                SlurMath.Lerp(n01,n11,x),
-                y);
+              SlurMath.Lerp(n00, n10, x),
+              SlurMath.Lerp(n01, n11, x),
+              y);
         }
 
 
@@ -133,7 +130,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns noise value at given coordinates
+        /// Returns the noise value at the given coordinates
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -148,74 +145,68 @@ namespace SpatialSlur.SlurField
             z = SlurMath.Fract(z, out k);
 
             // calculate noise contributions from each corner
-            double n000 = Grad(i, j, k, x, y, z);
-            double n001 = Grad(i, j, k + 1, x, y, z - 1.0);
-            double n010 = Grad(i, j + 1, k, x, y - 1.0, z);
-            double n011 = Grad(i, j + 1, k + 1, x, y - 1.0, z - 1.0);
-            double n100 = Grad(i + 1, j, k, x - 1.0, y, z);
-            double n101 = Grad(i + 1, j, k + 1, x - 1.0, y, z - 1.0);
-            double n110 = Grad(i + 1, j + 1, k, x - 1.0, y - 1.0, z);
-            double n111 = Grad(i + 1, j + 1, k + 1, x - 1.0, y - 1.0, z - 1.0);
-            
+            double n000 = Dot(_grad3[ToIndex(i, j, k)], x, y, z);
+            double n100 = Dot(_grad3[ToIndex(i + 1, j, k)], x - 1.0, y, z);
+            double n010 = Dot(_grad3[ToIndex(i, j + 1, k)], x, y - 1.0, z);
+            double n110 = Dot(_grad3[ToIndex(i + 1, j + 1, k)], x - 1.0, y - 1.0, z);
+
+            double n001 = Dot(_grad3[ToIndex(i, j, k + 1)], x, y, z - 1.0);
+            double n101 = Dot(_grad3[ToIndex(i + 1, j, k + 1)], x - 1.0, y, z - 1.0);
+            double n011 = Dot(_grad3[ToIndex(i, j + 1, k + 1)], x, y - 1.0, z - 1.0);
+            double n111 = Dot(_grad3[ToIndex(i + 1, j + 1, k + 1)], x - 1.0, y - 1.0, z - 1.0);
+
             // eased values for each dimension
-            x = SlurMath.SmootherStep(x);
-            y = SlurMath.SmootherStep(y);
-            z = SlurMath.SmootherStep(z);
+            x = SlurMath.HermiteC2(x);
+            y = SlurMath.HermiteC2(y);
+            z = SlurMath.HermiteC2(z);
 
             // trilinear interpolation
             return SlurMath.Lerp(
-                SlurMath.Lerp(
-                    SlurMath.Lerp(n000, n100, x),
-                    SlurMath.Lerp(n001, n101, x),
-                    y),
-                SlurMath.Lerp(
-                    SlurMath.Lerp(n010, n110, x),
-                    SlurMath.Lerp(n011, n111, x),
-                    y),
-                z);
+              SlurMath.Lerp(
+              SlurMath.Lerp(n000, n100, x),
+              SlurMath.Lerp(n010, n110, x),
+              y),
+              SlurMath.Lerp(
+              SlurMath.Lerp(n001, n101, x),
+              SlurMath.Lerp(n011, n111, x),
+              y),
+              z);
+        }
+
+
+        /// <summary>
+        /// Returns the gradient table index for the given coordinates.
+        /// </summary>
+        private static int ToIndex(int i, int j)
+        {
+            return _perm[(i + _perm[j & 255]) & 255] & 7;
+        }
+
+
+        /// <summary>
+        /// Returns the gradient table index for the given coordinates.
+        /// </summary>
+        private static int ToIndex(int i, int j, int k)
+        {
+            return _perm[(i + _perm[(j + _perm[k & 255]) & 255]) & 255] % 12;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        private static double Grad(int i, int j, double x, double y)
+        private static double Dot(double[] vec, double x, double y)
         {
-            var g = _grad3[PermAt(i + PermAt(j)) & 7];
-            return g[0] * x + g[1] * y;
+            return vec[0] * x + vec[1] * y;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <returns></returns>
-        private static double Grad(int i, int j, int k, double x, double y, double z)
+        private static double Dot(double[] vec, double x, double y, double z)
         {
-            var g = _grad3[PermAt(i + PermAt(j + PermAt(k))) % 12];
-            return g[0] * x + g[1] * y + g[2] * z;
-        }
-
-
-        /// <summary>
-        /// returns permutation at wrapped index
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        private static int PermAt(int index)
-        {
-            return _perm[index & 255];
+            return vec[0] * x + vec[1] * y + vec[2] * z;
         }
     }
 }

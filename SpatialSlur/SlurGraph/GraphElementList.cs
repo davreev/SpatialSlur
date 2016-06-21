@@ -4,37 +4,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * 
- * Consider setting elements to null in list on removal
- * Complicates ownership test (can't perform if array has been set to null)
- * Combined ownership/in use test
- * 
- * Simplifies the condition slightly
- * If the element is in the list, then it is assumed to be in use
- * 
- * Conclusion
- * Better to flag element as unused/removed
- * Then can check if unused/removed from anywhere
- * Not just from the element list
- * 
- * ie. 
  */ 
 
-namespace SpatialSlur.SlurMesh
+namespace SpatialSlur.SlurGraph
 {
     /// <summary>
     /// 
     /// </summary>
+    /// <typeparam name="G"></typeparam>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class HeElementList<T>:IEnumerable<T> 
-        where T : HeElement
+    public abstract class GraphElementList<G, T>:IEnumerable<T> 
+        where T : GraphElement
     {
-        private readonly HeMesh _mesh;
+        private readonly G _graph;
         private T[] _list;
         private int _n;
         private int _currTag;
@@ -43,11 +29,11 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <param name="graph"></param>
         /// <param name="capacity"></param>
-        internal HeElementList(HeMesh mesh, int capacity)
+        internal GraphElementList(G graph, int capacity)
         {
-            _mesh = mesh;
+            _graph = graph;
             _list = new T[capacity];
         }
 
@@ -55,9 +41,9 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeMesh Mesh
+        public G Graph
         {
-            get { return _mesh; }
+            get { return _graph; }
         }
 
 
@@ -68,7 +54,7 @@ namespace SpatialSlur.SlurMesh
         {
             get { return ++_currTag; } // consider reset of element tags on overflow
         }
-  
+
 
         /// <summary>
         /// 
@@ -76,6 +62,15 @@ namespace SpatialSlur.SlurMesh
         public int Count
         {
             get { return _n; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Capacity
+        {
+            get { return _list.Length; }
         }
 
 
@@ -125,7 +120,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Adds an element to the list.
+        /// 
         /// </summary>
         /// <param name="element"></param>
         internal void Add(T element)
@@ -142,7 +137,19 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Removes all unused elements in the list and re-indexes.
+        /// 
+        /// </summary>
+        public abstract void Remove(T element);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public abstract void RemoveAt(int index);
+
+
+        /// <summary>
+        /// Removes all flagged elements in the list and re-indexes.
         /// If the list has any associated attributes, be sure to compact those first.
         /// </summary>
         public virtual void Compact()
@@ -160,7 +167,7 @@ namespace SpatialSlur.SlurMesh
 
             _n = marker;
 
-            // trim array if length is greater than twice n
+            // trim array if length is greater than twice _n
             int maxLength = Math.Max(_n << 1, 2);
             if (_list.Length > maxLength)
                 Array.Resize(ref _list, maxLength);
@@ -212,7 +219,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <summary>
         /// Returns true if the given element belongs to this list.
+        /// </summary>
         public bool Owns(T element)
         {
             return element == _list[element.Index];
@@ -222,24 +231,20 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Throws an exception for elements that don't belong to this mesh.
         /// </summary>
-        /// <param name="element"></param>
         internal void OwnsCheck(T element)
         {
             if (!Owns(element))
-                throw new ArgumentException("The given element must belong to this mesh.");
+                throw new ArgumentException("The given element must belong to this graph.");
         }
 
 
         /// <summary>
         /// Throws an exception for mismatched attribute lists. 
         /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="attributes"></param>
         internal void SizeCheck<U>(IList<U> attributes)
         {
             if (attributes.Count != _n)
-                throw new ArgumentException("The number of attributes provided must match the number of elements in the mesh.");
+                throw new ArgumentException("The number of attributes provided must match the number of elements in the graph.");
         }
-
     }
 }

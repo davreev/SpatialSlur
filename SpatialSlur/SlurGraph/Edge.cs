@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 /*
  * Notes
- * TODO make generic for attaching attributes
  */
 
 namespace SpatialSlur.SlurGraph
@@ -15,12 +14,19 @@ namespace SpatialSlur.SlurGraph
     /// 
     /// </summary>
     [Serializable]
-    public class Edge
+    public class Edge : GraphElement
     {
         private Node _start;
         private Node _end;
         //private E _data;
-        private int _index = -1;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal Edge()
+        {
+        }
 
 
         /// <summary>
@@ -28,12 +34,10 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        /// <param name="index"></param>
-        internal Edge(Node start, Node end, int index)
+        internal Edge(Node start, Node end)
         {
             _start = start;
             _end = end;
-            _index = index;
         }
 
 
@@ -58,38 +62,6 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Returns the index of the edge within the graph's edge list.
-        /// This will be set to -1 if the edge is removed.
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            internal set { _index = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool IsRemoved
-        {
-            get { return _index == -1; }
-        }
-
-
-        /// <summary>
-        /// Flags the edge for removal.
-        /// </summary>
-        public void Remove()
-        {
-            if (IsRemoved) return; // check if already flagged
-            _index = -1;
-            _start.Degree--;
-            _end.Degree--;
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="node"></param>
@@ -103,5 +75,51 @@ namespace SpatialSlur.SlurGraph
 
             return null;
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override bool IsUnused
+        {
+            get { return _start == null; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal void OnRemove()
+        {
+            _start.Degree--;
+            _end.Degree--;
+            _start = null; // flag as unused
+        }
+
+
+        /*
+        /// <summary>
+        /// This edge and its start node are flagged as unused
+        /// Edges from start node are transferred to end node
+        /// </summary>
+        internal void Collapse()
+        {
+            if (IsRemoved) return; // can't collapse a removed edge
+
+            // flag edge for removal
+            _index = -1;
+            //_start.Degree--;
+            _end.Degree--;
+
+            // flag start node for removal
+            _start.Index = -1;
+
+            // transfer edges from start node to the end node
+            foreach (Edge e in _start.Edges)
+                _end.AddEdge(e);
+            
+            this.Remove();
+        }
+        */
     }
 }

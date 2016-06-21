@@ -28,11 +28,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="halfedge"></param>
         /// <returns></returns>
-        public static Line ToLine(this HalfEdge edge)
+        public static Line ToLine(this Halfedge halfedge)
         {
-            return new Line(edge.Start.Position.ToPoint3d(), edge.Span.ToVector3d());
+            Vec3d p0 = halfedge.Start.Position;
+            Vec3d p1 = halfedge.End.Position;
+            return new Line(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
         }
 
 
@@ -56,24 +58,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="hedges"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Line[] GetEdgeLines(this HalfEdgeList list)
+        public static Line[] GetEdgeLines(this HalfedgeList hedges, bool parallel = false)
         {
-            Line[] result = new Line[list.Count];
-
-            Parallel.ForEach(Partitioner.Create(0, list.Count >> 1), range =>
-            {
-                int i0 = range.Item1 << 1;
-                int i1 = range.Item2 << 1;
-                for (int i = i0; i < i1; i+=2)
-                {
-                    HalfEdge e = list[i];
-                    if (e.IsUnused) continue;
-                    result[i] = e.ToLine();
-                }
-            });
-
+            Line[] result = new Line[hedges.Count >> 1];
+            hedges.UpdateEdgeLines(result, parallel);
             return result;
         }
 
@@ -81,22 +72,45 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public static Polyline[] GetFacePolylines(this HeFaceList list)
+        /// <param name="hedges"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void UpdateEdgeLines(this HalfedgeList hedges, IList<Line> result, bool parallel = false)
         {
-            Polyline[] result = new Polyline[list.Count];
+            hedges.HalfSizeCheck(result);
 
-            Parallel.ForEach(Partitioner.Create(0, list.Count), range =>
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), range =>
+                    hedges.UpdateEdgeLines(result, range.Item1, range.Item2));
+            else
+                hedges.UpdateEdgeLines(result, 0, hedges.Count >> 1);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void UpdateEdgeLines(this HalfedgeList hedges, IList<Line> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = list[i];
-                    if (f.IsUnused) continue;
-                    result[i] = f.ToPolyline();
-                }
-            });
+                Halfedge he = hedges[i << 1];
+                if (he.IsUnused) continue;
+                result[i] = he.ToLine();
+            }
+        }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static Polyline[] GetFacePolylines(this HeFaceList faces, bool parallel = false)
+        {
+            Polyline[] result = new Polyline[faces.Count];
+            faces.UpdateFacePolylines(result, parallel);
             return result;
         }
 
@@ -104,29 +118,86 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public static Circle[] GetFaceCircumcircles(this HeFaceList list)
+        /// <param name="faces"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void UpdateFacePolylines(this HeFaceList faces, IList<Polyline> result, bool parallel = false)
         {
-            Circle[] result = new Circle[list.Count];
+            faces.SizeCheck(result);
 
-            for (int i = 0; i < list.Count; i++)
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
+                    faces.UpdateFacePolylines(result, range.Item1, range.Item2));
+            else
+                faces.UpdateFacePolylines(result, 0, faces.Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void UpdateFacePolylines(this HeFaceList faces, IList<Polyline> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
             {
-                HeFace f = list[i];
+                HeFace f = faces[i];
+                if (f.IsUnused) continue;
+                result[i] = f.ToPolyline();
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static Circle[] GetFaceCircumcircles(this HeFaceList faces, bool parallel = false)
+        {
+            Circle[] result = new Circle[faces.Count];
+            faces.UpdateFaceCircumcircles(result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void UpdateFaceCircumcircles(this HeFaceList faces, IList<Circle> result, bool parallel = false)
+        {
+            faces.SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
+                    faces.UpdateFaceCircumcircles(result, range.Item1, range.Item2));
+            else
+                faces.UpdateFaceCircumcircles(result, 0, faces.Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void UpdateFaceCircumcircles(this HeFaceList faces, IList<Circle> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                HeFace f = faces[i];
                 if (f.IsUnused) continue;
 
-                HalfEdge e = f.First;
+                Halfedge he = f.First;
+                HeVertex v0 = he.Start;
+                he = he.Next;
+                HeVertex v1 = he.Start;
+                he = he.Next;
+                HeVertex v2 = he.Start;
 
-                HeVertex v0 = e.Start;
-                e = e.Next;
-                HeVertex v1 = e.Start;
-                e = e.Next;
-                HeVertex v2 = e.Start;
-               
                 result[i] = new Circle(v0.Position.ToPoint3d(), v1.Position.ToPoint3d(), v2.Position.ToPoint3d());
             }
-
-            return result;
         }
 
 
@@ -186,31 +257,43 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="xform"></param>
-        public static void Transform(this HeMesh mesh, Transform xform)
+        /// <param name="parallel"></param>
+        public static void Transform(this HeMesh mesh, Transform xform, bool parallel = false)
         {
-            HeVertexList verts = mesh.Vertices;
-
-            Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = verts[i];
-                    if (v.IsUnused) continue;
-
-                    Point3d p = xform * v.Position.ToPoint3d();
-                    v.Position = p.ToVec3d();
-                }
-            });
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, mesh.Vertices.Count), range =>
+                   mesh.Transform(xform, range.Item1, range.Item2));
+            else
+                mesh.Transform(xform, 0, mesh.Vertices.Count);
         }
 
 
         /// <summary>
-        /// TODO support different triangulation schemes for n-gons.
+        /// 
+        /// </summary>
+        private static void Transform(this HeMesh mesh, Transform xform, int i0, int i1)
+        {
+            HeVertexList verts = mesh.Vertices;
+
+            for (int i = i0; i < i1; i++)
+            {
+                HeVertex v = verts[i];
+                if (v.IsUnused) continue;
+
+                Point3d p = xform * v.Position.ToPoint3d();
+                v.Position = p.ToVec3d();
+            }
+        }
+
+
+        /// <summary>
+        /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
         public static Mesh ToRhinoMesh(this HeMesh mesh)
         {
+            // TODO support different triangulation schemes for n-gons.
             Mesh result = new Mesh();
 
             // add vertices
@@ -221,17 +304,17 @@ namespace SpatialSlur.SlurMesh
             foreach (HeFace f in mesh.Faces)
             {
                 if (f.IsUnused) continue;
-                int ne = f.CountEdges();
+                int ne = f.Degree;
 
                 if (ne == 3)
                 {
-                    HalfEdge e = f.First;
-                    result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Previous.Start.Index);
+                    Halfedge he = f.First;
+                    result.Faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Previous.Start.Index);
                 }
                 else if (ne == 4)
                 {
-                    HalfEdge e = f.First;
-                    result.Faces.AddFace(e.Start.Index, e.Next.Start.Index, e.Next.Next.Start.Index, e.Previous.Start.Index);
+                    Halfedge he = f.First;
+                    result.Faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Next.Next.Start.Index, he.Previous.Start.Index);
                 }
                 else
                 {
@@ -244,12 +327,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// TODO support different triangulation schemes for n-gons.
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
         public static Mesh ToRhinoMeshUnwelded(this HeMesh mesh)
         {
+            // TODO support different triangulation schemes for n-gons.
             Mesh result = new Mesh();
 
             // add vertices per face
@@ -278,7 +362,7 @@ namespace SpatialSlur.SlurMesh
                 }
                 else
                 {
-                    //TODO triangulate face
+                    // TODO triangulate face
                 }
             }
 

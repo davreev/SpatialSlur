@@ -23,11 +23,57 @@ namespace SpatialSlur.SlurCore
         public static U[] ConvertAll<T, U>(this IList<T> source, Func<T, U> converter)
         {
             U[] result = new U[source.Count];
+            source.ConvertAll(converter, result);
+            return result;
+        }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="converter"></param>
+        /// <param name="result"></param>
+        public static void ConvertAll<T, U>(this IList<T> source, Func<T, U> converter, IList<U> result)
+        {
             for (int i = 0; i < source.Count; i++)
                 result[i] = converter(source[i]);
+        }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public static U[] ConvertAllParallel<T, U>(this IList<T> source, Func<T, U> converter)
+        {
+            U[] result = new U[source.Count];
+            source.ConvertAllParallel(converter, result);
             return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="converter"></param>
+        /// <param name="result"></param>
+        public static void ConvertAllParallel<T, U>(this IList<T> source, Func<T, U> converter, IList<U> result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, source.Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    result[i] = converter(source[i]);
+            });
         }
 
 
@@ -39,12 +85,13 @@ namespace SpatialSlur.SlurCore
         /// <param name="value"></param>
         public static void Set<T>(this IList<T> list, T value)
         {
-            Set(list, value, 0, list.Count);
+            for (int i = 0; i < list.Count; i++)
+                list[i] = value;
         }
 
 
         /// <summary>
-        /// TODO test performance against lists of various lengths
+        /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
@@ -53,11 +100,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="length"></param>
         public static void Set<T>(this IList<T> list, T value, int index, int length)
         {
-            Parallel.ForEach(Partitioner.Create(index, index + length), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    list[i] = value;
-            });
+            for (int i = index; i < index + length; i++)
+                list[i] = value;
         }
 
 
@@ -69,25 +113,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public static void Set<T>(this IList<T> list, IList<T> other)
         {
-            Set(list, other, 0, list.Count);
-        }
-
-
-        /// <summary>
-        /// TODO test parallel performance against list length.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="other"></param>
-        /// <param name="index"></param>
-        /// <param name="length"></param>
-        public static void Set<T>(this IList<T> list, IList<T> other, int index, int length)
-        {
-            Parallel.ForEach(Partitioner.Create(index, index + length), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    list[i] = other[i];
-            });
+            for (int i = 0; i < list.Count; i++)
+                list[i] = other[i];
         }
 
 
@@ -102,11 +129,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="length"></param>
         public static void Set<T>(this IList<T> list, IList<T> other, int index, int otherIndex, int length)
         {
-            Parallel.ForEach(Partitioner.Create(0, length), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    list[index + i] = other[otherIndex + i];
-            });
+            for (int i = 0; i < length; i++)
+                list[index + i] = other[otherIndex + i];
         }
 
 
@@ -122,34 +146,30 @@ namespace SpatialSlur.SlurCore
         {
             T[] result = new T[length];
 
-            for (int i = 0, j = index; i < length; i++, j++)
-                result[i] = list[j];
+            for (int i = 0; i < length; i++)
+                result[i] = list[i + index];
 
             return result;
         }
 
 
         /// <summary>
-        /// Returns a new IList which includes any elements for which the given delegate returns true.
+        /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="include"></param>
+        /// <param name="indices"></param>
         /// <returns></returns>
-        public static T[] Compact<T>(this IList<T> list, Func<T, bool> include)
+        public static T[] Select<T>(this IList<T> list, IList<int> indices)
         {
-            int marker = 0;
+            T[] result = new T[indices.Count];
 
-            for (int i = 0; i < list.Count; i++)
-            {
-                T t = list[i];
-                if (include(t))
-                    list[marker++] = t;
-            }
+            for (int i = 0; i < indices.Count; i++)
+                result[i] = list[indices[i]];
 
-            return list.SubArray(0, marker);
+            return result;
         }
-
+      
 
         /// <summary>
         /// Swaps a pair of elements.
@@ -373,12 +393,6 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="compare"></param>
-        /// <returns></returns>
         private static int Partition<T>(this IList<T> list, int from, int to, Comparison<T> compare)
         {
             T pivot = list[from]; // get pivot element
@@ -513,17 +527,7 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="compare"></param>
-        /// <param name="items"></param>
-        /// <returns></returns>
+        //
         private static int Partition<T, U>(this IList<T> list, int from, int to, Comparison<T> compare, IList<U> items)
         {
             T pivot = list[from]; // get pivot element

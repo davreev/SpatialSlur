@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurData;
+
+/*
+ * Notes
+ * 
+ */ 
 
 namespace SpatialSlur.SlurCore
 {
@@ -14,15 +20,6 @@ namespace SpatialSlur.SlurCore
     public struct Vec3d
     {
         #region Static
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec3d Zero
-        {
-            get { return new Vec3d(0.0, 0.0, 0.0); }
-        }
-
 
         /// <summary>
         /// 
@@ -174,6 +171,34 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec3d Slerp(Vec3d v0, Vec3d v1, double t)
+        {
+            return Slerp(v0, v1, Vec3d.Angle(v0, v1), t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="theta"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec3d Slerp(Vec3d v0, Vec3d v1, double theta, double t)
+        {
+            double st = 1.0 / Math.Sin(theta);
+            return v0 * (Math.Sin((1.0 - t) * theta) * st) + v1 * (Math.Sin(t * theta) * st);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
         public static double Dot(Vec3d v0, Vec3d v1)
         {
@@ -189,39 +214,64 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d Cross(Vec3d v0, Vec3d v1)
         {
-            double x = v0.y * v1.z - v0.z * v1.y;
-            double y = v0.z * v1.x - v0.x * v1.z;
-            double z = v0.x * v1.y - v0.y * v1.x;
-            return new Vec3d(x, y, z);
+            return new Vec3d(
+                v0.y * v1.z - v0.z * v1.y,
+                v0.z * v1.x - v0.x * v1.z,
+                v0.x * v1.y - v0.y * v1.x);
         }
 
 
         /// <summary>
-        /// returns the angle between two vectors
-        /// returns NaN if either vector is zero length
+        /// Returns the angle between two vectors.
+        /// If either vector is zero length, Double.NaN is returned.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
         public static double Angle(Vec3d v0, Vec3d v1)
         {
-            if (v0.Unitize() && v1.Unitize()) 
-                return Math.Acos(v0 * v1);
+            double d = v0.Length * v1.Length;
+
+            if (d > 0.0)
+                return Math.Acos(SlurMath.Clamp(v0 * v1 / d, -1.0, 1.0)); // clamp dot product to remove noise
 
             return Double.NaN;
         }
 
 
         /// <summary>
-        /// Reflects v0 about v1
+        /// Returns the projection of v0 onto v1.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec3d Project(Vec3d v0, Vec3d v1)
+        {
+            return (v0 * v1) / v1.SquareLength * v1;
+        }
+
+
+        /// <summary>
+        /// Returns the perpendicular component of v0 with respect to v1.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec3d Perp(Vec3d v0, Vec3d v1)
+        {
+            return v0 - Project(v0, v1);
+        }
+
+
+        /// <summary>
+        /// Returns v0 relected about v1.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec3d Reflect(Vec3d v0, Vec3d v1)
         {
-            v1.Unitize();
-            return v1 * (v0 * v1 * 2.0) - v0;
+            return Project(v0, v1) * 2.0 - v0;
         }
 
 
@@ -314,15 +364,16 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// For each point, returns the index of the first encountered coincident point within the list. If no coincident point is found, -1 is returned.
+        /// For each point, returns the index of the first coincident point within the list. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <param name="points"></param>
         /// <param name="epsilon"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetCoincident(IList<Vec3d> points, double epsilon)
+        public static int[] GetCoincident(IList<Vec3d> points, double epsilon, bool parallel = false)
         {
             SpatialHash3d<int> hash;
-            return GetCoincident(points, epsilon, out hash);
+            return GetCoincident(points, epsilon, out hash, parallel);
         }
 
 
@@ -332,8 +383,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="epsilon"></param>
         /// <param name="hash"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetCoincident(IList<Vec3d> points, double epsilon, out SpatialHash3d<int> hash)
+        public static int[] GetCoincident(IList<Vec3d> points, double epsilon, out SpatialHash3d<int> hash, bool parallel = false)
         {
             int n = points.Count;
             int[] result = new int[n];
@@ -343,34 +395,50 @@ namespace SpatialSlur.SlurCore
             for (int i = 0; i < n; i++)
                 hash.Insert(points[i], i);
 
-            // search for collisions
+            // search for collisions (threadsafe)
+            if (parallel)
+            {
+                var temp = hash; // can't use out parameter in lambda statement below
+                Parallel.ForEach(Partitioner.Create(0, n), range =>
+                    GetCoincident(points, epsilon, temp, result, range.Item1, range.Item2));
+            }
+            else
+                GetCoincident(points, epsilon, hash, result, 0, n);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetCoincident(IList<Vec3d> points, double epsilon, SpatialHash3d<int> hash, IList<int> result, int i0, int i1)
+        {
             List<int> foundIds = new List<int>();
             Vec3d offset = new Vec3d(epsilon, epsilon, epsilon);
 
-            for (int i = 0; i < n; i++)
+            for (int i = i0; i < i1; i++)
             {
                 Vec3d p = points[i];
                 hash.Search(new Domain3d(p - offset, p + offset), foundIds);
 
                 int coinId = -1;
-                foreach(int j in foundIds)
+                foreach (int j in foundIds)
                 {
                     if (j == i) continue; // ignore self coincidence
 
-                    if (p.Equals(points[j],epsilon))
+                    if (p.Equals(points[j], epsilon))
                     {
                         coinId = j;
                         break;
                     }
                 }
-                foundIds.Clear();
 
                 result[i] = coinId;
+                foundIds.Clear();
             }
-
-            return result;
         }
-
+        
 
         /// <summary>
         /// For each point in A, returns the index of the first encountered coincident point in B. If no coincident point is found, -1 is returned.
@@ -378,11 +446,12 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="epsilon"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetCoincident(IList<Vec3d> pointsA, IList<Vec3d> pointsB, double epsilon)
+        public static int[] GetCoincident(IList<Vec3d> pointsA, IList<Vec3d> pointsB, double epsilon, bool parallel = false)
         {
             SpatialHash3d<int> hash;
-            return GetCoincident(pointsA, pointsB, epsilon, out hash);
+            return GetCoincident(pointsA, pointsB, epsilon, out hash, parallel);
         }
 
 
@@ -393,8 +462,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="epsilon"></param>
         /// <param name="hash"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetCoincident(IList<Vec3d> pointsA, IList<Vec3d> pointsB, double epsilon, out SpatialHash3d<int> hash)
+        public static int[] GetCoincident(IList<Vec3d> pointsA, IList<Vec3d> pointsB, double epsilon, out SpatialHash3d<int> hash, bool parallel = false)
         {
             int nA = pointsA.Count;
             int nB = pointsB.Count;
@@ -405,34 +475,49 @@ namespace SpatialSlur.SlurCore
             for (int i = 0; i < nB; i++)
                 hash.Insert(pointsB[i], i);
 
-            // search for collisions
+            // search for collisions (threadsafe)
+            if (parallel)
+            {
+                var temp = hash; // can't use out parameter in lambda statement below
+                Parallel.ForEach(Partitioner.Create(0, nA), range =>
+                    GetCoincident(pointsA, pointsB, epsilon, temp, result, range.Item1, range.Item2));
+            }
+            else
+                GetCoincident(pointsA, pointsB, epsilon, hash, result, 0, nA);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetCoincident(IList<Vec3d> pointsA, IList<Vec3d> pointsB, double epsilon, SpatialHash3d<int> hash, IList<int> result, int i0, int i1)
+        {
             List<int> foundIds = new List<int>();
             Vec3d offset = new Vec3d(epsilon, epsilon, epsilon);
 
-            for (int i = 0; i < nA; i++)
+            for (int i = i0; i < i1; i++)
             {
-                Vec3d pA = pointsA[i];
-                hash.Search(new Domain3d(pA - offset, pA + offset), foundIds);
+                Vec3d p = pointsA[i];
+                hash.Search(new Domain3d(p - offset, p + offset), foundIds);
 
                 int coinId = -1;
-                foreach(int j in foundIds)
+                foreach (int j in foundIds)
                 {
-                    if (pA.Equals(pointsB[j], epsilon))
+                    if (p.Equals(pointsB[j], epsilon))
                     {
                         coinId = j;
                         break;
                     }
                 }
-                foundIds.Clear();
 
                 result[i] = coinId;
+                foundIds.Clear();
             }
-
-            return result;
         }
 
         #endregion
-
 
         public double x, y, z;
 
@@ -482,20 +567,50 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// returns the largest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public double Max
+        {
+            get { return Math.Max(x, Math.Max(y, z)); }
+        }
+
+
+        /// <summary>
+        /// returns the smallest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public double Min
+        {
+            get { return Math.Min(x, Math.Min(y, z)); }
+        }
+
+        
+        /// <summary>
         /// 
         /// </summary>
-        public bool IsZero
+        /// <returns></returns>
+        public Vec3d Abs
         {
-            get { return x == 0.0 && y == 0.0 && z == 0.0; }
+            get{return new Vec3d(Math.Abs(x), Math.Abs(y), Math.Abs(z));}
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit
+        public bool IsZero(double epsilon)
         {
-            get { return SquareLength == 1.0; }
+            return (Math.Abs(x) < epsilon) && (Math.Abs(y) < epsilon) && (Math.Abs(z) < epsilon);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsUnit(double epsilon)
+        {
+            return Math.Abs(SquareLength - 1.0) < epsilon;
         }
 
 
@@ -608,7 +723,8 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns false if the vector is zero length
+        /// Unitizes the vector in place.
+        /// Returns false if the vector is zero length.
         /// </summary>
         public bool Unitize()
         {
@@ -624,36 +740,5 @@ namespace SpatialSlur.SlurCore
 
             return false;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public Vec3d Abs()
-        {
-            return new Vec3d(Math.Abs(x), Math.Abs(y), Math.Abs(z));
-        }
-
-
-        /// <summary>
-        /// returns the largest component in the vector
-        /// </summary>
-        /// <returns></returns>
-        public double Max()
-        {
-            return Math.Max(x, Math.Max(y, z));
-        }
-
-
-        /// <summary>
-        /// returns the smallest component in the vector
-        /// </summary>
-        /// <returns></returns>
-        public double Min()
-        {
-            return Math.Min(x, Math.Min(y, z));
-        }
-
     }
 }

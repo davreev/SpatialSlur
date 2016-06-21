@@ -11,10 +11,11 @@ namespace SpatialSlur.SlurCore
     /// </summary>
     public static class SlurMath
     {
-        public const double PI2 = Math.PI * 2.0;
+        public const double Tau = Math.PI * 2.0;
         public const double HalfPI = Math.PI * 0.5;
+        public const double InvPI = 1.0 / Math.PI;
 
-        
+    
         /// <summary>
         /// 
         /// </summary>
@@ -259,14 +260,14 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Wraps t to range.
+        /// 
         /// </summary>
-        /// <param name="t"></param>
-        /// <param name="range"></param>
+        /// <param name="a"></param>
+        /// <param name="n"></param>
         /// <returns></returns>
-        public static double Mod(double t, double range)
+        public static double Mod(double a, double n)
         {
-            return t - Math.Floor(t / range) * range;
+            return a - Math.Floor(a / n) * n;
         }
 
 
@@ -284,30 +285,28 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Wraps t to range.
+        /// 
         /// </summary>
-        /// <param name="t"></param>
-        /// <param name="range"></param>
+        /// <param name="a"></param>
+        /// <param name="n"></param>
         /// <returns></returns>
-        public static int Mod(int t, int range)
+        public static int Mod(int a, int n)
         {
-            t %= range;
-            if ((t < 0 && range > 0 ) || (t > 0 && range < 0)) t += range;
-            return t;
+            a %= n;
+            return (a * n < 0)? a + n : a;
         }
 
 
         /// <summary>
-        /// Wraps t to range. Assumes that the range is positive to save a few ticks.
+        /// Assumes that the divisor (n) is positive to save a few ticks.
         /// </summary>
-        /// <param name="t"></param>
-        /// <param name="range"></param>
+        /// <param name="a"></param>
+        /// <param name="n"></param>
         /// <returns></returns>
-        public static int Mod2(int t, int range)
+        public static int Mod2(int a, int n)
         {
-            t %= range;
-            if (t < 0) t += range;
-            return t;
+            a %= n;
+            return (a < 0) ? a + n : a;
         }
 
 
@@ -339,50 +338,24 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static double SmoothStep(double t)
-        {
-            return t * t * (3.0 - 2.0 * t);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <param name="t"></param>
         /// <returns></returns>
         public static double SmoothStep(double t, double t0, double t1)
         {
-            t = Saturate(Normalize(t, t0, t1));
-            return SmoothStep(t);
+            return HermiteC1(Saturate(Normalize(t, t0, t1)));
         }
 
 
         /// <summary>
-        /// 
+        /// Assumes 0 and 1 for t0 and t1 respectively
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static double SmootherStep(double t)
+        public static double SmoothStep(double t)
         {
-            return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static double SmootherStep(double t, double t0, double t1)
-        {
-            t = Saturate(Normalize(t, t0, t1));
-            return SmootherStep(t);
+            return HermiteC1(Saturate(t));
         }
 
 
@@ -408,7 +381,53 @@ namespace SpatialSlur.SlurCore
         {
             t = Math.Abs(t - center);
             if (t > width) return 0.0;
-            return SmoothStep(1.0 - t / width);
+            return HermiteC1(1.0 - t / width);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static double SmootherStep(double t, double t0, double t1)
+        {
+            return HermiteC2(Saturate(Normalize(t, t0, t1)));
+        }
+
+
+        /// <summary>
+        /// Assumes 0 and 1 for t0 and t1 respectively
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static double SmootherStep(double t)
+        {
+            return HermiteC2(Saturate(t));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static double HermiteC1(double t)
+        {
+            return t * t * (3.0 - 2.0 * t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static double HermiteC2(double t)
+        {
+            return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
         }
 
 
@@ -434,7 +453,7 @@ namespace SpatialSlur.SlurCore
         {
             t = Math.Abs(t - center);
             if (t > width) return 0.0;
-            return SmootherStep(1.0 - t / width);
+            return HermiteC2(1.0 - t / width);
         }
 
 
@@ -493,5 +512,40 @@ namespace SpatialSlur.SlurCore
         {
             return 1.0 / Math.Tan(x);
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static double Sigmoid(double t)
+        {
+            return 1.0 / (1.0 + Math.Exp(t));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="radians"></param>
+        /// <returns></returns>
+        public static double ToDegrees(double radians)
+        {
+            return radians * _toDeg;
+        }
+        private static readonly double _toDeg = 180.0 / Math.PI;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="degrees"></param>
+        /// <returns></returns>
+        public static double ToRadians(double degrees)
+        {
+            return degrees * _toRad;
+        }
+        private static readonly double _toRad = Math.PI / 180.0;
     }
 }

@@ -26,10 +26,8 @@ namespace SpatialSlur.SlurField
         private static readonly double Skew3 = 1.0 / 3.0;
         private static readonly double Unskew3 = 1.0 / 6.0;
 
-
          // permutation table
         private static readonly int[] _perm = new int[256];
-
 
         // 2d gradient table
         private static readonly double[][] _grad2 = 
@@ -43,7 +41,6 @@ namespace SpatialSlur.SlurField
           new double[]{0, 1},
           new double[]{0, -1},
         };
-
 
         // 3d gradient table
         private static readonly double[][] _grad3 = 
@@ -64,7 +61,7 @@ namespace SpatialSlur.SlurField
 
      
         /// <summary>
-        /// static constructor initializes default permutation table
+        ///
         /// </summary>
         static SimplexNoise()
         {
@@ -74,7 +71,6 @@ namespace SpatialSlur.SlurField
 
         /// <summary>
         /// Sets the permutation table.
-        /// By default the table is set to seed 0.
         /// </summary>
         /// <param name="seed"></param>
         public static void SetPermutation(int seed)
@@ -98,7 +94,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns noise value at given coordinates
+        /// Returns the noise value at the given coordinates.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -114,7 +110,7 @@ namespace SpatialSlur.SlurField
             t = (i + j) * Unskew2;
             double x0 = x - i + t;
             double y0 = y - j + t;
-            int g0 = ToGradIndex(i, j);
+            int g0 = ToIndex(i, j);
 
             // get offset and gradient index for the second corner (depends on which simplex the point lies in)
             double x1, y1;
@@ -124,21 +120,21 @@ namespace SpatialSlur.SlurField
                 // point is in the 1st simplex
                 x1 = x0 - 1.0 + Unskew2;
                 y1 = y0 + Unskew2;
-                g1 = ToGradIndex(i + 1, j);
+                g1 = ToIndex(i + 1, j);
             }
             else
             {
                 // point is in the 2nd simplex
                 x1 = x0 + Unskew2;
                 y1 = y0 - 1.0 + Unskew2;
-                g1 = ToGradIndex(i, j + 1);
+                g1 = ToIndex(i, j + 1);
             }
 
             // get offset and gradient index for third corner
             t = 2.0 * Unskew2 - 1.0;
             double x2 = x0 + t;
             double y2 = y0 + t;
-            int g2 = ToGradIndex(i + 1, j + 1);
+            int g2 = ToIndex(i + 1, j + 1);
 
             double n0, n1, n2;
 
@@ -187,7 +183,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns noise value at given coordinates
+        /// Returns the noise value at the given coordinates.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -206,7 +202,7 @@ namespace SpatialSlur.SlurField
             double x0 = x - i + t;
             double y0 = y - j + t;
             double z0 = z - k + t;
-            int g0 = ToGradIndex(i, j, k);
+            int g0 = ToIndex(i, j, k);
 
             // get gradient table indices and offsets for second and third corner (depends on which simplex the point lies in)
             double x1, y1, z1, x2, y2, z2;
@@ -221,12 +217,12 @@ namespace SpatialSlur.SlurField
                     x1 = x0 - 1.0 + Unskew3;
                     y1 = y0 + Unskew3;
                     z1 = z0 + Unskew3;
-                    g1 = ToGradIndex(i + 1, j, k);
+                    g1 = ToIndex(i + 1, j, k);
 
                     x2 = x0 - 1.0 + t;
                     y2 = y0 - 1.0 + t;
                     z2 = z0 + t;
-                    g2 = ToGradIndex(i + 1, j + 1, k);
+                    g2 = ToIndex(i + 1, j + 1, k);
                 }
                 else if (z0 < x0)
                 {
@@ -234,12 +230,12 @@ namespace SpatialSlur.SlurField
                     x1 = x0 - 1.0 + Unskew3;
                     y1 = y0 + Unskew3;
                     z1 = z0 + Unskew3;
-                    g1 = ToGradIndex(i + 1, j, k);
+                    g1 = ToIndex(i + 1, j, k);
 
                     x2 = x0 - 1.0 + t;
                     y2 = y0 + t;
                     z2 = z0 - 1.0 + t;
-                    g2 = ToGradIndex(i + 1, j, k + 1);
+                    g2 = ToIndex(i + 1, j, k + 1);
                 }
                 else
                 {
@@ -247,12 +243,12 @@ namespace SpatialSlur.SlurField
                     x1 = x0 + Unskew3;
                     y1 = y0 + Unskew3;
                     z1 = z0 - 1.0 + Unskew3;
-                    g1 = ToGradIndex(i, j, k + 1);
+                    g1 = ToIndex(i, j, k + 1);
 
                     x2 = x0 - 1.0 + t;
                     y2 = y0 + t;
                     z2 = z0 - 1.0 + t;
-                    g2 = ToGradIndex(i + 1, j, k + 1);
+                    g2 = ToIndex(i + 1, j, k + 1);
                 }
             }
             else
@@ -263,12 +259,12 @@ namespace SpatialSlur.SlurField
                     x1 = x0 + Unskew3;
                     y1 = y0 + Unskew3;
                     z1 = z0 - 1.0 + Unskew3;
-                    g1 = ToGradIndex(i, j, k + 1);
+                    g1 = ToIndex(i, j, k + 1);
 
                     x2 = x0 + t;
                     y2 = y0 - 1.0 + t;
                     z2 = z0 - 1.0 + t;
-                    g2 = ToGradIndex(i, j + 1, k + 1);
+                    g2 = ToIndex(i, j + 1, k + 1);
                 }
                 else if (x0 < z0)
                 {
@@ -276,12 +272,12 @@ namespace SpatialSlur.SlurField
                     x1 = x0 + Unskew3;
                     y1 = y0 - 1.0 + Unskew3;
                     z1 = z0 + Unskew3;
-                    g1 = ToGradIndex(i, j + 1, k);
+                    g1 = ToIndex(i, j + 1, k);
 
                     x2 = x0 + t;
                     y2 = y0 - 1.0 + t;
                     z2 = z0 - 1.0 + t;
-                    g2 = ToGradIndex(i, j + 1, k + 1);
+                    g2 = ToIndex(i, j + 1, k + 1);
                 }
                 else
                 {
@@ -289,12 +285,12 @@ namespace SpatialSlur.SlurField
                     x1 = x0 + Unskew3;
                     y1 = y0 - 1.0 + Unskew3;
                     z1 = z0 + Unskew3;
-                    g1 = ToGradIndex(i, j + 1, k);
+                    g1 = ToIndex(i, j + 1, k);
 
                     x2 = x0 - 1.0 + t;
                     y2 = y0 - 1.0 + t;
                     z2 = z0 + t;
-                    g2 = ToGradIndex(i + 1, j + 1, k);
+                    g2 = ToIndex(i + 1, j + 1, k);
                 }
             }
 
@@ -303,7 +299,7 @@ namespace SpatialSlur.SlurField
             double x3 = x0 + t;
             double y3 = y0 + t;
             double z3 = z0 + t;
-            int g3 = ToGradIndex(i + 1, j + 1, k + 1);
+            int g3 = ToIndex(i + 1, j + 1, k + 1);
 
             // calculate noise contributions from each corner
             double n0, n1, n2, n3;
@@ -350,65 +346,38 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns gradient table index at given coordinates
+        /// Returns the gradient table index for the given coordinates.
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <returns></returns>
-        private static int ToGradIndex(int i, int j)
+        private static int ToIndex(int i, int j)
         {
-            return PermAt(i + PermAt(j)) & 7;
+            return _perm[(i + _perm[j & 255]) & 255] & 7;
         }
 
 
         /// <summary>
-        /// returns gradient table index at given coordinates
+        /// Returns the gradient table index for the given coordinates.
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        private static int ToGradIndex(int i, int j, int k)
+        private static int ToIndex(int i, int j, int k)
         {
-            return PermAt(i + PermAt(j + PermAt(k))) % 12;
+            return _perm[(i + _perm[(j + _perm[k & 255]) & 255]) & 255] % 12;
         }
 
 
         /// <summary>
-        /// returns permutation at wrapped index
+        /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        private static int PermAt(int index)
+        private static double Dot(double[] vec, double x, double y)
         {
-            return _perm[index & 255]; // bitwise wrapping
+            return vec[0] * x + vec[1] * y;
         }
 
 
         /// <summary>
-        /// custom dot product for compatibility with gradient table
+        /// 
         /// </summary>
-        /// <param name="xy"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        private static double Dot(double[] xy, double x, double y)
+        private static double Dot(double[] vec, double x, double y, double z)
         {
-            return xy[0] * x + xy[1] * y;
-        }
-
-
-        /// <summary>
-        /// custom dot product for compatibility with gradient table
-        /// </summary>
-        /// <param name="xyz"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <returns></returns>
-        private static double Dot(double[] xyz, double x, double y, double z)
-        {
-            return xyz[0] * x + xyz[1] * y + xyz[2] * z;
+            return vec[0] * x + vec[1] * y + vec[2] * z;
         }
     }
 }

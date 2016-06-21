@@ -62,7 +62,7 @@ namespace SpatialSlur.SlurField
             : base(other, duplicateMesh)
         {
             _deltas = new double[Count];
-            _deltas.Set(other._deltas);
+            Array.Copy(other._deltas, _deltas, Count);
         }
 
 
@@ -75,76 +75,133 @@ namespace SpatialSlur.SlurField
         }
 
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public void Set(DynamicMeshScalarField other)
+        {
+            base.Set(other);
+            Array.Copy(other._deltas, _deltas, Count);
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="timeStep"></param>
-        public void Update(double timeStep)
+        /// <param name="parallel"></param>
+        public void Update(double timeStep, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    {
+                        for (int i = range.Item1; i < range.Item2; i++)
+                        {
+                            Values[i] += _deltas[i] * timeStep;
+                            _deltas[i] = 0.0;
+                        }
+                    });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                 {
                     Values[i] += _deltas[i] * timeStep;
                     _deltas[i] = 0.0;
                 }
-            });
+            }
         }
 
 
         /// <summary>
-        /// Uses a normalized umbrella weighting scheme (Tutte scheme)
+        /// Adds the Laplacian of the field to the delta array. 
+        /// The Laplacian is calculated with a normalized umbrella weighting scheme (Tutte scheme).
         /// http://www.cs.princeton.edu/courses/archive/fall10/cos526/papers/sorkine05.pdf
         /// http://www.igl.ethz.ch/projects/Laplacian-mesh-processing/Laplacian-mesh-optimization/lmo.pdf
         /// </summary>
         /// <param name="rate"></param>
-        public void Diffuse(double rate)
+        /// <param name="parallel"></param>
+        public void Diffuse(double rate, bool parallel = false)
         {
-            HeVertexList verts = Mesh.Vertices;
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    double sum = 0.0;
-                    int n = 0;
-
-                    foreach (HalfEdge e in verts[i].IncomingHalfEdges)
-                    {
-                        sum += Values[e.Start.Index];
-                        n++;
-                    }
-
-                    _deltas[i] += (sum / n - Values[i]) * rate;
-                }
-            });
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    Diffuse(rate, range.Item1, range.Item2));
+            else
+                Diffuse(rate, 0, Count);
         }
 
 
         /// <summary>
-        /// Uses a user defined weighting scheme
+        /// 
+        /// </summary>
+        /// <param name="rate"></param>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        private void Diffuse(double rate, int i0, int i1)
+        {
+            HeVertexList verts = Mesh.Vertices;
+
+            for (int i = i0; i < i1; i++)
+            {
+                double sum = 0.0;
+                int n = 0;
+
+                foreach (Halfedge he in verts[i].IncomingHalfedges)
+                {
+                    sum += Values[he.Start.Index];
+                    n++;
+                }
+
+                _deltas[i] += (sum / n - Values[i]) * rate;
+            }
+        }
+
+
+        /// <summary>
+        /// Adds the Laplacian of the field to the delta array. 
+        /// The Laplacian is calculated with a user-defined weighting scheme.
         /// http://www.cs.princeton.edu/courses/archive/fall10/cos526/papers/sorkine05.pdf
         /// http://www.igl.ethz.ch/projects/Laplacian-mesh-processing/Laplacian-mesh-optimization/lmo.pdf
         /// </summary>
         /// <param name="rate"></param>
-        /// <param name="halfEdgeWeights"></param>
-        public void Diffuse(double rate, IList<double> halfEdgeWeights)
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="parallel"></param>
+        public void Diffuse(double rate, IList<double> halfedgeWeights, bool parallel = false)
         {
-            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
+            Mesh.Halfedges.SizeCheck(halfedgeWeights);
 
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    Diffuse(rate, halfedgeWeights, range.Item1, range.Item2));
+            else
+                Diffuse(rate, halfedgeWeights, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rate"></param>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        private void Diffuse(double rate, IList<double> halfedgeWeights, int i0, int i1)
+        {
             HeVertexList verts = Mesh.Vertices;
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+
+            for (int i = i0; i < i1; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    double value = Values[i];
-                    double sum = 0.0;
+                double value = Values[i];
+                double sum = 0.0;
 
-                    foreach (HalfEdge e in verts[i].OutgoingHalfEdges)
-                        sum += (Values[e.End.Index] - value) * halfEdgeWeights[e.Index];
+                foreach (Halfedge he in verts[i].OutgoingHalfedges)
+                    sum += (Values[he.End.Index] - value) * halfedgeWeights[he.Index];
 
-                    _deltas[i] += sum * rate;
-                }
-            });
+                _deltas[i] += sum * rate;
+            }
         }
 
 
@@ -152,13 +209,22 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="amount"></param>
-        public void Deposit(double amount)
+        /// <param name="parallel"></param>
+        public void Deposit(double amount, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if(parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _deltas[i] += amount;
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     _deltas[i] += amount;
-            });
+            }
         }
 
 
@@ -167,13 +233,22 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="target"></param>
         /// <param name="rate"></param>
-        public void Deposit(double target, double rate)
+        /// <param name="parallel"></param>
+        public void Deposit(double target, double rate, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _deltas[i] += (target - Values[i]) * rate;
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     _deltas[i] += (target - Values[i]) * rate;
-            });
+            }
         }
 
 
@@ -181,13 +256,22 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="rate"></param>
-        public void Decay(double rate)
+        /// <param name="parallel"></param>
+        public void Decay(double rate, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _deltas[i] -= Values[i] * rate;
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     _deltas[i] -= Values[i] * rate;
-            });
+            }
         }
 
 
@@ -196,18 +280,33 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="thresh"></param>
         /// <param name="rate"></param>
-        public void Bifurcate(double thresh, double rate)
+        /// <param name="parallel"></param>
+        public void Bifurcate(double thresh, double rate, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    Bifurcate(thresh, rate, range.Item1, range.Item2));
+            else
+                Bifurcate(thresh, rate, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="thresh"></param>
+        /// <param name="rate"></param>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        private void Bifurcate(double thresh, double rate, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    if (Values[i] > thresh)
-                        _deltas[i] += (1.0 - Values[i]) * rate;
-                    else if (Values[i] < thresh)
-                        _deltas[i] -= Values[i] * rate;
-                }
-            });
+                if (Values[i] > thresh)
+                    _deltas[i] += (1.0 - Values[i]) * rate;
+                else if (Values[i] < thresh)
+                    _deltas[i] -= Values[i] * rate;
+            }
         }
 
 

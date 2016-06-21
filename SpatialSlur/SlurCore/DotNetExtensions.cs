@@ -172,5 +172,30 @@ namespace SpatialSlur.SlurCore
 
             list.RemoveRange(marker, list.Count - marker); // trim list to include only used elements
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        public static void Fill<T>(this List<T> list)
+        {
+            while (list.Count < list.Capacity)
+                list.Add(default(T));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="value"></param>
+        public static void Fill<T>(this List<T> list, T value)
+        {
+            while (list.Count < list.Capacity)
+                list.Add(value);
+        }
     }
 }

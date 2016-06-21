@@ -7,6 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
@@ -18,35 +22,82 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        internal HeFaceList(HeMesh mesh)
-            : base(mesh)
+        internal HeFaceList(HeMesh mesh, int capacity = 2)
+            : base(mesh, capacity)
         {
+        }
+     
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vi0"></param>
+        /// <param name="vi1"></param>
+        /// <param name="vi2"></param>
+        /// <returns></returns>
+        public HeFace Add(int vi0, int vi1, int vi2)
+        {
+            return Add(new int[] { vi0, vi1, vi2 });
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="capacity"></param>
-        internal HeFaceList(HeMesh mesh, int capacity)
-            : base(mesh, capacity)
+        /// <param name="vi0"></param>
+        /// <param name="vi1"></param>
+        /// <param name="vi2"></param>
+        /// <param name="vi3"></param>
+        /// <returns></returns>
+        public HeFace Add(int vi0, int vi1, int vi2, int vi3)
         {
+            return Add(new int[] { vi0, vi1, vi2, vi3 });
         }
 
 
         /// <summary>
         /// Adds a new face to the mesh.
         /// </summary>
+        /// <param name="vertexIndices"></param>
+        /// <returns></returns>
+        public HeFace Add(IList<int> vertexIndices)
+        {
+            int n = vertexIndices.Count;
+            if (n < 3) return null; // no degenerate faces allowed
+
+            HeVertex[] fv = new HeVertex[n];
+            var verts = Mesh.Vertices;
+            int currTag = verts.NextTag;
+     
+            // collect and validate vertices
+            for (int i = 0; i < n; i++)
+            {
+                var v = verts[vertexIndices[i]];
+
+                // vertex must be unused or on the mesh boundary
+                if (!(v.IsUnused || v.IsBoundary)) return null;
+
+                // prevents creation of faces non-manifold faces (those which use the same vertex more than once)
+                if (v.Tag == currTag) return null;
+                v.Tag = currTag;
+
+                fv[i] = v;
+            }
+
+            return AddImpl(fv);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <param name="v2"></param>
         /// <returns></returns>
-        public HeFace Add(int v0, int v1, int v2)
+        public HeFace Add(HeVertex v0, HeVertex v1, HeVertex v2)
         {
-            HeVertexList verts = Mesh.Vertices;
-            return Add(new HeVertex[] { verts[v0], verts[v1], verts[v2]});
+            return Add(new HeVertex[] { v0, v1, v2 });
         }
 
 
@@ -58,64 +109,72 @@ namespace SpatialSlur.SlurMesh
         /// <param name="v2"></param>
         /// <param name="v3"></param>
         /// <returns></returns>
-        public HeFace Add(int v0, int v1, int v2, int v3)
+        public HeFace Add(HeVertex v0, HeVertex v1, HeVertex v2, HeVertex v3)
         {
-            HeVertexList verts = Mesh.Vertices;
-            return Add(new HeVertex[] { verts[v0], verts[v1], verts[v2], verts[v3]});
+            return Add(new HeVertex[] { v0, v1, v2, v3});
         }
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <returns></returns>
-        public HeFace Add(IList<int> indices)
-        {
-            HeVertexList verts = Mesh.Vertices;
-            HeVertex[] fv = new HeVertex[indices.Count];
-
-            for (int i = 0; i < indices.Count; i++)
-                fv[i] = verts[indices[i]];
-
-            return Add(fv);
-        }
-
-
-        /// <summary>
-        /// 
+        /// Adds a new face to the mesh.
         /// </summary>
         /// <param name="vertices"></param>
-        private HeFace Add(IList<HeVertex> vertices)
+        /// <returns></returns>
+        public HeFace Add(IList<HeVertex> vertices)
+        {
+            if (vertices.Count < 3) return null; // no degenerate faces allowed
+            var verts = Mesh.Vertices;
+            int currTag = verts.NextTag;
+            
+            // validate vertices
+            foreach (HeVertex v in vertices)
+            {
+                verts.OwnsCheck(v);
+
+                // vertex must be unused or on the mesh boundary
+                if (!(v.IsUnused || v.IsBoundary)) return null;
+
+                // prevents creation of faces non-manifold faces (those which use the same vertex more than once)
+                if (v.Tag == currTag) return null;
+                v.Tag = currTag;
+            }
+         
+            return AddImpl(vertices);
+        }
+
+  
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// http://pointclouds.org/blog/nvcs/martin/index.php
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        internal HeFace AddImpl(IList<HeVertex> vertices)
         {
             int n = vertices.Count;
-            if (n < 3) return null; // don't allow degenerate faces
+            Halfedge[] faceLoop = new Halfedge[n];
 
-            // collect all existing half-edges in the new face
-            HalfEdge[] faceLoop = new HalfEdge[n];
+            // collect all existing halfedges in the new face
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
 
-                // all vertices must be unused or on boundary
                 HeVertex v = vertices[i];
-                if (!(v.IsUnused || v.IsBoundary)) return null; 
-
-                // search for an existing half-edge between consecutive vertices
-                HalfEdge e = v.FindHalfEdgeTo(vertices[j]); 
-
-                // if the edge does exist, it can't already have a face
-                if (e == null)
+                if (v.IsUnused) continue;
+                Halfedge he = v.FindHalfedgeTo(vertices[j]); // search for an existing halfedge between consecutive vertices
+     
+                // if halfedge does exist, it can't have a face
+                if (he == null)
                     continue;
-                else if (e.Face == null)
-                    faceLoop[i] = e;
-                else
+                else if (he.Face == null) 
+                    faceLoop[i] = he; 
+                else 
                     return null;
             }
 
             /*
             // avoids creation of non-manifold vertices
-            // if two consecutive new half-edges share a used vertex then that vertex will be non-manifold upon adding the face
+            // if two consecutive new halfedges share a used vertex then that vertex will be non-manifold upon adding the face
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
@@ -124,97 +183,136 @@ namespace SpatialSlur.SlurMesh
             }
             */
 
-            // create any missing half-edge pairs in the face loop and assign the new face
-            HeFace result = new HeFace();
+            HeFace newFace = new HeFace();
+            Add(newFace); // add face to list
+            var hedges = Mesh.Halfedges;
+
+            // create any missing halfedge pairs in the face loop and assign the new face
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
-                HalfEdge e = faceLoop[i];
+                Halfedge he = faceLoop[i];
 
-                // if missing a half-edge, add a pair between consecutive vertices
-                if (e == null)
+                // if missing a halfedge, add a pair between consecutive vertices
+                if (he == null)
                 {
-                    e = Mesh.HalfEdges.AddPair(vertices[i], vertices[j]);
-                    faceLoop[i] = e;
+                    he = hedges.AddPair(vertices[i], vertices[j]);
+                    faceLoop[i] = he;
                 }
 
-                e.Face = result; // assign the new face
+                he.Face = newFace; // assign the new face
             }
 
-            // link consecutive half-edges
+            // link consecutive halfedges
             for (int i = 0, j = 1; i < n; i++, j++)
             {
                 if (j == n) j = 0; // wrap j
-                HalfEdge e0 = faceLoop[i];
-                HalfEdge e1 = faceLoop[j];
-                HeVertex v0 = e0.Start;
-                HeVertex v1 = e1.Start;
+                Halfedge he0 = faceLoop[i];
+                Halfedge he1 = faceLoop[j];
 
-                // check if half-edges are newly created
-                // new half-edges will have null previous or next refs
+                Halfedge he2 = he0.Next;
+                Halfedge he3 = he1.Previous;
+                Halfedge he4 = he0.Twin;
+
+                HeVertex v0 = he0.Start;
+                HeVertex v1 = he1.Start;
+
+                // check if halfedges are newly created
+                // new halfedges will have null previous or next refs
                 int mask = 0;
-                if (e0.Next == null) mask |= 1; // e0 is new
-                if (e1.Previous == null) mask |= 2; // e1 is new
+                if (he2 == null) mask |= 1; // e0 is new
+                if (he3 == null) mask |= 2; // e1 is new
 
-                if (mask == 0)
+                // 0 - neither halfedge is new
+                // 1 - he0 is new, he1 is old
+                // 2 - he1 is new, he0 is old
+                // 3 - both halfedges are new
+                switch (mask)
                 {
-                    // neither half-edge is new
-                    // if the two existing half-edges aren't consecutive, then deal with non-manifold vertex as per http://www.pointclouds.org/blog/nvcs/
-                    // otherwise, update the first half-edge from v1 if necessary
-                    if (e0.Next != e1)
-                    {
-                        HalfEdge e = e1.FindBoundary(); // find the next boundary half-edge around v1 (must exist if half-edges aren't consecutive)
-                        v1.First = e;
-               
-                        HalfEdge.MakeConsecutive(e.Previous, e0.Next);
-                        HalfEdge.MakeConsecutive(e1.Previous, e);
-                        HalfEdge.MakeConsecutive(e0, e1);
-                    }
-                    else if (e1 == v1.First)
-                    {
-                        HalfEdge e = e1.FindBoundary(); // find the next boundary half-edge around v1
-                        if (e != null) v1.First = e;
-                    }
-                }
-                else
-                {
-                    // at least one half-edge is new
-                    // update refs for twin half-edges depending on case
-                    switch (mask)
-                    {
-                        case 1:
-                            // e0 is new, e1 is old
-                            HalfEdge.MakeConsecutive(e1.Previous, e0.Twin);
-                            v1.First = e0.Twin;
+                    case 0:
+                        {
+                            // neither halfedge is new
+                            // if he0 and he1 aren't consecutive, then deal with non-manifold vertex as per http://www.pointclouds.org/blog/nvcs/
+                            // otherwise, update the first halfedge from v1 if necessary
+                            if (he2 != he1)
+                            {
+                                Halfedge he = he1.FindBoundary(); // find the next boundary halfedge around v1 (must exist if halfedges aren't consecutive)
+                                v1.First = he;
+
+                                Halfedge.MakeConsecutive(he.Previous, he2);
+                                Halfedge.MakeConsecutive(he3, he);
+                                Halfedge.MakeConsecutive(he0, he1);
+                            }
+                            else if (he1 == v1.First)
+                            {
+                                Halfedge he = he1.FindBoundary(); // find the next boundary halfedge around v1
+                                if (he != null) v1.First = he;
+                            }
                             break;
-                        case 2:
-                            // e1 is new, e0 is old
-                            HalfEdge.MakeConsecutive(e1.Twin, e0.Next);
-                            break;
-                        case 3:
-                            // both half-edges are new
+                        }
+                    case 1:
+                        {
+                            // he0 is new, he1 is old
+                            Halfedge.MakeConsecutive(he3, he4);
+                            v1.First = he4;
+                            goto default;
+                        }
+                    case 2:
+                        {
+                            // he1 is new, he0 is old
+                            Halfedge.MakeConsecutive(he1.Twin, he2);
+                            goto default;
+                        }
+                    case 3:
+                        {
+                            // both halfedges are new
+                            // deal with non-manifold case if v1 is already in use
                             if (v1.IsUnused)
                             {
-                                // if v1 has no outgoing half-edge
-                                HalfEdge.MakeConsecutive(e1.Twin, e0.Twin);
+                                Halfedge.MakeConsecutive(he1.Twin, he4);
                             }
                             else
                             {
-                                // if v1 is already in use deal with non-manifold case
-                                HalfEdge.MakeConsecutive(v1.First.Previous, e0.Twin);
-                                HalfEdge.MakeConsecutive(e1.Twin, v1.First);
+                                Halfedge.MakeConsecutive(v1.First.Previous, he4); 
+                                Halfedge.MakeConsecutive(he1.Twin, v1.First);
                             }
-                            v1.First = e0.Twin;
+                            v1.First = he4;
+                            goto default;
+                        }
+                    default:
+                        {
+                            Halfedge.MakeConsecutive(he0, he1); // update refs for inner halfedges
                             break;
-                    }
-
-                    HalfEdge.MakeConsecutive(e0, e1); // update refs for inner half-edges
+                        }
                 }
             }
 
-            result.First = faceLoop[0]; // set first half-edge in face
-            Add(result); // add face to list
-            return result;
+            newFace.First = faceLoop[0]; // set first halfedge in face
+            return newFace;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public Queue<HeFace> GetBreadthFirstOrder(HeFace start)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public Stack<HeFace> GetDepthFirstOrder(HeFace start)
+        {
+            // TODO
+            throw new NotImplementedException();
         }
 
 
@@ -223,37 +321,18 @@ namespace SpatialSlur.SlurMesh
         /// This is intended for use on quad meshes.
         /// http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf
         /// </summary>
-        public void UnifyOrientation()
+        public void UnifyFaceOrientation(int direction)
         {
-            // find an appropriate start edge
-            bool[] visited = new bool[Count];
-            Stack<HalfEdge> stack = new Stack<HalfEdge>();
+            Stack<Halfedge> stack = new Stack<Halfedge>();
+            int currTag = NextTag;
 
             for (int i = 0; i < Count; i++)
             {
-                // skip if unused or already visited
                 HeFace f = this[i];
-                if (f.IsUnused || visited[i]) continue;
+                if (f.IsUnused || f.Tag == currTag) continue; // skip if unused or already visited
 
-                // conduct a depth first search from face i, orienting adjacent faces along the way
-                stack.Push(f.First);
-
-                do
-                {
-                    HalfEdge e = stack.Pop();
-                    f = e.Face;
-                    if (f == null || visited[f.Index]) continue; // skip boundary edges or those whose face has already been visited
-
-                    // turn face and flag as visited
-                    f.First = e;
-                    visited[f.Index] = true;
-
-                    // add next edges to stack (preference one direction over other for consistent uv directionality where possible)
-                    stack.Push(e.Twin.Next.Next); // down
-                    stack.Push(e.Next.Next.Twin); // up
-                    stack.Push(e.Previous.Twin.Previous); // left
-                    stack.Push(e.Next.Twin.Next); // right
-                } while (stack.Count > 0);
+                stack.Push((direction == 0)? f.First: f.First.Next);
+                UnifyFaceOrientation(stack, currTag);
             }
         }
 
@@ -261,87 +340,164 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public void UnifyOrientation(HalfEdge start)
+        /// <param name="start"></param>
+        /// <param name="direction"></param>
+        public void UnifyFaceOrientation(HeFace start, int direction)
         {
-            Mesh.HalfEdges.Validate(start);
+            start.UsedCheck();
+            OwnsCheck(start);
 
-            bool[] visited = new bool[Count];
-            Stack<HalfEdge> stack = new Stack<HalfEdge>();
-            stack.Push(start);
-
-            // conduct a depth first search from face i, orienting adjacent faces along the way
-            do
-            {
-                HalfEdge e = stack.Pop();
-                HeFace f = e.Face;
-                if (f == null || visited[f.Index]) continue; // skip boundary edges or those whose face has already been visited
-
-                // turn face and flag as visited
-                f.First = e;
-                visited[f.Index] = true;
-
-                // add next edges to stack (preference one direction over other for consistent uv directionality where possible)
-                stack.Push(e.Twin.Next.Next); // down
-                stack.Push(e.Next.Next.Twin); // up
-                stack.Push(e.Previous.Twin.Previous); // left
-                stack.Push(e.Next.Twin.Next); // right
-            } while (stack.Count > 0);
+            Stack<Halfedge> stack = new Stack<Halfedge>();
+            stack.Push((direction == 0)? start.First: start.First.Next);
+            UnifyFaceOrientation(stack, NextTag);
         }
 
 
         /// <summary>
-        /// Returns lists of half-edges whose faces form stips.
-        /// This is intended for use on quad meshes.
+        /// 
         /// </summary>
-        public List<List<HalfEdge>> GetStrips(HeFace start)
+        private void UnifyFaceOrientation(Stack<Halfedge> stack, int currTag)
         {
-            Mesh.HalfEdges.Validate(start);
-
-            List<List<HalfEdge>> strips = new List<List<HalfEdge>>();
-            bool[] visited = new bool[Count];
-
-            Stack<HalfEdge> stack = new Stack<HalfEdge>();
-            stack.Push(start.First);
-
-            // breadth first search
-            do
+            while (stack.Count > 0)
             {
-                HalfEdge first = stack.Pop();
+                Halfedge he = stack.Pop();
+                HeFace f = he.Face;
+                if (f == null || f.Tag == currTag) continue; // skip boundary halfedges or those whose face has already been visited
+
+                // turn face and flag as visited
+                f.First = he;
+                f.Tag = currTag;
+
+                // add next halfedges to stack 
+                // give preference to one direction over to minimize discontinuities
+                stack.Push(he.Twin.Next.Next); // down
+                stack.Push(he.Next.Next.Twin); // up
+                stack.Push(he.Previous.Twin.Previous); // left
+                stack.Push(he.Next.Twin.Next); // right
+            }
+        }
+
+
+        /*
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="start"></param>
+        internal void UnifyOrientationImpl(Halfedge start, IList<bool> faceMask)
+        {
+            Stack<Halfedge> stack = new Stack<Halfedge>();
+            stack.Push(start);
+
+            // conduct depth first search
+            while (stack.Count > 0)
+            {
+                Halfedge he = stack.Pop();
+                HeFace f = he.Face;
+                int fi = f.Index;
+                if (f == null || faceMask[fi]) continue; // skip boundary halfedges or those whose face has already been visited
+
+                // turn face and flag as visited
+                f.First = he;
+                faceMask[fi] = true;
+
+                // add next halfedges to stack 
+                // give preference to one direction over to minimize discontinuities
+                stack.Push(he.Twin.Next.Next); // down
+                stack.Push(he.Next.Next.Twin); // up
+                stack.Push(he.Previous.Twin.Previous); // left
+                stack.Push(he.Next.Twin.Next); // right
+            }
+        }
+        */
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public List<List<Halfedge>> GetFaceStrips(int direction)
+        {
+            var result = new List<List<Halfedge>>();
+            Stack<Halfedge> stack = new Stack<Halfedge>();
+            int currTag = NextTag;
+
+            for (int i = 0; i < Count; i++)
+            {
+                HeFace f = this[i];
+                if (f.IsUnused || f.Tag == currTag) continue; // skip if unused or already visited
+
+                stack.Push((direction == 0)? f.First: f.First.Next);
+                GetFaceStrips(stack, currTag, result);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public List<List<Halfedge>> GetFaceStrips(HeFace start, int direction)
+        {
+            start.UsedCheck();
+            OwnsCheck(start);
+
+            var result = new List<List<Halfedge>>();
+            Stack<Halfedge> stack = new Stack<Halfedge>();
+     
+            stack.Push((direction == 0) ? start.First : start.First.Next);
+            GetFaceStrips(stack, NextTag, result);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetFaceStrips(Stack<Halfedge> stack, int currTag, List<List<Halfedge>> result)
+        {
+            while(stack.Count > 0)
+            {
+                Halfedge first = stack.Pop();
                 HeFace f = first.Face;
-                if (f == null || visited[f.Index]) continue; // don't start from boundary edges or those with visited faces
+                if (f == null || f.Tag == currTag) continue; // don't start from boundary halfedges or those with visited faces
 
                 // backtrack to first encountered visited face or boundary
-                HalfEdge e = first;
-                f = e.Twin.Face;
-                while (f != null && !visited[f.Index])
+                Halfedge he = first;
+                f = he.Twin.Face;
+                while (f != null && f.Tag != currTag)
                 {
-                    e = e.Twin.Next.Next; // down
-                    f = e.Twin.Face;
-                    if (e == first) break; // break if back at first edge
+                    he = he.Twin.Next.Next; // down
+                    f = he.Twin.Face;
+                    if (he == first) break; // break if back at first halfedge
                 }
 
-                // collect edges in strip
-                List<HalfEdge> strip = new List<HalfEdge>();
-                f = e.Face;
+                // collect halfedges in strip
+                List<Halfedge> strip = new List<Halfedge>();
+                f = he.Face;
                 do
                 {
                     // add left/right neighbours to stack
-                    stack.Push(e.Previous.Twin.Previous);
-                    stack.Push(e.Next.Twin.Next);
+                    stack.Push(he.Previous.Twin.Previous);
+                    stack.Push(he.Next.Twin.Next);
 
-                    // add current edge to strip and flag face as visited
-                    strip.Add(e);
-                    visited[f.Index] = true;
+                    // add current halfedge to strip and flag face as visited
+                    strip.Add(he);
+                    f.Tag = currTag;
 
-                    // advance to next edge
-                    e = e.Next.Next.Twin;
-                    f = e.Face;
-                } while (f != null && !visited[f.Index]);
+                    // advance to next halfedge
+                    he = he.Next.Next.Twin;
+                    f = he.Face;
+                } while (f != null && f.Tag != currTag);
 
-                strips.Add(strip);
-            } while (stack.Count > 0);
-
-            return strips;
+                strip.Add(he); // add last halfedge
+                result.Add(strip);
+            }
         }
 
 
@@ -349,58 +505,57 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public List<List<HeEdge>> GetStrips(HeEdge start)
+        /// <param name="start"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public List<List<Halfedge>> GetFaceStrips(HeFace start, int direction)
         {
-            Mesh.Edges.Validate(start);
-            List<List<HeEdge>> strips = new List<List<HeEdge>>();
-            bool[] visited = new bool[Count];
+            start.UsedCheck();
+            OwnsCheck(start);
 
-            Queue<HeEdge> q = new Queue<HeEdge>();
-            q.Enqueue(start);
+            List<List<Halfedge>> strips = new List<List<Halfedge>>();
+            Stack<Halfedge> stack = new Stack<Halfedge>();
 
-            // modified breadth first search from start edge
-            List<HeEdge> strip = new List<HeEdge>();
+            stack.Push((direction == 0)? start.First: start.First.Next);
+            int currTag = NextTag;
+
+            // conduct depth first search
             do
             {
-                HeEdge first = q.Dequeue();
+                Halfedge first = stack.Pop();
+                HeFace f = first.Face;
+                if (f == null || f.Tag == currTag) continue; // don't start from boundary halfedges or those with visited faces
 
-                // march up strip
-                HeEdge e = first;
-                HeFace f = e.Face;
-                while (f != null && !visited[f.Index])
+                // backtrack to first encountered visited face or boundary
+                Halfedge he = first;
+                f = he.Twin.Face;
+                while (f != null && f.Tag != currTag)
                 {
-                    strip.Add(e);
-                    visited[f.Index] = true; // flag face as visited
-
-                    q.Enqueue(e.Prev.Twin.Prev); // add left to queue
-                    q.Enqueue(e.Next.Twin.Next); // add right to queue
-                    e = e.Next.Next.Twin; // move up
-                    f = e.Face;
-                }
-                strip.Reverse();
-
-                // march down strip
-                e = first.Twin.Next.Next;
-                f = e.Face;
-                while (f != null && !visited[f.Index])
-                {
-                    strip.Add(e);
-                    visited[f.Index] = true; // flag face as visited
-
-                    q.Enqueue(e.Prev.Twin.Prev); // add left to queue
-                    q.Enqueue(e.Next.Twin.Next); // add right to queue
-                    e = e.Twin.Next.Next; // move down
-                    f = e.Face;
+                    he = he.Twin.Next.Next; // down
+                    f = he.Twin.Face;
+                    if (he == first) break; // break if back at first halfedge
                 }
 
-                // add strip if not empty
-                if (strip.Count > 0)
+                // collect halfedges in strip
+                List<Halfedge> strip = new List<Halfedge>();
+                f = he.Face;
+                do
                 {
-                    strips.Add(strip);
-                    strip = new List<HeEdge>();
-                }
+                    // add left/right neighbours to stack
+                    stack.Push(he.Previous.Twin.Previous);
+                    stack.Push(he.Next.Twin.Next);
 
-            } while (q.Count > 0);
+                    // add current halfedge to strip and flag face as visited
+                    strip.Add(he);
+                    f.Tag = currTag;
+
+                    // advance to next halfedge
+                    he = he.Next.Next.Twin;
+                    f = he.Face;
+                } while (f != null && f.Tag != currTag);
+
+                strips.Add(strip);
+            } while (stack.Count > 0);
 
             return strips;
         }
@@ -408,28 +563,44 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Orients each quad such that the first half-edge has the shortest diagonal in the face.
+        /// Orients each quad such that the first halfedge has the shortest diagonal.
         /// This is intended for use on quad meshes.
         /// </summary>
-        public void OrientQuadsToShortestDiagonal()
+        /// <param name="parallel"></param>
+        public void OrientQuadsToShortestDiagonal(bool parallel = false)
         {
-            for (int i = 0; i < Count; i++)
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    OrientQuadsToShortestDiagonal(range.Item1, range.Item2));
+            else
+                OrientQuadsToShortestDiagonal(0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        private void OrientQuadsToShortestDiagonal(int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
             {
                 HeFace f = this[i];
                 if (f.IsUnused) continue;
 
-                HalfEdge e0 = f.First;
-                HalfEdge e1 = e0.Next.Next;
-                if (e0.Previous != e1.Next) continue; // quad check
+                Halfedge he0 = f.First;
+                Halfedge he1 = he0.Next.Next;
+                if (he0.Previous != he1.Next) continue; // quad check
 
                 // compare diagonals
-                Vec3d p0 = e0.Start.Position;
-                Vec3d p1 = e0.End.Position;
-                Vec3d p2 = e1.Start.Position;
-                Vec3d p3 = e1.End.Position;
+                Vec3d p0 = he0.Start.Position;
+                Vec3d p1 = he0.End.Position;
+                Vec3d p2 = he1.Start.Position;
+                Vec3d p3 = he1.End.Position;
 
                 if (p0.SquareDistanceTo(p2) > p1.SquareDistanceTo(p3))
-                    f.First = e0.Next;
+                    f.First = he0.Next;
             }
         }
 
@@ -442,56 +613,34 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public int CountCommonNeighbours(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
+            OwnsCheck(f0);
+            OwnsCheck(f1);
 
-            List<int> indices = new List<int>();
+            if (f0.IsUnused || f1.IsUnused)
+                return 0;
 
-            // flag faces around f0 by setting their index to a unique integer
-            foreach (HeFace f in f0.AdjacentFaces)
-            {
-                indices.Add(f.Index); // cache face indices for reset
-                f.Index = -2;
-            }
-
-            // count flagged faces around f1
-            int count = 0;
-            foreach (HeFace f in f1.AdjacentFaces)
-                if (f.Index == -2) count++;
-
-            // reset indices of flagged vertices
-            foreach (int i in indices)
-                Mesh.Faces[i].Index = i;
-
-            return count;
+            return CountCommonNeighboursImpl(f0, f1);
         }
 
 
         /// <summary>
-        /// Counts the number of faces adjacent to both given faces.
+        /// 
         /// </summary>
         /// <param name="f0"></param>
         /// <param name="f1"></param>
-        /// <param name="faceMask"></param>
         /// <returns></returns>
-        public int CountCommonNeighbours(HeFace f0, HeFace f1, IList<bool> faceMask)
+        internal int CountCommonNeighboursImpl(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
-            SizeCheck(faceMask);
-
-            // set neighbours of f0
-            foreach (HeFace f in f0.AdjacentFaces)
-                faceMask[f.Index] = false;
+            int currTag = NextTag;
 
             // flag neighbours of f1
             foreach (HeFace f in f1.AdjacentFaces)
-                faceMask[f.Index] = true;
+                f.Tag = currTag;
 
             // count flagged neighbours of f0
             int count = 0;
             foreach (HeFace f in f0.AdjacentFaces)
-                if (faceMask[f.Index]) count++;
+                if (f.Tag == currTag) count++;
 
             return count;
         }
@@ -505,56 +654,34 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public List<HeFace> GetCommonNeighbours(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
+            OwnsCheck(f0);
+            OwnsCheck(f1);
 
-            List<HeFace> result = new List<HeFace>();
-            List<int> indices = new List<int>();
+            if (f0.IsUnused || f1.IsUnused)
+                return new List<HeFace>();
 
-            // flag faces around f0 by setting their index to a unique integer
-            foreach (HeFace f in f0.AdjacentFaces)
-            {
-                indices.Add(f.Index); // cache face indices for reset
-                f.Index = -2;
-            }
-
-            // cache flagged faces around f1
-            foreach (HeFace f in f1.AdjacentFaces)
-                if (f.Index == -2) result.Add(f);
-
-            // reset indices of flagged vertices
-            foreach (int i in indices)
-                Mesh.Faces[i].Index = i;
-
-            return result;
+            return GetCommonNeighboursImpl(f0, f1);
         }
 
 
         /// <summary>
-        /// Returns all faces adjacent to both given faces.
+        /// 
         /// </summary>
         /// <param name="f0"></param>
         /// <param name="f1"></param>
-        /// <param name="faceMask"></param>
         /// <returns></returns>
-        public List<HeFace> GetCommonNeighbours(HeFace f0, HeFace f1, IList<bool> faceMask)
+        internal List<HeFace> GetCommonNeighboursImpl(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
-            SizeCheck(faceMask);
-
-            // set neighbours of f0
-            foreach (HeFace f in f0.AdjacentFaces)
-                faceMask[f.Index] = false;
+            int currTag = NextTag;
 
             // flag neighbours of f1
             foreach (HeFace f in f1.AdjacentFaces)
-                faceMask[f.Index] = true;
+                f.Tag = currTag;
 
             // count flagged neighbours of f0
             List<HeFace> result = new List<HeFace>();
             foreach (HeFace f in f0.AdjacentFaces)
-                if (faceMask[f.Index]) result.Add(f);
+                if (f.Tag == currTag) result.Add(f);
 
             return result;
         }
@@ -568,56 +695,34 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public int CountCommonVertices(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
+            OwnsCheck(f0);
+            OwnsCheck(f1);
 
-            List<int> indices = new List<int>();
+            if (f0.IsUnused || f1.IsUnused)
+                return 0;
 
-            // flag vertices around f0 by setting their index to a unique integer
-            foreach (HeVertex v in f0.Vertices)
-            {
-                indices.Add(v.Index); // cache vertex indices for reset
-                v.Index = -2;
-            }
-
-            // count flagged faces around f1
-            int count = 0;
-            foreach (HeVertex v in f1.Vertices)
-                if (v.Index == -2) count++;
-
-            // reset indices of flagged vertices
-            foreach (int i in indices)
-                Mesh.Vertices[i].Index = i;
-
-            return count;
+            return CountCommonVerticesImpl(f0, f1);
         }
 
 
         /// <summary>
-        /// Counts the number of vertices shared by the two given faces.
+        /// 
         /// </summary>
         /// <param name="f0"></param>
         /// <param name="f1"></param>
-        /// <param name="vertexMask"></param>
         /// <returns></returns>
-        public int CountCommonVertices(HeFace f0, HeFace f1, IList<bool> vertexMask)
+        internal int CountCommonVerticesImpl(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
-            Mesh.Vertices.SizeCheck(vertexMask);
-
-            // set neighbours of f0
-            foreach (HeVertex v in f0.Vertices)
-                vertexMask[v.Index] = false;
+            int currTag = Mesh.Vertices.NextTag;
 
             // flag neighbours of f1
             foreach (HeVertex v in f1.Vertices)
-                vertexMask[v.Index] = true;
+                v.Tag = currTag;
 
             // count flagged neighbours of f0
             int count = 0;
             foreach (HeVertex v in f0.Vertices)
-                if (vertexMask[v.Index]) count++;
+                if (v.Tag == currTag) count++;
 
             return count;
         }
@@ -631,661 +736,37 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public List<HeVertex> GetCommonVertices(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
+            OwnsCheck(f0);
+            OwnsCheck(f1);
 
-            List<HeVertex> result = new List<HeVertex>();
-            List<int> indices = new List<int>();
+            if (f0.IsUnused || f1.IsUnused)
+                return new List<HeVertex>();
 
-            // flag vertices around f0 by setting their index to a unique integer
-            foreach (HeVertex v in f0.Vertices)
-            {
-                indices.Add(v.Index); // cache vertex indices for reset
-                v.Index = -2;
-            }
-
-            // cache flagged faces around f1
-            foreach (HeVertex v in f1.Vertices)
-                if (v.Index == -2) result.Add(v);
-
-            // reset indices of flagged vertices
-            foreach (int i in indices)
-                Mesh.Vertices[i].Index = i;
-
-            return result;
+            return GetCommonVerticesImpl(f0, f1);
         }
 
 
         /// <summary>
-        /// Returns all vertices shared by both given faces.
+        /// 
         /// </summary>
         /// <param name="f0"></param>
         /// <param name="f1"></param>
-        /// <param name="vertexMask"></param>
         /// <returns></returns>
-        public List<HeVertex> GetCommonVertices(HeFace f0, HeFace f1, IList<bool> vertexMask)
+        internal List<HeVertex> GetCommonVerticesImpl(HeFace f0, HeFace f1)
         {
-            Validate(f0);
-            Validate(f1);
-            Mesh.Vertices.SizeCheck(vertexMask);
-
-            // set neighbours of f0
-            foreach (HeVertex v in f0.Vertices)
-                vertexMask[v.Index] = false;
+            int currTag = Mesh.Vertices.NextTag;
 
             // flag neighbours of f1
             foreach (HeVertex v in f1.Vertices)
-                vertexMask[v.Index] = true;
+                v.Tag = currTag;
 
             // count flagged neighbours of f0
             List<HeVertex> result = new List<HeVertex>();
             foreach (HeVertex v in f0.Vertices)
-                if (vertexMask[v.Index]) result.Add(v);
+                if (v.Tag == currTag) result.Add(v);
 
             return result;
         }
-
-
-        #region Element Attributes
-
-
-        /// <summary>
-        /// Returns the number of boundary edges in each face.
-        /// </summary>
-        /// <returns></returns>
-        public int[] GetFaceBoundaryStatus()
-        {
-            int[] result = new int[Count];
-            UpdateFaceBoundaryStatus(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateFaceBoundaryStatus(IList<int> result)
-        {
-            SizeCheck(result);
-
-            HalfEdgeList edges = Mesh.HalfEdges;
-            for (int i = 0; i < edges.Count; i += 2)
-            {
-                HalfEdge e = edges[i];
-                if (e.IsUnused) continue;
-
-                if (e.IsBoundary)
-                {
-                    result[e.Face.Index]++;
-                    result[e.Twin.Face.Index]++;
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Returns the number of edges in each face.
-        /// </summary>
-        /// <returns></returns>
-        public int[] GetFaceDegrees()
-        {
-            int[] result = new int[Count];
-            UpdateFaceDegrees(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateFaceDegrees(IList<int> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = this[i].CountEdges();
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the topological depth of all faces connected to a set of sources.
-        /// </summary>
-        /// <returns></returns>
-        public int[] GetFaceDepths(IList<int> sources)
-        {
-            int[] result = new int[Count];
-            UpdateFaceDepths(sources, result);
-            return result;
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateFaceDepths(IList<int> sources, IList<int> result)
-        {
-            SizeCheck(result);
-
-            Queue<int> queue = new Queue<int>();
-            result.Set(Int32.MaxValue);
-
-            // enqueue sources and set to zero
-            foreach (int i in sources)
-            {
-                queue.Enqueue(i);
-                result[i] = 0;
-            }
-
-            // breadth first search from sources
-            while (queue.Count > 0)
-            {
-                int i0 = queue.Dequeue();
-                int t0 = result[i0] + 1;
-
-                foreach (HeFace f in this[i0].AdjacentFaces)
-                {
-                    int i1 = f.Index;
-              
-                    if (t0 < result[i1])
-                    {
-                        result[i1] = t0;
-                        queue.Enqueue(i1);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Returns the topological distance of all faces connected to a set of sources.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetFaceDepths(IList<int> sources, IList<double> halfEdgeLengths)
-        {
-            double[] result = new double[Count];
-            UpdateFaceDepths(sources, halfEdgeLengths, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateFaceDepths(IList<int> sources, IList<double> halfEdgeLengths, IList<double> result)
-        {
-            SizeCheck(result);
-            Mesh.HalfEdges.SizeCheck(halfEdgeLengths);
-
-            Queue<int> queue = new Queue<int>();
-            result.Set(Double.PositiveInfinity);
-
-            // enqueue sources and set to zero
-            foreach (int i in sources)
-            {
-                queue.Enqueue(i);
-                result[i] = 0.0;
-            }
-
-            // breadth first search from sources
-            while (queue.Count > 0)
-            {
-                int i0 = queue.Dequeue();
-                double t0 = result[i0];
-
-                foreach (HalfEdge e in this[i0].HalfEdges)
-                {
-                    HeFace f = e.Twin.Face;
-                    if (f == null) continue;
-
-                    int i1 = f.Index;
-                    double t1 = t0 + halfEdgeLengths[e.Index];
-
-                    if (t1 < result[i1])
-                    {
-                        result[i1] = t1;
-                        queue.Enqueue(i1);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public Vec3d[] GetFaceCenters()
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateFaceCenters(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateFaceCenters(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-                    result[i] = f.GetCenter();
-                }
-            });
-        }
-
-
-        /*
-        /// <summary>
-        /// Returns distances between the start of each edge and the end of the next within each face.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetFaceDiagonalLengths()
-        {
-            double[] result = new double[Mesh.Edges.Count];
-            UpdateFaceDiagonalLengths(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateFaceDiagonalLengths(IList<double> result)
-        {
-            Mesh.Edges.SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = List[i];
-                    if (f.IsUnused) continue;
-          
-                    HeEdge e0 = f.First;
-                    HeEdge e1 = e0.Next.Next;
-
-                    if (e1.Next == e0)
-                    {
-                        // tri case
-                        continue;
-                    }
-                    else if (e1.Next == e0.Prev)
-                    {
-                        // quad case
-                        for (int j = 0; j < 2; j++)
-                        {
-                            double d = e0.Start.VectorTo(e1.Start).Length;
-                            result[e0.Index] = d;
-                            result[e1.Index] = d;
-                            e0 = e0.Next;
-                            e1 = e1.Next;
-                        }
-                    }
-                    else
-                    {
-                        // general ngon case
-                        foreach (HeEdge e in f.Edges)
-                            result[e.Index] = e.Start.VectorTo(e.Next.End).Length;
-                    }
-                }
-            });
-        }
-        */
-
-
-        /// <summary>
-        /// Calculates face normals as the area-weighted sum of half-edge normals in each face.
-        /// Face normals are unitized by default.
-        /// </summary>
-        /// <returns></returns>
-        public Vec3d[] GetFaceNormals()
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateFaceNormals(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Calculates face normals as the sum of half-edge normals in each face.
-        /// Half-edge normals can be scaled in advance for custom weighting.
-        /// Face normals are unitized by default.
-        /// </summary>
-        /// <param name="halfEdgeNormals"></param>
-        /// <returns></returns>
-        public Vec3d[] GetFaceNormals(IList<Vec3d> halfEdgeNormals)
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateFaceNormals(halfEdgeNormals, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateFaceNormals(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    if (f.IsTri)
-                    {
-                        // simplified tri case
-                        Vec3d v = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                        v.Unitize();
-                        result[i] = v;
-                    }
-                    else
-                    {
-                        // general ngon case
-                        Vec3d sum = new Vec3d();
-
-                        foreach (HalfEdge e in f.HalfEdges)
-                            sum += Vec3d.Cross(e.Previous.Span, e.Span);
-
-                        sum.Unitize();
-                        result[i] = sum;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="halfEdgeNormals"></param>
-        /// <param name="result"></param>
-        public void UpdateFaceNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    if (f.IsTri)
-                    {
-                        // simplified unitized tri case
-                        Vec3d v = halfEdgeNormals[f.First.Index];
-                        v.Unitize();
-                        result[i] = v / v.Length;
-                    }
-                    else
-                    {
-                        // general ngon case
-                        Vec3d sum = new Vec3d();
-              
-                        foreach (HalfEdge e in f.HalfEdges)
-                            sum += halfEdgeNormals[e.Index];
-
-                        sum.Unitize();
-                        result[i] = sum;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Calculates face normals as the normal of the first half-edge in the face.
-        /// Face normals are unitized by default.
-        /// This method assumes all faces are triangular.
-        /// </summary>
-        /// <returns></returns>
-        public Vec3d[] GetFaceNormalsTri()
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateFaceNormalsTri(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void UpdateFaceNormalsTri(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    Vec3d v = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                    v.Unitize();
-                    result[i] = v;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetFaceAreas()
-        {
-            double[] result = new double[Count];
-            UpdateFaceAreas(result);
-            return result;
-        }
-
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetFaceAreas(IList<Vec3d> faceCenters)
-        {
-            double[] result = new double[Count];
-            UpdateFaceAreas(faceCenters, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void UpdateFaceAreas(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    if (f.IsTri)
-                    {
-                        // simplified tri case
-                        Vec3d norm = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                        result[i] = norm.Length * 0.5;
-                    }
-                    else
-                    {
-                        // general ngon case
-                        Vec3d cen = f.GetCenter();
-                        double sum = 0.0;
-
-                        foreach (HalfEdge e in f.HalfEdges)
-                            sum += Vec3d.Cross(e.Start.Position - cen, e.Span).Length * 0.5;
-
-                        result[i] = sum;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="faceCenters"></param>
-        /// <param name="result"></param>
-        public void UpdateFaceAreas(IList<Vec3d> faceCenters, IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    if (f.IsTri)
-                    {
-                        // simplified tri case
-                        Vec3d norm = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                        result[i] = norm.Length * 0.5;
-                    }
-                    else
-                    {
-                        // general ngon case
-                        Vec3d cen = faceCenters[i];
-                        double sum = 0.0;
-
-                        foreach (HalfEdge e in f.HalfEdges)
-                            sum += Vec3d.Cross(e.Start.Position - cen, e.Span).Length * 0.5;
-
-                        result[i] = sum;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the area of each face.
-        /// This method assumes all faces are triangular.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetFaceAreasTri()
-        {
-            double[] result = new double[Count];
-            UpdateFaceAreasTri(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void UpdateFaceAreasTri(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    // simplified tri case
-                    Vec3d norm = Vec3d.Cross(f.First.Span, f.First.Next.Span);
-                    result[i] = norm.Length * 0.5;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetFacePlanarity()
-        {
-            double[] result = new double[Count];
-            UpdateFacePlanarity(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateFacePlanarity(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeFace f = this[i];
-                    if (f.IsUnused) continue;
-
-                    HalfEdge e0 = f.First;
-                    HalfEdge e1 = e0.Next;
-                    HalfEdge e2 = e1.Next;
-                    HalfEdge e3 = e2.Next;
-                    if (e3 == e0) continue; // ensure face has at least 4 edges
-
-                    if (e3.Next == e0)
-                    {
-                        // simplified quad case
-                        Vec3d span = GeometryUtil.GetShortestVector(e0.Start.Position, e2.Start.Position, e1.Start.Position, e3.Start.Position);
-                        result[i] = span.Length;
-                    }
-                    else
-                    {
-                        // general ngon case
-                        double sum = 0.0;
-                        do
-                        {
-                            Vec3d span = GeometryUtil.GetShortestVector(e0.Start.Position, e2.Start.Position, e1.Start.Position, e3.Start.Position);
-                            sum += span.Length;
-
-                            // advance to next set of 4 edges
-                            e0 = e0.Next;
-                            e1 = e1.Next;
-                            e2 = e2.Next;
-                            e3 = e3.Next;
-                        } while (e0 != f.First);
-
-                        result[i] = sum;
-                    }
-                }
-            });
-        }
-
-
-        #endregion
 
 
         #region Euler Operators
@@ -1295,190 +776,237 @@ namespace SpatialSlur.SlurMesh
         /// Returns true on success.
         /// </summary>
         /// <param name="face"></param>
-        public bool Remove(HeFace face)
+        public void Remove(HeFace face)
         {
-            Validate(face);
+            OwnsCheck(face);
+            face.UsedCheck();
+            RemoveImpl(face);
+        }
 
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="face"></param>
+        /// <returns></returns>
+        internal void RemoveImpl(HeFace face)
+        {
             /*
             // avoids creation of non-manifold vertices
             foreach (HeVertex v in face.Vertices)
-                if (v.IsBoundary && v.Start.Twin.Face != face) return false;
+                if (v.IsBoundary && v.First.Twin.Face != face) return false;
             */
+        
+            Halfedge he = face.First;
+            HeVertex v0 = he.Start;
+            HeVertex v1;
 
-            // update edge-face refs
-            HalfEdge e = face.First;
-            HeVertex first = e.Start;
-       
-            // can't just circulate face since edge connectivity is changed within loop
-            HalfEdgeList edges = Mesh.HalfEdges;
-            while(true)
+            // update halfedge->face refs
+            // can't just circulate face since halfedge connectivity is changed within loop
+            var hedges = Mesh.Halfedges;
+            do
             {
-                HeVertex v = e.End; // cache end vertex before modifying topology
+                v1 = he.End; // cache end vertex before modifying topology
 
-                if (e.Twin.Face == null)
-                    edges.RemovePair(e);
+                if (he.Twin.Face == null)
+                {
+                    hedges.RemovePair(he);
+                }
                 else
                 {
-                    e.MakeFirstFromStart();
-                    e.Face = null;
+                    he.MakeFirstFromStart();
+                    he.Face = null;
                 }
 
-                if(v == first) break;
-                e = e.Next;
-            }
+                he = he.Next;
+            } while (v1 != v0);
 
             // flag for removal
             face.MakeUnused();
-            return true;
         }
 
 
         /// <summary>
-        /// TODO debug - encountered bug when used to clean up invalid faces within CollapseEdge
-        /// 
-        /// Removes a half-edge pair, merging their two adajcent faces.
+        /// Removes a halfedge pair, merging their two adajcent faces.
         /// The face adjacent to the given halfedge is removed.
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="halfedge"></param>
         /// <returns></returns>
-        public bool MergeFaces(HalfEdge edge)
+        public void MergeFaces(Halfedge halfedge)
         {
-            HalfEdgeList edges = Mesh.HalfEdges;
-            edges.Validate(edge);
-     
-            HalfEdge e0 = edge;
-            HalfEdge e1 = e0.Twin;
+            Mesh.Halfedges.OwnsCheck(halfedge);
+            halfedge.UsedCheck();
+            MergeFacesImpl(halfedge);
+        }
 
-            HeFace f0 = e0.Face; // to be removed
-            HeFace f1 = e1.Face;
-    
-            // if edge is on boundary, just remove the existing face
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <returns></returns>
+        internal void MergeFacesImpl(Halfedge halfedge)
+        {
+            // TODO debug
+            // encountered bug when used to clean up invalid faces within CollapseEdge
+            var hedges = Mesh.Halfedges;
+
+            Halfedge he0 = halfedge;
+            Halfedge he1 = he0.Twin;
+
+            HeFace f0 = he0.Face; // to be removed
+            HeFace f1 = he1.Face;
+
+            // if halfedge is on boundary, just remove the existing face
             if (f0 == null)
-                return Remove(f1);
+            {
+                RemoveImpl(f1);
+                return;
+            }
             else if (f1 == null)
-                return Remove(f0);
+            {
+                RemoveImpl(f0);
+                return;
+            }
 
-            // update face refs for all edges in f0
-            foreach (HalfEdge e in e0.CirculateFace.Skip(1)) 
-                e.Face = f1;
+            // update face refs for all halfedges in f0
+            Halfedge he = he0.Next; // can skip he0 as it's being removed
+            do{
+                he.Face = f1;
+                he = he.Next;
+            }while(he != he0);
 
-            // remove edge pair
-            edges.RemovePair(e0);
+            // remove halfedge pair between the two faces
+            hedges.RemovePair(he0);
 
             // clean up potential valence 1 vertices
-            e0 = e0.Next;
-            while (e0.IsFromDegree1)
+            he0 = he0.Next;
+            while (he0.IsFromDegree1)
             {
-                edges.RemovePair(e0);
-                e0 = e0.Next;
+                hedges.RemovePair(he0);
+                he0 = he0.Next;
             }
 
-            e1 = e1.Next;
-            while (e1.IsFromDegree1)
+            he1 = he1.Next;
+            while (he1.IsFromDegree1)
             {
-                edges.RemovePair(e1);
-                e1 = e1.Next;
+                hedges.RemovePair(he1);
+                he1 = he1.Next;
             }
 
-            // update face-edge ref if necessary
-            if (f1.First.IsUnused) f1.First = e1;
+            // update face->halfedge ref if necessary
+            if (f1.First.IsUnused) 
+                f1.First = he1;
 
             // flag elements for removal
             f0.MakeUnused();
-            return true;
         }
 
 
         /// <summary>
-        /// Simplified merge for invalid faces.
-        /// Assumes the given edge is on an invalid face (less than 3 edges).
+        /// Simplified merge for degenerate faces.
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="halfedge"></param>
         /// <returns></returns>
-        internal void MergeInvalidFace(HalfEdge edge)
+        internal void MergeInvalidFace(Halfedge halfedge)
         {
-            HalfEdge e0 = edge;
-            HalfEdge e1 = e0.Twin;
-            HalfEdge e2 = e0.Next;
+            Halfedge he0 = halfedge;
+            Halfedge he1 = he0.Twin;
+            Halfedge he2 = he0.Next;
 
-            HeVertex v0 = e0.Start;
-            HeVertex v1 = e1.Start;
+            HeVertex v0 = he0.Start;
+            HeVertex v1 = he1.Start;
 
-            HeFace f0 = e0.Face; // face to be removed
-            HeFace f1 = e1.Face;
+            HeFace f0 = he0.Face; // face to be removed
+            HeFace f1 = he1.Face;
 
-            // update edge ref for f1 if necessary
-            if (f1 != null && f1.First == e1) f1.First = e2;
+            // update halfedge ref for f1 if necessary
+            if (f1 != null && f1.First == he1) f1.First = he2;
 
-            // update edge refs for v0 and v1 if necessary
-            if (v0.First == e0) v0.First = e1.Next;
-            if (v1.First == e1) v1.First = e2;
+            // update halfedge refs for v0 and v1 if necessary
+            if (v0.First == he0) v0.First = he1.Next;
+            if (v1.First == he1) v1.First = he2;
 
-            // update face ref for e2
-            e2.Face = f1;
+            // update face ref for he2
+            he2.Face = f1;
 
-            // update edge-edge refs
-            HalfEdge.MakeConsecutive(e1.Previous, e2);
-            HalfEdge.MakeConsecutive(e2, e1.Next);
+            // update halfedge->halfedge refs
+            Halfedge.MakeConsecutive(he1.Previous, he2);
+            Halfedge.MakeConsecutive(he2, he1.Next);
 
             // flag elements for removal
-            e0.MakeUnused();
-            e1.MakeUnused();
+            he0.MakeUnused();
+            he1.MakeUnused();
             if(f0 != null) f0.MakeUnused();
         }
 
 
         /// <summary>
-        /// Splits a face by creating a new half-edge pair between the start vertices of the given halfedges.
-        /// Returns the new edge adjacent to the new face on success or null on failure.
+        /// Splits a face by creating a new halfedge pair between the start vertices of the given halfedges.
+        /// Returns the new halfedge adjacent to the new face on success or null on failure.
         /// </summary>
-        /// <param name="e0"></param>
-        /// <param name="e1"></param>
+        /// <param name="he0"></param>
+        /// <param name="he1"></param>
         /// <returns></returns>
-        public HalfEdge SplitFace(HalfEdge e0, HalfEdge e1)
+        public Halfedge SplitFace(Halfedge he0, Halfedge he1)
         {
-            HalfEdgeList edges = Mesh.HalfEdges;
-            edges.Validate(e0);
-            edges.Validate(e1);
+            var hedges = Mesh.Halfedges;
+            hedges.OwnsCheck(he0);
+            hedges.OwnsCheck(he1);
          
-            // edges must be on the same face which can't be null
-            if (e0.Face == null || e0.Face != e1.Face) 
+            he0.UsedCheck();
+            he1.UsedCheck();
+
+            // halfedges must be on the same face which can't be null
+            if (he0.Face == null || he0.Face != he1.Face) 
                 return null;
 
-            // edges can't be consecutive
-            if (HalfEdge.AreConsecutive(e0, e1)) 
+            // halfedges can't be consecutive
+            if (Halfedge.AreConsecutive(he0, he1)) 
                 return null;
-      
-            HeFace f0 = e0.Face;
+
+            return SplitFaceImpl(he0, he1);
+        }
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="he0"></param>
+        /// <param name="he1"></param>
+        /// <returns></returns>
+        internal Halfedge SplitFaceImpl(Halfedge he0, Halfedge he1)
+        {
+            HeFace f0 = he0.Face;
             HeFace f1 = new HeFace();
             Add(f1);
 
-            HalfEdge e2 = Mesh.HalfEdges.AddPair(e0.Start, e1.Start);
-            HalfEdge e3 = e2.Twin;
+            Halfedge he2 = Mesh.Halfedges.AddPair(he0.Start, he1.Start);
+            Halfedge he3 = he2.Twin;
 
-            // set edge-face refs
-            e3.Face = f0;
-            e2.Face = f1;
+            // set halfedge->face refs
+            he3.Face = f0;
+            he2.Face = f1;
 
-            // set new edges as first in respective faces
-            f0.First = e3;
-            f1.First = e2;
-  
-            // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0.Previous, e2);
-            HalfEdge.MakeConsecutive(e1.Previous, e3);
-            HalfEdge.MakeConsecutive(e3, e0);
-            HalfEdge.MakeConsecutive(e2, e1);
+            // set new halfedges as first in respective faces
+            f0.First = he3;
+            f1.First = he2;
 
-            // update face references of all edges in new loop
-            HalfEdge e = e2.Next;
+            // update halfedge->halfedge refs
+            Halfedge.MakeConsecutive(he0.Previous, he2);
+            Halfedge.MakeConsecutive(he1.Previous, he3);
+            Halfedge.MakeConsecutive(he3, he0);
+            Halfedge.MakeConsecutive(he2, he1);
+
+            // update face references of all halfedges in new loop
+            Halfedge he = he2.Next;
             do
             {
-                e.Face = f1;
-                e = e.Next;
-            } while (e != e2);
+                he.Face = f1;
+                he = he.Next;
+            } while (he != he2);
 
-            return e2; // return edge adjacent to new face
+            return he2; // return halfedge adjacent to new face
         }
 
 
@@ -1488,50 +1016,74 @@ namespace SpatialSlur.SlurMesh
         /// <param name="face"></param>
         public HeVertex Stellate(HeFace face)
         {
-            Validate(face);
+            OwnsCheck(face);
+            face.UsedCheck();
+            return StellateImpl(face, face.GetCenter());
+        }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="face"></param>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public HeVertex Stellate(HeFace face, Vec3d point)
+        {
+            OwnsCheck(face);
+            face.UsedCheck();
+            return StellateImpl(face, point);
+        }
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        internal HeVertex StellateImpl(HeFace face, Vec3d point)
+        {
             // add new vertex at face center
-            HeVertex fc = Mesh.Vertices.Add(face.GetCenter());
+            HeVertex fc = Mesh.Vertices.Add(point);
 
-            // hold first edge and vertex in the face
-            HalfEdge e = face.First;
-            HeVertex v = e.Start;
+            // hold first halfedge and vertex in the face
+            Halfedge he = face.First;
+            HeVertex v = he.Start;
 
-            // create new edges and connect to existing ones
-            HalfEdgeList edges = Mesh.HalfEdges;
+            // create new halfedges and connect to existing ones
+            var hedges = Mesh.Halfedges;
             do
             {
-                HalfEdge e0 = edges.AddPair(e.Start, fc);
-                HalfEdge.MakeConsecutive(e.Previous, e0);
-                HalfEdge.MakeConsecutive(e0.Twin, e);
-                e = e.Next;
-            } while (e.Start != v);
+                Halfedge he0 = hedges.AddPair(he.Start, fc);
+                Halfedge.MakeConsecutive(he.Previous, he0);
+                Halfedge.MakeConsecutive(he0.Twin, he);
+                he = he.Next;
+            } while (he.Start != v);
 
-            e = face.First; // reset to first edge in face
-            fc.First = e.Previous; // set outgoing edge for the central vertex
+            he = face.First; // reset to first halfedge in face
+            fc.First = he.Previous; // set outgoing halfedge for the central vertex
 
-            // connect new edges to eachother and create new faces where necessary
+            // connect new halfedges and create new faces where necessary
             do
             {
-                HalfEdge e0 = e.Previous;
-                HalfEdge e1 = e.Next;
-                HalfEdge.MakeConsecutive(e1, e0);
+                Halfedge he0 = he.Previous;
+                Halfedge he1 = he.Next;
+                Halfedge.MakeConsecutive(he1, he0);
 
                 // create new face if necessary
                 if (face == null)
                 {
                     face = new HeFace();
                     Add(face);
-                    face.First = e;
-                    e.Face = face;
+                    face.First = he;
+                    he.Face = face;
                 }
-           
-                // assign edge-face refs
-                e0.Face = face;
-                e1.Face = face;
+
+                // assign halfedge->face refs
+                he0.Face = face;
+                he1.Face = face;
                 face = null;
-                e = e1.Twin.Next;
-            } while (e.Start != v);
+
+                he = he1.Twin.Next;
+            } while (he.Start != v);
 
             return fc;
         }
@@ -1540,38 +1092,48 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="halfedge"></param>
         /// <returns></returns>
-        public HeFace FillHole(HalfEdge edge)
+        public HeFace FillHole(Halfedge halfedge)
         {
-            HalfEdgeList edges = Mesh.HalfEdges;
-            edges.Validate(edge);
+            Mesh.Halfedges.OwnsCheck(halfedge);
+            halfedge.UsedCheck();
 
-            // edge can't already have a face
-            if (edge.Face != null)
+            // halfedge can't already have a face
+            if (halfedge.Face != null)
                 return null;
 
-            // create new face
-            HeFace f = new HeFace();
-            Mesh.Faces.Add(f);
-            f.First = edge;
+            return FillHoleImpl(halfedge);
+        }
 
-            // assign to edges
-            foreach (HalfEdge e in edge.CirculateFace)
-                e.Face = f;
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <returns></returns>
+        internal HeFace FillHoleImpl(Halfedge halfedge)
+        {
+            HeFace f = new HeFace();
+            Add(f);
+            f.First = halfedge;
+
+            // assign to halfedges
+            foreach (Halfedge he in halfedge.CirculateFace)
+                he.Face = f;
 
             return f;
         }
 
 
         /// <summary>
-        /// TODO 
         /// Triangulates a given face without adding any vertices.
         /// </summary>
         /// <param name="face"></param>
         /// <returns></returns>
-        public HalfEdge Triangulate(HeFace face)
+        public Halfedge Triangulate(HeFace face)
         {
+            // TODO
             throw new NotImplementedException();
         }
 

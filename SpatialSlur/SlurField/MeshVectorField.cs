@@ -11,7 +11,7 @@ using SpatialSlur.SlurMesh;
 
 /*
  * Notes
- * TODO further research into vertex-based mesh vector fields
+ * TODO conduct further research into vertex-based mesh vector fields
  * 
  * References
  * http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
@@ -75,51 +75,73 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Gets the magnitudes of all vectors in the field.
         /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public MeshScalarField GetMagnitudes()
+        public MeshScalarField GetMagnitudes(bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField(this);
-            UpdateMagnitudes(result.Values);
+            UpdateMagnitudes(result.Values, parallel);
             return result;
         }
 
 
         /// <summary>
-        /// gets the magnitudes of all vectors in the field
+        /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateMagnitudes(MeshScalarField result)
+        /// <param name="parallel"></param>
+        public void UpdateMagnitudes(MeshScalarField result, bool parallel = false)
         {
-            UpdateMagnitudes(result.Values);
+            UpdateMagnitudes(result.Values, parallel);
         }
 
 
         /// <summary>
-        /// gets the magnitudes of all vectors in the field
+        /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateMagnitudes(IList<double> result)
+        /// <param name="parallel"></param>
+        public void UpdateMagnitudes(IList<double> result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            SizeCheck(result);
+
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = Values[i].Length;
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     result[i] = Values[i].Length;
-            });
+            }
         }
 
 
         /// <summary>
-        /// unitizes all vectors in the field
+        /// 
         /// </summary>
-        public void Unitize()
+        /// <param name="parallel"></param>
+        public void Unitize(bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        Values[i] /= Values[i].Length;
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     Values[i] /= Values[i].Length;
-            });
+            }
         }
 
 
@@ -127,13 +149,24 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public void Cross(MeshVectorField other)
+        /// <param name="parallel"></param>
+        public void Cross(MeshVectorField other, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            SizeCheck(other);
+
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        Values[i] = Vec3d.Cross(Values[i], other.Values[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     Values[i] = Vec3d.Cross(Values[i], other.Values[i]);
-            });
+            }
         }
 
 
@@ -142,24 +175,37 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="other"></param>
         /// <param name="result"></param>
-        public void Cross(MeshVectorField other, MeshVectorField result)
+        /// <param name="parallel"></param>
+        public void Cross(MeshVectorField other, MeshVectorField result, bool parallel = false)
         {
-            Cross(other, result.Values);
+            Cross(other.Values, result.Values, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="vectors"></param>
         /// <param name="result"></param>
-        public void Cross(MeshVectorField other, IList<Vec3d> result)
+        /// <param name="parallel"></param>
+        public void Cross(IList<Vec3d> vectors, IList<Vec3d> result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            SizeCheck(vectors);
+            SizeCheck(result);
+
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = Vec3d.Cross(Values[i], other.Values[i]);
-            });
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = Vec3d.Cross(Values[i], vectors[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    result[i] = Vec3d.Cross(Values[i], vectors[i]);
+            }
         }
 
     }

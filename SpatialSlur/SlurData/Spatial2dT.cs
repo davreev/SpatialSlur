@@ -5,6 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */ 
+
 namespace SpatialSlur.SlurData
 {
     /// <summary>
@@ -14,10 +18,10 @@ namespace SpatialSlur.SlurData
     public abstract class Spatial2d<T>
     {
         private IList<List<T>> _bins;
-        private IList<int> _currId; // used to lazily clear bins
+        private IList<int> _tags; // used to lazily clear bins
 
         private int _itemCount;
-        private int _id;
+        private int _currTag;
 
 
         /// <summary>
@@ -30,7 +34,7 @@ namespace SpatialSlur.SlurData
                 throw new System.ArgumentOutOfRangeException("The data structure must have at least 1 bin.");
 
             _bins = new List<T>[binCount];
-            _currId = new int[binCount];
+            _tags = new int[binCount];
 
             for (int i = 0; i < binCount; i++)
                 _bins[i] = new List<T>();
@@ -83,10 +87,10 @@ namespace SpatialSlur.SlurData
             List<T> bin = _bins[index];
 
             // synchronize bin if necessary
-            if (_currId[index] != _id)
+            if (_tags[index] != _currTag)
             {
                 bin.Clear();
-                _currId[index] = _id;
+                _tags[index] = _currTag;
             }
 
             bin.Add(value);
@@ -138,7 +142,7 @@ namespace SpatialSlur.SlurData
             int index = ToIndex(i, j);
 
             // only add to result if bin is synchronized
-            if (_currId[index] == _id)
+            if (_tags[index] == _currTag)
                 result.AddRange(_bins[index]);
         }
 
@@ -159,7 +163,7 @@ namespace SpatialSlur.SlurData
                     int index = ToIndex(i, j);
 
                     // only add to result if bin is synchronized
-                    if (_currId[index] == _id)
+                    if (_tags[index] == _currTag)
                         result.AddRange(_bins[index]);
                 }
             }
@@ -176,7 +180,7 @@ namespace SpatialSlur.SlurData
             int index = ToIndex(i, j);
 
             // only callback if bin is synchronized
-            if (_currId[index] == _id)
+            if (_tags[index] == _currTag)
                 callback(_bins[index]);
         }
 
@@ -197,7 +201,7 @@ namespace SpatialSlur.SlurData
                     int index = ToIndex(i, j);
 
                     // only callback if bin is synchronized
-                    if (_currId[index] == _id)
+                    if (_tags[index] == _currTag)
                         callback(_bins[index]);
                 }
             }
@@ -209,7 +213,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Clear()
         {
-            _id++;
+            _currTag++; // consider reset of tags on overflow
             _itemCount = 0;
         }
     }

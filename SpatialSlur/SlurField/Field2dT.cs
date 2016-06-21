@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurField
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class Field2d<T> : Field2d 
+    public abstract class Field2d<T> : Field2d
     {
         private readonly T[] _values;
 
@@ -50,8 +50,9 @@ namespace SpatialSlur.SlurField
         protected Field2d(Field2d<T> other)
             : base(other)
         {
-            _values = new T[Count + 1];
-            _values.Set(other._values);
+            int n = Count + 1;
+            _values = new T[n];
+            Array.Copy(other._values, _values, n);
         }
 
 
@@ -84,6 +85,30 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public void Set(Field2d<T> other)
+        {
+            Array.Copy(other._values, _values, Count);
+        }
+
+
+        /// <summary>
+        /// Sets a subset of this field to a given value.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="parallel"></param>
+        public void SetBlock(T value, Vec2i from, Vec2i to, bool parallel = false)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
         /// Sets all values along the boundary of the field to a given constant
         /// </summary>
         /// <param name="value"></param>
@@ -104,19 +129,6 @@ namespace SpatialSlur.SlurField
                 _values[i] = value;
                 _values[i + offset] = value;
             }
-        }
-
-
-        /// <summary>
-        /// Sets a subset of this field to a given value.
-        /// TODO
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        public void SetBlock(T value, Vec2i from, Vec2i to)
-        {
-            throw new NotImplementedException();
         }
 
 
@@ -142,10 +154,12 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Function<U>(Func<U, T> func, Field2d<U> other)
         {
+            var u = other.Values;
+
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(other._values[i]);
+                    _values[i] = func(u[i]);
             });
         }
 
@@ -158,10 +172,12 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public void Function<U>(Func<T, U, T> func, Field2d<U> other)
         {
+            var u = other.Values;
+
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], other._values[i]);
+                    _values[i] = func(_values[i], u[i]);
             });
         }
 
@@ -176,10 +192,13 @@ namespace SpatialSlur.SlurField
         /// <param name="otherV"></param>
         public void Function<U, V>(Func<U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
         {
+            var u = otherU.Values;
+            var v = otherV.Values;
+
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(otherU._values[i], otherV._values[i]);
+                    _values[i] = func(u[i], v[i]);
             });
         }
 
@@ -194,23 +213,26 @@ namespace SpatialSlur.SlurField
         /// <param name="otherV"></param>
         public void Function<U, V>(Func<T, U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
         {
+            var u = otherU.Values;
+            var v = otherV.Values;
+
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], otherU._values[i], otherV._values[i]);
+                    _values[i] = func(_values[i], u[i], v[i]);
             });
         }
 
 
         /// <summary>
         /// Sets a subset of this field to some function of itself.
-        /// TODO
         /// </summary>
         /// <param name="func"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
         public void Function(Func<T, T> func, Vec2i from, Vec2i to)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
@@ -232,7 +254,7 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-          
+ 
                     _values[index] = func(new Vec2d(i * ScaleX + x0, j * ScaleY + y0));
                 }
             });
@@ -273,6 +295,7 @@ namespace SpatialSlur.SlurField
         {
             double x0 = Domain.x.t0;
             double y0 = Domain.y.t0;
+            var u = other.Values;
      
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -283,7 +306,7 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    _values[index] = func(new Vec2d(i * ScaleX + x0, j * ScaleY + y0), other._values[index]);
+                    _values[index] = func(new Vec2d(i * ScaleX + x0, j * ScaleY + y0), u[index]);
                 }
             });
         }
@@ -299,6 +322,7 @@ namespace SpatialSlur.SlurField
         {
             double x0 = Domain.x.t0;
             double y0 = Domain.y.t0;
+            var u = other.Values;
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -309,7 +333,7 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    _values[index] = func(i * ScaleX + x0, j * ScaleY + y0, other._values[index]);
+                    _values[index] = func(i * ScaleX + x0, j * ScaleY + y0, u[index]);
                 }
             });
         }
@@ -317,26 +341,28 @@ namespace SpatialSlur.SlurField
 
         /// <summary>
         /// Sets a subset of this field to some function of its field points.
-        /// TODO
         /// </summary>
         /// <param name="func"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public void SpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to)
+        /// <param name="parallel"></param>
+        public void SpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to, bool parallel = false)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
 
         /// <summary>
         /// Sets a subset of this field to some function of its coordinates.
-        /// TODO
         /// </summary>
         /// <param name="func"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public void SpatialFunction(Func<double, double, double, T> func, Vec2i from, Vec2i to)
+        /// <param name="parallel"></param>
+        public void SpatialFunction(Func<double, double, double, T> func, Vec2i from, Vec2i to, bool parallel = false)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
@@ -398,6 +424,7 @@ namespace SpatialSlur.SlurField
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
+            var u = other.Values;
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -408,7 +435,7 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    _values[index] = func(new Vec2d(i * ti, j * tj), other._values[index]);
+                    _values[index] = func(new Vec2d(i * ti, j * tj), u[index]);
                 }
             });
         }
@@ -424,6 +451,7 @@ namespace SpatialSlur.SlurField
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
+            var u = other.Values;
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -433,7 +461,7 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-                    _values[index] = func(i * ti, j * tj, other._values[index]);
+                    _values[index] = func(i * ti, j * tj, u[index]);
                 }
             });
         }
@@ -445,21 +473,24 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public void NormSpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to)
+        /// <param name="parallel"></param>
+        public void NormSpatialFunction(Func<Vec2d, T> func, Vec2i from, Vec2i to, bool parallel = false)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
 
         /// <summary>
         /// Sets a subset of this field to some function of its normalized coordinates and another field.
-        /// TODO
         /// </summary>
         /// <param name="func"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public void NormSpatialFunction(Func<double, double, T> func, Vec2i from, Vec2i to)
+        /// <param name="parallel"></param>
+        public void NormSpatialFunction(Func<double, double, T> func, Vec2i from, Vec2i to, bool parallel = false)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
@@ -472,7 +503,7 @@ namespace SpatialSlur.SlurField
         {
             if (ResolutionEquals(other))
             {
-                _values.Set(other._values);
+                Set(other);
                 return;
             }
 

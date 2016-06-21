@@ -557,6 +557,7 @@ namespace SpatialSlur.SlurField
             new int[]{}
         };
 
+
         /*
         // Bourke edge table
         private static readonly int[] _edgeTable =
@@ -1061,7 +1062,7 @@ namespace SpatialSlur.SlurField
 
         /*
         /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
+        /// Alternative implementation
         /// </summary>
         /// <param name="values"></param>
         /// <param name="dx"></param>
@@ -1074,12 +1075,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static Mesh Evaluate2(IList<double> values, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
         {
-            // ensure the number of values matches the given dimensions
             int nxy = nx * ny;
             int n = nxy * nz;
-            if (values.Count != n)
-                throw new System.ArgumentException("The specified dimensions must match the number of values.");
-
+      
             // resulting mesh
             Mesh result = new Mesh();
             Object locker = new Object();
@@ -1090,20 +1088,15 @@ namespace SpatialSlur.SlurField
                 Vec3d[] voxelCorners = new Vec3d[8];
                 double[] voxelValues = new double[8];
                 Mesh chunk = new Mesh();
-
-                // expand index
-                int z = range.Item1 / nxy;
-                int x = range.Item1 - z * nxy; // store remainder in i temporarily
-                int y = x / nx;
-                x -= y * nx;
+                Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
 
                 // flatten loop for better parallelization
-                for (int index = range.Item1; index < range.Item2; index++, x++)
+                for (int index = range.Item1; index < range.Item2; index++, i3.x++)
                 {
                     // increment 3d index
-                    if (x == nx) { x = 0; y++; }
-                    if (y == ny) { y = 0; z++; }
-                    if (x == nx - 1 || y == ny - 1) continue; // skip last in each dimension
+                    if (i3.x == nx) { i3.x = 0; i3.y++; }
+                    if (i3.y == ny) { i3.y = 0; i3.z++; }
+                    if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
 
                     // set voxel values
                     voxelValues[0] = values[index];
@@ -1130,9 +1123,9 @@ namespace SpatialSlur.SlurField
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
                     // set voxel corners
-                    double x0 = x * dx;
-                    double y0 = y * dy;
-                    double z0 = z * dz;
+                    double x0 = i3.x * dx;
+                    double y0 = i3.y * dy;
+                    double z0 = i3.z * dz;
                     double x1 = x0 + dx;
                     double y1 = y0 + dy;
                     double z1 = z0 + dz;

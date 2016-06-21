@@ -5,6 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ * 
+ * Unused checks are not performed within element level methods to avoid redundancy.
+ */
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
@@ -14,7 +20,7 @@ namespace SpatialSlur.SlurMesh
     public class HeVertex : HeElement
     {
         private Vec3d _position;
-        private HalfEdge _first;
+        private Halfedge _first;
 
 
         /// <summary>
@@ -46,10 +52,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the first half-edge starting at this vertex.
-        /// Note that if the vertex is on the mesh boundary, the first half-edge must have a null face reference.
+        /// Returns the first halfedge starting at this vertex.
+        /// Note that if the vertex is on the mesh boundary, the first halfedge must have a null face reference.
         /// </summary>
-        public HalfEdge First
+        public Halfedge First
         {
             get { return _first; }
             internal set { _first = value; }
@@ -57,7 +63,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex has no outgoing half-edge.
+        /// Returns true if the vertex has no outgoing halfedges.
         /// </summary>
         public override bool IsUnused
         {
@@ -66,8 +72,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex has at least 2 outgoing half-edges.
-        /// Note that this assumes the vertex is used.
+        /// Returns true if the vertex has at least 2 outgoing halfedges.
         /// </summary>
         internal override bool IsValid
         {
@@ -77,7 +82,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if the vertex lies on the mesh boundary.
-        /// Note that if this is true, the outgoing half-edge must have a null face reference.
+        /// Note that if this is true, the first halfedge must have a null face reference.
         /// </summary>
         public override bool IsBoundary
         {
@@ -96,22 +101,20 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the number of halfedges starting from this vertex.
         /// </summary>
         public int Degree
         {
             get
             {
-                if (IsUnused) return 0; // no nieghbours if unused
-                HalfEdge e = _first;
+                Halfedge he = _first;
                 int count = 0;
 
-                // circulate to the next edge until back at the first
                 do
                 {
                     count++;
-                    e = e.Twin.Next;
-                } while (e != _first);
+                    he = he.Twin.Next;
+                } while (he != _first);
 
                 return count;
             }
@@ -119,7 +122,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex has 2 outgoing half-edges.
+        /// Returns true if the vertex has 2 outgoing halfedges.
         /// </summary>
         public bool IsDegree2
         {
@@ -128,7 +131,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the vertex has 3 outgoing half-edges.
+        /// Returns true if the vertex has 3 outgoing halfedges.
         /// </summary>
         public bool IsDegree3
         {
@@ -163,98 +166,106 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                if (IsUnused) yield break;
-                HalfEdge e = _first;
+                Halfedge he = _first;
 
-                // circulate to the next edge until back at the first
                 do
                 {
-                    e = e.Twin;
-                    yield return e.Start;
-                    e = e.Next;
-                } while (e != _first);
+                    he = he.Twin;
+                    yield return he.Start;
+                    he = he.Next;
+                } while (he != _first);
             }
         }
 
 
         /// <summary>
-        /// Iterates over all outgoing half-edges.
+        /// Iterates over all halfedges starting from this vertex.
         /// </summary>
-        public IEnumerable<HalfEdge> OutgoingHalfEdges
+        public IEnumerable<Halfedge> OutgoingHalfedges
         {
             get
             {
-                if (IsUnused) yield break;
-                HalfEdge e = _first;
+                Halfedge he = _first;
 
-                // circulate to the next edge until back at the first
                 do
                 {
-                    yield return e;
-                    e = e.Twin.Next;
-                } while (e != _first);
+                    yield return he;
+                    he = he.Twin.Next;
+                } while (he != _first);
             }
         }
 
 
         /// <summary>
-        /// Iterates over all incoming half-edges.
+        /// Iterates over all halfedges ending at this vertex.
         /// </summary>
-        public IEnumerable<HalfEdge> IncomingHalfEdges
+        public IEnumerable<Halfedge> IncomingHalfedges
         {
             get
             {
-                if (IsUnused) yield break;
-                HalfEdge e = _first;
+                Halfedge he = _first;
 
-                // circulate to the next edge until back at the first
                 do
                 {
-                    e = e.Twin;
-                    yield return e;
-                    e = e.Next;
-                } while (e != _first);
+                    he = he.Twin;
+                    yield return he;
+                    he = he.Next;
+                } while (he != _first);
             }
         }
 
 
         /// <summary>
         /// Iterates over all surrounding faces.
-        /// Null faces are skipped.
+        /// Note that null faces are skipped.
         /// </summary>
         public IEnumerable<HeFace> SurroundingFaces
         {
             get
             {
-                if (IsUnused) yield break;
-                HalfEdge e = _first;
-                HeFace f = e.Face;
+                Halfedge he = _first;
 
-                // circulate to the next edge until back at the first
                 do
                 {
+                    HeFace f = he.Face;
                     if (f != null) yield return f;
-                    e = e.Twin.Next;
-                    f = e.Face;
-                } while (e != _first);
+                    he = he.Twin.Next;
+                } while (he != _first);
             }
         }
 
 
         /// <summary>
-        /// Finds the outgoing half-edge connecting this vertex to another. 
-        /// Returns null if no such half-edge exists.
+        /// Finds the outgoing halfedge connecting this vertex to another. 
+        /// Returns null if no such halfedge exists.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public HalfEdge FindHalfEdgeTo(HeVertex other)
+        public Halfedge FindHalfedgeTo(HeVertex other)
         {
-            if (IsUnused) return null;
-
-            foreach (HalfEdge e in OutgoingHalfEdges)
-                if (e.End == other) return e;
+            foreach (Halfedge he in OutgoingHalfedges)
+                if (he.End == other) return he;
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Returns the unitized sum of halfedge normals around the vertex.
+        /// </summary>
+        /// <returns></returns>
+        public Vec3d GetNormal()
+        {
+            Vec3d result = new Vec3d();
+
+            foreach (Halfedge he in OutgoingHalfedges)
+            {
+                if (he.Face == null) continue;
+                result += he.GetNormal();
+            }
+
+            result.Unitize();
+            return result;
         }
 
     }

@@ -128,7 +128,7 @@ namespace SpatialSlur.SlurCore
         public Domain2d(IEnumerable<Vec2d> points)
             : this()
         {
-            foreach (Vec2d pt in points) Include(pt);
+            Include(points);
         }
 
 
@@ -342,6 +342,20 @@ namespace SpatialSlur.SlurCore
             y.Include(point.y);
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        public void Include(IEnumerable<Vec2d> points)
+        {
+            foreach (Vec2d p in points)
+            {
+                x.Include(p.x);
+                y.Include(p.y);
+            }
+        }
+  
 
         /// <summary>
         /// 

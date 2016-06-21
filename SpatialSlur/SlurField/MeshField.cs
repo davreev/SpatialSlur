@@ -21,7 +21,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Constructs a new mesh field using topology information from an existing mesh
+        /// Constructs a new mesh field from a given HeMesh instance.
         /// </summary>
         /// <param name="mesh"></param>
         protected MeshField(HeMesh mesh)
@@ -30,8 +30,22 @@ namespace SpatialSlur.SlurField
                 throw new ArgumentNullException("mesh");
 
             _mesh = mesh;
-            _n = mesh.Vertices.Count;
+            _n = _mesh.Vertices.Count;
             RebuildDisplayMesh();
+        }
+
+
+        /// <summary>
+        /// Constructs a new mesh field from a given Rhino mesh.
+        /// </summary>
+        /// <param name="mesh"></param>
+        protected MeshField(Mesh mesh)
+        {
+            if (mesh == null)
+                throw new ArgumentNullException("mesh");
+
+            _mesh = RhinoFactory.CreateHeMesh(mesh);
+            _n = _mesh.Vertices.Count;
         }
 
 
@@ -58,7 +72,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Returns true if the number of vertices in the associated mesh no longer matches the size of the field
+        /// Returns true if the number of vertices in the associated mesh no longer matches the number of values in the field.
         /// </summary>
         public bool IsExpired
         {
@@ -67,9 +81,9 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// returns the mesh associated with this field
-        /// any geometrical modifications made to this mesh should be followed by a call to RebuildDisplayMesh()
-        /// any topological modifications made to this mesh should be followed by a call to Resize()
+        /// Returns the HeMesh instance associated with this field.
+        /// Topological modifications made to this mesh should be followed by a call to Resize.
+        /// Geometrical modifications made to this mesh should be followed by a call to RebuildDisplayMesh.
         /// </summary>
         public HeMesh Mesh
         {
@@ -85,49 +99,21 @@ namespace SpatialSlur.SlurField
             get { return _displayMesh; }
         }
 
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        protected void SizeCheck(MeshField other)
-        {
-            if (Count != other.Count)
-                throw new ArgumentException("The two fields must have the same number of values.");
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        protected void SizeCheck<T>(IList<T> list)
-        {
-            if (list.Count != _n)
-                throw new ArgumentException("The number of items in the given list cannot be less than the number of values in the field.");
-        }
-        */
-
         
-        /*
         /// <summary>
-        /// 
+        /// This should be called after making any topological operations to the base mesh that change the number of vertices.
         /// </summary>
         public void Resize()
         {
             if (!IsExpired) return;
 
-            // resize _values by compacting or expanding
-            // reset _n
+            // TODO
             throw new NotImplementedException();
         }
-        */
-
+       
 
         /// <summary>
-        /// this must be called after any changes to the mesh used by this field
+        /// This should be called before painting the display mesh if changes have been made to the underlying HeMesh instance.
         /// </summary>
         public void RebuildDisplayMesh()
         {
@@ -156,5 +142,29 @@ namespace SpatialSlur.SlurField
         {
             return _displayMesh.ClosestMeshPoint(point.ToPoint3d(), maxDistance);
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        internal void SizeCheck(MeshField other)
+        {
+            if (Count != other.Count)
+                throw new ArgumentException("The two fields must have the same number of values.");
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        internal void SizeCheck<T>(IList<T> list)
+        {
+            if (list.Count < _n)
+                throw new ArgumentException("The number of items in the given list cannot be less than the number of values in the field.");
+        }
+  
     }
 }

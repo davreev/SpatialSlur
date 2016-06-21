@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -8,6 +9,9 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurField
 {
@@ -20,106 +24,21 @@ namespace SpatialSlur.SlurField
         /// Saves the given field as a stack of images.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="format"></param>
-        public static void SaveAsImageStack<T>(string path, Field3d<T> field, Func<T, Color> mapper, ImageFormat format)
+        /// <param name="path"></param>
+        public static void SaveAsImageStack<T>(Field3d<T> field, string path, Func<T, Color> mapper)
         {
-            Rectangle rect = new Rectangle(0, 0, field.CountX, field.CountY);
-            PixelFormat pf = PixelFormat.Format32bppArgb;
-            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
+            string dir = Path.GetDirectoryName(path);
+            string name = Path.GetFileNameWithoutExtension(path);
+            string ext = Path.GetExtension(path);
 
             Parallel.For(0, field.CountZ, z =>
                 {
-                    using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, pf))
+                    using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, PixelFormat.Format32bppArgb))
                     {
-                        unsafe
-                        {
-                            BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.WriteOnly, pf);
-                            byte* first = (byte*)bmpData.Scan0;
-
-                            for (int y = 0; y < field.CountY; y++)
-                            {
-                                byte* currLn = first + (y * bmpData.Stride);
-
-                                for (int x = 0; x < field.CountX; x++)
-                                {
-                                    Color c = mapper(field.Values[field.FlattenIndex(x, y, z)]);
-
-                                    int bx = x * bpp;
-                                    currLn[bx] = c.B;
-                                    currLn[bx + 1] = c.G;
-                                    currLn[bx + 2] = c.R;
-                                    currLn[bx + 3] = c.A;
-                                }
-                            }
-
-                            bmp.UnlockBits(bmpData);
-                            bmp.Save(String.Format("{0}_{1}", path, z), format);
-                        }
-                    }
-                });
-        }
-
-
-        /// <summary>
-        /// Saves the given field as a stack of images.
-        /// Allows specification of a different resolution than the given field.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
-        /// <param name="field"></param>
-        /// <param name="mapper"></param>
-        /// <param name="format"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="layers"></param>
-        public static void SaveAsImageStack<T>(string path, Field3d<T> field, Func<T, Color> mapper, ImageFormat format, int width, int height, int layers)
-        {
-            Rectangle rect = new Rectangle(0, 0, width, height);
-            PixelFormat pf = PixelFormat.Format32bppArgb;
-            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
-
-            Domain3d domain = field.Domain;
-            double tx = 1.0 / (width - 1);
-            double ty = 1.0 / (height - 1);
-            double tz = 1.0 / (layers - 1);
-
-            Parallel.For(0, layers, z =>
-                {
-                    FieldPoint3d fp = new FieldPoint3d();
-                    double w = z * tz;
-
-                    using (Bitmap bmp = new Bitmap(width, height, pf))
-                    {
-                        unsafe
-                        {
-                            BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.WriteOnly, pf);
-                            byte* first = (byte*)bmpData.Scan0;
-
-                            for (int y = 0; y < height; y++)
-                            {
-                                byte* currLn = first + (y * bmpData.Stride);
-                                double v = y * ty;
-
-                                for (int x = 0; x < width; x++)
-                                {
-                                    double u = x * tx;
-                                    field.FieldPointAt(domain.Evaluate(new Vec3d(u, v, w)), fp);
-                                    Color c = mapper(field.Evaluate(fp));
-
-                                    int bx = x * bpp;
-                                    currLn[bx] = c.B;
-                                    currLn[bx + 1] = c.G;
-                                    currLn[bx + 2] = c.R;
-                                    currLn[bx + 3] = c.A;
-                                }
-                            }
-
-                            bmp.UnlockBits(bmpData);
-                            bmp.Save(String.Format("{0}_{1}", path, z), format);
-                        }
+                        WriteToImage(field, z, bmp, mapper);
+                        bmp.Save(String.Format(@"{0}\{1}_{2}{3}", dir, name, z, ext));
                     }
                 });
         }
@@ -129,99 +48,173 @@ namespace SpatialSlur.SlurField
         /// Saves the given field as an image.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="format"></param>
-        public static void SaveAsImage<T>(string path, Field2d<T> field, Func<T, Color> mapper, ImageFormat format)
+        /// <param name="path"></param>
+        public static void SaveAsImage<T>(Field2d<T> field, string path, Func<T, Color> mapper)
         {
-            Rectangle rect = new Rectangle(0, 0, field.CountX, field.CountY);
-            PixelFormat pf = PixelFormat.Format32bppArgb;
-            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
-
-            using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, pf))
+            using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, PixelFormat.Format32bppArgb))
             {
-                unsafe
+                WriteToImage(field, bmp, mapper);
+                bmp.Save(path);
+            }
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="bitmap"></param>
+        /// <param name="mapper"></param>
+        public static void ReadFromImage<T>(Field3d<T> field, Bitmap bitmap, Func<Color, T> mapper)
+        {
+            ReadFromImage(field.Values, 0, bitmap, mapper);
+
+            // copy values of first layer to others 
+            // Note could create undesired behaviour if T is a reference type
+            var values = field.Values;
+            int nxy = field.CountXY;
+
+            for (int i = 1; i < field.CountZ; i++)
+                Array.Copy(values, 0, values, i * nxy, nxy);
+        }
+        */
+   
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="layer"></param>
+        /// <param name="mapper"></param>
+        /// <param name="bitmap"></param>
+        public static void ReadFromImage<T>(Field3d<T> field, int layer, Bitmap bitmap, Func<Color, T> mapper)
+        {
+            ReadFromImage(field.Values, layer * field.CountXY, bitmap, mapper);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="mapper"></param>
+        /// <param name="bitmap"></param>
+        public static void ReadFromImage<T>(Field2d<T> field, Bitmap bitmap, Func<Color, T> mapper)
+        {
+            ReadFromImage(field.Values, 0, bitmap, mapper);
+        }
+
+
+        /// <summary>
+        /// Writes a layer of the given field to an existing image.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="layer"></param>
+        /// <param name="mapper"></param>
+        /// <param name="bitmap"></param>
+        public static void WriteToImage<T>(Field3d<T> field, int layer, Bitmap bitmap, Func<T, Color> mapper)
+        {
+            WriteToImage(field.Values, layer * field.CountXY, bitmap, mapper);
+        }
+
+
+        /// <summary>
+        /// Writes the given field to an image.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="mapper"></param>
+        /// <param name="bitmap"></param>
+        public static void WriteToImage<T>(Field2d<T> field, Bitmap bitmap, Func<T, Color> mapper)
+        {
+            WriteToImage(field.Values, 0, bitmap, mapper);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void ReadFromImage<T>(IList<T> values, int index, Bitmap bitmap, Func<Color, T> mapper)
+        {
+            PixelFormat pf = bitmap.PixelFormat;
+            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
+            PixelFormatCheck(bpp); // ensure 4 bytes per pixel
+
+            unsafe
+            {
+                BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, pf);
+                byte* first = (byte*)bmpData.Scan0;
+
+                for (int y = 0; y < bitmap.Height; y++)
                 {
-                    BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.WriteOnly, pf);
-                    byte* first = (byte*)bmpData.Scan0;
+                    byte* currLn = first + (y * bmpData.Stride);
 
-                    Parallel.For(0, field.CountY, y =>
+                    for (int x = 0; x < bitmap.Width; x++)
                     {
-                        byte* currLn = first + (y * bmpData.Stride);
+                        int bx = x * bpp;
+                        byte b = currLn[bx];
+                        byte g = currLn[bx + 1];
+                        byte r = currLn[bx + 2];
+                        byte a = currLn[bx + 3];
 
-                        for (int x = 0; x < field.CountX; x++)
-                        {
-                            Color c = mapper(field.Values[field.FlattenIndex(x, y)]);
-
-                            int bx = x * bpp;
-                            currLn[bx] = c.B;
-                            currLn[bx + 1] = c.G;
-                            currLn[bx + 2] = c.R;
-                            currLn[bx + 3] = c.A;
-                        }
-                    });
-
-                    bmp.UnlockBits(bmpData);
-                    bmp.Save(path, format);
+                        values[index++] = mapper(Color.FromArgb(a,r,g,b));
+                    }
                 }
+
+                bitmap.UnlockBits(bmpData);
             }
         }
 
 
         /// <summary>
-        /// Saves the given field as an image.
-        /// Allows specification of a different resolution than the given field.
+        /// 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
-        /// <param name="field"></param>
-        /// <param name="mapper"></param>
-        /// <param name="format"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        public static void SaveAsImage<T>(string path, Field2d<T> field, Func<T, Color> mapper, ImageFormat format, int width, int height)
+        private static void WriteToImage<T>(IList<T> values, int index, Bitmap bitmap, Func<T, Color> mapper)
         {
-            Rectangle rect = new Rectangle(0, 0, width, height);
-            PixelFormat pf = PixelFormat.Format32bppArgb;
+            PixelFormat pf = bitmap.PixelFormat;
             int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
+            PixelFormatCheck(bpp); // ensure 4 bytes per pixel
 
-            Domain2d domain = field.Domain;
-            double tx = 1.0 / (width - 1);
-            double ty = 1.0 / (height - 1);
-
-            using (Bitmap bmp = new Bitmap(width, height, pf))
+            unsafe
             {
-                unsafe
+                BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, pf);
+                byte* first = (byte*)bmpData.Scan0;
+
+                for (int y = 0; y < bitmap.Height; y++)
                 {
-                    BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.WriteOnly, pf);
-                    byte* first = (byte*)bmpData.Scan0;
+                    byte* currLn = first + (y * bmpData.Stride);
 
-                    Parallel.For(0, height, y =>
+                    for (int x = 0; x < bitmap.Width; x++)
                     {
-                        FieldPoint2d fp = new FieldPoint2d();
-                        byte* currLn = first + (y * bmpData.Stride);
-                        double v = y * ty;
+                        Color c = mapper(values[index++]);
 
-                        for (int x = 0; x < width; x++)
-                        {
-                            double u = x * tx;
-                            field.FieldPointAt(domain.Evaluate(new Vec2d(u, v)), fp);
-                            Color c = mapper(field.Evaluate(fp));
-
-                            int bx = x * bpp;
-                            currLn[bx] = c.B;
-                            currLn[bx + 1] = c.G;
-                            currLn[bx + 2] = c.R;
-                            currLn[bx + 3] = c.A;
-                        }
-                    });
-
-                    bmp.UnlockBits(bmpData);
-                    bmp.Save(path, format);
+                        int bx = x * bpp;
+                        currLn[bx] = c.B;
+                        currLn[bx + 1] = c.G;
+                        currLn[bx + 2] = c.R;
+                        currLn[bx + 3] = c.A;
+                    }
                 }
+
+                bitmap.UnlockBits(bmpData);
             }
         }
-        
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void PixelFormatCheck(int bytesPerPixel)
+        {
+            if (bytesPerPixel < 4)
+                throw new NotSupportedException("The pixel format of the given bitmap is not supported.");
+        }
     }
 }

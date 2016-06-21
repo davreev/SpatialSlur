@@ -4,9 +4,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using System.Drawing.Imaging;
 using SpatialSlur.SlurCore;
+
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurField
 {
@@ -16,57 +18,8 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public class ScalarField3d : Field3d<double>
     {
-        #region Static
 
-        /// <summary>
-        /// Returns a scalar field of normalized brightness values
-        /// TODO
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="bitmaps"></param>
-        /// <returns></returns>
-        public static ScalarField3d CreateFromImages(Domain3d domain, IList<Bitmap> bitmaps)
-        {
-            throw new NotImplementedException();
-
-            /*
-            ScalarField2d result = new ScalarField2d(domain, bitmap.Width, bitmap.Height);
-
-            unsafe
-            {
-                // get and check bytes per pixel
-                int bytesPerPixel = Bitmap.GetPixelFormatSize(bitmap.PixelFormat) / 8;
-
-                // ensure valid color depth
-                if (bytesPerPixel < 1)
-                    throw new ArgumentException("the given image must have a color depth of at least 8 bits per pixel");
-
-                // lock bits and get pointer to first
-                BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
-                byte* first = (byte*)bitmapData.Scan0;
-
-                int byteWidth = bitmap.Width * bytesPerPixel;
-                int fieldIndex = 0;
-
-                for (int i = 0; i < bitmap.Height; i++)
-                {
-                    byte* currentLine = first + (i * bitmapData.Stride);
-
-                    for (int j = 0; j < byteWidth; j += bytesPerPixel, fieldIndex++)
-                    {
-                        int r = currentLine[j];
-                        result.Values[fieldIndex] = r / 255.0;
-                    }
-                }
-            }
-
-            return result;
-            */
-        }
-
-        #endregion
-
-        // delegates for methods that depend on the field's boundary type
+        // delegates for boundary dependant functions
         private Action<IList<double>> _getLaplacian;
         private Action<IList<Vec3d>> _getGradient;
 
@@ -106,7 +59,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         protected override void OnBoundaryTypeChange()
         {
@@ -115,17 +68,23 @@ namespace SpatialSlur.SlurField
             switch (BoundaryType)
             {
                 case FieldBoundaryType.Constant:
-                    _getLaplacian = GetLaplacianConstant;
-                    _getGradient = GetGradientConstant;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianConstant;
+                        _getGradient = GetGradientConstant;
+                        break;
+                    }
                 case FieldBoundaryType.Equal:
-                    _getLaplacian = GetLaplacianEqual;
-                    _getGradient = GetGradientEqual;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianEqual;
+                        _getGradient = GetGradientEqual;
+                        break;
+                    }
                 case FieldBoundaryType.Periodic:
-                    _getLaplacian = GetLaplacianPeriodic;
-                    _getGradient = GetGradientPeriodic;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianPeriodic;
+                        _getGradient = GetGradientPeriodic;
+                        break;
+                    }
             }
         }
 
@@ -199,6 +158,108 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets this field to the difference between itself and another.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Subtract(ScalarField3d other)
+        {
+            Subtract(other.Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        public void Subtract(IList<double> values)
+        {
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] -= values[i];
+            });
+        }
+
+
+        /// <summary>
+        /// Sets the result field to the difference between this field and another.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="result"></param>
+        public void Subtract(ScalarField3d other, ScalarField3d result)
+        {
+            Subtract(other.Values, result.Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="result"></param>
+        public void Subtract(IList<double> values, IList<double> result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    result[i] = Values[i] - values[i];
+            });
+        }
+
+
+        /// <summary>
+        /// Sets this field to the sum of itself and another scaled by a given factor.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        public void AddScaled(ScalarField3d other, double factor)
+        {
+            AddScaled(other.Values, factor);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="factor"></param>
+        public void AddScaled(IList<double> values, double factor)
+        {
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] += values[i] * factor;
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factors"></param>
+        public void AddScaled(ScalarField3d other, ScalarField3d factors)
+        {
+            AddScaled(other.Values, factors.Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="factors"></param>
+        public void AddScaled(IList<double> values, IList<double> factors)
+        {
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] += values[i] * factors[i];
+            });
+        }
+
+
+        /// <summary>
         /// Sets this field to the product of itself and another.
         /// </summary>
         /// <param name="other"></param>
@@ -244,6 +305,56 @@ namespace SpatialSlur.SlurField
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                     result[i] = Values[i] * values[i];
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public void Divide(ScalarField3d other)
+        {
+            Divide(other.Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        public void Divide(IList<double> values)
+        {
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    Values[i] /= values[i];
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="result"></param>
+        public void Divide(ScalarField3d other, ScalarField3d result)
+        {
+            Divide(other.Values, result.Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="result"></param>
+        public void Divide(IList<double> values, IList<double> result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    result[i] = Values[i] / values[i];
             });
         }
 
@@ -423,10 +534,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
         private void GetLaplacianConstant(IList<double> result)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
@@ -474,13 +583,9 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
+        //
         private void GetLaplacianEqual(IList<double> result)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
@@ -528,13 +633,9 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
+        //
         private void GetLaplacianPeriodic(IList<double> result)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
@@ -615,11 +716,10 @@ namespace SpatialSlur.SlurField
     
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         private void GetGradientConstant(IList<Vec3d> result)
         {
-            // inverse step size for each dimension
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
             double dz = 1.0 / (2.0 * ScaleZ);
@@ -669,10 +769,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
         private void GetGradientEqual(IList<Vec3d> result)
         {
-            // inverse step size for each dimension
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
             double dz = 1.0 / (2.0 * ScaleZ);
@@ -721,11 +819,10 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         private void GetGradientPeriodic(IList<Vec3d> result)
         {
-            // inverse step size for each dimension
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
             double dz = 1.0 / (2.0 * ScaleZ);
@@ -780,6 +877,5 @@ namespace SpatialSlur.SlurField
         {
             return String.Format("ScalarField3d ({0} x {1} x {2})", CountX, CountY, CountZ);
         }
-
     }
 }

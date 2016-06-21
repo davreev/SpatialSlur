@@ -137,7 +137,7 @@ namespace SpatialSlur.SlurCore
         public Domain3d(IEnumerable<Vec3d> points)
             : this()
         {
-            foreach (Vec3d pt in points) Include(pt);
+            Include(points);
         }
 
 
@@ -358,6 +358,21 @@ namespace SpatialSlur.SlurCore
             x.Include(point.x);
             y.Include(point.y);
             z.Include(point.z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        public void Include(IEnumerable<Vec3d> points)
+        {
+            foreach (Vec3d p in points)
+            {
+                x.Include(p.x);
+                y.Include(p.y);
+                z.Include(p.z);
+            }
         }
 
 

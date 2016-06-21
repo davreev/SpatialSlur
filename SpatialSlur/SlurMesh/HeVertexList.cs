@@ -7,34 +7,26 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class HeVertexList:HeElementList<HeVertex>
+    public class HeVertexList : HeElementList<HeVertex>
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        internal HeVertexList(HeMesh mesh)
-            : base(mesh)
-        {
-        }
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="capacity"></param>
-        internal HeVertexList(HeMesh mesh, int capacity)
+        internal HeVertexList(HeMesh mesh, int capacity = 2)
             : base(mesh, capacity)
         {
         }
-
+      
 
         /// <summary>
         ///
@@ -45,9 +37,9 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeVertex Add(double x, double y, double z)
         {
-            HeVertex result = new HeVertex(x, y, z);
-            Add(result);
-            return result;
+            HeVertex v = new HeVertex(x, y, z);
+            Add(v);
+            return v;
         }
 
 
@@ -58,9 +50,55 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeVertex Add(Vec3d position)
         {
-            HeVertex result = new HeVertex(position);
-            Add(result);
-            return result;
+            HeVertex v = new HeVertex(position);
+            Add(v);
+            return v;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public void SetVertexPositions(IList<Vec3d> vectors, bool parallel = false)
+        {
+            SizeCheck(vectors);
+
+            if (parallel)
+            {
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        this[i].Position = vectors[i];
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    this[i].Position = vectors[i];
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public void SetVertexPositions(HeVertexList other, bool parallel = false)
+        {
+            if (parallel)
+            {
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        this[i].Position = other[i].Position;
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    this[i].Position = other[i].Position;
+            }
         }
 
 
@@ -68,13 +106,22 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="delta"></param>
-        public void Translate(Vec3d delta)
+        /// <param name="parallel"></param>
+        public void Translate(Vec3d delta, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        this[i].Position += delta;
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     this[i].Position += delta;
-            });
+            }
         }
 
 
@@ -82,678 +129,47 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="deltas"></param>
-        public void TranslateEach(IList<Vec3d> deltas)
+        /// <param name="parallel"></param>
+        public void TranslateEach(IList<Vec3d> deltas, bool parallel = false)
         {
             SizeCheck(deltas);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        this[i].Position += deltas[i];
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     this[i].Position += deltas[i];
-            });
-        }
-
-
-        /// <summary>
-        /// Counts the number of vertices connected to both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <returns></returns>
-        public int CountCommonNeighbours(HeVertex v0, HeVertex v1)
-        {
-            Validate(v0);
-            Validate(v1);
-
-            List<int> indices = new List<int>();
-
-            // flag vertices around v0 by setting their index to a unique integer
-            foreach (HeVertex v in v0.ConnectedVertices)
-            {
-                indices.Add(v.Index); // cache vertex indices for reset
-                v.Index = -2;
-            }
-
-            // count flagged vertices around v1
-            int count = 0;
-            foreach (HeVertex v in v1.ConnectedVertices)
-                if (v.Index == -2) count++;
-
-            // reset indices of flagged vertices
-            foreach (int i in indices)
-                Mesh.Vertices[i].Index = i;
-
-            return count;
-        }
-
-
-        /// <summary>
-        /// Counts the number of vertices connected to both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <param name="vertexMask"></param>
-        /// <returns></returns>
-        public int CountCommonNeighbours(HeVertex v0, HeVertex v1, IList<bool> vertexMask)
-        {
-            Validate(v0);
-            Validate(v1);
-            SizeCheck(vertexMask);
-
-            // set neighbours of v0
-            foreach (HeVertex v in v0.ConnectedVertices)
-                vertexMask[v.Index] = false;
-
-            // flag neighbours of v1
-            foreach (HeVertex v in v1.ConnectedVertices)
-                vertexMask[v.Index] = true;
-            
-            // count flagged neighbours of v0
-            int count = 0;
-            foreach (HeVertex v in v0.ConnectedVertices)
-                if (vertexMask[v.Index]) count++;
-
-            return count;
-        }
-
-
-        /// <summary>
-        /// Returns all vertices connected to both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <returns></returns>
-        public List<HeVertex> GetCommonNeighbours(HeVertex v0, HeVertex v1)
-        {
-            Validate(v0);
-            Validate(v1);
-
-            List<HeVertex> result = new List<HeVertex>();
-            List<int> indices = new List<int>();
-
-            // flag vertices around v0 by setting their index to a unique integer
-            foreach (HeVertex v in v0.ConnectedVertices)
-            {
-                indices.Add(v.Index); // cache vertex indices for reset
-                v.Index = -2;
-            }
-
-            // cache flagged vertices around v1
-            foreach (HeVertex v in v1.ConnectedVertices)
-                if (v.Index == -2) result.Add(v);
-
-            // reset indices of flagged vertices
-            foreach (int i in indices)
-                Mesh.Vertices[i].Index = i;
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns all vertices connected to both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <param name="vertexMask"></param>
-        /// <returns></returns>
-        public List<HeVertex> GetCommonNeighbours(HeVertex v0, HeVertex v1, IList<bool> vertexMask)
-        {
-            Validate(v0);
-            Validate(v1);
-            SizeCheck(vertexMask);
-
-            // set neighbours of v0
-            foreach (HeVertex v in v0.ConnectedVertices)
-                vertexMask[v.Index] = false;
-
-            // flag neighbours of v1
-            foreach (HeVertex v in v1.ConnectedVertices)
-                vertexMask[v.Index] = true;
-
-            // collect flagged neighbours of v0
-            List<HeVertex> result = new List<HeVertex>();
-            foreach (HeVertex v in v0.ConnectedVertices)
-                if (vertexMask[v.Index]) result.Add(v);
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Counts the number of faces that surround both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <returns></returns>
-        public int CountCommonFaces(HeVertex v0, HeVertex v1)
-        {
-            Validate(v0);
-            Validate(v1);
-
-            List<int> indices = new List<int>();
-
-            // flag faces around v0 by setting their index to a unique integer
-            foreach (HeFace f in v0.SurroundingFaces)
-            {
-                indices.Add(f.Index); // cache vertex indices for reset
-                f.Index = -2;
-            }
-
-            // count flagged faces around v1
-            int count = 0;
-            foreach (HeFace f in v1.SurroundingFaces)
-                if (f.Index == -2) count++;
-
-            // reset indices of flagged faces
-            foreach (int i in indices)
-                Mesh.Faces[i].Index = i;
-
-            return count;
-        }
-
-
-        /// <summary>
-        /// Counts the number of faces that surround both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <param name="faceMask"></param>
-        /// <returns></returns>
-        public int CountCommonFaces(HeVertex v0, HeVertex v1, bool[] faceMask)
-        {
-            Validate(v0);
-            Validate(v1);
-            Mesh.Faces.SizeCheck(faceMask);
-
-            // set neighbours of v0
-            foreach (HeFace f in v0.SurroundingFaces)
-                faceMask[f.Index] = false;
-
-            // flag neighbours of v1
-            foreach (HeFace f in v1.SurroundingFaces)
-                faceMask[f.Index] = true;
-
-            // count flagged neighbours of v0
-            int count = 0;
-            foreach (HeFace f in v0.SurroundingFaces)
-                if (faceMask[f.Index]) count++;
-
-            return count;
-        }
-
-
-        /// <summary>
-        /// Returns all faces that surround both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <returns></returns>
-        public List<HeFace> GetCommonFaces(HeVertex v0, HeVertex v1)
-        {
-            Validate(v0);
-            Validate(v1);
-
-            List<HeFace> result = new List<HeFace>();
-            List<int> indices = new List<int>();
-
-            // flag faces around v0 by setting their index to a unique integer
-            foreach (HeFace f in v0.SurroundingFaces)
-            {
-                indices.Add(f.Index); // cache vertex indices for reset
-                f.Index = -2;
-            }
-
-            // cache flagged faces around v1
-            foreach (HeFace f in v1.SurroundingFaces)
-                if (f.Index == -2) result.Add(f);
-
-            // reset indices of flagged faces
-            foreach (int i in indices)
-                Mesh.Faces[i].Index = i;
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns all faces that surround both given vertices.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <param name="faceMask"></param>
-        /// <returns></returns>
-        public List<HeFace> GetCommonFaces(HeVertex v0, HeVertex v1, IList<bool> faceMask)
-        {
-            Validate(v0);
-            Validate(v1);
-            SizeCheck(faceMask);
-
-            // set neighbours of v0
-            foreach (HeFace f in v0.SurroundingFaces)
-                faceMask[f.Index] = false;
-
-            // flag neighbours of v1
-            foreach (HeFace f in v1.SurroundingFaces)
-                faceMask[f.Index] = true;
-
-            // collect flagged neighbours of v0
-            List<HeFace> result = new List<HeFace>();
-            foreach (HeFace f in v0.SurroundingFaces)
-                if (faceMask[f.Index]) result.Add(f);
-
-            return result;
-        }
-
-
-        #region Element Attributes
-
-      
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public int[] GetVertexDegrees()
-        {
-            int[] result = new int[Count];
-            UpdateVertexDegrees(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateVertexDegrees(IList<int> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = this[i].Degree;
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the topological depth of all vertices connected to a set of sources.
-        /// </summary>
-        /// <returns></returns>
-        public int[] GetVertexDepths(IList<int> sources)
-        {
-            int[] result = new int[Count];
-            UpdateVertexDepths(sources, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateVertexDepths(IList<int> sources, IList<int> result)
-        {
-            SizeCheck(result);
-
-            Queue<int> queue = new Queue<int>();
-            result.Set(Int32.MaxValue);
-
-            // enqueue sources and set to zero
-            foreach (int i in sources)
-            {
-                queue.Enqueue(i);
-                result[i] = 0;
-            }
-
-            // breadth first search from sources
-            while (queue.Count > 0)
-            {
-                int i0 = queue.Dequeue();
-                int t0 = result[i0] + 1;
-
-                foreach (HeVertex v in this[i0].ConnectedVertices)
-                {
-                    int i1 = v.Index;
-
-                    if (t0 < result[i1])
-                    {
-                        result[i1] = t0;
-                        queue.Enqueue(i1);
-                    }
-                }
             }
         }
 
 
         /// <summary>
-        /// Returns the topological distance of all vertices connected to a set of sources.
+        /// 
         /// </summary>
+        /// <param name="start"></param>
         /// <returns></returns>
-        public double[] GetVertexDepths(IList<int> sources, IList<double> halfEdgeLengths)
+        public Queue<HeVertex> GetBreadthFirstOrder(HeVertex start)
         {
-            double[] result = new double[Count];
-            UpdateVertexDepths(sources, halfEdgeLengths, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// TODO use edge lengths instead of half-edge lengths
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateVertexDepths(IList<int> sources, IList<double> halfEdgeLengths, IList<double> result)
-        {
-            SizeCheck(result);
-            Mesh.HalfEdges.SizeCheck(halfEdgeLengths);
-
-            Queue<int> queue = new Queue<int>();
-            result.Set(Double.PositiveInfinity);
-
-            // enqueue sources and set to zero
-            foreach (int i in sources)
-            {
-                queue.Enqueue(i);
-                result[i] = 0.0;
-            }
-
-            // breadth first search from sources
-            while (queue.Count > 0)
-            {
-                int i0 = queue.Dequeue();
-                double t0 = result[i0];
-
-                foreach (HalfEdge e in this[i0].IncomingHalfEdges)
-                {
-                    int i1 = e.Start.Index;
-                    double t1 = t0 + halfEdgeLengths[e.Index];
-
-                    if (t1 < result[i1])
-                    {
-                        result[i1] = t1;
-                        queue.Enqueue(i1);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Returns the morse smale classification for each vertex
-        /// 0 = normal
-        /// 1 = minima
-        /// 2 = maxima
-        /// 3 = saddle
-        /// </summary>
-        /// <param name="values"></param>
-        public int[] GetMorseSmaleClassification(IList<double> values)
-        {
-            int[] result = new int[Count];
-            UpdateMorseSmaleClassification(values, result);
-            return result;
+            // TODO
+            throw new NotImplementedException();
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="values"></param>
-        /// <param name="result"></param>
-        public void UpdateMorseSmaleClassification(IList<double> values, IList<int> result)
-        {
-            SizeCheck(values);
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v0 = this[i];
-                    double t0 = values[i];
-
-                    // check first neighbour
-                    HalfEdge first = v0.First.Twin;
-                    double t1 = values[first.Start.Index];
-
-                    bool last = (t1 < t0); // was the last neighbour lower?
-                    int count = 0; // number of discontinuities
-                    first = first.Next.Twin;
-
-                    // circulate remaining neighbours
-                    HalfEdge e = first;
-                    do
-                    {
-                        t1 = values[e.Start.Index];
-
-                        if (t1 < t0)
-                        {
-                            if (!last) count++;
-                            last = true;
-                        }
-                        else
-                        {
-                            if (last) count++;
-                            last = false;
-                        }
-
-                        e = e.Next.Twin;
-                    } while (e != first);
-
-                    // classify current vertex based on number of discontinuities
-                    switch (count)
-                    {
-                        case 0:
-                            result[i] = (last) ? 2 : 1;
-                            break;
-                        case 2:
-                            result[i] = 0;
-                            break;
-                        default:
-                            result[i] = 3;
-                            break;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the area associated with each vertex.
-        /// </summary>
-        /// <param name="halfEdgeAreas"></param>
+        /// <param name="start"></param>
         /// <returns></returns>
-        public double[] GetVertexAreas(IList<double> halfEdgeAreas)
+        public Stack<HeVertex> GetDepthFirstOrder(HeVertex start)
         {
-            double[] result = new double[Count];
-            UpdateVertexAreas(halfEdgeAreas, result);
-            return result;
-        }
-
-        
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="faceCenters"></param>
-        /// <returns></returns>
-        public double[] GetVertexAreas(IList<Vec3d> faceCenters)
-        {
-            double[] result = new double[Count];
-            UpdateVertexAreas(faceCenters, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="halfEdgeAreas"></param>
-        /// <param name="result"></param>
-        public void UpdateVertexAreas(IList<double> halfEdgeAreas, IList<double> result)
-        {
-            SizeCheck(result);
-
-            HalfEdgeList edges = Mesh.HalfEdges;
-            edges.SizeCheck(halfEdgeAreas);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
-
-                    double sum = 0.0;
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                    {
-                        if (e.Face == null) continue;
-                        sum += halfEdgeAreas[e.Index];
-                    }
-
-                    result[i] = sum;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="faceCenters"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public void UpdateVertexAreas(IList<Vec3d> faceCenters, IList<double> result)
-        {
-            SizeCheck(result);
-
-            HeFaceList faces = Mesh.Faces;
-            faces.SizeCheck(faceCenters);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
-
-                    double sum = 0.0;
-
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                    {
-                        if (e.Face == null) continue;
-
-                        Vec3d v0 = e.Span * 0.5;
-                        Vec3d v1 = faceCenters[e.Face.Index] - e.Start.Position;
-                        Vec3d v2 = e.Previous.Twin.Span * 0.5;
-
-                        sum += (Vec3d.Cross(v0, v1).Length + Vec3d.Cross(v1, v2).Length) * 0.5;
-                    }
-
-                    result[i] = sum;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetVertexAreasTri()
-        {
-            double[] result = new double[Count];
-            UpdateVertexAreasTri(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateVertexAreasTri(IList<double> result)
-        {
-            SizeCheck(result);
-
-            HeFaceList faces = Mesh.Faces;
-            double t = 1.0 / 3.0;
-
-            for (int i = 0; i < faces.Count; i++)
-            {
-                HeFace f = faces[i];
-                if (f.IsUnused) continue;
-
-                double a = Vec3d.Cross(f.First.Span, f.First.Next.Span).Length * t * 0.5;
-                foreach (HeVertex v in f.Vertices)
-                    result[v.Index] += a;
-            }
-        }
-
-
-        /// <summary>
-        /// Returns a radii for each vertex.
-        /// If the mesh is a circle packing mesh, these will be the radii of tangent spheres centered on each vertex.
-        /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
-        /// </summary>
-        public double[] GetVertexRadii(IList<double> halfEdgeLengths)
-        {
-            double[] result = new double[Count];
-            UpdateVertexRadii(halfEdgeLengths, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="halfEdgeLengths"></param>
-        /// <param name="result"></param>
-        public void UpdateVertexRadii(IList<double> halfEdgeLengths, IList<double> result)
-        {
-            Mesh.HalfEdges.SizeCheck(halfEdgeLengths);
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue; // skip unused vertices
-
-                    double sum = 0.0;
-                    int n = 0;
-
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                    {
-                        if (e.Face == null) continue; // skip boundary edges
-                        sum += (halfEdgeLengths[e.Index] + halfEdgeLengths[e.Previous.Index] - halfEdgeLengths[e.Next.Index]) * 0.5;
-                        n++;
-                    }
-
-                    result[v.Index] = sum / n;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetMeanCurvature()
-        {
-            double[] result = new double[Count];
-            UpdateMeanCurvature(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateMeanCurvature(IList<double> result)
-        {
+            // TODO
             throw new NotImplementedException();
         }
 
@@ -762,77 +178,17 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        public double[] GetGaussianCurvature()
+        public int CountBoundaryVertices()
         {
-            double[] result = new double[Count];
-            UpdateGaussianCurvature(result);
-            return result;
-        }
+            int n = 0;
 
-
-        /// <summary>
-        /// Returns the gaussian curvature at each vertex.
-        /// This is calculated as the angle defect.
-        /// </summary>
-        /// <param name="halfEdgeAngles"></param>
-        /// <returns></returns>
-        public double[] GetGaussianCurvature(IList<double> halfEdgeAngles)
-        {
-            double[] result = new double[Count];
-            UpdateGaussianCurvature(halfEdgeAngles, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateGaussianCurvature(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            for (int i = 0; i < Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused || v.IsBoundary) continue;
+                var v = this[i];
+                if (!v.IsUnused && v.IsBoundary) n++;
+            }
 
-                    double sum = 0.0;
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                        sum += Vec3d.Angle(e.Span, e.Previous.Twin.Span);
-
-                    result[i] = Math.Abs(sum - SlurMath.PI2);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="halfEdgeAngles"></param>
-        /// <param name="result"></param>
-        public void UpdateGaussianCurvature(IList<double> halfEdgeAngles, IList<double> result)
-        {
-            Mesh.HalfEdges.SizeCheck(halfEdgeAngles);
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused || v.IsBoundary) continue;
-
-                    double sum = 0.0;
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                        sum += halfEdgeAngles[e.Index];
-
-                    result[i] = Math.Abs(sum - SlurMath.PI2);
-                }
-            });
+            return n;
         }
 
 
@@ -840,268 +196,182 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        public Vec3d[] GetVertexPositions()
+        public List<HeVertex> GetBoundaryVertices()
         {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateVertexPositions(result);
+            List<HeVertex> result = new List<HeVertex>();
+
+            for (int i = 0; i < Count; i++)
+            {
+                var v = this[i];
+                if (!v.IsUnused && v.IsBoundary) result.Add(v);
+            }
+
             return result;
         }
 
 
         /// <summary>
-        /// 
+        /// Returns the number of common neigbours shared between v0 and v1.
         /// </summary>
-        /// <param name="result"></param>
-        public void UpdateVertexPositions(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = this[i].Position;
-            });
-        }
-
-
-        /// <summary>
-        /// Calculates the vertex normal as the area-weighted sum of half-edge normals around each vertex.
-        /// Vertex normals are unitized by default.
-        /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
-        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
-        public Vec3d[] GetVertexNormals()
+        public int CountCommonNeighbours(HeVertex v0, HeVertex v1)
         {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateVertexNormals(result);
-            return result;
+            OwnsCheck(v0);
+            OwnsCheck(v1);
+
+            if (v0.IsUnused || v1.IsUnused)
+                return 0;
+
+            return CountCommonNeighboursImpl(v0, v1);
         }
 
 
         /// <summary>
-        /// Calculates the vertex normals as the unitized sum of half-edge normals around each vertex.
-        /// Half-edge normals can be scaled in advance for custom weighting.
-        /// Vertex normals are unitized by default.
-        /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
+        /// Assumes the given elements are valid for the operation.
         /// </summary>
-        /// <param name="halfEdgeNormals"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
-        public Vec3d[] GetVertexNormals(IList<Vec3d> halfEdgeNormals)
+        internal int CountCommonNeighboursImpl(HeVertex v0, HeVertex v1)
         {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateVertexNormals(halfEdgeNormals, result);
-            return result;
+            int currTag = NextTag;
+
+            // flag neighbours of v1
+            foreach (HeVertex v in v1.ConnectedVertices)
+                v.Tag = currTag;
+
+            // count flagged neighbours of v0
+            int count = 0;
+            foreach (HeVertex v in v0.ConnectedVertices)
+                if (v.Tag == currTag) count++;
+
+            return count;
         }
 
 
         /// <summary>
-        /// 
+        /// Returns all common neigbours shared between v0 and v1.
         /// </summary>
-        /// <param name="result"></param>
-        public void UpdateVertexNormals(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
-
-                    Vec3d sum = new Vec3d();
-                 
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                    {
-                        if (e.Face == null) continue;
-                        sum += Vec3d.Cross(e.Previous.Span, e.Span);
-                    }
-
-                    sum.Unitize();
-                    result[i] = sum;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="halfEdgeNormals"></param>
-        /// <param name="result"></param>
-        public void UpdateVertexNormals(IList<Vec3d> halfEdgeNormals, IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
-
-                    Vec3d sum = new Vec3d();
-
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                    {
-                        if (e.Face == null) continue;
-                        sum += halfEdgeNormals[e.Index];
-                    }
-
-                    sum.Unitize();
-                    result[i] = sum;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Calculates the Laplacian using a normalized umbrella weighting scheme.
-        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
-        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
-        public Vec3d[] GetVertexLaplacians()
+        public List<HeVertex> GetCommonNeighbours(HeVertex v0, HeVertex v1)
         {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateVertexLaplacians(result);
-            return result;
+            OwnsCheck(v0);
+            OwnsCheck(v1);
+
+            if (v0.IsUnused || v1.IsUnused)
+                return new List<HeVertex>();
+
+            return GetCommonNeighboursImpl(v0, v1);
         }
 
 
         /// <summary>
-        /// Calculates the Laplacian using custom edge weights scheme.
-        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
+        /// Assumes the given elements are valid for the operation.
         /// </summary>
-        /// <param name="edgeWeights"></param>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
-        public Vec3d[] GetVertexLaplacians(IList<double> edgeWeights)
+        internal List<HeVertex> GetCommonNeighboursImpl(HeVertex v0, HeVertex v1)
         {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateVertexLaplacians(edgeWeights, result);
+            int currTag = NextTag;
+
+            // flag neighbours of v1
+            foreach (HeVertex v in v1.ConnectedVertices)
+                v.Tag = currTag;
+
+            // collect flagged neighbours of v0
+            List<HeVertex> result = new List<HeVertex>();
+            foreach (HeVertex v in v0.ConnectedVertices)
+                if (v.Tag == currTag) result.Add(v);
+
             return result;
         }
 
 
         /// <summary>
-        /// 
+        /// Returns the number of common adjacent faces shared between v0 and v1.
         /// </summary>
-        /// <param name="result"></param>
-        public void UpdateVertexLaplacians(IList<Vec3d> result)
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public int CountCommonFaces(HeVertex v0, HeVertex v1)
         {
-            SizeCheck(result);
+            OwnsCheck(v0);
+            OwnsCheck(v1);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
+            if (v0.IsUnused || v1.IsUnused)
+                return 0;
 
-                    Vec3d sum = new Vec3d();
-                    int n = 0;
-
-                    foreach (HalfEdge e in v.IncomingHalfEdges)
-                    {
-                        sum += e.Start.Position;
-                        n++;
-                    }
-
-                    result[i] = sum / n - v.Position;
-                }
-            });
+            return CountCommonFacesImpl(v0, v1);
         }
 
 
         /// <summary>
-        /// 
+        /// Assumes the given elements are valid for the operation.
         /// </summary>
-        /// <param name="halfEdgeWeights"></param>
-        /// <param name="result"></param>
-        public void UpdateVertexLaplacians(IList<double> halfEdgeWeights, IList<Vec3d> result)
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        internal int CountCommonFacesImpl(HeVertex v0, HeVertex v1)
         {
-            SizeCheck(result);
-            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
-         
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
+            int currTag = Mesh.Faces.NextTag;
 
-                    Vec3d sum = new Vec3d();
+            // flag neighbours of v1
+            foreach (HeFace f in v1.SurroundingFaces)
+                f.Tag = currTag;
 
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                        sum += e.Span * halfEdgeWeights[e.Index];
+            // count flagged neighbours of v0
+            int count = 0;
+            foreach (HeFace f in v0.SurroundingFaces)
+                if (f.Tag == currTag) count++;
 
-                    result[i] = sum;
-                }
-            });
+            return count;
         }
 
 
         /// <summary>
-        /// 
+        /// Returns all common adjacent faces shared between v0 and v1.
         /// </summary>
-        /// <param name="values"></param>
-        /// <param name="halfEdgeWeights"></param>
-        /// <param name="result"></param>
-        public void UpdateVertexLaplacians(IList<double> values, IList<double> halfEdgeWeights, IList<double> result)
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public List<HeFace> GetCommonFaces(HeVertex v0, HeVertex v1)
         {
-            SizeCheck(result);
-            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
+            OwnsCheck(v0);
+            OwnsCheck(v1);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
+            if (v0.IsUnused || v1.IsUnused)
+                return new List<HeFace>();
 
-                    double t = values[i];
-                    double sum = 0.0;
-
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                        sum += (values[e.End.Index] - t) * halfEdgeWeights[e.Index];
-
-                    result[i] = sum;
-                }
-            });
+            return GetCommonFacesImpl(v0, v1);
         }
 
 
         /// <summary>
-        /// 
+        /// Assumes the given elements are valid for the operation.
         /// </summary>
-        /// <param name="values"></param>
-        /// <param name="halfEdgeWeights"></param>
-        /// <param name="result"></param>
-        public void UpdateVertexLaplacians(IList<Vec3d> values, IList<double> halfEdgeWeights, IList<Vec3d> result)
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        internal List<HeFace> GetCommonFacesImpl(HeVertex v0, HeVertex v1)
         {
-            SizeCheck(result);
-            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
+            int currTag = Mesh.Faces.NextTag;
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = this[i];
-                    if (v.IsUnused) continue;
+            // flag neighbours of v1
+            foreach (HeFace f in v1.SurroundingFaces)
+                f.Tag = currTag;
 
-                    Vec3d t = values[i];
-                    Vec3d sum = new Vec3d();
+            // collect flagged neighbours of v0
+            List<HeFace> result = new List<HeFace>();
+            foreach (HeFace f in v0.SurroundingFaces)
+                if (f.Tag == currTag) result.Add(f);
 
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                        sum += (values[e.End.Index] - t) * halfEdgeWeights[e.Index];
-
-                    result[i] = sum;
-                }
-            });
+            return result;
         }
-
-
-        #endregion
-
 
         #region Euler Operators
 
@@ -1110,19 +380,29 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="vertex"></param>
         /// <returns></returns>
-        public bool Remove(HeVertex vertex)
+        public void Remove(HeVertex vertex)
         {
-            Validate(vertex);
+            vertex.UsedCheck();
+            OwnsCheck(vertex);
 
-            // simplified process for interior degree 2 vertices
+            RemoveImpl(vertex);
+        }
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
+        internal void RemoveImpl(HeVertex vertex)
+        {
+            // simplified removal for interior degree 2 vertices
             if (vertex.IsDegree2 && !vertex.IsBoundary)
-                RemoveSimple(vertex);
+                RemoveSimple(vertex); 
 
-            HeFaceList faces = Mesh.Faces;
+            var faces = Mesh.Faces;
             foreach (HeFace f in vertex.SurroundingFaces)
-                faces.Remove(f);
-
-            return true;
+                faces.RemoveImpl(f);
         }
 
 
@@ -1131,80 +411,98 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="vertex"></param>
         /// <returns></returns>
-        private void RemoveSimple(HeVertex vertex)
+        internal void RemoveSimple(HeVertex vertex)
         {
-            HalfEdge e0 = vertex.First;
-            HalfEdge e1 = e0.Twin;
-            HalfEdge e2 = e1.Next;
+            Halfedge he0 = vertex.First;
+            Halfedge he1 = he0.Twin;
+            Halfedge he2 = he1.Next;
 
             HeVertex v0 = vertex; // to be removed
-            HeVertex v1 = e1.Start;
+            HeVertex v1 = he1.Start;
 
-            // update vertex-edge refs if necesasry
-            if (e1 == v1.First) v1.First = e2;
-            e2.Start = v1;
+            // update vertex->halfedge refs if necesasry
+            if (he1 == v1.First) v1.First = he2;
+            he2.Start = v1;
 
-            // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
-            HalfEdge.MakeConsecutive(e1.Previous, e2);
+            // update halfedge->halfedge refs
+            Halfedge.MakeConsecutive(he0.Previous, he0.Next);
+            Halfedge.MakeConsecutive(he1.Previous, he2);
 
-            //flag for removal
+            // flag for removal
             v0.MakeUnused();
-            e0.MakeUnused();
-            e1.MakeUnused();
+            he0.MakeUnused();
+            he1.MakeUnused();
         }
 
 
         /// <summary>
-        /// TODO rework implementation
         /// Merges a pair of boundary vertices.
         /// The first vertex is flagged as unused.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
-        public bool MergeVertices(HeVertex v0, HeVertex v1)
+        public bool MergeVertices(HeVertex v0, HeVertex v1, double t = 0.5)
         {
-            Validate(v0);
-            Validate(v1);
+            v0.UsedCheck();
+            v1.UsedCheck();
 
-            // both vertices must be on the mesh boundary
-            if (!(v0.IsBoundary && v1.IsBoundary)) return false;
+            OwnsCheck(v0);
+            OwnsCheck(v1);
 
-            HalfEdge e0 = v0.First;
-            HalfEdge e1 = v1.First;
+            if (v0 == v1)
+                return false;
 
-            HalfEdge e2 = e0.Previous;
-            HalfEdge e3 = e1.Previous;
-    
-            // if vertices are consecutive, just collapse the edge between them
-            if (e0 == e3) 
-                return Mesh.HalfEdges.CollapseEdge(e0);
-            else if(e1 == e2)
-                return Mesh.HalfEdges.CollapseEdge(e1);
+            if (!(v0.IsBoundary && v1.IsBoundary)) 
+                return false;
 
-            // update edge-vertex refs for all edges emanating from v1
-            foreach (HalfEdge e in v0.OutgoingHalfEdges) 
-                e.Start = v1;
-       
-            // update edge-edge refs
-            HalfEdge.MakeConsecutive(e3, e0);
-            HalfEdge.MakeConsecutive(e2, e1);
+            return MergeVerticesImpl(v0, v1, t);
+        }
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        internal bool MergeVerticesImpl(HeVertex v0, HeVertex v1, double t = 0.5)
+        {
+            Halfedge he0 = v0.First;
+            Halfedge he1 = v1.First;
+
+            Halfedge he2 = he0.Previous;
+            Halfedge he3 = he1.Previous;
+
+            // if vertices are consecutive, just collapse the halfedge between them
+            if (he0 == he3)
+                return Mesh.Halfedges.CollapseEdgeImpl(he0, t);
+            else if (he1 == he2)
+                return Mesh.Halfedges.CollapseEdgeImpl(he1, 1.0 - t);
+
+            // update halfedge->vertex refs for all edges emanating from v1
+            foreach (Halfedge he in v0.OutgoingHalfedges)
+                he.Start = v1;
+
+            // update halfedge->halfedge refs
+            Halfedge.MakeConsecutive(he3, he0);
+            Halfedge.MakeConsecutive(he2, he1);
 
             // deal with potential collapse of boundary loops on either side of the merge
-            if (e1.Next == e2)
+            if (he1.Next == he2)
             {
-                Mesh.Faces.MergeInvalidFace(e1);
-                v1.First = e0; // maintain boundary status of v1
+                Mesh.Faces.MergeInvalidFace(he1);
+                v1.First = he0; // maintain boundary status of v1
             }
 
-            if (e0.Next == e3)
+            if (he0.Next == he3)
             {
-                Mesh.Faces.MergeInvalidFace(e0);
+                Mesh.Faces.MergeInvalidFace(he0);
             }
 
             // flag elements for removal
             v0.MakeUnused();
+
+            // update postition of remaining vertex
+            v1.Position = Vec3d.Lerp(v0.Position, v1.Position, t);
             return true;
         }
 
@@ -1213,128 +511,114 @@ namespace SpatialSlur.SlurMesh
         /// Splits a vertex in 2 connected by a new edge.
         /// Returns the new edge on success and null on failure.
         /// </summary>
-        /// <param name="e0"></param>
-        /// <param name="e1"></param>
+        /// <param name="he0"></param>
+        /// <param name="he1"></param>
         /// <returns></returns>
-        public HalfEdge SplitVertex(HalfEdge e0, HalfEdge e1)
+        public Halfedge SplitVertex(Halfedge he0, Halfedge he1)
         {
-            HalfEdgeList edges = Mesh.HalfEdges;
-            edges.Validate(e0);
-            edges.Validate(e1);
+            he0.UsedCheck();
+            he1.UsedCheck();
+         
+            var hedges = Mesh.Halfedges;
+            hedges.OwnsCheck(he0);
+            hedges.OwnsCheck(he1);
 
-            // they must emanate from the same vertex
-            // TODO handle degree 2 vertex?
-            if (e0.Start != e1.Start) return null;
+            if (he0.Start != he1.Start) 
+                return null;
 
-            // if the same edge then just split the edge
-            if (e0 == e1) return Mesh.HalfEdges.SplitEdge(e0);
+            return SplitVertexImpl(he0, he1);
+        }
 
-            HeVertex v0 = e0.Start;
+      
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="he0"></param>
+        /// <param name="he1"></param>
+        /// <returns></returns>
+        internal Halfedge SplitVertexImpl(Halfedge he0, Halfedge he1)
+        {
+            // if the same edge or vertex is degree 2 then just split the edge
+            if (he0 == he1 || he0.IsFromDegree2)
+                return Mesh.Halfedges.SplitEdgeImpl(he0, 0.0);
+
+            HeVertex v0 = he0.Start;
             HeVertex v1 = Add(v0.Position);
 
-            HalfEdge e2 = Mesh.HalfEdges.AddPair(v0, v1);
-            HalfEdge e3 = e2.Twin;
+            Halfedge he2 = Mesh.Halfedges.AddPair(v0, v1);
+            Halfedge he3 = he2.Twin;
 
-            // update edge-face refs
-            e2.Face = e0.Face;
-            e3.Face = e1.Face;
+            // update halfedge->face refs
+            he2.Face = he0.Face;
+            he3.Face = he1.Face;
 
-            // update start vertex of all outoging edges between from and to
-            HalfEdge e = e0;
+            // update start vertex of all outoging edges between he0 and he1
+            Halfedge he = he0;
             do
             {
-                e.Start = v1;
-                e = e.Twin.Next;
-            } while (e != e1);
+                he.Start = v1;
+                he = he.Twin.Next;
+            } while (he != he1);
 
-            // update vertex-edge refs if necessary
+            // update vertex->halfedge refs if necessary
             if (v0.First.Start == v1)
             {
-                // if v0's outgoing edge now emanates from v1, then can assume v1 is now on the boundary if v0 was originally
+                // if v0's outgoing halfedge now starts at v1, can assume v1 is now on the boundary if v0 was originally
                 v1.First = v0.First;
-                v0.First = e2;
+                v0.First = he2;
             }
             else
             {
-                v1.First = e3;
+                v1.First = he3;
             }
 
-            // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0.Previous, e2);
-            HalfEdge.MakeConsecutive(e2, e0);
-            HalfEdge.MakeConsecutive(e1.Previous, e3);
-            HalfEdge.MakeConsecutive(e3, e1);
+            // update halfedge->halfedge refs
+            Halfedge.MakeConsecutive(he0.Previous, he2);
+            Halfedge.MakeConsecutive(he2, he0);
+            Halfedge.MakeConsecutive(he1.Previous, he3);
+            Halfedge.MakeConsecutive(he3, he1);
 
-            return e2;
+            return he2;
         }
+      
 
-    
         /// <summary>
-        /// TODO
+        /// 
         /// </summary>
-        /// <param name="e0"></param>
-        /// <param name="e1"></param>
+        /// <param name="he0"></param>
+        /// <param name="he1"></param>
         /// <returns></returns>
-        public bool DetatchVertex(HalfEdge e0, HalfEdge e1)
+        public bool DetatchVertex(Halfedge he0, Halfedge he1)
         {
-            throw new NotImplementedException();
+            he0.UsedCheck();
+            he1.UsedCheck();
 
-            HalfEdgeList edges = Mesh.HalfEdges;
-            edges.Validate(e0);
-            edges.Validate(e1);
+            var hedges = Mesh.Halfedges;
+            hedges.OwnsCheck(he0);
+            hedges.OwnsCheck(he1);
 
-            // edges must belong to the same mesh
-            // they must emanate from the same vertex
-            // and they can't be the same
-            if (e0.Start != e1.Start || e0 == e1) return false;
+            if (he0 == he1) 
+                return false;
 
-            HeVertex v0 = e0.Start;
-            HeVertex v1 = new HeVertex(); // new vertex
+            if (he0.Start != he1.Start)
+                return false;
 
-            // create new edges if original is not on the boundary
-            if(e0.Face != null)
-            {
-               HalfEdge e2 = Mesh.HalfEdges.AddPair(v0, e0.End);
-
-            }
-
-            if(e1.Face != null)
-            {
-                  
-            HalfEdge e3 = Mesh.HalfEdges.AddPair(v1, e1.End);
-            }
-     
-        
-
-            // update start vertex of all outgoing edges between e0 and e1
-            HalfEdge e = e0;
-            do
-            {
-                e.Start = v1;
-                e = e.Twin.Next;
-            } while (e != e1);
-
-            // update vertex-edge refs
-            e0.MakeFirstFromStart();
-            e1.MakeFirstFromStart();
-
-            /*
-            // update vertex-edge refs if necessary
-            if (v0.Outgoing.Start == v1)
-            {
-                // if v0's outgoing edge now emanates from v1, then can assume v1 is now on the boundary if v0 was originally
-                v1.Outgoing = v0.Outgoing;
-                v0.Outgoing = e1;
-            }
-            else
-            {
-                v1.Outgoing = e3;
-            }
-            */
-
-            return true;
+            return DetatchVertexImpl(he0, he1);
         }
-     
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="he0"></param>
+        /// <param name="he1"></param>
+        /// <returns></returns>
+        internal bool DetatchVertexImpl(Halfedge he0, Halfedge he1)
+        {
+            //TODO
+            throw new NotImplementedException();
+        }
+
         #endregion
 
     }

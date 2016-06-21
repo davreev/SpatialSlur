@@ -86,7 +86,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO
+        /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
@@ -94,6 +94,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static PointCloud ToPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper)
         {
+            // TODO
             throw new NotImplementedException();
         }
 

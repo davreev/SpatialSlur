@@ -17,15 +17,6 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static Vec2i Zero
-        {
-            get { return new Vec2i(0, 0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         public static Vec2i UnitX
         {
             get { return new Vec2i(1, 0); }
@@ -216,6 +207,36 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// returns the largest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public int Max
+        {
+            get { return Math.Max(x, y); }
+        }
+
+
+        /// <summary>
+        /// returns the smallest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public int Min
+        {
+            get { return Math.Min(x, y); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vec2i Abs
+        {
+            get { return new Vec2i(Math.Abs(x), Math.Abs(y)); }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         public bool IsZero
@@ -261,14 +282,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override int GetHashCode()
         {
-            // allow overflow
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 23 + x.GetHashCode();
-                hash = hash * 23 + y.GetHashCode();
-                return hash;
-            }
+            int hash = 17;
+            hash = hash * 23 + x.GetHashCode();
+            hash = hash * 23 + y.GetHashCode();
+            return hash;
         }
 
 

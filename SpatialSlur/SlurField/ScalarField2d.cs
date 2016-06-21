@@ -4,9 +4,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using System.Drawing.Imaging;
 using SpatialSlur.SlurCore;
+
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurField
 {
@@ -16,7 +18,7 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public class ScalarField2d:Field2d<double>
     {
-        // Delegates for boundary dependant methods
+        // delegates for boundary dependant methods
         private Action<IList<double>> _getLaplacian;
         private Action<IList<Vec2d>> _getGradient;
 
@@ -64,17 +66,23 @@ namespace SpatialSlur.SlurField
             switch(BoundaryType)
             {
                 case FieldBoundaryType.Constant:
-                    _getLaplacian = GetLaplacianConstant;
-                    _getGradient = GetGradientConstant;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianConstant;
+                        _getGradient = GetGradientConstant;
+                        break;
+                    }
                 case FieldBoundaryType.Equal:
-                    _getLaplacian = GetLaplacianEqual;
-                    _getGradient = GetGradientEqual;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianEqual;
+                        _getGradient = GetGradientEqual;
+                        break;
+                    }
                 case FieldBoundaryType.Periodic:
-                    _getLaplacian = GetLaplacianPeriodic;
-                    _getGradient = GetGradientPeriodic;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianPeriodic;
+                        _getGradient = GetGradientPeriodic;
+                        break;
+                    }
             }
         }
 
@@ -369,10 +377,7 @@ namespace SpatialSlur.SlurField
         }
        
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
+        //
         private void GetLaplacianConstant(IList<double> result)
         {
             // inverse square step size for each dimension
@@ -413,10 +418,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
+        //
         private void GetLaplacianEqual(IList<double> result)
         {
             // inverse square step size for each dimension
@@ -457,10 +459,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
+        //
         private void GetLaplacianPeriodic(IList<double> result)
         {
             // inverse square step size for each dimension
@@ -533,10 +532,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
+        //
         private void GetGradientConstant(IList<Vec2d> result)
         {
             // inverse step size for each dimension
@@ -576,10 +572,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
+        //
         private void GetGradientEqual(IList<Vec2d> result)
         {
             // inverse step size for each dimension
@@ -620,9 +613,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
+        //
         private void GetGradientPeriodic(IList<Vec2d> result)
         {
             // inverse step size for each dimension

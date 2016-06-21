@@ -4,18 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class DiEdge
+    public class DiEdge : GraphElement
     {
         private DiNode _start;
         private DiNode _end;
         //private E _data;
-        private int _index = -1;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal DiEdge()
+        {
+        }
 
 
         /// <summary>
@@ -23,12 +34,10 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        /// <param name="index"></param>
-        internal DiEdge(DiNode start, DiNode end, int index)
+        internal DiEdge(DiNode start, DiNode end)
         {
             _start = start;
             _end = end;
-            _index = index;
         }
 
 
@@ -53,34 +62,22 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Returns the index of the edge within the graph's edge list.
-        /// This will be set to -1 if the edge is removed.
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            internal set { _index = value; }
-        }
-
-
-        /// <summary>
         /// Return true if the edge has been flagged for removal.
         /// </summary>
-        public bool IsRemoved
+        public override bool IsUnused
         {
-            get { return _index == -1; }
+            get { return _start == null; }
         }
 
 
         /// <summary>
         /// Flags the edge for removal.
         /// </summary>
-        public void Remove()
+        internal void OnRemove()
         {
-            if (IsRemoved) return; // check if already flagged
-            _index = -1;
             _start.OutDegree--;
             _end.InDegree--;
+            _start = null;
         }
     }
 }

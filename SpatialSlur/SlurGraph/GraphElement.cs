@@ -8,20 +8,20 @@ using System.Threading.Tasks;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurMesh
+namespace SpatialSlur.SlurGraph
 {
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public abstract class HeElement
+    public abstract class GraphElement
     {
         private int _index = -1;
-        private int _tag; // tag for topological searches, validation etc.
+        private int _tag;
 
 
         /// <summary>
-        /// Returns the element's position within the collection of the parent mesh.
+        /// Returns the element's position within the collection of the parent graph.
         /// </summary>
         public int Index
         {
@@ -29,7 +29,7 @@ namespace SpatialSlur.SlurMesh
             internal set { _index = value; }
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -38,35 +38,16 @@ namespace SpatialSlur.SlurMesh
             get { return _tag; }
             set { _tag = value; }
         }
- 
-
-        /// <summary>
-        /// Returns true if the element lies on the mesh boundary.
-        /// </summary>
-        public abstract bool IsBoundary { get; }
 
 
         /// <summary>
-        /// Returns true if the element has been flagged for removal.
+        /// 
         /// </summary>
-        /// <returns></returns>
         public abstract bool IsUnused { get; }
 
 
         /// <summary>
-        /// Returns false for non-manifold elements.
-        /// </summary>
-        internal abstract bool IsValid { get; }
-
-
-        /// <summary>
-        /// Flags the element for removal.
-        /// </summary>
-        internal abstract void MakeUnused();
-
-
-        /// <summary>
-        /// Throws an exception for unused elements.
+        /// 
         /// </summary>
         internal void UsedCheck()
         {

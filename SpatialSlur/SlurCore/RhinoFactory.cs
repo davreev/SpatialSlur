@@ -7,6 +7,10 @@ using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurGraph;
 using Rhino.Geometry;
 
+/*
+ * Notes
+ * 
+ */ 
 
 namespace SpatialSlur.SlurCore
 {
@@ -22,27 +26,27 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static HeMesh CreateHeMesh(Mesh mesh)
         {
-            HeMesh hm = new HeMesh();
-            var hmv = hm.Vertices;
-            var hmf = hm.Faces;
+            HeMesh result = new HeMesh();
+            var vertList = result.Vertices;
+            var faceList = result.Faces;
 
             // add vertices
-            var mv = mesh.Vertices;
-            for (int i = 0; i < mv.Count; i++)
-                hmv.Add(mv[i].ToVec3d());
+            var verts = mesh.Vertices;
+            for (int i = 0; i < verts.Count; i++)
+                vertList.Add(verts[i].ToVec3d());
 
             // add faces
-            var mf = mesh.Faces;
-            for (int i = 0; i < mf.Count; i++)
+            var faces = mesh.Faces;
+            for (int i = 0; i < faces.Count; i++)
             {
-                MeshFace f = mf[i];
+                MeshFace f = faces[i];
                 if (f.IsQuad)
-                    hmf.Add(f.A, f.B, f.C, f.D);
+                    faceList.Add(f.A, f.B, f.C, f.D);
                 else
-                    hmf.Add(f.A, f.B, f.C);
+                    faceList.Add(f.A, f.B, f.C);
             }
 
-            return hm;
+            return result;
         }
 
 
@@ -79,10 +83,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="lines"></param>
         /// <param name="epsilon"></param>
-        /// <param name="allowDupEdges"></param>
+        /// <param name="allowMultiEdges"></param>
+        /// <param name="allowLoops"></param>
         /// <param name="nodePositions"></param>
         /// <returns></returns>
-        public static Graph CreateGraph(IList<Line> lines, double epsilon, bool allowDupEdges, out List<Vec3d> nodePositions)
+        public static Graph CreateGraph(IList<Line> lines, double epsilon, bool allowMultiEdges, bool allowLoops, out List<Vec3d> nodePositions)
         {
             Vec3d[] endPts = new Vec3d[lines.Count << 1];
 
@@ -93,7 +98,7 @@ namespace SpatialSlur.SlurCore
                 endPts[i + 1] = ln.To.ToVec3d();
             }
 
-            return Graph.CreateFromLineSegments(endPts, epsilon, allowDupEdges, out nodePositions);
+            return Graph.CreateFromLineSegments(endPts, epsilon, allowMultiEdges, allowLoops, out nodePositions);
         }
 
 
@@ -102,10 +107,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="lines"></param>
         /// <param name="epsilon"></param>
-        /// <param name="allowDupEdges"></param>
+        /// <param name="allowMultiEdges"></param>
+        /// <param name="allowLoops"></param>
         /// <param name="nodePositions"></param>
         /// <returns></returns>
-        public static DiGraph CreateDiGraph(IList<Line> lines, double epsilon, bool allowDupEdges, out List<Vec3d> nodePositions)
+        public static DiGraph CreateDiGraph(IList<Line> lines, double epsilon, bool allowMultiEdges, bool allowLoops, out List<Vec3d> nodePositions)
         {
             Vec3d[] endPts = new Vec3d[lines.Count << 1];
 
@@ -116,7 +122,7 @@ namespace SpatialSlur.SlurCore
                 endPts[i + 1] = ln.To.ToVec3d();
             }
 
-            return DiGraph.CreateFromLineSegments(endPts, epsilon, allowDupEdges, out nodePositions);
+            return DiGraph.CreateFromLineSegments(endPts, epsilon, allowMultiEdges, allowLoops, out nodePositions);
         }
     }
 }

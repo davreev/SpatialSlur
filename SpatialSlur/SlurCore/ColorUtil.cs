@@ -6,20 +6,17 @@ using System.Threading.Tasks;
 using System.Drawing;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// General purpose static methods for color conversion and interpolation.
+    /// Static methods for color conversion and interpolation.
     /// </summary>
     public static class ColorUtil
     {
-        // Various constants used in colour conversion
-        private static readonly double _t0 = 16.0 / 116.0;
-        private static readonly double _t1 = 1.0 / 2.4;
-        private static readonly double _t2 = 1.0 / 3.0;
-        private static double _invPi = 1.0 / Math.PI;
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -130,7 +127,7 @@ namespace SpatialSlur.SlurCore
         {
             double l = color.x;
             double c = color.y;
-            double h = color.z * (Math.PI / 180.0); // convert h to radians
+            double h = SlurMath.ToRadians(color.z);
 
             double a = Math.Cos(h) * c;
             double b = Math.Sin(h) * c;
@@ -146,26 +143,30 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d LABtoXYZ(Vec3d color)
         {
+            const double t0 = 1.0 / 116.0;
+            const double t1 = 16.0 / 116.0;
+            const double t2 = 1.0 / 7.787;
+
             double l = color.x;
             double a = color.y;
             double b = color.z;
 
-            double y = (l + 16.0) / 116.0;
-            double x = a / 500.0 + y;
-            double z = y - b / 200.0;
+            double y = (l + 16.0) * t0;
+            double x = a * 0.002 + y;
+            double z = y - b * 0.005;
 
             double xxx = x * x * x;
             double yyy = y * y * y;
             double zzz = z * z * z;
 
-            x = (xxx > 0.008856) ? xxx : (x - _t0) / 7.787;
-            y = (yyy > 0.008856) ? yyy : (y - _t0) / 7.787;
-            z = (zzz > 0.008856) ? zzz : (z - _t0) / 7.787;
+            x = (xxx > 0.008856) ? xxx : (x - t1) * t2;
+            y = (yyy > 0.008856) ? yyy : (y - t1) * t2;
+            z = (zzz > 0.008856) ? zzz : (z - t1) * t2;
 
             return new Vec3d(x * 95.047, y * 100.00, z * 108.883);
         }
 
-
+       
         /// <summary>
         /// 
         /// </summary>
@@ -173,6 +174,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d XYZtoRGB(Vec3d color)
         {
+            const double t0 = 1.0 / 2.4;
+
             double x = color.x * 0.01;
             double y = color.y * 0.01;
             double z = color.z * 0.01;
@@ -181,13 +184,13 @@ namespace SpatialSlur.SlurCore
             double g = x * -0.9689 + y * 1.8758 + z * 0.0415;
             double b = x * 0.0557 + y * -0.2040 + z * 1.0570;
 
-            r = (r > 0.0031308) ? 1.055 * Math.Pow(r, _t1) - 0.055 : r * 12.92;
-            g = (g > 0.0031308) ? 1.055 * Math.Pow(g, _t1) - 0.055 : g * 12.92;
-            b = (b > 0.0031308) ? 1.055 * Math.Pow(b, _t1) - 0.055 : b * 12.92;
+            r = (r > 0.0031308) ? 1.055 * Math.Pow(r, t0) - 0.055 : r * 12.92;
+            g = (g > 0.0031308) ? 1.055 * Math.Pow(g, t0) - 0.055 : g * 12.92;
+            b = (b > 0.0031308) ? 1.055 * Math.Pow(b, t0) - 0.055 : b * 12.92;
 
             return new Vec3d(r * 255.0, g * 255.0, b * 255.0);
         }
-
+        
 
         /// <summary>
         /// 
@@ -221,13 +224,17 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d RGBtoXYZ(Vec3d color)
         {
-            double r = color.x / 255.0;
-            double g = color.y / 255.0;
-            double b = color.z / 255.0;
+            const double t0 = 1.0 / 255.0;
+            const double t1 = 1.0 / 1.055;
+            const double t2 = 1.0 / 12.92;
 
-            r = (r > 0.04045) ? Math.Pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
-            g = (g > 0.04045) ? Math.Pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
-            b = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+            double r = color.x * t0;
+            double g = color.y * t0;
+            double b = color.z * t0;
+
+            r = (r > 0.04045) ? Math.Pow((r + 0.055) * t1, 2.4) : r * t2;
+            g = (g > 0.04045) ? Math.Pow((g + 0.055) * t1, 2.4) : g * t2;
+            b = (b > 0.04045) ? Math.Pow((b + 0.055) * t1, 2.4) : b * t2;
 
             r *= 100.0;
             g *= 100.0;
@@ -248,13 +255,18 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d XYZtoLAB(Vec3d color)
         {
-            double x = color.x / 95.047;
-            double y = color.y * 0.01;
-            double z = color.z / 108.883;
+            const double t0 = 1.0 / 95.047;
+            const double t1 = 1.0 / 108.883;
+            const double t2 = 1.0 / 3.0;
+            const double t3 = 16.0 / 116.0;
 
-            x = (x > 0.008856) ? Math.Pow(x, _t2) : 7.787 * x + _t0;
-            y = (y > 0.008856) ? Math.Pow(y, _t2) : 7.787 * y + _t0;
-            z = (z > 0.008856) ? Math.Pow(z, _t2) : 7.787 * z + _t0;
+            double x = color.x * t0;
+            double y = color.y * 0.01;
+            double z = color.z * t1;
+
+            x = (x > 0.008856) ? Math.Pow(x, t2) : 7.787 * x + t3;
+            y = (y > 0.008856) ? Math.Pow(y, t2) : 7.787 * y + t3;
+            z = (z > 0.008856) ? Math.Pow(z, t2) : 7.787 * z + t3;
 
             double l = (y > 0.008856) ? 116.0 * y - 16.0 : 903.3 * y;
             double a = 500.0 * (x - y);
@@ -262,7 +274,7 @@ namespace SpatialSlur.SlurCore
 
             return new Vec3d(l, a, b);
         }
-
+       
 
         /// <summary>
         /// 
@@ -277,7 +289,7 @@ namespace SpatialSlur.SlurCore
 
             double c = Math.Sqrt(a * a + b * b);
             double h = Math.Atan2(b, a);
-            h = (h > 0.0) ? h * _invPi * 180.0 : 360.0 - Math.Abs(h) * _invPi * 180.0;
+            h = (h > 0.0) ? SlurMath.ToDegrees(h) : SlurMath.ToDegrees(360.0 - Math.Abs(h));
 
             return new Vec3d(l, c, h);
         }

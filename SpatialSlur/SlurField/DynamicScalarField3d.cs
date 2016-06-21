@@ -6,19 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+
 /*
  * Notes 
- * 
- * TODO rename Deposit and Decay methods
- * those which modify the delta array
- * AddDelta
- * LerpToDelta
- * 
- * DeltaAdd
- * DeltaLerpTo
- * DeltaAddAt
- * DeltaLerpToAt
- * ex. AddToDelta, LerpDeltaTo
+ * TODO refactor names of methods that modify the field deltas
  */
 
 namespace SpatialSlur.SlurField
@@ -31,7 +22,7 @@ namespace SpatialSlur.SlurField
     {
         private readonly double[] _deltas;
 
-        // Delegates for boundary dependant functions
+        // delegates for boundary dependant functions
         private Action<double> _diffuse;
         private Action<double, double> _erode;
 
@@ -76,18 +67,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
-        public DynamicScalarField3d(DynamicScalarField3d other)
-            : base(other)
-        {
-            _deltas = new double[Count + 1];
-            _deltas.Set(other._deltas);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         public double[] Deltas
         {
             get { return _deltas; }
@@ -104,17 +83,23 @@ namespace SpatialSlur.SlurField
             switch (BoundaryType)
             {
                 case FieldBoundaryType.Constant:
-                    _diffuse = DiffuseConstant;
-                    _erode = ErodeConstant;
-                    break;
+                    {
+                        _diffuse = DiffuseConstant;
+                        _erode = ErodeConstant;
+                        break;
+                    }
                 case FieldBoundaryType.Equal:
-                    _diffuse = DiffuseEqual;
-                    _erode = ErodeEqual;
-                    break;
+                    {
+                        _diffuse = DiffuseEqual;
+                        _erode = ErodeEqual;
+                        break;
+                    }
                 case FieldBoundaryType.Periodic:
-                    _diffuse = DiffusePeriodic;
-                    _erode = ErodePeriodic;
-                    break;
+                    {
+                        _diffuse = DiffusePeriodic;
+                        _erode = ErodePeriodic;
+                        break;
+                    }
             }
         }
 
@@ -137,6 +122,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Adds the Laplacian of the field to the delta array. 
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="rate"></param>
@@ -149,10 +135,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
         private void DiffuseConstant(double rate)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
@@ -203,10 +187,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
         private void DiffuseEqual(double rate)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
@@ -257,10 +239,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rate"></param>
         private void DiffusePeriodic(double rate)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
@@ -308,62 +288,8 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /*
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rate"></param>
-        public void DiffusePeriodic(double rate)
-        {
-            // inverse square step size for each dimension
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-            double dz = 1.0 / (ScaleZ * ScaleZ);
-
-            int i = 0;
-            int j = 0;
-            int k = 0;
-
-            for (int index = 0; index < Count; index++, i++)
-            {
-                if (i == CountX) { j++; i = 0; }
-                if (j == CountY) { k++; j = 0; }
-
-                double value = Values[index];
-                double sum = 0.0;
-
-                // x
-                if (i == 0)
-                    sum += (Values[index - 1 + CountX] + Values[index + 1] - 2.0 * value) * dx;
-                else if (i == CountX - 1)
-                    sum += (Values[index - 1] + Values[index + 1 - CountX] - 2.0 * value) * dx;
-                else
-                    sum += (Values[index - 1] + Values[index + 1] - 2.0 * value) * dx;
-
-                // y
-                if (j == 0)
-                    sum += (Values[index - CountX + CountXY] + Values[index + CountX] - 2.0 * value) * dy;
-                else if (j == CountY - 1)
-                    sum += (Values[index - CountX] + Values[index + CountX - CountXY] - 2.0 * value) * dy;
-                else
-                    sum += (Values[index - CountX] + Values[index + CountX] - 2.0 * value) * dy;
-
-                // z
-                if (k == 0)
-                    sum += (Values[index - CountXY + Count] + Values[index + CountXY] - 2.0 * value) * dz;
-                else if (k == CountZ - 1)
-                    sum += (Values[index - CountXY] + Values[index + CountXY - Count] - 2.0 * value) * dz;
-                else
-                    sum += (Values[index - CountXY] + Values[index + CountXY] - 2.0 * value) * dz;
-
-                _deltas[index] += sum * rate;
-            }
-        }
-        */
-
-
-        /// <summary>
-        /// Simulates thermal erosion
+        /// Simulates thermal erosion.
         /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
         /// </summary>
         /// <param name="slope"></param>
@@ -377,8 +303,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="slope"></param>
-        /// <param name="rate"></param>
         private void ErodeConstant(double slope, double rate)
         {
             // inverse step size for each dimension
@@ -445,8 +369,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="slope"></param>
-        /// <param name="rate"></param>
         private void ErodeEqual(double slope, double rate)
         {
             // inverse step size for each dimension
@@ -525,8 +447,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="slope"></param>
-        /// <param name="rate"></param>
         private void ErodePeriodic(double slope, double rate)
         {
             // inverse step size for each dimension

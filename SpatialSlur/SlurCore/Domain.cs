@@ -87,33 +87,10 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="values"></param>
-        public Domain(IList<double> values)
+        public Domain(IEnumerable<double> values)
+            : this()
         {
-            double min = values[0];
-            double max = min;
-            Object locker = new Object();
-
-            Parallel.ForEach(Partitioner.Create(1, values.Count), range =>
-            {
-                double myMin = min;
-                double myMax = max;
-
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    double t = values[i];
-                    if (t < myMin) myMin = t;
-                    else if (t > myMax) myMax = t;
-                }
-
-                lock (locker)
-                {
-                    if (myMin < min) min = myMin;
-                    if (myMax > max) max = myMax;
-                }
-            });
-
-            t0 = min;
-            t1 = max;
+            Include(values, ref t0, ref t1);
         }
 
 
@@ -375,6 +352,34 @@ namespace SpatialSlur.SlurCore
                     t0 = t;
                 else if (t < t1)
                     t1 = t;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        public void Include(IList<double> values)
+        {
+            if (IsIncreasing)
+                Include(values, ref t0, ref t1);
+            else
+                Include(values, ref t1, ref t0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void Include(IEnumerable<double> values, ref double min, ref double max)
+        {
+            foreach (double t in values)
+            {
+                if (t < min)
+                    min = t;
+                else if (t > max)
+                    max = t;
             }
         }
 

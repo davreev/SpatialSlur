@@ -7,34 +7,26 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class HalfEdgeList : HeElementList<HalfEdge>
+    public class HalfedgeList : HeElementList<Halfedge>
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        internal HalfEdgeList(HeMesh mesh)
-            : base(mesh)
-        {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="capacity"></param>
-        internal HalfEdgeList(HeMesh mesh, int capacity)
+        internal HalfedgeList(HeMesh mesh, int capacity = 2)
             : base(mesh, capacity)
         {
         }
-
+      
 
         /// <summary>
         /// 
@@ -50,845 +42,197 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Adds an edge and its twin to the list.
         /// </summary>
-        /// <param name="edge"></param>
-        internal void AddPair(HalfEdge edge)
+        /// <param name="halfedge"></param>
+        internal void AddPair(Halfedge halfedge)
         {
-            Add(edge);
-            Add(edge.Twin);
+            Add(halfedge);
+            Add(halfedge.Twin);
         }
 
 
         /// <summary>
         /// Creates a pair of halfedges between the given vertices and add them to the list.
-        /// Note that the face references of the new halfedges are left unassigned.
+        /// Note that the face, previous, and next references of the new halfedges are left unassigned.
         /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        internal HalfEdge AddPair(HeVertex start, HeVertex end)
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        internal Halfedge AddPair(HeVertex v0, HeVertex v1)
         {
-            HalfEdge e0 = new HalfEdge();
-            HalfEdge e1 = new HalfEdge();
+            Halfedge he0 = new Halfedge();
+            Halfedge he1 = new Halfedge();
 
-            e0.Start = start;
-            e1.Start = end;
-            HalfEdge.MakeTwins(e0, e1);
+            he0.Start = v0;
+            he1.Start = v1;
+            Halfedge.MakeTwins(he0, he1);
 
-            AddPair(e0);
-            return e0;
+            AddPair(he0);
+            return he0;
         }
-
-
-        #region Element Attributes
-
-        /// <summary>
-        /// Returns the length of each half-edge in the mesh.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetHalfEdgeLengths()
-        {
-            double[] result = new double[Count];
-            UpdateHalfEdgeLengths(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateHalfEdgeLengths(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
-            {
-                int i0 = range.Item1 << 1;
-                int i1 = range.Item2 << 1;
-
-                for (int i = i0; i < i1; i += 2)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    double d = e.Span.Length;
-                    result[i] = d;
-                    result[i + 1] = d;
-                }
-            });
-        }
-
-
-
-        /// <summary>
-        /// Returns the length of each edge in the mesh.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetEdgeLengths()
-        {
-            double[] result = new double[Count >> 1];
-            UpdateEdgeLengths(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateEdgeLengths(IList<double> result)
-        {
-            HalfSizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i << 1];
-                    if (e.IsUnused) continue;
-                    result[i] = e.Span.Length;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the angle between each half-edge and its previous.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetHalfEdgeAngles()
-        {
-            double[] result = new double[Count];
-            UpdateHalfEdgeAngles(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetHalfEdgeAngles(IList<double> edgeLengths)
-        {
-            double[] result = new double[Count];
-            UpdateHalfEdgeAngles(edgeLengths, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateHalfEdgeAngles(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-                    result[i] = Vec3d.Angle(e.Span, e.Previous.Twin.Span);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateHalfEdgeAngles(IList<double> edgeLengths, IList<double> result)
-        {
-            SizeCheck(edgeLengths);
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e0 = this[i];
-                    if (e0.IsUnused) continue;
-
-                    HalfEdge e1 = e0.Previous.Twin;
-                    result[i] = Math.Acos((e0.Span / edgeLengths[i]) * (e1.Span / edgeLengths[e1.Index]));
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns a dihedral angle at each pair of half-edges in the mesh.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetDihedralAngles(IList<Vec3d> faceNormals)
-        {
-            double[] result = new double[Count >> 1];
-            UpdateDihedralAngles(faceNormals, result);
-            return result;
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public void UpdateDihedralAngles(IList<Vec3d> faceNormals, IList<double> result)
-        {
-            SizeCheck(result);
-            Mesh.Faces.SizeCheck(faceNormals);
-
-            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i << 1];
-                    if (e.IsUnused || e.IsBoundary) continue;
-
-                    double angle = Vec3d.Angle(faceNormals[e.Face.Index], faceNormals[e.Twin.Face.Index]);
-                    result[i] = angle;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the area associated with each halfedge.
-        /// This is calculated as W in the diagram below.
-        /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
-        /// </summary>
-        /// <param name="faceCenters"></param>
-        /// <returns></returns>
-        public double[] GetHalfEdgeAreas(IList<Vec3d> faceCenters)
-        {
-            double[] result = new double[Count];
-            UpdateHalfEdgeAreas(faceCenters, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="faceCenters"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public void UpdateHalfEdgeAreas(IList<Vec3d> faceCenters, IList<double> result)
-        {
-            SizeCheck(result);
-            Mesh.Faces.SizeCheck(faceCenters);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused || e.Face == null) continue;
-
-                    Vec3d v0 = e.Span * 0.5;
-                    Vec3d v1 = faceCenters[e.Face.Index] - e.Start.Position;
-                    Vec3d v2 = e.Previous.Span * -0.5;
-
-                    result[i] = (Vec3d.Cross(v0, v1).Length + Vec3d.Cross(v1, v2).Length) * 0.5;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the cotangent of each half-edge.
-        /// Intended for use on triangle meshes.
-        /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetHalfEdgeCotangents()
-        {
-            double[] result = new double[Count];
-            UpdateHalfEdgeCotangents(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateHalfEdgeCotangents(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    Vec3d v0 = e.Previous.Span;
-                    Vec3d v1 = e.Next.Twin.Span;
-                    result[i] = v0 * v1 / Vec3d.Cross(v0, v1).Length;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns a symmetric cotangent weight for each half-edge.
-        /// Intended for use on triangle meshes.
-        /// Note that this implementation doesn't consider vertex areas.
-        /// http://reuter.mit.edu/papers/reuter-smi09.pdf
-        /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetCotanWeights()
-        {
-            double[] result = new double[Count];
-            UpdateCotanWeights(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateCotanWeights(IList<double> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
-            {
-                int i0 = range.Item1 << 1;
-                int i1 = range.Item2 << 1;
-
-                for (int i = i0; i < i1; i += 2)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-                    double w = 0.0;
-
-                    if (e.Face != null)
-                    {
-                        Vec3d v0 = e.Previous.Span;
-                        Vec3d v1 = e.Next.Twin.Span;
-                        w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
-                    }
-
-                    e = e.Twin;
-                    if (e.Face != null)
-                    {
-                        Vec3d v0 = e.Previous.Span;
-                        Vec3d v1 = e.Next.Twin.Span;
-                        w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
-                    }
-
-                    w *= 0.5;
-                    result[i] = w;
-                    result[i + 1] = w;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the a symmetric area-dependent cotangent weight for each half-edge.
-        /// Intended for use on triangle meshes.
-        /// Symmetric derivation of the Laplace-Beltrami operator detailed in
-        /// http://reuter.mit.edu/papers/reuter-smi09.pdf
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetCotanWeights2()
-        {
-            double[] result = new double[Count];
-            UpdateCotanWeights2(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vertexAreas"></param>
-        /// <returns></returns>
-        public double[] GetCotanWeights2(out double[] vertexAreas)
-        {
-            double[] result = new double[Count];
-            UpdateCotanWeights2(result, out vertexAreas);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void UpdateCotanWeights2(IList<double> result)
-        {
-            double[] vertexAreas;
-            UpdateCotanWeights2(result, out vertexAreas);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="vertexAreas"></param>
-        public void UpdateCotanWeights2(IList<double> result, out double[] vertexAreas)
-        {
-            SizeCheck(result);
-
-            vertexAreas = new double[Mesh.Vertices.Count];
-            HeFaceList faces = Mesh.Faces;
-            double t = 1.0 / 6.0;
-
-            // calculate cotangent weights and vertex areas
-            for (int i = 0; i < Count; i += 2)
-            {
-                HalfEdge e = this[i];
-                if (e.IsUnused) continue;
-                double w = 0.0;
-
-                if (e.Face != null)
-                {
-                    Vec3d v0 = e.Previous.Span;
-                    Vec3d v1 = e.Next.Twin.Span;
-                    double a = Vec3d.Cross(v0, v1).Length;
-                    vertexAreas[e.Start.Index] += a * t; // 1/3rd the triangular area (or 1/6th the parallelgram area)
-                    w += v0 * v1 / a;
-                }
-
-                e = e.Twin;
-                if (e.Face != null)
-                {
-                    Vec3d v0 = e.Previous.Span;
-                    Vec3d v1 = e.Next.Twin.Span;
-                    double a = Vec3d.Cross(v0, v1).Length;
-                    vertexAreas[e.Start.Index] += a * t; // 1/3rd the triangular area (or 1/6th the parallelgram area)
-                    w += v0 * v1 / a;
-                }
-
-                result[i] = w * 0.5; // cache weight with first edge of each pair
-            }
-
-            // divide weights by vertex areas
-            double[] areas = vertexAreas; // can't use out parameter within lambda statement
-            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
-            {
-                int i0 = range.Item1 << 1;
-                int i1 = range.Item2 << 1;
-
-                for (int i = i0; i < i1; i += 2)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    double w = result[i] / Math.Sqrt(areas[e.Start.Index] * areas[e.End.Index]); // symmetric area weighting
-                    result[i] = w;
-                    result[i + 1] = w;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Normalizes half-edge weights such that weights of outgoing edges around each vertex sum to 1.
-        /// Note that this breaks weight symmetry between half-edge pairs.
-        /// </summary>
-        /// <param name="halfEdgeWeights"></param>
-        public void NormalizeHalfEdgeWeights(IList<double> halfEdgeWeights)
-        {
-            SizeCheck(halfEdgeWeights);
-
-            HeVertexList verts = Mesh.Vertices;
-            Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = verts[i];
-                    if (v.IsUnused) continue;
-
-                    double sum = 0.0;
-
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                        sum += halfEdgeWeights[e.Index];
-
-                    if (sum > 0.0)
-                    {
-                        sum = 1.0 / sum;
-                        foreach (HalfEdge e in v.OutgoingHalfEdges)
-                            halfEdgeWeights[e.Index] *= sum;
-                    }
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns the span vector for each half-edge in the mesh.
-        /// </summary>
-        /// <param name="unitize"></param>
-        /// <returns></returns>
-        public Vec3d[] GetHalfEdgeVectors(bool unitize)
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateHalfEdgeVectors(unitize, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="unitize"></param>
-        /// <param name="result"></param>
-        public void UpdateHalfEdgeVectors(bool unitize, IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            if (unitize)
-                UpdateHalfEdgeUnitVectors(result);
-            else
-                UpdateHalfEdgeVectors(result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void UpdateHalfEdgeUnitVectors(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
-            {
-                int i0 = range.Item1 << 1;
-                int i1 = range.Item2 << 1;
-
-                for (int i = i0; i < i1; i += 2)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    Vec3d v = e.Span;
-                    v.Unitize();
-                    result[i] = v;
-                    result[i + 1] = -v;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void UpdateHalfEdgeVectors(IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, Count >> 1), range =>
-            {
-                int i0 = range.Item1 << 1;
-                int i1 = range.Item2 << 1;
-
-                for (int i = i0; i < i1; i += 2)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    Vec3d v = e.Span;
-                    result[i] = v;
-                    result[i + 1] = -v;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Returns a normal for each half-edge in the mesh.
-        /// These are calculated as the cross product of each edge and its previous.
-        /// Note that these are used in the calculation of both vertex and face normals.
-        /// </summary>
-        /// <param name="unitize"></param>
-        /// <returns></returns>
-        public Vec3d[] GetHalfEdgeNormals(bool unitize)
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateHalfEdgeNormals(unitize, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="unitize"></param>
-        /// <param name="result"></param>
-        public void UpdateHalfEdgeNormals(bool unitize, IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            if (unitize)
-                UpdateHalfEdgeUnitNormals(result);
-            else
-                UpdateHalfEdgeNormals(result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void UpdateHalfEdgeNormals(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    result[i] = Vec3d.Cross(e.Previous.Span, e.Span);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void UpdateHalfEdgeUnitNormals(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    Vec3d v = Vec3d.Cross(e.Previous.Span, e.Span);
-                    v.Unitize();
-                    result[i] = v;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="unitize"></param>
-        /// <returns></returns>
-        public Vec3d[] GetHalfEdgeBisectors(bool unitize)
-        {
-            Vec3d[] result = new Vec3d[Count];
-            UpdateHalfEdgeBisectors(unitize, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="unitize"></param>
-        /// <param name="result"></param>
-        public void UpdateHalfEdgeBisectors(bool unitize, IList<Vec3d> result)
-        {
-            SizeCheck(result);
-
-            if (unitize)
-                UpdateHalfEdgeUnitBisectors(result);
-            else
-                UpdateHalfEdgeBisectors(result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void UpdateHalfEdgeBisectors(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    Vec3d v0 = e.Span;
-                    Vec3d v1 = e.Previous.Span;
-
-                    v0 = (v0 / v0.Length - v1 / v1.Length) * 0.5;
-                    result[i] = v0;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void UpdateHalfEdgeUnitBisectors(IList<Vec3d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HalfEdge e = this[i];
-                    if (e.IsUnused) continue;
-
-                    Vec3d v0 = e.Span;
-                    Vec3d v1 = e.Previous.Span;
-
-                    v0 = (v0 / v0.Length - v1 / v1.Length) * 0.5;
-                    v0.Unitize();
-                    result[i] = v0;
-                }
-            });
-        }
-
-        #endregion
-
 
         #region Euler Operators
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edge"></param>
-        public void Remove(HalfEdge edge)
+        /// <param name="halfedge"></param>
+        public void Remove(Halfedge halfedge)
         {
-            Mesh.Faces.MergeFaces(edge);
+            halfedge.UsedCheck();
+            OwnsCheck(halfedge);
+
+            Mesh.Faces.MergeFacesImpl(halfedge);
+        }
+
+
+        /// <summary>
+        /// Removes a pair of halfedges from the mesh.
+        /// Note that this method does not update face->halfedge references.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        internal void RemovePair(Halfedge halfedge)
+        {
+            Halfedge he0 = halfedge;
+            Halfedge he1 = he0.Twin;
+
+            HeVertex v0 = he0.Start;
+            HeVertex v1 = he1.Start;
+
+            if (he0.IsFromDegree1)
+            {
+                v0.MakeUnused(); // flag degree 1 vertex as unused
+            }
+            else
+            {
+                Halfedge.MakeConsecutive(he0.Previous, he1.Next); // update halfedge-halfedge refs
+                if (he0 == v0.First) v0.First = he1.Next; // update vertex-halfedge ref if necessary
+            }
+
+            if (he1.IsFromDegree1)
+            {
+                v1.MakeUnused(); // flag degree 1 vertex as unused
+            }
+            else
+            {
+                Halfedge.MakeConsecutive(he1.Previous, he0.Next); // update halfedge-halfedge refs
+                if (he1 == v1.First) v1.First = he0.Next; // update vertex-halfedge ref if necessary
+            }
+
+            // flag elements for removal
+            he0.MakeUnused();
+            he1.MakeUnused();
+        }
+
+
+        /// <summary>
+        /// Splits the given edge at the specified paramter.
+        /// Creates a new halfedge pair and a new vertex.
+        /// Returns the new halfedge that starts from the new vertex.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public Halfedge SplitEdge(Halfedge halfedge, double t = 0.5)
+        {
+            halfedge.UsedCheck();
+            OwnsCheck(halfedge);
+
+            return SplitEdgeImpl(halfedge, t);
+        }
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        internal Halfedge SplitEdgeImpl(Halfedge halfedge, double t = 0.5)
+        {
+            Halfedge he0 = halfedge;
+            Halfedge he1 = he0.Twin;
+
+            HeVertex v0 = he0.Start;
+            HeVertex v1 = Mesh.Vertices.Add(he0.PointAt(t));
+
+            Halfedge he2 = AddPair(v0, v1);
+            Halfedge he3 = he2.Twin;
+
+            // update halfedge->vertex references
+            he0.Start = v1;
+
+            // update halfedge->face references
+            he2.Face = he0.Face;
+            he3.Face = he1.Face;
+
+            // update vertex->halfedge refs if necessary
+            if (v0.First == he0)
+            {
+                v0.First = he2;
+                v1.First = he0;
+            }
+            else
+            {
+                v1.First = he3;
+            }
+
+            // update halfedge->halfedge refs
+            Halfedge.MakeConsecutive(he0.Previous, he2);
+            Halfedge.MakeConsecutive(he2, he0);
+            Halfedge.MakeConsecutive(he3, he1.Next);
+            Halfedge.MakeConsecutive(he1, he3);
+
+            return he2;
         }
 
 
         /*
         /// <summary>
-        /// Removes a pair of edges from the mesh.
+        /// Old implementation
+        /// Assumes the given elements are valid for the operation.
         /// </summary>
-        /// <param name="edge"></param>
-        internal void RemovePair(HalfEdge edge)
+        /// <param name="halfEdge"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        internal HalfEdge SplitEdgeImpl(HalfEdge halfEdge, double t = 0.5)
         {
-            HalfEdge e0 = edge;
-            HalfEdge e1 = e0.Twin;
+            HalfEdge he0 = halfEdge;
+            HalfEdge he1 = he0.Twin;
 
-            HeVertex v0 = e0.Start;
-            HeVertex v1 = e1.Start;
-
-            HeFace f0 = e0.Face;
-            HeFace f1 = e1.Face;
-
-            if (e0.IsFromDegree1)
-                v0.MakeUnused(); // flag degree 1 vertex as unused
-            else
-            {
-                HalfEdge.MakeConsecutive(e0.Previous, e1.Next); // update edge-edge refs
-                if (e0 == v0.First) v0.First = e1.Next; // update vertex-edge ref if necessary
-                if (f0 != null && e0 == f0.First) f0.First = e0.Next; // update face-edge ref if necessary
-            }
-
-            if (e1.IsFromDegree1)
-                v1.MakeUnused(); // flag degree 1 vertex as unused
-            else
-            {
-                HalfEdge.MakeConsecutive(e1.Previous, e0.Next); // update edge-edge refs
-                if (e1 == v1.First) v1.First = e0.Next; // update vertex-edge ref if necessary
-                if (f1 != null && e1 == f1.First) f1.First = e1.Next; // update face-edge ref if necessary
-            }
-
-            // flag elements for removal
-            e0.MakeUnused();
-            e1.MakeUnused();
-        }
-        */
-
-
-        /// <summary>
-        /// Removes a pair of edges from the mesh.
-        /// Note that this method does not update face-edge references.
-        /// </summary>
-        /// <param name="edge"></param>
-        internal void RemovePair(HalfEdge edge)
-        {
-            HalfEdge e0 = edge;
-            HalfEdge e1 = e0.Twin;
-
-            HeVertex v0 = e0.Start;
-            HeVertex v1 = e1.Start;
-
-            if (e0.IsFromDegree1)
-                v0.MakeUnused(); // flag degree 1 vertex as unused
-            else
-            {
-                HalfEdge.MakeConsecutive(e0.Previous, e1.Next); // update edge-edge refs
-                if (e0 == v0.First) v0.First = e1.Next; // update vertex-edge ref if necessary
-            }
-
-            if (e1.IsFromDegree1)
-                v1.MakeUnused(); // flag degree 1 vertex as unused
-            else
-            {
-                HalfEdge.MakeConsecutive(e1.Previous, e0.Next); // update edge-edge refs
-                if (e1 == v1.First) v1.First = e0.Next; // update vertex-edge ref if necessary
-            }
-
-            // flag elements for removal
-            e0.MakeUnused();
-            e1.MakeUnused();
-        }
-
-
-        /// <summary>
-        /// Splits the given edge by adding a new vertex in the middle.
-        /// Returns the new edge outgoing from the new vertex.
-        /// </summary>
-        public HalfEdge SplitEdge(HalfEdge edge)
-        {
-            Validate(edge);
-
-            HalfEdge e0 = edge;
-            HalfEdge e1 = e0.Twin;
-
-            HeVertex v0 = e0.Start;
-            HeVertex v1 = e1.Start;
+            HeVertex v0 = he0.Start;
+            HeVertex v1 = he1.Start;
             //HeVertex v2 = Mesh.Vertices.Add(v0.Position);
-            HeVertex v2 = Mesh.Vertices.Add((v0.Position + v1.Position) * 0.5);
+            HeVertex v2 = Mesh.Vertices.Add(he0.PointAt(t));
 
-            HalfEdge e2 = Mesh.HalfEdges.AddPair(v2, v1);
-            HalfEdge e3 = e2.Twin;
+            HalfEdge he2 = AddPair(v2, v1);
+            HalfEdge he3 = he2.Twin;
 
             // update edge-vertex references
-            e1.Start = v2;
+            he1.Start = v2;
 
             // update edge-face references
-            e2.Face = e0.Face;
-            e3.Face = e1.Face;
+            he2.Face = he0.Face;
+            he3.Face = he1.Face;
 
             // update vertex-edge references if necessary
-            if (v1.First == e1)
+            if (v1.First == he1)
             {
-                v1.First = e3;
-                v2.First = e1;
+                v1.First = he3;
+                v2.First = he1;
             }
             else
             {
-                v2.First = e2;
+                v2.First = he2;
             }
 
             // update edge-edge references
-            HalfEdge.MakeConsecutive(e2, e0.Next);
-            HalfEdge.MakeConsecutive(e1.Previous, e3);
-            HalfEdge.MakeConsecutive(e0, e2);
-            HalfEdge.MakeConsecutive(e3, e1);
+            HalfEdge.MakeConsecutive(he2, he0.Next);
+            HalfEdge.MakeConsecutive(he1.Previous, he3);
+            HalfEdge.MakeConsecutive(he0, he2);
+            HalfEdge.MakeConsecutive(he3, he1);
 
-            return e2;
+            return he2;
         }
+        */
 
 
         /// <summary>
@@ -897,42 +241,81 @@ namespace SpatialSlur.SlurMesh
         /// Returns the new edge outgoing from the new vertex or null on failure.
         /// Assumes triangle mesh.
         /// </summary>
-        public HalfEdge SplitEdgeFace(HalfEdge edge)
+        public Halfedge SplitEdgeFace(Halfedge halfedge)
         {
-            HalfEdge e0 = SplitEdge(edge);
-            HalfEdge e1 = e0.Twin.Next;
+            halfedge.UsedCheck();
+            OwnsCheck(halfedge);
 
-            HeFaceList faces = Mesh.Faces;
-            faces.SplitFace(e0, e0.Next.Next);
-            faces.SplitFace(e1, e1.Next.Next);
-
-            return e0;
+            return SplitEdgeFaceImpl(halfedge);
         }
 
 
         /// <summary>
-        /// Collapses the given half edge by merging the vertices at either end.
-        /// The start vertex of the given half-edge is removed.
+        /// 
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <returns></returns>
+        internal Halfedge SplitEdgeFaceImpl(Halfedge halfedge)
+        {
+            var faces = Mesh.Faces;
+
+            // split edge
+            SplitEdgeImpl(halfedge, 0.5);
+           
+            // split left face if one exists
+            if (halfedge.Face != null)
+                faces.SplitFaceImpl(halfedge, halfedge.Next.Next);
+
+            halfedge = halfedge.Twin.Next;
+     
+            // split right face if one exists
+            if (halfedge.Face != null)
+                faces.SplitFaceImpl(halfedge, halfedge.Next.Next);
+
+            return halfedge;
+        }
+
+
+        /// <summary>
+        /// Collapses the given halfedge by merging the vertices at either end.
+        /// The start vertex of the given halfedge is removed.
+        /// The end vertex is moved to the specified parameter along the edge.
         /// Return true on success.
         /// </summary>
-        /// <param name="edge"></param>
-        public bool CollapseEdge(HalfEdge edge)
+        /// <param name="halfedge"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public bool CollapseEdge(Halfedge halfedge, double t = 0.5)
         {
-            Validate(edge);
+            halfedge.UsedCheck();
+            OwnsCheck(halfedge);
+        
+            return CollapseEdgeImpl(halfedge, t);
+        }
 
-            HalfEdge e0 = edge;
-            HalfEdge e1 = e0.Twin;
 
-            HeVertex v0 = e0.Start; // to be removed
-            HeVertex v1 = e1.Start;
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        internal bool CollapseEdgeImpl(Halfedge halfedge, double t = 0.5)
+        {
+            Halfedge he0 = halfedge;
+            Halfedge he1 = he0.Twin;
 
-            HeFace f0 = e0.Face;
-            HeFace f1 = e1.Face;
+            HeVertex v0 = he0.Start; // to be removed
+            HeVertex v1 = he1.Start;
+
+            HeFace f0 = he0.Face;
+            HeFace f1 = he1.Face;
 
             // avoids creation of non-manifold vertices
-            if (!e0.IsBoundary && (v0.IsBoundary && v1.IsBoundary))
+            // TODO move all checks outside of Impl method?
+            if (!he0.IsBoundary && v0.IsBoundary && v1.IsBoundary)
                 return false;
-         
+
             /*
             // avoids creation of non-manifold edges
             int allow = 0; // the number of common neighbours allowed between v0 and v1
@@ -943,34 +326,39 @@ namespace SpatialSlur.SlurMesh
             */
 
             // update vertex refs of all edges emanating from v0
-            foreach (HalfEdge e in v0.OutgoingHalfEdges) e.Start = v1;
+            foreach (Halfedge he in v0.OutgoingHalfedges) 
+                he.Start = v1;
 
-            // update edge ref of v1 if necessary
-            if (v1.First == e1) v1.First = e1.Next; // maintains vertex boundary condition
+            // update halfedge ref of v1 if necessary
+            if (v1.First == he1) 
+                v1.First = he1.Next; // maintains vertex boundary condition
 
-            // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0.Previous, e0.Next);
-            HalfEdge.MakeConsecutive(e1.Previous, e1.Next);
+            // update halfedge-halfedge refs
+            Halfedge.MakeConsecutive(he0.Previous, he0.Next);
+            Halfedge.MakeConsecutive(he1.Previous, he1.Next);
 
-            // update edge refs of faces if necessary and deal with potential collapse by merging
+            // update halfedge refs of faces if necessary and deal with potential collapse by merging
             if (f0 != null)
             {
-                if (f0.First == e0) f0.First = e0.Next;
-                if (!f0.IsValid) Mesh.Faces.MergeInvalidFace(e0.Next);
+                if (f0.First == he0) f0.First = he0.Next;
+                if (!f0.IsValid) Mesh.Faces.MergeInvalidFace(he0.Next);
             }
 
             if (f1 != null)
             {
-                if (f1.First == e1) f1.First = e1.Next;
-                if (!f1.IsValid) Mesh.Faces.MergeInvalidFace(e1.Next);
+                if (f1.First == he1) f1.First = he1.Next;
+                if (!f1.IsValid) Mesh.Faces.MergeInvalidFace(he1.Next);
             }
 
             // TODO cleanup potential degree 1 verts?
 
             // flag elements for removal
-            e0.MakeUnused();
-            e1.MakeUnused();
+            he0.MakeUnused();
+            he1.MakeUnused();
             v0.MakeUnused();
+
+            // update position of remaining vertex
+            v1.Position = Vec3d.Lerp(v0.Position, v1.Position, t);
             return true;
         }
 
@@ -978,62 +366,75 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="halfedge"></param>
         /// <returns></returns>
-        public bool SpinEdge(HalfEdge edge)
+        public bool SpinEdge(Halfedge halfedge)
         {
-            Validate(edge);
+            halfedge.UsedCheck();
+            OwnsCheck(halfedge);
 
-            // edge must be adjacent to 2 faces
-            if (edge.IsBoundary) return false;
+            // halfedge must be adjacent to 2 faces
+            if (halfedge.IsBoundary) 
+                return false;
 
-            HalfEdge e0 = edge;
-            HalfEdge e1 = e0.Twin;
-   
             // don't allow for the creation of valence 1 vertices
-            if (e0.IsFromDegree2 || e1.IsFromDegree2) return false;
+            if (halfedge.IsFromDegree2 || halfedge.Twin.IsFromDegree2) 
+                return false;
 
-            HalfEdge e2 = e0.Next;
-            HalfEdge e3 = e1.Next;
-
-            HeVertex v0 = e0.Start;
-            HeVertex v1 = e1.Start;
-
-            // update vertex-edge refs if necessary
-            if (e0 == v0.First) v0.First = e3;
-            if (e1 == v1.First) v1.First = e2;
-
-            // update edge-vertex refs
-            e0.Start = e3.End;
-            e1.Start = e2.End;
-
-            HeFace f0 = e0.Face;
-            HeFace f1 = e1.Face;
-
-            // update face-edge refs if necessary
-            if (e2 == f0.First) f0.First = e2.Next;
-            if (e3 == f1.First) f1.First = e3.Next;
-
-            // update edge-face refs
-            e2.Face = f1;
-            e3.Face = f0;
-
-            // update edge-edge refs
-            HalfEdge.MakeConsecutive(e0, e2.Next);
-            HalfEdge.MakeConsecutive(e1, e3.Next);
-            HalfEdge.MakeConsecutive(e1.Previous, e2);
-            HalfEdge.MakeConsecutive(e0.Previous, e3);
-            HalfEdge.MakeConsecutive(e2, e1);
-            HalfEdge.MakeConsecutive(e3, e0);
+            SpinEdgeImpl(halfedge);
             return true;
+        }
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <returns></returns>
+        internal void SpinEdgeImpl(Halfedge halfedge)
+        {
+            Halfedge he0 = halfedge;
+            Halfedge he1 = he0.Twin;
+
+            Halfedge he2 = he0.Next;
+            Halfedge he3 = he1.Next;
+
+            HeVertex v0 = he0.Start;
+            HeVertex v1 = he1.Start;
+
+            // update vertex->halfedge refs if necessary
+            if (he0 == v0.First) v0.First = he3;
+            if (he1 == v1.First) v1.First = he2;
+
+            // update halfedge->vertex refs
+            he0.Start = he3.End;
+            he1.Start = he2.End;
+
+            HeFace f0 = he0.Face;
+            HeFace f1 = he1.Face;
+
+            // update face->halfedge refs if necessary
+            if (he2 == f0.First) f0.First = he2.Next;
+            if (he3 == f1.First) f1.First = he3.Next;
+
+            // update halfedge->face refs
+            he2.Face = f1;
+            he3.Face = f0;
+
+            // update halfedge->halfedge refs
+            Halfedge.MakeConsecutive(he0, he2.Next);
+            Halfedge.MakeConsecutive(he1, he3.Next);
+            Halfedge.MakeConsecutive(he1.Previous, he2);
+            Halfedge.MakeConsecutive(he0.Previous, he3);
+            Halfedge.MakeConsecutive(he2, he1);
+            Halfedge.MakeConsecutive(he3, he0);
         }
 
 
         /*
         /// <summary>
         /// OBSOLETE degree 1 verts are now taken care of in HeEdgeList.RemovePair
-        /// 
-        /// removes an open chain of degree 1 vertices
+        /// removes an open chain of degree 2 vertices
         /// note that this method does not update face-edge references
         /// </summary>
         /// <param name="edge"></param>

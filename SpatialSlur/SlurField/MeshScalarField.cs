@@ -68,22 +68,30 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public void Normalize()
+        public void Normalize(bool parallel = false)
         {
-            Normalize(new Domain(Values));
+            Normalize(new Domain(Values), parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public void Normalize(Domain domain)
+        public void Normalize(Domain domain, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        Values[i] = domain.Normalize(Values[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     Values[i] = domain.Normalize(Values[i]);
-            });
+            }
         }
 
 
@@ -91,9 +99,10 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="to"></param>
-        public void Remap(Domain to)
+        /// <param name="parallel"></param>
+        public void Remap(Domain to, bool parallel = false)
         {
-            Remap(new Domain(Values), to);
+            Remap(new Domain(Values), to, parallel);
         }
 
 
@@ -102,13 +111,22 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public void Remap(Domain from, Domain to)
+        /// <param name="parallel"></param>
+        public void Remap(Domain from, Domain to, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        Values[i] = Domain.Remap(Values[i], from, to);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     Values[i] = Domain.Remap(Values[i], from, to);
-            });
+            }
         }
 
 
@@ -116,11 +134,12 @@ namespace SpatialSlur.SlurField
         /// Calculates the Laplacian using a normalized umbrella weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public MeshScalarField GetLaplacian()
+        public MeshScalarField GetLaplacian(bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField((MeshField)this);
-            UpdateLaplacian(result.Values);
+            UpdateLaplacian(result.Values, parallel);
             return result;
         }
 
@@ -129,12 +148,13 @@ namespace SpatialSlur.SlurField
         /// Calculates the Laplacian using a custom weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
-        /// <param name="halfEdgeWeights"></param>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public MeshScalarField GetLaplacian(IList<double> halfEdgeWeights)
+        public MeshScalarField GetLaplacian(IList<double> halfedgeWeights, bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField((MeshField)this);
-            UpdateLaplacian(halfEdgeWeights, result.Values);
+            UpdateLaplacian(halfedgeWeights, result.Values, parallel);
             return result;
         }
  
@@ -143,10 +163,11 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public void UpdateLaplacian(MeshScalarField result)
+        public void UpdateLaplacian(MeshScalarField result, bool parallel = false)
         {
-            UpdateLaplacian(result.Values);
+            UpdateLaplacian(result.Values, parallel);
         }
 
    
@@ -154,193 +175,252 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateLaplacian(IList<double> result)
+        /// <param name="parallel"></param>
+        public void UpdateLaplacian(IList<double> result, bool parallel = false)
+        {
+            SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    UpdateLaplacian(result, range.Item1, range.Item2));
+            else
+                UpdateLaplacian(result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateLaplacian(IList<double> result, int i0, int i1)
         {
             HeVertexList verts = Mesh.Vertices;
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+
+            for (int i = i0; i < i1; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                double sum = 0.0;
+                int n = 0;
+
+                foreach (Halfedge he in verts[i].IncomingHalfedges)
                 {
-                    double sum = 0.0;
-                    int n = 0;
-
-                    foreach (HalfEdge e in verts[i].IncomingHalfEdges)
-                    {
-                        sum += Values[e.Start.Index];
-                        n++;
-                    }
-
-                    result[i] = sum / n - Values[i];
+                    sum += Values[he.Start.Index];
+                    n++;
                 }
-            });
+
+                result[i] = sum / n - Values[i];
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="halfEdgeWeights"></param>
+        /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
-        public void UpdateLaplacian(IList<double> halfEdgeWeights, MeshScalarField result)
+        /// <param name="parallel"></param>
+        public void UpdateLaplacian(IList<double> halfedgeWeights, MeshScalarField result, bool parallel = false)
         {
-            UpdateLaplacian(halfEdgeWeights, result.Values);
+            UpdateLaplacian(halfedgeWeights, result.Values, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="halfEdgeWeights"></param>
+        /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
-        public void UpdateLaplacian(IList<double> halfEdgeWeights, IList<double> result)
+        /// <param name="parallel"></param>
+        public void UpdateLaplacian(IList<double> halfedgeWeights, IList<double> result, bool parallel = false)
         {
-            Mesh.HalfEdges.SizeCheck(halfEdgeWeights);
+            SizeCheck(result);
+            Mesh.Halfedges.SizeCheck(halfedgeWeights);
 
-            HeVertexList verts = Mesh.Vertices;
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    double value = Values[i];
-                    double sum = 0.0;
-
-                    foreach (HalfEdge e in verts[i].OutgoingHalfEdges)
-                        sum += (Values[e.End.Index] - value) * halfEdgeWeights[e.Index];
-
-                    result[i] = sum;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Naive calculation of gradient based on the average of directional derivatives around each vertex.
-        /// TODO further research into vertex-based mesh vector fields
-        /// http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
-        /// </summary>
-        /// <returns></returns>
-        public MeshVectorField GetGradient()
-        {
-            MeshVectorField result = new MeshVectorField(this);
-            UpdateGradient(result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Naive calculation of gradient based on the weighted sum of directional derivatives around each vertex.
-        /// TODO further research into vertex-based mesh vector fields
-        /// http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
-        /// </summary>
-        /// <param name="halfEdgeWeights"></param>
-        /// <returns></returns>
-        public MeshVectorField GetGradient(IList<double> halfEdgeWeights)
-        {
-            MeshVectorField result = new MeshVectorField(this);
-            UpdateGradient(halfEdgeWeights, result);
-            return result;
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    UpdateLaplacian(halfedgeWeights, result, range.Item1, range.Item2));
+            else
+                UpdateLaplacian(halfedgeWeights, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public void UpdateGradient(MeshVectorField result)
-        {
-            UpdateGradient(result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public void UpdateGradient(IList<Vec3d> result)
+        private void UpdateLaplacian(IList<double> halfedgeWeights, IList<double> result, int i0, int i1)
         {
             HeVertexList verts = Mesh.Vertices;
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+
+            for (int i = i0; i < i1; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = verts[i];
-                    if (v.IsUnused) continue;
+                double value = Values[i];
+                double sum = 0.0;
 
-                    double value = Values[i];
-                    Vec3d sum = new Vec3d();
-                    int n = 0;
+                foreach (Halfedge he in verts[i].OutgoingHalfedges)
+                    sum += (Values[he.End.Index] - value) * halfedgeWeights[he.Index];
 
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                    {
-                        Vec3d d = e.Span;
-                        double m = 1.0 / d.Length;
-
-                        d *= (Values[e.End.Index] - value) * m * m; // unitized directional derivative
-                        sum += d;
-                        n++;
-                    }
-
-                    result[i] = sum / n;
-                }
-            });
+                result[i] = sum;
+            }
         }
 
 
         /// <summary>
-        /// 
+        /// Calculates the gradient as the average of directional derivatives around each vertex.
         /// </summary>
-        /// <param name="halfEdgeWeights"></param>
-        /// <param name="result"></param>
-        public void UpdateGradient(IList<double> halfEdgeWeights, MeshVectorField result)
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public MeshVectorField GetGradient(bool parallel = false)
         {
-            UpdateGradient(halfEdgeWeights, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="halfEdgeWeights"></param>
-        /// <param name="result"></param>
-        public void UpdateGradient(IList<double> halfEdgeWeights, IList<Vec3d> result)
-        {
-            HeVertexList verts = Mesh.Vertices;
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    HeVertex v = verts[i];
-                    if (v.IsUnused) continue;
-
-                    double value = Values[i];
-                    Vec3d sum = new Vec3d();
-
-                    foreach (HalfEdge e in v.OutgoingHalfEdges)
-                    {
-                        Vec3d d = e.Span;
-                        double m = 1.0 / d.Length;
-                        double w = halfEdgeWeights[e.Index];
+            // TODO conduct further research into vertex-based mesh vector fields
+            // http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
             
-                        d *= (Values[e.End.Index] - value) * m * m * w; // unitized directional derivative
-                        sum += d;
-                    }
+            MeshVectorField result = new MeshVectorField(this);
+            UpdateGradient(result, parallel);
+            return result;
+        }
 
-                    result[i] = sum;
-                }
-            });
+
+        /// <summary>
+        /// Calculates the gradient as the weighted sum of directional derivatives around each vertex.
+        /// </summary>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public MeshVectorField GetGradient(IList<double> halfedgeWeights, bool parallel = false)
+        {
+            MeshVectorField result = new MeshVectorField(this);
+            UpdateGradient(halfedgeWeights, result, parallel);
+            return result;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void UpdateGradient(MeshVectorField result, bool parallel = false)
+        {
+            UpdateGradient(result.Values, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void UpdateGradient(IList<Vec3d> result, bool parallel = false)
+        {
+            SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    UpdateGradient(result, range.Item1, range.Item2));
+            else
+                UpdateGradient(result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateGradient(IList<Vec3d> result, int i0, int i1)
+        {
+            HeVertexList verts = Mesh.Vertices;
+
+            for (int i = i0; i < i1; i++)
+            {
+                HeVertex v = verts[i];
+                if (v.IsUnused) continue;
+
+                double value = Values[i];
+                Vec3d sum = new Vec3d();
+                int n = 0;
+
+                foreach (Halfedge he in v.OutgoingHalfedges)
+                {
+                    Vec3d d = he.Span;
+                    double m = 1.0 / d.Length;
+
+                    d *= (Values[he.End.Index] - value) * m * m; // unitized directional derivative
+                    sum += d;
+                    n++;
+                }
+
+                result[i] = sum / n;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void UpdateGradient(IList<double> halfedgeWeights, MeshVectorField result, bool parallel = false)
+        {
+            UpdateGradient(halfedgeWeights, result.Values, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void UpdateGradient(IList<double> halfedgeWeights, IList<Vec3d> result, bool parallel = false)
+        {
+            SizeCheck(result);
+            Mesh.Halfedges.SizeCheck(halfedgeWeights);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    UpdateGradient(halfedgeWeights, result, range.Item1, range.Item2));
+            else
+                UpdateGradient(halfedgeWeights, result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateGradient(IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
+        {
+            HeVertexList verts = Mesh.Vertices;
+
+            for (int i = i0; i < i1; i++)
+            {
+                HeVertex v = verts[i];
+                if (v.IsUnused) continue;
+
+                double value = Values[i];
+                Vec3d sum = new Vec3d();
+
+                foreach (Halfedge he in v.OutgoingHalfedges)
+                {
+                    Vec3d d = he.Span;
+                    double m = 1.0 / d.Length;
+                    double w = halfedgeWeights[he.Index];
+
+                    d *= (Values[he.End.Index] - value) * m * m * w; // unitized directional derivative
+                    sum += d;
+                }
+
+                result[i] = sum;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public double[] GetFaceMeans()
+        public double[] GetFaceMeans(bool parallel = false)
         {
             double[] result = new double[Mesh.Faces.Count];
-            UpdateFaceMeans(result);
+            UpdateFaceMeans(result, parallel);
             return result;
         }
 
@@ -349,29 +429,41 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateFaceMeans(IList<double> result)
+        /// <param name="parallel"></param>
+        public void UpdateFaceMeans(IList<double> result, bool parallel = false)
+        {
+            SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Mesh.Faces.Count), range => 
+                    UpdateFaceMeans(result, range.Item1, range.Item2));
+            else
+                UpdateFaceMeans(result, 0, Mesh.Faces.Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateFaceMeans(IList<double> result, int i0, int i1)
         {
             HeFaceList faces = Mesh.Faces;
-            faces.SizeCheck(result);
 
-            Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
+            for (int i = i0; i < i1; i++)
+            {
+                HeFace f = faces[i];
+                if (f.IsUnused) continue;
+
+                double sum = 0.0;
+                int n = 0;
+                foreach (HeVertex v in f.Vertices)
                 {
-                    for (int i = range.Item1; i < range.Item2; i++)
-                    {
-                        HeFace f = faces[i];
-                        if (f.IsUnused) continue;
+                    sum += Values[v.Index];
+                    n++;
+                }
 
-                        double sum = 0.0;
-                        int n = 0;
-                        foreach (HeVertex v in f.Vertices)
-                        {
-                            sum += Values[v.Index];
-                            n++;
-                        }
-
-                        result[i] = sum / n;
-                    }
-                });
+                result[i] = sum / n;
+            }
         }
 
 
@@ -379,28 +471,41 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="faceValues"></param>
-        public void SetVertexMeans(IList<double> faceValues)
+        /// <param name="parallel"></param>
+        public void SetVertexMeans(IList<double> faceValues, bool parallel = false)
+        {
+            Mesh.Faces.SizeCheck(faceValues);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => 
+                    SetVertexMeans(faceValues, range.Item1, range.Item2));
+            else
+                SetVertexMeans(faceValues, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void SetVertexMeans(IList<double> faceValues, int i0, int i1)
         {
             HeVertexList verts = Mesh.Vertices;
-       
-            Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
+
+            for (int i = i0; i < i1; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                HeVertex v = verts[i];
+                if (v.IsUnused) continue;
+
+                double sum = 0.0;
+                int n = 0;
+                foreach (HeFace f in v.SurroundingFaces)
                 {
-                    HeVertex v = verts[i];
-                    if (v.IsUnused) continue;
-
-                    double sum = 0.0;
-                    int n = 0;
-                    foreach(HeFace f in v.SurroundingFaces)
-                    {
-                        sum += faceValues[f.Index];
-                        n++;
-                    }
-
-                    Values[i] = sum / n;
+                    sum += faceValues[f.Index];
+                    n++;
                 }
-            });
+
+                Values[i] = sum / n;
+            }
         }
     }
 }

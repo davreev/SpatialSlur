@@ -9,14 +9,14 @@ namespace SpatialSlur.SlurField
 {
     /// <summary>
     /// Enum of field boundary conditions.
-    /// Constant - assumes constant value at the boundary
-    /// Equal - assumes equal value at boundary
-    /// Periodic - no boundary
     /// </summary>
     public enum FieldBoundaryType
     {
+        /// <summary>Assumes a constant value beyond the field domain.</summary>
         Constant,
+        /// <summary> </summary>
         Equal,
+        /// <summary> </summary>
         Periodic
     }
 }

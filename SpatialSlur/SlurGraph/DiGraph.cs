@@ -7,46 +7,92 @@ using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurGraph
 {
     /// <summary>
-    /// Adjacency list implementation of a directed graph where nodes and edges are explicitly represented.
+    /// Adjacency list implementation of a directed graph.
     /// </summary>
     [Serializable]
     public class DiGraph
     {
+        #region Static
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="pointPairs"></param>
         /// <param name="epsilon"></param>
-        /// <param name="allowDupEdges"></param>
+        /// <param name="allowMultiEdges"></param>
+        /// <param name="allowLoops"></param>
         /// <param name="nodePositions"></param>
         /// <returns></returns>
-        public static DiGraph CreateFromLineSegments(IList<Vec3d> pointPairs, double epsilon, bool allowDupEdges, out List<Vec3d> nodePositions)
+        public static DiGraph CreateFromLineSegments(IList<Vec3d> pointPairs, double epsilon, bool allowMultiEdges, bool allowLoops, out List<Vec3d> nodePositions)
         {
             int[] indexMap;
             nodePositions = Vec3d.RemoveDuplicates(pointPairs, epsilon, out indexMap);
+            
             DiGraph result = new DiGraph(nodePositions.Count, pointPairs.Count >> 1);
+            var nodes = result.Nodes;
+            var edges = result.Edges;
 
             // add nodes
-            result.AddNodes(nodePositions.Count);
+            nodes.AddMany(nodePositions.Count);
 
             // add edges
-            if (allowDupEdges)
+            int mask = 0;
+            if (allowMultiEdges) mask |= 1;
+            if (allowLoops) mask |= 2;
+
+            // 0 - no constraints
+            // 1 - no duplicate edges
+            // 2 - no loops
+            // 3 - no duplicate edges or loops
+            switch (mask)
             {
-                for (int i = 0; i < indexMap.Length; i += 2)
-                    result.AddEdge(indexMap[i], indexMap[i + 1]);
-            }
-            else
-            {
-                for (int i = 0; i < indexMap.Length; i += 2)
-                {
-                    int i0 = indexMap[i];
-                    int i1 = indexMap[i + 1];
-                    if(!result.HasEdge(i0, i1)) result.AddEdge(i0, i1);
-                }
+                case 0:
+                    {
+                        // no constraints
+                        for (int i = 0; i < indexMap.Length; i += 2)
+                            edges.Add(indexMap[i], indexMap[i + 1]);
+                        break;
+                    }
+                case 1:
+                    {
+                        // no duplicate edges
+                        for (int i = 0; i < indexMap.Length; i += 2)
+                        {
+                            DiNode n0 = nodes[indexMap[i]];
+                            DiNode n1 = nodes[indexMap[i + 1]];
+                            if (!n0.IsConnectedTo(n1)) edges.AddImpl(n0, n1);
+                        }
+                        break;
+                    }
+                case 2:
+                    {
+                        // no loops
+                        for (int i = 0; i < indexMap.Length; i += 2)
+                        {
+                            DiNode n0 = nodes[indexMap[i]];
+                            DiNode n1 = nodes[indexMap[i + 1]];
+                            if (n0 != n1) edges.AddImpl(n0, n1);
+                        }
+                        break;
+                    }
+                case 3:
+                    {
+                        // no duplicate edges or loops
+                        for (int i = 0; i < indexMap.Length; i += 2)
+                        {
+                            DiNode n0 = nodes[indexMap[i]];
+                            DiNode n1 = nodes[indexMap[i + 1]];
+                            if (!(n0 == n1 || n0.IsConnectedTo(n1))) edges.AddImpl(n0, n1);
+                        }
+                        break;
+                    }
             }
 
             return result;
@@ -58,22 +104,27 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Graph CreateFromMesh(HeMesh mesh)
+        public static DiGraph CreateFromVertexTopology(HeMesh mesh)
         {
             var verts = mesh.Vertices;
-            var edges = mesh.HalfEdges;
-            Graph result = new Graph(verts.Count, edges.Count);
+            var hedges = mesh.Halfedges;
+
+            DiGraph result = new DiGraph(verts.Count, hedges.Count);
+            var nodes = result.Nodes;
+            var edges = result.Edges;
 
             // add nodes
-            for (int i = 0; i < verts.Count; i++)
-                result.AddNode();
+            nodes.AddMany(verts.Count);
 
             // add edges
-            for (int i = 0; i < edges.Count; i++)
+            for (int i = 0; i < hedges.Count; i++)
             {
-                HalfEdge e = edges[i];
-                if (e.IsUnused) continue;
-                result.AddEdge(e.Start.Index, e.End.Index);
+                Halfedge he = hedges[i];
+
+                if (he.IsUnused)
+                    edges.Add(new DiEdge());
+                else
+                    edges.Add(he.Start.Index, he.End.Index);
             }
 
             return result;
@@ -85,30 +136,37 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Graph CreateFromMeshDual(HeMesh mesh)
+        public static DiGraph CreateFromFaceTopology(HeMesh mesh)
         {
             var faces = mesh.Faces;
-            var edges = mesh.HalfEdges;
-            Graph result = new Graph(faces.Count, edges.Count);
+            var hedges = mesh.Halfedges;
+
+            DiGraph result = new DiGraph(faces.Count, hedges.Count);
+            var nodes = result.Nodes;
+            var edges = result.Edges;
 
             // add nodes
-            for (int i = 0; i < faces.Count; i++)
-                result.AddNode();
+            nodes.AddMany(faces.Count);
 
             // add edges
-            for (int i = 0; i < edges.Count; i++)
+            for (int i = 0; i < hedges.Count; i++)
             {
-                HalfEdge e = edges[i];
-                if (e.IsUnused || e.IsBoundary) continue;
-                result.AddEdge(e.Face.Index, e.Twin.Face.Index);
+                Halfedge he = hedges[i];
+
+                if (he.IsUnused || he.IsBoundary)
+                    edges.Add(new DiEdge());
+                else
+                    edges.Add(he.Face.Index, he.Twin.Face.Index);
             }
 
             return result;
         }
 
+        #endregion
 
-        private readonly List<DiNode> _nodes;
-        private readonly List<DiEdge> _edges;
+
+        private readonly DiNodeList _nodes;
+        private readonly DiEdgeList _edges;
 
 
         /// <summary>
@@ -116,8 +174,8 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public DiGraph()
         {
-            _nodes = new List<DiNode>();
-            _edges = new List<DiEdge>();
+            _nodes = new DiNodeList(this);
+            _edges = new DiEdgeList(this);
         }
 
 
@@ -128,8 +186,8 @@ namespace SpatialSlur.SlurGraph
         /// <param name="edgeCapacity"></param>
         public DiGraph(int nodeCapacity, int edgeCapacity)
         {
-            _nodes = new List<DiNode>(nodeCapacity);
-            _edges = new List<DiEdge>(edgeCapacity);
+            _nodes = new DiNodeList(this, nodeCapacity);
+            _edges = new DiEdgeList(this, edgeCapacity);
         }
 
 
@@ -138,60 +196,30 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="other"></param>
         public DiGraph(DiGraph other)
-            : this(other.NodeCount, other.EdgeCount)
+            : this(other._nodes.Count, other._edges.Count)
         {
             var otherNodes = other._nodes;
             var otherEdges = other._edges;
+
+            _nodes = new DiNodeList(this, otherNodes.Count);
+            _edges = new DiEdgeList(this, otherEdges.Count);
   
             // add all nodes
             for (int i = 0; i < otherNodes.Count; i++)
-                AddNode();
+            {
+                var n = otherNodes[i];
+                _nodes.Add(n.InEdgeCapacity, n.OutEdgeCapacity);
+            }
 
             // add all edges
             for (int i = 0; i < otherEdges.Count; i++)
             {
                 DiEdge e = otherEdges[i];
-                AddEdge(e.Start.Index, e.End.Index);
-            }
-      
-            // flag removed edges
-            for (int i = 0; i < otherEdges.Count; i++)
-                if (otherEdges[i].IsRemoved) _edges[i].Remove();
 
-            // flag removed nodes
-            for (int i = 0; i < otherNodes.Count; i++)
-                if (otherNodes[i].IsRemoved) _nodes[i].Index = -1;
-        }
-
-
-        /// <summary>
-        /// Skips nodes which have been flagged for removal.
-        /// </summary>
-        public IEnumerable<DiNode> Nodes
-        {
-            get
-            {
-                for (int i = 0; i < _nodes.Count; i++)
-                {
-                    DiNode n = _nodes[i];
-                    if (!n.IsRemoved) yield return n;
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Skips edges which have been flagged for removal.
-        /// </summary>
-        public IEnumerable<DiEdge> Edges
-        {
-            get
-            {
-                for (int i = 0; i < _edges.Count; i++)
-                {
-                    DiEdge e = _edges[i];
-                    if (!e.IsRemoved) yield return e;
-                }
+                if (e.IsUnused)
+                    _edges.Add(new DiEdge());
+                else
+                    _edges.AddImpl(_nodes[e.Start.Index], _nodes[e.End.Index]);
             }
         }
 
@@ -199,111 +227,18 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        public int NodeCount
+        public DiNodeList Nodes
         {
-            get { return _nodes.Count; }
+            get { return _nodes; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public int EdgeCount
+        public DiEdgeList Edges
         {
-            get { return _edges.Count; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public DiNode NodeAt(int index)
-        {
-            return _nodes[index];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public DiEdge EdgeAt(int index)
-        {
-            return _edges[index];
-        }
-
-
-        /// <summary>
-        /// Returns an edge spanning from i to j.
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <returns></returns>
-        public DiEdge FindEdge(int i, int j)
-        {
-            return _nodes[i].FindEdgeTo(_nodes[j]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <returns></returns>
-        public bool HasEdge(int i, int j)
-        {
-            return FindEdge(i, j) != null;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public DiNode AddNode()
-        {
-            DiNode n = new DiNode(_nodes.Count);
-            _nodes.Add(n);
-            return n;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="quantity"></param>
-        public void AddNodes(int quantity)
-        {
-            for (int i = 0; i < quantity; i++)
-                _nodes.Add(new DiNode(_nodes.Count));
-        }
-
-
-        /// <summary>
-        /// Adds a new edge from node i to node j.
-        /// Note that if node i or j is flagged for removal, no new edge is added and null is returned.
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <returns></returns>
-        public DiEdge AddEdge(int i, int j)
-        {
-            DiNode ni = _nodes[i];
-            DiNode nj = _nodes[j];
-
-            if (ni.IsRemoved || nj.IsRemoved)
-                return null;
-
-            DiEdge e = new DiEdge(ni, nj, _edges.Count);
-            _edges.Add(e);
-
-            ni.AddOutEdge(e);
-            nj.AddInEdge(e);
-
-            return e;
+            get { return _edges; }
         }
 
 
@@ -312,85 +247,8 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public void Compact()
         {
-            CompactNodes();
-            CompactEdges();
-        }
-
-
-        /// <summary>
-        /// Removes all flagged nodes.
-        /// </summary>
-        private void CompactNodes()
-        {
-            int marker = 0;
-            for (int i = 0; i < _nodes.Count; i++)
-            {
-                DiNode n = _nodes[i];
-                if (!n.IsRemoved)
-                {
-                    n.Compact(); // compact adjacency list
-                    n.Index = marker;
-                    _nodes[marker++] = n;
-                }
-            }
-
-            _nodes.RemoveRange(marker, _nodes.Count - marker);
-        }
-
-
-        /// <summary>
-        /// Removes all flagged edges.
-        /// </summary>
-        private void CompactEdges()
-        {
-            int marker = 0;
-            for (int i = 0; i < _edges.Count; i++)
-            {
-                DiEdge e = _edges[i];
-                if (!e.IsRemoved)
-                {
-                    e.Index = marker;
-                    _edges[marker++] = e;
-                }
-            }
-
-            _edges.RemoveRange(marker, _edges.Count - marker);
-        }
-
-
-        /// <summary>
-        /// Removes all attributes corresponding with nodes which have been flagged for removal.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="attributes"></param>
-        public void CompactNodeAttributes<T>(List<T> attributes)
-        {
-            int marker = 0;
-            for (int i = 0; i < _nodes.Count; i++)
-            {
-                if (!_nodes[i].IsRemoved)
-                    attributes[marker++] = attributes[i];
-            }
-
-            attributes.RemoveRange(marker, attributes.Count - marker);
-        }
-
-
-        /// <summary>
-        /// Removes all attributes corresponding with edges which have been flagged for removal.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="attributes"></param>
-        public void CompactEdgeAttributes<T>(List<T> attributes)
-        {
-            int marker = 0;
-            for (int i = 0; i < _edges.Count; i++)
-            {
-                if (!_edges[i].IsRemoved)
-                    attributes[marker++] = attributes[i];
-            }
-
-            attributes.RemoveRange(marker, attributes.Count - marker);
+            _nodes.Compact();
+            _edges.Compact();
         }
 
 
@@ -401,254 +259,6 @@ namespace SpatialSlur.SlurGraph
         public override string ToString()
         {
             return String.Format("DiGraph (N:{0} E:{1})", _nodes.Count, _edges.Count);
-        }
-
-
-        /// <summary>
-        /// Gets the topological depth of each node from a given set of source nodes via breadth first search.
-        /// </summary>
-        /// <param name="sources"></param>
-        /// <returns></returns>
-        public int[] GetNodeDepths(IList<int> sources)
-        {
-            int[] result = new int[_nodes.Count];
-            UpdateNodeDepths(sources, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sources"></param>
-        /// <param name="result"></param>
-        public void UpdateNodeDepths(IList<int> sources, IList<int> result)
-        {
-            NodeSizeCheck(result);
-
-            // set values to infinity
-            result.Set(int.MaxValue);
-
-            // set sources to zero and enqueue
-            Queue<int> queue = new Queue<int>();
-            foreach (int i in sources)
-            {
-                result[i] = 0;
-                queue.Enqueue(i);
-            }
-
-            // breadth first search from sources
-            while (queue.Count > 0)
-            {
-                int i = queue.Dequeue();
-                var ni = _nodes[i];
-                int tj = result[i] + 1;
-
-                foreach (var nj in ni.ConnectedTo)
-                {
-                    int j = nj.Index;
-                    if (tj < result[j])
-                    {
-                        result[j] = tj;
-                        queue.Enqueue(j);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Gets the topological distance of each node from a given set of source nodes via breadth first search.
-        /// </summary>
-        /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
-        /// <returns></returns>
-        public double[] GetNodeDistances(IList<int> sources, IList<double> edgeLengths)
-        {
-            double[] result = new double[_nodes.Count];
-            UpdateNodeDistances(sources, edgeLengths, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
-        /// <param name="result"></param>
-        public void UpdateNodeDistances(IList<int> sources, IList<double> edgeLengths, IList<double> result)
-        {
-            EdgeSizeCheck(edgeLengths);
-            NodeSizeCheck(result);
-
-            result.Set(Double.PositiveInfinity);
-
-            // set sources to zero and enqueue
-            Queue<int> queue = new Queue<int>();
-            foreach (int i in sources)
-            {
-                result[i] = 0.0;
-                queue.Enqueue(i);
-            }
-
-            // conduct distance-aware breadth first search
-            while (queue.Count > 0)
-            {
-                int i = queue.Dequeue();
-                var ni = _nodes[i];
-                double ti = result[i];
-
-                foreach (var e in ni.OutgoingEdges)
-                {
-                    int j = e.End.Index;
-                    double tj = ti + edgeLengths[e.Index];
-
-                    if (tj < result[j])
-                    {
-                        result[j] = tj;
-                        queue.Enqueue(j);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Computes the laplacian using a normalized umbrella weighting scheme.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetLaplacian(IList<double> nodeValues)
-        {
-            double[] result = new double[_nodes.Count];
-            UpdateLaplacian(nodeValues, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="nodeValues"></param>
-        /// <param name="result"></param>
-        public void UpdateLaplacian(IList<double> nodeValues, IList<double> result)
-        {
-            NodeSizeCheck(nodeValues);
-            NodeSizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, _nodes.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var ni = _nodes[i];
-                    if (ni.IsRemoved) continue;
-
-                    double sum = 0.0;
-                    foreach (var nj in ni.ConnectedTo)
-                        sum += nodeValues[nj.Index];
-
-                    result[i] = sum / ni.OutDegree - nodeValues[i];
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Computes the laplacian using custom edge weights.
-        /// </summary>
-        /// <returns></returns>
-        public double[] GetLaplacian(IList<double> nodeValues, IList<double> edgeWeights)
-        {
-            double[] result = new double[_nodes.Count];
-            UpdateLaplacian(nodeValues, edgeWeights, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="nodeValues"></param>
-        /// <param name="edgeWeights"></param>
-        /// <param name="result"></param>
-        public void UpdateLaplacian(IList<double> nodeValues, IList<double> edgeWeights, IList<double> result)
-        {
-            NodeSizeCheck(nodeValues);
-            EdgeSizeCheck(edgeWeights);
-            NodeSizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, _nodes.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var ni = _nodes[i];
-                    if (ni.IsRemoved) continue;
-
-                    double val = nodeValues[i];
-                    double sum = 0.0;
-                    foreach (var e in ni.OutgoingEdges)
-                        sum += (nodeValues[e.End.Index] - val) * edgeWeights[e.Index];
-
-                    result[i] = sum;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="nodePositions"></param>
-        /// <returns></returns>
-        public double[] GetEdgeLengths(IList<Vec3d> nodePositions)
-        {
-            double[] result = new double[_edges.Count];
-            UpdateEdgeLengths(nodePositions, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="nodePositions"></param>
-        /// <param name="result"></param>
-        public void UpdateEdgeLengths(IList<Vec3d> nodePositions, IList<double> result)
-        {
-            NodeSizeCheck(nodePositions);
-            EdgeSizeCheck(result);
-
-            Parallel.ForEach(Partitioner.Create(0, _edges.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var e = _edges[i];
-                    if (e.IsRemoved) continue;
-                    result[i] = nodePositions[e.Start.Index].DistanceTo(nodePositions[e.End.Index]);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="attributes"></param>
-        private void NodeSizeCheck<T>(IList<T> attributes)
-        {
-            if (attributes.Count != _nodes.Count)
-                throw new ArgumentException("The number of attributes provided does not match the number of nodes in the graph.");
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="attributes"></param>
-        private void EdgeSizeCheck<T>(IList<T> attributes)
-        {
-            if (attributes.Count != _edges.Count)
-                throw new ArgumentException("The number of attributes provided does not match the number of edges in the graph.");
         }
     }
 }

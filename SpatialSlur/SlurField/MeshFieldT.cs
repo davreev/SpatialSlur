@@ -52,7 +52,7 @@ namespace SpatialSlur.SlurField
             : base(other, duplicateMesh)
         {
             _values = new T[Count];
-            _values.Set(other._values);
+            Array.Copy(other._values, _values, Count);
         }
 
 
@@ -74,16 +74,35 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public void Set(MeshField<T> other)
+        {
+            Array.Copy(other._values, _values, Count);
+        }
+
+
+        /// <summary>
         /// Sets this field to some function of itself.
         /// </summary>
         /// <param name="func"></param>
-        public void Function(Func<T, T> func)
+        /// <param name="parallel"></param>
+        public void Function(Func<T, T> func, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _values[i] = func(_values[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     _values[i] = func(_values[i]);
-            });
+            }
         }
 
 
@@ -93,13 +112,25 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
         /// <param name="other"></param>
-        public void Function<U>(Func<U, T> func, MeshField<U> other)
+        /// <param name="parallel"></param>
+        public void Function<U>(Func<U, T> func, MeshField<U> other, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            SizeCheck(other);
+            var u = other.Values;
+
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(other._values[i]);
-            });
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _values[i] = func(u[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    _values[i] = func(u[i]);
+            }
         }
 
 
@@ -109,13 +140,25 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
         /// <param name="other"></param>
-        public void Function<U>(Func<T, U, T> func, MeshField<U> other)
+        /// <param name="parallel"></param>
+        public void Function<U>(Func<T, U, T> func, MeshField<U> other, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            SizeCheck(other);
+            var u = other.Values;
+
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], other._values[i]);
-            });
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _values[i] = func(_values[i], u[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    _values[i] = func(_values[i], u[i]);
+            }
         }
 
 
@@ -127,13 +170,27 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         /// <param name="otherU"></param>
         /// <param name="otherV"></param>
-        public void Function<U, V>(Func<U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
+        /// <param name="parallel"></param>
+        public void Function<U, V>(Func<U, V, T> func, MeshField<U> otherU, MeshField<V> otherV, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            SizeCheck(otherU);
+            SizeCheck(otherV);
+            var u = otherU.Values;
+            var v = otherV.Values;
+
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(otherU._values[i], otherV._values[i]);
-            });
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _values[i] = func(u[i], v[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    _values[i] = func(u[i], v[i]);
+            }
         }
 
 
@@ -145,13 +202,27 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         /// <param name="otherU"></param>
         /// <param name="otherV"></param>
-        public void Function<U, V>(Func<T, U, V, T> func, MeshField<U> otherU, MeshField<V> otherV)
+        /// <param name="parallel"></param>
+        public void Function<U, V>(Func<T, U, V, T> func, MeshField<U> otherU, MeshField<V> otherV, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            SizeCheck(otherU);
+            SizeCheck(otherV);
+            var u = otherU.Values;
+            var v = otherV.Values;
+
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], otherU._values[i], otherV._values[i]);
-            });
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _values[i] = func(_values[i], u[i], v[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    _values[i] = func(_values[i], u[i], v[i]);
+            }
         }
 
 
@@ -159,13 +230,22 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="mapper"></param>
-        public void PaintDisplayMesh(Func<T, Color> mapper)
+        /// <param name="parallel"></param>
+        public void PaintDisplayMesh(Func<T, Color> mapper, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        DisplayMesh.VertexColors[i] = mapper(Values[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
                     DisplayMesh.VertexColors[i] = mapper(Values[i]);
-            });
+            }
         }
     }
 }

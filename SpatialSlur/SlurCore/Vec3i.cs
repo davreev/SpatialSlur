@@ -17,15 +17,6 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static Vec3i Zero
-        {
-            get { return new Vec3i(0, 0, 0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         public static Vec3i UnitX
         {
             get { return new Vec3i(1, 0, 0); }
@@ -180,10 +171,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i Cross(Vec3i v0, Vec3i v1)
         {
-            int x = v0.y * v1.z - v0.z * v1.y;
-            int y = v0.z * v1.x - v0.x * v1.z;
-            int z = v0.x * v1.y - v0.y * v1.x;
-            return new Vec3i(x, y, z);
+            return new Vec3i(
+                v0.y * v1.z - v0.z * v1.y, 
+                v0.z * v1.x - v0.x * v1.z, 
+                v0.x * v1.y - v0.y * v1.x);
         }
 
 
@@ -247,6 +238,36 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// returns the largest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public int Max
+        {
+            get { return Math.Max(x, Math.Max(y, z)); }
+        }
+
+
+        /// <summary>
+        /// returns the smallest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public int Min
+        {
+            get { return Math.Min(x, Math.Min(y, z)); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vec3i Abs
+        {
+            get { return new Vec3i(Math.Abs(x), Math.Abs(y), Math.Abs(z)); }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         public bool IsZero
@@ -294,15 +315,11 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override int GetHashCode()
         {
-            // allow overflow
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 23 + x.GetHashCode();
-                hash = hash * 23 + y.GetHashCode();
-                hash = hash * 23 + z.GetHashCode();
-                return hash;
-            }
+            int hash = 17;
+            hash = hash * 23 + x.GetHashCode();
+            hash = hash * 23 + y.GetHashCode();
+            hash = hash * 23 + z.GetHashCode();
+            return hash;
         }
      
 

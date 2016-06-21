@@ -117,10 +117,10 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="vectors"></param>
         /// <returns></returns>
-        public static double[] GetCovariance(IList<Vector3d> vectors)
+        public static double[] GetCovarianceMatrix(IList<Vector3d> vectors)
         {
             Vector3d mean;
-            return GetCovariance(vectors, out mean);
+            return GetCovarianceMatrix(vectors, out mean);
         }
 
 
@@ -130,7 +130,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="vectors"></param>
         /// <param name="mean"></param>
         /// <returns></returns>
-        public static double[] GetCovariance(IList<Vector3d> vectors, out Vector3d mean)
+        public static double[] GetCovarianceMatrix(IList<Vector3d> vectors, out Vector3d mean)
         {
             // calculate mean
             mean = new Vector3d();
@@ -164,10 +164,10 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        public static double[] GetCovariance(IList<Point3d> points)
+        public static double[] GetCovarianceMatrix(IList<Point3d> points)
         {
             Point3d mean;
-            return GetCovariance(points, out mean);
+            return GetCovarianceMatrix(points, out mean);
         }
 
 
@@ -177,7 +177,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="mean"></param>
         /// <returns></returns>
-        public static double[] GetCovariance(IList<Point3d> points, out Point3d mean)
+        public static double[] GetCovarianceMatrix(IList<Point3d> points, out Point3d mean)
         {
             // calculate mean
             mean = new Point3d();
@@ -238,7 +238,7 @@ namespace SpatialSlur.SlurCore
                     double a = Vector3d.CrossProduct(v0, v1).Length;
                     areas[i0] += a * t;
 
-                    // add to edge cotangent weights
+                    // add to edge cotangent weights (assumes consistent face orientation)
                     if (i1 > i0)
                         result[i0 * n + i1] += 0.5 * v0 * v1 / a;
                     else

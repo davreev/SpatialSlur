@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,15 +15,6 @@ namespace SpatialSlur.SlurCore
     public struct Vec2d
     {
         #region Static
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec2d Zero
-        {
-            get { return new Vec2d(0.0, 0.0); }
-        }
-
 
         /// <summary>
         /// 
@@ -151,31 +143,68 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the angle between two vectors
-        /// returns NaN if either vector is zero length
+        /// Returns the pseudo-cross product calculated as v0.Perp * v1.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static double Cross(Vec2d v0, Vec2d v1)
+        {
+            return -v0.y * v1.x + v0.x * v1.y;
+        }
+
+
+        /// <summary>
+        /// Returns the angle between two vectors.
+        /// If either vector is zero length, Double.NaN is returned.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
         public static double Angle(Vec2d v0, Vec2d v1)
         {
-            if (v0.Unitize() && v1.Unitize())
-                return Math.Acos(v0 * v1);
+            double d = v0.Length * v1.Length;
+
+            if (d > 0.0)
+                return Math.Acos(SlurMath.Clamp(v0 * v1 / d, -1.0, 1.0)); // clamp dot product to remove noise
 
             return Double.NaN;
         }
 
 
         /// <summary>
-        /// 
+        /// Returns the projection of v0 onto v1.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2d Project(Vec2d v0, Vec2d v1)
+        {
+            return (v0 * v1) / v1.SquareLength * v1;
+        }
+
+
+        /// <summary>
+        /// Returns the perpendicular component of v0 with respect to v1.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2d Perp(Vec2d v0, Vec2d v1)
+        {
+            return v0 - Project(v0, v1);
+        }
+
+
+        /// <summary>
+        /// Returns v0 relected about v1.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec2d Reflect(Vec2d v0, Vec2d v1)
         {
-            v1.Unitize();
-            return v1 * (v0 * v1 * 2.0) - v0;
+            return Project(v0, v1) * 2.0 - v0;
         }
 
 
@@ -282,6 +311,163 @@ namespace SpatialSlur.SlurCore
             return result;
         }
 
+
+
+
+        /// <summary>
+        /// For each point, returns the index of the first coincident point within the list. If no coincident point is found, -1 is returned.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static int[] GetCoincident(IList<Vec2d> points, double epsilon, bool parallel = false)
+        {
+            SpatialHash2d<int> hash;
+            return GetCoincident(points, epsilon, out hash, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="hash"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static int[] GetCoincident(IList<Vec2d> points, double epsilon, out SpatialHash2d<int> hash, bool parallel = false)
+        {
+            int n = points.Count;
+            int[] result = new int[n];
+            hash = new SpatialHash2d<int>(n * 4, epsilon * 2.0);
+
+            // insert points into spatial hash
+            for (int i = 0; i < n; i++)
+                hash.Insert(points[i], i);
+
+            // search for collisions (threadsafe)
+            if (parallel)
+            {
+                var temp = hash; // can't use out parameter in lambda statement below
+                Parallel.ForEach(Partitioner.Create(0, n), range =>
+                    GetCoincident(points, epsilon, temp, result, range.Item1, range.Item2));
+            }
+            else
+                GetCoincident(points, epsilon, hash, result, 0, n);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetCoincident(IList<Vec2d> points, double epsilon, SpatialHash2d<int> hash, IList<int> result, int i0, int i1)
+        {
+            List<int> foundIds = new List<int>();
+            Vec2d offset = new Vec2d(epsilon, epsilon);
+
+            for (int i = i0; i < i1; i++)
+            {
+                Vec2d p = points[i];
+                hash.Search(new Domain2d(p - offset, p + offset), foundIds);
+
+                int coinId = -1;
+                foreach (int j in foundIds)
+                {
+                    if (j == i) continue; // ignore self coincidence
+
+                    if (p.Equals(points[j], epsilon))
+                    {
+                        coinId = j;
+                        break;
+                    }
+                }
+
+                result[i] = coinId;
+                foundIds.Clear();
+            }
+        }
+
+
+        /// <summary>
+        /// For each point in A, returns the index of the first encountered coincident point in B. If no coincident point is found, -1 is returned.
+        /// </summary>
+        /// <param name="pointsA"></param>
+        /// <param name="pointsB"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static int[] GetCoincident(IList<Vec2d> pointsA, IList<Vec2d> pointsB, double epsilon, bool parallel = false)
+        {
+            SpatialHash2d<int> hash;
+            return GetCoincident(pointsA, pointsB, epsilon, out hash, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pointsA"></param>
+        /// <param name="pointsB"></param>
+        /// <param name="epsilon"></param>
+        /// <param name="hash"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static int[] GetCoincident(IList<Vec2d> pointsA, IList<Vec2d> pointsB, double epsilon, out SpatialHash2d<int> hash, bool parallel = false)
+        {
+            int nA = pointsA.Count;
+            int nB = pointsB.Count;
+            int[] result = new int[nA];
+            hash = new SpatialHash2d<int>(nB * 4, epsilon * 2.0);
+
+            // insert points
+            for (int i = 0; i < nB; i++)
+                hash.Insert(pointsB[i], i);
+
+            // search for collisions (threadsafe)
+            if (parallel)
+            {
+                var temp = hash; // can't use out parameter in lambda statement below
+                Parallel.ForEach(Partitioner.Create(0, nA), range =>
+                    GetCoincident(pointsA, pointsB, epsilon, temp, result, range.Item1, range.Item2));
+            }
+            else
+                GetCoincident(pointsA, pointsB, epsilon, hash, result, 0, nA);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetCoincident(IList<Vec2d> pointsA, IList<Vec2d> pointsB, double epsilon, SpatialHash2d<int> hash, IList<int> result, int i0, int i1)
+        {
+            List<int> foundIds = new List<int>();
+            Vec2d offset = new Vec2d(epsilon, epsilon);
+
+            for (int i = i0; i < i1; i++)
+            {
+                Vec2d p = pointsA[i];
+                hash.Search(new Domain2d(p - offset, p + offset), foundIds);
+
+                int coinId = -1;
+                foreach (int j in foundIds)
+                {
+                    if (p.Equals(pointsB[j], epsilon))
+                    {
+                        coinId = j;
+                        break;
+                    }
+                }
+
+                result[i] = coinId;
+                foundIds.Clear();
+            }
+        }
+
         #endregion
 
 
@@ -331,20 +517,50 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// returns the largest component in the vector
         /// </summary>
-        public bool IsZero
+        /// <returns></returns>
+        public double Max
         {
-            get { return x == 0.0 && y == 0.0; }
+            get { return Math.Max(x, y); }
+        }
+
+
+        /// <summary>
+        /// returns the smallest component in the vector
+        /// </summary>
+        /// <returns></returns>
+        public double Min
+        {
+            get { return Math.Min(x, y); }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit
+        /// <returns></returns>
+        public Vec2d Abs
         {
-            get { return SquareLength == 1.0; }
+            get { return new Vec2d(Math.Abs(x), Math.Abs(y)); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsZero(double epsilon)
+        {
+            return (Math.Abs(x) < epsilon) && (Math.Abs(y) < epsilon);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsUnit(double epsilon)
+        {
+            return Math.Abs(SquareLength - 1.0) < epsilon;
         }
 
 
@@ -453,7 +669,8 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns false if the vector is zero length
+        /// Unitizes the vector in place.
+        /// Returns false if the vector is zero length.
         /// </summary>
         public bool Unitize()
         {
@@ -468,36 +685,5 @@ namespace SpatialSlur.SlurCore
 
             return false;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public Vec2d Abs()
-        {
-            return new Vec2d(Math.Abs(x), Math.Abs(y));
-        }
-
-
-        /// <summary>
-        /// returns the largest component in the vector
-        /// </summary>
-        /// <returns></returns>
-        public double Max()
-        {
-            return Math.Max(x, y);
-        }
-
-
-        /// <summary>
-        /// returns the smallest component in the vector
-        /// </summary>
-        /// <returns></returns>
-        public double Min()
-        {
-            return Math.Min(x, y);
-        }
-
     }
 }

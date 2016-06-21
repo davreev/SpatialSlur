@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="path"></param>
         /// <param name="mesh"></param>
-        public static void WriteObj(string path, HeMesh mesh)
+        public static void WriteObj(HeMesh mesh, string path)
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
@@ -65,7 +65,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="path"></param>
         /// <param name="mesh"></param>
         /// <param name="uvs"></param>
-        public static void WriteObj(string path, HeMesh mesh, IList<Vec2d> uvs)
+        public static void WriteObj(HeMesh mesh, IList<Vec2d> uvs, string path)
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
@@ -115,7 +115,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="path"></param>
         /// <param name="mesh"></param>
         /// <param name="normals"></param>
-        public static void WriteObj(string path, HeMesh mesh, IList<Vec3d> normals)
+        public static void WriteObj(HeMesh mesh, IList<Vec3d> normals, string path)
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
@@ -166,7 +166,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="uvs"></param>
         /// <param name="normals"></param>
-        public static void WriteObj(string path, HeMesh mesh, IList<Vec2d> uvs, IList<Vec3d> normals)
+        public static void WriteObj(HeMesh mesh, IList<Vec2d> uvs, IList<Vec3d> normals, string path)
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
@@ -243,24 +243,28 @@ namespace SpatialSlur.SlurMesh
                     switch (segments[0])
                     {
                         case "v":
-                            // parse vertex
-                            double x = Double.Parse(segments[1]);
-                            double y = Double.Parse(segments[2]);
-                            double z = Double.Parse(segments[3]);
-
-                            verts.Add(x, y, z);
-                            break;
-                        case "f":
-                            // parse face
-                            List<int> face = new List<int>();
-                            for (int i = 1; i < segments.Length; i++)
                             {
-                                var ids = segments[i].Split(_objFaceSeparator);
-                                face.Add(Int32.Parse(ids[0]) - 1);
-                            }
+                                // parse vertex
+                                double x = Double.Parse(segments[1]);
+                                double y = Double.Parse(segments[2]);
+                                double z = Double.Parse(segments[3]);
 
-                            faces.Add(face);
-                            break;
+                                verts.Add(x, y, z);
+                                break;
+                            }
+                        case "f":
+                            {
+                                // parse face
+                                List<int> face = new List<int>();
+                                for (int i = 1; i < segments.Length; i++)
+                                {
+                                    var ids = segments[i].Split(_objFaceSeparator);
+                                    face.Add(Int32.Parse(ids[0]) - 1);
+                                }
+
+                                faces.Add(face);
+                                break;
+                            }
                     }
                 }
             }
@@ -270,19 +274,20 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// TODO
+        /// 
         /// </summary>
         /// <param name="path"></param>
         /// <param name="uvs"></param>
         /// <returns></returns>
         public static HeMesh ReadObj(string path, out IList<Vec2d> uvs)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
 
         /// <summary>
-        /// TODO
+        /// 
         /// </summary>
         /// <param name="path"></param>
         /// <param name="uvs"></param>
@@ -290,6 +295,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public static HeMesh ReadObj(string path, out IList<Vec2d> uvs, out IList<Vec3d> normals)
         {
+            // TODO
             throw new NotImplementedException();
         }
     }

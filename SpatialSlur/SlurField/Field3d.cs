@@ -172,8 +172,8 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Gets/sets the boundary type for the field.
-        /// This property determines how edge cases are handled in many other methods.
+        /// Gets or sets the boundary type for the field.
+        /// This property determines how edge cases are handled in other methods.
         /// </summary>
         public FieldBoundaryType BoundaryType
         {
@@ -236,27 +236,33 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// This is called after any changes to the field's boundary type
+        /// This is called after any changes to the field's boundary type.
         /// </summary>
         protected virtual void OnBoundaryTypeChange() 
         {
             switch (_boundaryType)
             {
                 case FieldBoundaryType.Constant:
-                    _indexAt = IndexAtConstant;
-                    _index3At = Index3AtConstant;
-                    _fieldPointAt = FieldPointAtConstant;
-                    break;
+                    {
+                        _indexAt = IndexAtConstant;
+                        _index3At = Index3AtConstant;
+                        _fieldPointAt = FieldPointAtConstant;
+                        break;
+                    }
                 case FieldBoundaryType.Equal:
-                    _indexAt = IndexAtEqual;
-                    _index3At = Index3AtEqual;
-                    _fieldPointAt = FieldPointAtEqual;
-                    break;
+                    {
+                        _indexAt = IndexAtEqual;
+                        _index3At = Index3AtEqual;
+                        _fieldPointAt = FieldPointAtEqual;
+                        break;
+                    }
                 case FieldBoundaryType.Periodic:
-                    _indexAt = IndexAtPeriodic;
-                    _index3At = Index3AtPeriodic;
-                    _fieldPointAt = FieldPointAtPeriodic;
-                    break;
+                    {
+                        _indexAt = IndexAtPeriodic;
+                        _index3At = Index3AtPeriodic;
+                        _fieldPointAt = FieldPointAtPeriodic;
+                        break;
+                    }
             }
         }
 
@@ -385,11 +391,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        //
         private int IndexAtConstant(Vec3d point)
         {
             int i = (int)Math.Round((point.x - _x0) * _dxInv);
@@ -575,7 +577,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// TODO test
+        /// 
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
@@ -587,7 +589,7 @@ namespace SpatialSlur.SlurField
             double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
             double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k);
 
-            // bit mask (1 = out of bounds, 0 = in bounds)
+            /*
             int mask = 0;
             if (i < 0 || i >= _nx) mask |= 1;
             if (j < 0 || j >= _ny) mask |= 2;
@@ -595,10 +597,22 @@ namespace SpatialSlur.SlurField
             if (i < -1 || i >= _nx - 1) mask |= 8;
             if (j < -1 || j >= _ny - 1) mask |= 16;
             if (k < -1 || k >= _nz - 1) mask |= 32;
+            */
 
             // set corner indices
             int index = FlattenIndex(i, j, k);
             int[] corners = result.Corners;
+
+            // create bit mask (1 = out of bounds, 0 = in bounds)
+            int mask = 0;
+            if (i < 0 || i >= _nx) mask |= 1;
+            if (j < 0 || j >= _ny) mask |= 2;
+            if (k < 0 || k >= _nz) mask |= 4;
+
+            i++; j++; k++;
+            if (i < 0 || i >= _nx) mask |= 8;
+            if (j < 0 || j >= _ny) mask |= 16;
+            if (k < 0 || k >= _nz) mask |= 32;
 
             corners[0] = ((mask & 7) > 0) ? _n : index; // 000 111
             corners[1] = ((mask & 14) > 0) ? _n : index + 1; // 001 110
@@ -615,7 +629,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
@@ -661,7 +675,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
@@ -702,12 +716,8 @@ namespace SpatialSlur.SlurField
 
 
         /*
-        /// <summary>
-        /// Generalizes well for more involved types of interpolation (cubic etc.)
-        /// http://paulbourke.net/miscellaneous/interpolation/
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
+        // Alternative implementation that is better suited to more involved types of interpolation (cubic etc.)
+        // http://paulbourke.net/miscellaneous/interpolation/
         private void FieldPointAtEqual2(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components
@@ -739,12 +749,8 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// Generalizes well for more involved types of interpolation (cubic etc.)
-        /// http://paulbourke.net/miscellaneous/interpolation/
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
+        // Alternative implementation that is better suited to more involved types of interpolation (cubic etc.)
+        // http://paulbourke.net/miscellaneous/interpolation/
         private void FieldPointAtPeriodic2(Vec3d point, FieldPoint3d result)
         {
             // convert to grid space and separate fractional and whole components

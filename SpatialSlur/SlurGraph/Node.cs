@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 /*
  * Notes
- * TODO make generic for attaching attributes
  */
 
 namespace SpatialSlur.SlurGraph
@@ -15,59 +14,58 @@ namespace SpatialSlur.SlurGraph
     /// 
     /// </summary>
     [Serializable]
-    public class Node
+    public class Node : GraphElement
     {
-        private readonly List<Edge> _edges;
-        //private N _data;
-        private int _index = -1;
-        private int _degree; // explicitly store degree to keep up with edge/node removal
+        private Edge[] _edges;
+        private int _n;
+        private int _degree; // explicitly store degree to keep up with edge removal
 
 
         /// <summary>
         /// 
         /// </summary>
-        internal Node(int index)
+        internal Node(int edgeCapacity = 2)
         {
-            _edges = new List<Edge>();
-            _index = index;
+            _edges = new Edge[edgeCapacity];
         }
 
 
         /// <summary>
-        /// Iterates over connected nodes.
-        /// Skips nodes which have been flagged for removal.
+        /// Iterates over nodes connected to this one (i.e. those at the opposite end of incident edges).
+        /// Skips nodes connected by unused edges.
         /// </summary>
-        public IEnumerable<Node> ConnectedNodes
+        public IEnumerable<Node> Neighbours
         {
             get
             {
-                for (int i = 0; i < _edges.Count; i++)
+                for (int i = 0; i < _n; i++)
                 {
                     Edge e = _edges[i];
-                    if (!e.IsRemoved) yield return e.Other(this);
+                    if (!e.IsUnused) yield return e.Other(this);
                 }
             }
         }
 
 
         /// <summary>
-        /// Skips edges which have been flagged for removal.
+        /// Iterates over edges incident to this node.
+        /// Skips unused edges.
         /// </summary>
-        public IEnumerable<Edge> IncidentEdges
+        public IEnumerable<Edge> Edges
         {
             get
             {
-                for (int i = 0; i < _edges.Count; i++)
+                for (int i = 0; i < _n; i++)
                 {
                     Edge e = _edges[i];
-                    if (!e.IsRemoved) yield return e;
+                    if (!e.IsUnused) yield return e;
                 }
             }
         }
 
 
         /// <summary>
-        /// Returns the number of edges incident to this node.
+        /// Returns the number of used edges incident to this node.
         /// </summary>
         public int Degree
         {
@@ -77,53 +75,72 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Returns the index of the node within the graph's node list.
-        /// This will be set to -1 if the node is removed.
+        /// Returns the number of edges incident to this node.
+        /// Note that this includes unused edges.
         /// </summary>
-        public int Index
+        public int EdgeCount
         {
-            get { return _index; }
-            internal set { _index = value; }
+            get { return _n; }
         }
 
 
         /// <summary>
-        /// Returns true if this node has been flagged for removal.
+        /// 
         /// </summary>
-        public bool IsRemoved
+        public int EdgeCapacity
         {
-            get { return _index == -1; }
+            get { return _edges.Length; }
         }
 
 
         /// <summary>
-        /// Flags the node and all its incident edges for removal.
+        /// 
         /// </summary>
-        public void Remove()
+        public override bool IsUnused
         {
-            if (IsRemoved) return; // check if already flagged
-            _index = -1;
-
-            for (int i = 0; i < _edges.Count; i++)
-                _edges[i].Remove();
+            get { return _degree == 0; }
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal void OnRemove()
+        {
+            // remove edges (flags node as unused)
+            for(int i = 0; i < _n; i++)
+            {
+                Edge e = _edges[i];
+                if (!e.IsUnused) e.OnRemove();
+            }
+
+            _n = 0; // reset edge list
+        }
+   
 
         /// <summary>
         /// Removes all flagged edges from the edge list.
         /// </summary>
-        internal void Compact()
+        public void Compact()
         {
             int marker = 0;
 
-            for (int i = 0; i < _edges.Count; i++)
+            for (int i = 0; i < _n; i++)
             {
                 Edge e = _edges[i];
-                if (!e.IsRemoved)
+                if (!e.IsUnused)
                     _edges[marker++] = e;
             }
 
-            _edges.RemoveRange(marker, _edges.Count - marker); // trim list to include only used elements
+            _n = marker;
+
+            // trim array if length is greater than twice _n
+            int maxLength = Math.Max(_n << 1, 2);
+            if (_edges.Length > maxLength)
+                Array.Resize(ref _edges, maxLength);
+
+            // prevent object loitering
+            Array.Clear(_edges, _n, _edges.Length - _n);
         }
 
 
@@ -146,14 +163,26 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         public Edge FindEdgeTo(Node other)
         {
-            for (int i = 0; i < _edges.Count; i++)
+            for (int i = 0; i < _n; i++)
             {
                 Edge e = _edges[i];
-                if (!e.IsRemoved && e.Other(this) == other)
+                if (!e.IsUnused && e.Other(this) == other)
                     return e;
             }
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Returns the incident edge at the given index.
+        /// Note that this may return unused edges.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Edge EdgeAt(int index)
+        {
+            return _edges[index];
         }
 
 
@@ -163,7 +192,11 @@ namespace SpatialSlur.SlurGraph
         /// <param name="edge"></param>
         internal void AddEdge(Edge edge)
         {
-            _edges.Add(edge);
+            // resize if necessary
+            if (_n == _edges.Length)
+                Array.Resize(ref _edges, _edges.Length << 1);
+
+            _edges[_n++] = edge;
             _degree++;
         }
     }

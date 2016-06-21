@@ -21,60 +21,20 @@ namespace SpatialSlur.SlurData
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double InnerProduct(VecKd v0, VecKd v1)
+        public static double Dot(VecKd v0, VecKd v1)
         {
             double result = 0.0;
+
             for (int i = 0; i < v0.K; i++)
                 result += v0[i] * v1[i];
 
             return result;
         }
 
-        
-        /// <summary>
-        /// Returns the the entries of the covariance matrix in column-major order.
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovariance(IList<VecKd> vectors)
-        {
-            int n = vectors[0].K;
-
-            // calculate mean
-            VecKd mean = new VecKd(n);
-            foreach (VecKd v in vectors) mean.Add(v);
-            mean.Scale(1 / vectors.Count);
-
-            // calculate lower triangular covariance matrix
-            double[] result = new double[n * n];
-            VecKd d = new VecKd(n);
-
-            for (int k = 0; k < vectors.Count; k++)
-            {
-                vectors[k].Subtract(mean, d);
-
-                for (int i = 0; i < n; i++)
-                {
-                    for (int j = i; j < n; j++)
-                        result[i * n + j] += d[i] * d[j];
-                }
-            }
-
-            // fill out upper triangular
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < i; j++)
-                    result[j * n + i] = result[i * n + j];
-            }
-
-            return result;
-        }
-
-
         #endregion
 
 
-        private readonly double[] _cmp;
+        private readonly double[] _values;
  
 
         /// <summary>
@@ -86,7 +46,7 @@ namespace SpatialSlur.SlurData
             if (k < 2)
                 throw new System.ArgumentOutOfRangeException("The vector must have at least 2 dimensions");
 
-            _cmp = new double[k];
+            _values = new double[k];
         }
 
 
@@ -97,7 +57,7 @@ namespace SpatialSlur.SlurData
         public VecKd(VecKd other)
             : this(other.K)
         {
-            Set(other);
+            Array.Copy(other._values, _values, K);
         }
 
 
@@ -108,7 +68,7 @@ namespace SpatialSlur.SlurData
         public VecKd(IList<double> values)
             : this(values.Count)
         {
-            _cmp.Set(values);
+            _values.Set(values);
         }
 
 
@@ -142,7 +102,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int K
         {
-            get { return _cmp.Length; }
+            get { return _values.Length; }
         }
 
 
@@ -153,31 +113,18 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public double this[int i]
         {
-            get { return _cmp[i]; }
-            set { _cmp[i] = value; }
+            get { return _values[i]; }
+            set { _values[i] = value; }
         }
 
 
         /// <summary>
-        /// Returns the underlying component array.
+        /// Returns the underlying array of values.
         /// </summary>
-        public IList<double> Components
+        public IList<double> Values
         {
-            get { return _cmp; }
+            get { return _values; }
         }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        private void SizeCheck(VecKd other)
-        {
-            if (K != other.K)
-                throw new System.ArgumentException("The vectors must be the same size.");
-        }
-        */
 
 
         /// <summary>
@@ -186,7 +133,7 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         public void Set(VecKd other)
         {
-            _cmp.Set(other._cmp);
+            Array.Copy(other._values, _values, K);
         }
 
 

@@ -28,11 +28,7 @@ namespace SpatialSlur.SlurField
         private Action<Vec2d, FieldPoint2d> _fieldPointAt;
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
+        //
         private Field2d(int countX, int countY)
         {
             if (countX < 2 || countY < 2)
@@ -200,20 +196,26 @@ namespace SpatialSlur.SlurField
             switch(_boundaryType)
             {
                 case FieldBoundaryType.Constant:
-                    _indexAt = IndexAtConstant;
-                    _index2At = Index2AtConstant;
-                    _fieldPointAt = FieldPointAtConstant;
-                    break;
+                    {
+                        _indexAt = IndexAtConstant;
+                        _index2At = Index2AtConstant;
+                        _fieldPointAt = FieldPointAtConstant;
+                        break;
+                    }
                 case FieldBoundaryType.Equal:
-                    _indexAt = IndexAtEqual;
-                    _index2At = Index2AtEqual;
-                    _fieldPointAt = FieldPointAtEqual;
-                    break;
+                    {
+                        _indexAt = IndexAtEqual;
+                        _index2At = Index2AtEqual;
+                        _fieldPointAt = FieldPointAtEqual;
+                        break;
+                    }
                 case FieldBoundaryType.Periodic:
-                    _indexAt = IndexAtPeriodic;
-                    _index2At = Index2AtPeriodic;
-                    _fieldPointAt = FieldPointAtPeriodic;
-                    break;
+                    {
+                        _indexAt = IndexAtPeriodic;
+                        _index2At = Index2AtPeriodic;
+                        _fieldPointAt = FieldPointAtPeriodic;
+                        break;
+                    }
             }
         }
 
@@ -335,11 +337,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        //
         private int IndexAtConstant(Vec2d point)
         {
             int i = (int)Math.Round((point.x - _x0) * _dxInv);
@@ -353,11 +351,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        //
         private int IndexAtEqual(Vec2d point)
         {
             int i = SlurMath.Clamp((int)Math.Round((point.x - _x0) * _dxInv), _nx - 1);
@@ -366,11 +360,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        //
         private int IndexAtPeriodic(Vec2d point)
         {
             int i = SlurMath.Mod2((int)Math.Round((point.x - _x0) * _dxInv), _nx);
@@ -404,11 +394,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        //
         private Vec2i Index2AtConstant(Vec2d point)
         {
             int i = (int)Math.Round((point.x - _x0) * _dxInv);
@@ -422,11 +408,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        //
         private Vec2i Index2AtEqual(Vec2d point)
         {
             int i = SlurMath.Clamp((int)Math.Round((point.x - _x0) * _dxInv), _nx - 1);
@@ -435,11 +417,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        //
         private Vec2i Index2AtPeriodic(Vec2d point)
         {
             int i = SlurMath.Mod2((int)Math.Round((point.x - _x0) * _dxInv), _nx);
@@ -512,11 +490,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// TODO test
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
+        //
         private void FieldPointAtConstant(Vec2d point, FieldPoint2d result)
         {
             // convert to grid space and separate fractional and whole components
@@ -524,16 +498,26 @@ namespace SpatialSlur.SlurField
             double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i);
             double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
 
-            // bit mask (1 = out of bounds, 0 = in bounds)
+            /*
             int mask = 0;
             if (i < 0 || i >= _nx) mask |= 1;
             if (j < 0 || j >= _ny) mask |= 2;
             if (i < -1 || i >= _nx - 1) mask |= 4;
             if (j < -1 || j >= _ny - 1) mask |= 8;
-      
+            */
+
             // set corner indices
             int index = FlattenIndex(i, j);
             int[] corners = result.Corners;
+
+            // bit mask (1 = out of bounds, 0 = in bounds)
+            int mask = 0;
+            if (i < 0 || i >= _nx) mask |= 1;
+            if (j < 0 || j >= _ny) mask |= 2;
+
+            i++; j++;
+            if (i < 0 || i >= _nx) mask |= 4;
+            if (j < 0 || j >= _ny) mask |= 8;
 
             corners[0] = ((mask & 3) > 0) ? _n : index; // 00 11
             corners[1] = ((mask & 6) > 0) ? _n : index + 1; // 01 10
@@ -545,11 +529,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
+        //
         private void FieldPointAtEqual(Vec2d point, FieldPoint2d result)
         {
             // convert to grid space and separate fractional and whole components
@@ -582,11 +562,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
+        //
         private void FieldPointAtPeriodic(Vec2d point, FieldPoint2d result)
         {
             // convert to grid space and separate fractional and whole components
@@ -615,70 +591,62 @@ namespace SpatialSlur.SlurField
             result.SetWeights(u, v);
         }
 
-        
+
         /*
-       /// <summary>
-       /// Generalizes well for more involved types of interpolation (cubic etc.)
-       /// http://paulbourke.net/miscellaneous/interpolation/
-       /// </summary>
-       /// <param name="point"></param>
-       /// <param name="result"></param>
-       private void FieldPointAtClamped2(Vec2d point, FieldPoint2d result)
-       {
-           // convert to grid space and separate fractional and whole components
-           int i0, j0;
-           double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i0);
-           double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j0);
+        // Alternative implementation that is better suited to more involved types of interpolation (cubic etc.)
+        // http://paulbourke.net/miscellaneous/interpolation/
+        private void FieldPointAtClamped2(Vec2d point, FieldPoint2d result)
+        {
+            // convert to grid space and separate fractional and whole components
+            int i0, j0;
+            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i0);
+            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j0);
 
-           int[] corners = result.Corners;
-           int index = 0;
+            int[] corners = result.Corners;
+            int index = 0;
 
-           for (int j = 0; j < 2; j++)
-           {
-               int jj = SlurMath.Clamp(j0 + j, _ny - 1);
-               for (int i = 0; i < 2; i++)
-               {
-                   int ii = SlurMath.Clamp(i0 + i, _nx - 1);
-                   corners[index] = FlattenIndex(ii, jj);
-                   index++;
-               }
-           }
+            for (int j = 0; j < 2; j++)
+            {
+                int jj = SlurMath.Clamp(j0 + j, _ny - 1);
+                for (int i = 0; i < 2; i++)
+                {
+                    int ii = SlurMath.Clamp(i0 + i, _nx - 1);
+                    corners[index] = FlattenIndex(ii, jj);
+                    index++;
+                }
+            }
 
-           // compute weights using fractional components
-           result.SetWeights(u, v);
-       }
+            // compute weights using fractional components
+            result.SetWeights(u, v);
+        }
 
 
-       /// <summary>
-       /// Generalizes well for more involved types of interpolation (cubic etc.)
-       /// http://paulbourke.net/miscellaneous/interpolation/
-       /// </summary>
-       /// <param name="point"></param>
-       /// <param name="result"></param>
-       private void FieldPointAtWrapped2(Vec2d point, FieldPoint2d result)
-       {
-           // convert to grid space and separate fractional and whole components
-           int i0, j0;
-           double u = SlurMath.Fract((point.x - _x0) / _dxInv, out i0);
-           double v = SlurMath.Fract((point.y - _y0) / _dyInv, out j0);
+        // Alternative implementation that is better suited to more involved types of interpolation (cubic etc.)
+        // http://paulbourke.net/miscellaneous/interpolation/
+        private void FieldPointAtWrapped2(Vec2d point, FieldPoint2d result)
+        {
+            // convert to grid space and separate fractional and whole components
+            int i0, j0;
+            double u = SlurMath.Fract((point.x - _x0) / _dxInv, out i0);
+            double v = SlurMath.Fract((point.y - _y0) / _dyInv, out j0);
 
-           int[] corners = result.Corners;
-           int index = 0;
+            int[] corners = result.Corners;
+            int index = 0;
 
-           for (int j = 0; j < 2; j++)
-           {
-               int jj = SlurMath.Mod2(j0 + j, _ny);
-               for (int i = 0; i < 2; i++)
-               {
-                   int ii = SlurMath.Mod2(i0 + i, _nx);
-                   corners[index] = FlattenIndex(ii, jj);
-                   index++;
-               }
-           }
+            for (int j = 0; j < 2; j++)
+            {
+                int jj = SlurMath.Mod2(j0 + j, _ny);
+                for (int i = 0; i < 2; i++)
+                {
+                    int ii = SlurMath.Mod2(i0 + i, _nx);
+                    corners[index] = FlattenIndex(ii, jj);
+                    index++;
+                }
+            }
 
-           // compute weights using fractional components
-           result.SetWeights(u, v);
-       }
-       */
+            // compute weights using fractional components
+            result.SetWeights(u, v);
+        }
+        */
     }
 }

@@ -5,6 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ * 
+ * Unused checks are not performed within element level methods to avoid redundancy.
+ */
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
@@ -13,7 +19,7 @@ namespace SpatialSlur.SlurMesh
     [Serializable]
     public class HeFace:HeElement
     {
-        private HalfEdge _first;
+        private Halfedge _first;
    
 
         /// <summary>
@@ -23,9 +29,9 @@ namespace SpatialSlur.SlurMesh
 
         
         /// <summary>
-        /// Returns the first half-edge in the face.
+        /// Returns the first halfedge in the face.
         /// </summary>
-        public HalfEdge First
+        public Halfedge First
         {
             get { return _first; }
             internal set { _first = value; }
@@ -43,7 +49,6 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if the face has at least 3 edges.
-        /// This method assumes that the face is in use.
         /// </summary>
         internal override bool IsValid
         {
@@ -52,14 +57,20 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the face has at least 1 boundary vertex.
+        /// Returns true if the face has at least 1 boundary edge.
         /// </summary>
         public override bool IsBoundary
         {
             get
             {
-                foreach (HalfEdge e in HalfEdges)
-                    if (e.Start.IsBoundary) return true;
+                Halfedge he = _first;
+          
+                do
+                {
+                    if (he.Twin.Face == null) return true;
+                    he = he.Next;
+                } while (he != _first);
+
                 return false;
             }
         }
@@ -84,65 +95,79 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Returns the number of edges in the face.
+        /// </summary>
+        public int Degree
+        {
+            get
+            {
+                Halfedge he = _first;
+                int count = 0;
+
+                do
+                {
+                    count++;
+                    he = he.Next;
+                } while (he != _first);
+
+                return count;
+            }
+        }
+
+
+        /// <summary>
         /// Iterates over the face's vertices.
         /// </summary>
         public IEnumerable<HeVertex> Vertices
         {
             get
             {
-                if (IsUnused) yield break;
-                HalfEdge e = _first;
+                Halfedge he = _first;
 
-                // advance to the next edge until back at the first
                 do
                 {
-                    yield return e.Start;
-                    e = e.Next;
-                } while (e != _first);
+                    yield return he.Start;
+                    he = he.Next;
+                } while (he != _first);
             }
         }
 
 
         /// <summary>
-        /// Iterates over the face's half-edges.
+        /// Iterates over the face's halfedges.
         /// </summary>
-        public IEnumerable<HalfEdge> HalfEdges
+        public IEnumerable<Halfedge> Halfedges
         {
             get
             {
-                if (IsUnused) yield break;
-                HalfEdge e = _first;
+                Halfedge he = _first;
 
-                // advance to the next edge until back at the first
                 do
                 {
-                    yield return e;
-                    e = e.Next;
-                } while (e != _first);
+                    yield return he;
+                    he = he.Next;
+                } while (he != _first);
             }
         }
 
 
         /// <summary>
         /// Iterates over adjacent faces.
-        /// Null faces are skipped.
-        /// Note that if mutliple edges are shared with an adjacent face, that face will be returned multiple times.
+        /// Note that null faces are skipped.
+        /// Also if mutliple edges are shared with an adjacent face, that face will be returned multiple times.
         /// </summary>
         public IEnumerable<HeFace> AdjacentFaces
         {
             get
             {
-                if (IsUnused) yield break;
-                HalfEdge e = _first;
-          
-                // advance to the next edge until back at the first
+                Halfedge he = _first;
+
                 do
                 {
-                    HeFace f = e.Twin.Face;
+                    HeFace f = he.Twin.Face;
                     if (f != null) yield return f;
-
-                    e = e.Next;
-                } while (e != _first);
+                    he = he.Next;
+                } while (he != _first);
             }
         }
 
@@ -160,12 +185,17 @@ namespace SpatialSlur.SlurMesh
         /// Returns the number of edges in the face.
         /// </summary>
         /// <returns></returns>
+        [Obsolete("Use Degree property instead.")]
         public int CountEdges()
         {
+            Halfedge he = _first;
             int count = 0;
 
-            foreach (HalfEdge e in HalfEdges)
+            do
+            {
                 count++;
+                he = he.Next;
+            } while (he != _first);
 
             return count;
         }
@@ -177,10 +207,14 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public int CountBoundaryEdges()
         {
+            Halfedge he = _first;
             int count = 0;
 
-            foreach (HalfEdge e in HalfEdges)
-                if (e.Twin.Face == null) count++;
+            do
+            {
+                if(he.Twin.Face == null) count++;
+                he = he.Next;
+            } while (he != _first);
 
             return count;
         }
@@ -192,10 +226,14 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public int CountBoundaryVertices()
         {
+            Halfedge he = _first;
             int count = 0;
 
-            foreach (HeVertex v in Vertices)
-                if (v.IsBoundary) count++;
+            do
+            {
+                if (he.Start.IsBoundary) count++;
+                he = he.Next;
+            } while (he != _first);
 
             return count;
         }
@@ -203,16 +241,14 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Finds the edge between this face and another.
-        /// Returns the half-edge adjacent to this face or null if no edge exists.
+        /// Returns the halfedge adjacent to this face or null if no edge exists.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public HalfEdge FindEdgeBetween(HeFace other)
+        public Halfedge FindEdgeBetween(HeFace other)
         {
-            if (IsUnused) return null;
-
-            foreach (HalfEdge e in HalfEdges)
-                if (e.Twin.Face == other) return e;
+            foreach (Halfedge he in Halfedges)
+                if (he.Twin.Face == other) return he;
 
             return null;
         }
@@ -239,16 +275,38 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Returns the unitized sum of halfedge normals in the face.
+        /// </summary>
+        /// <returns></returns>
+        public Vec3d GetNormal()
+        {
+            Vec3d result;
+
+            if(this.IsTri)
+            {
+                result = _first.GetNormal();
+            }
+            else
+            {
+                result = new Vec3d();
+                foreach (Halfedge he in Halfedges)
+                    result += he.GetNormal();
+            }
+        
+            result.Unitize();
+            return result;
+        }
+
+
+        /// <summary>
         /// Returns the circumcenter of a triangular face.
+        /// Assumes face is triangular.
         /// </summary>
         /// <returns></returns>
         public Vec3d GetCircumcenter()
         {
-            if (!IsTri)
-                throw new InvalidOperationException("the face must be triangular");
-
-            throw new NotImplementedException();
+            var next = _first.Next;
+            return next.Start.Position + GeometryUtil.GetCurvatureVector(_first.Twin.Span, next.Span);
         }
-
     }
 }

@@ -4,9 +4,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using System.Drawing.Imaging;
 using SpatialSlur.SlurCore;
+
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurField
 {
@@ -18,7 +20,7 @@ namespace SpatialSlur.SlurField
     {
         private Action<IList<Vec2d>> _getLaplacian;
         private Action<IList<double>> _getDivergence;
-        // private Action<IList<Vec2d>> _getCurl;
+        private Action<IList<double>> _getCurl;
 
 
         /// <summary>
@@ -64,17 +66,26 @@ namespace SpatialSlur.SlurField
             switch (BoundaryType)
             {
                 case FieldBoundaryType.Constant:
-                    _getLaplacian = GetLaplacianConstant;
-                    _getDivergence = GetDivergenceConstant;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianConstant;
+                        _getDivergence = GetDivergenceConstant;
+                        _getCurl = GetCurlConstant;
+                        break;
+                    }
                 case FieldBoundaryType.Equal:
-                    _getLaplacian = GetLaplacianEqual;
-                    _getDivergence = GetDivergenceEqual;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianEqual;
+                        _getDivergence = GetDivergenceEqual;
+                        _getCurl = GetCurlEqual;
+                        break;
+                    }
                 case FieldBoundaryType.Periodic:
-                    _getLaplacian = GetLaplacianPeriodic;
-                    _getDivergence = GetDivergencePeriodic;
-                    break;
+                    {
+                        _getLaplacian = GetLaplacianPeriodic;
+                        _getDivergence = GetDivergencePeriodic;
+                        _getCurl = GetCurlPeriodic;
+                        break;
+                    }
             }
         }
 
@@ -98,32 +109,32 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// gets the magnitudes of all vectors in the field
+        /// Gets the magnitudes of all vectors in the field
         /// </summary>
         /// <returns></returns>
         public ScalarField2d GetMagnitudes()
         {
             ScalarField2d result = new ScalarField2d(this);
-            GetMagnitudes(result.Values);
+            UpdateMagnitudes(result.Values);
             return result;
         }
 
 
         /// <summary>
-        /// gets the magnitudes of all vectors in the field
+        /// Gets the magnitudes of all vectors in the field
         /// </summary>
         /// <param name="result"></param>
-        public void GetMagnitudes(ScalarField2d result)
+        public void UpdateMagnitudes(ScalarField2d result)
         {
-            GetMagnitudes(result.Values);
+            UpdateMagnitudes(result.Values);
         }
 
 
         /// <summary>
-        /// gets the magnitudes of all vectors in the field
+        /// Gets the magnitudes of all vectors in the field
         /// </summary>
         /// <param name="result"></param>
-        public void GetMagnitudes(IList<double> result)
+        public void UpdateMagnitudes(IList<double> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -134,7 +145,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Unitizes all vectors in the field
+        /// Unitizes all vectors in the field.
         /// </summary>
         public void Unitize()
         {
@@ -207,10 +218,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
         private void GetLaplacianConstant(IList<Vec2d> result)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
@@ -251,10 +260,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
         private void GetLaplacianEqual(IList<Vec2d> result)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
@@ -295,10 +302,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
         private void GetLaplacianPeriodic(IList<Vec2d> result)
         {
-            // inverse square step size for each dimension
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
@@ -343,7 +348,7 @@ namespace SpatialSlur.SlurField
         public ScalarField2d GetDivergence()
         {
             ScalarField2d result = new ScalarField2d(this);
-            UpdateDivergence(result);
+            UpdateDivergence(result.Values);
             return result;
         }
 
@@ -359,8 +364,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// http://www.math.harvard.edu/archive/21a_spring_09/PDF/13-05-curl-and-divergence.pdf
-        /// http://mathworld.wolfram.com/Divergence.html
+        /// 
         /// </summary>
         /// <param name="result"></param>
         public void UpdateDivergence(IList<double> result)
@@ -372,7 +376,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
         private void GetDivergenceConstant(IList<double> result)
         {
             double dx = 1.0 / (2.0 * ScaleX);
@@ -414,7 +417,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
         private void GetDivergenceEqual(IList<double> result)
         {
             double dx = 1.0 / (2.0 * ScaleX);
@@ -457,7 +459,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
         private void GetDivergencePeriodic(IList<double> result)
         {
             double dx = 1.0 / (2.0 * ScaleX);
@@ -500,9 +501,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        public VectorField2d GetCurl()
+        public ScalarField2d GetCurl()
         {
-            VectorField2d result = new VectorField2d((Field2d)this);
+            ScalarField2d result = new ScalarField2d((Field2d)this);
             UpdateCurl(result.Values);
             return result;
         }
@@ -512,20 +513,143 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateCurl(VectorField2d result)
+        public void UpdateCurl(ScalarField2d result)
         {
             UpdateCurl(result.Values);
         }
 
 
         /// <summary>
-        /// TODO
-        /// http://www.math.harvard.edu/archive/21a_spring_09/PDF/13-05-curl-and-divergence.pdf
+        /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateCurl(IList<Vec2d> result)
+        public void UpdateCurl(IList<double> result)
         {
-            throw new NotImplementedException();
+            _getCurl(result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetCurlConstant(IList<double> result)
+        {
+            double dx = 1.0 / (2.0 * ScaleX);
+            double dy = 1.0 / (2.0 * ScaleY);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+
+                    double dp, dq;
+
+                    //x
+                    if (i == 0)
+                        dp = Values[index + 1].x - BoundaryValue.x;
+                    else if (i == CountX - 1)
+                        dp = BoundaryValue.x - Values[index - 1].x;
+                    else
+                        dp = Values[index + 1].x - Values[index - 1].x;
+
+                    //y
+                    if (j == 0)
+                        dq = Values[index + CountX].y - BoundaryValue.y;
+                    else if (j == CountY - 1)
+                        dq = BoundaryValue.y - Values[index - CountX].y;
+                    else
+                        dq = Values[index + CountX].y - Values[index - CountX].y;
+
+                    result[index] = dq * dx - dp * dy;
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetCurlEqual(IList<double> result)
+        {
+            double dx = 1.0 / (2.0 * ScaleX);
+            double dy = 1.0 / (2.0 * ScaleY);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+
+                    Vec2d value = Values[i];
+                    double dp, dq;
+
+                    //x
+                    if (i == 0)
+                        dp = Values[index + 1].x - value.x;
+                    else if (i == CountX - 1)
+                        dp = value.x - Values[index - 1].x;
+                    else
+                        dp = Values[index + 1].x - Values[index - 1].x;
+
+                    //y
+                    if (j == 0)
+                        dq = Values[index + CountX].y - value.y;
+                    else if (j == CountY - 1)
+                        dq = value.y - Values[index - CountX].y;
+                    else
+                        dq = Values[index + CountX].y - Values[index - CountX].y;
+
+                    result[index] = dq * dx - dp * dy;
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetCurlPeriodic(IList<double> result)
+        {
+            double dx = 1.0 / (2.0 * ScaleX);
+            double dy = 1.0 / (2.0 * ScaleY);
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+
+                    double dp, dq;
+
+                    //x
+                    if (i == 0)
+                        dp = Values[index + 1].x - Values[index - 1 + CountX].x;
+                    else if (i == CountX - 1)
+                        dp = Values[index + 1 - CountX].x - Values[index - 1].x;
+                    else
+                        dp = Values[index + 1].x - Values[index - 1].x;
+
+                    //y
+                    if (j == 0)
+                        dq = Values[index + CountX].y - Values[index - CountX + Count].y;
+                    else if (j == CountY - 1)
+                        dq = Values[index + CountX - Count].y - Values[index - CountX].y;
+                    else
+                        dq = Values[index + CountX].y - Values[index - CountX].y;
+
+                    result[index] = dq * dx - dp * dy;
+                }
+            });
         }
 
 
@@ -537,6 +661,5 @@ namespace SpatialSlur.SlurField
         {
             return String.Format("VectorField2d ({0} x {1})", CountX, CountY);
         }
-
     }
 }
