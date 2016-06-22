@@ -66,7 +66,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <param name="k"></param>
-        protected abstract void Discretize(Vec3d point, out int i, out int j, out int k);
+        internal abstract void Discretize(Vec3d point, out int i, out int j, out int k);
    
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace SpatialSlur.SlurData
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        protected abstract int ToIndex(int i, int j, int k);
+        internal abstract int ToIndex(int i, int j, int k);
 
 
         /// <summary>

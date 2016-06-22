@@ -63,7 +63,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        protected override void Discretize(Vec2d point, out int i, out int j)
+        internal override void Discretize(Vec2d point, out int i, out int j)
         {
             i = (int)Math.Floor(point.x * _scaleInv);
             j = (int)Math.Floor(point.y * _scaleInv);
@@ -76,7 +76,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        protected override int ToIndex(int i, int j)
+        internal override int ToIndex(int i, int j)
         {
             return SlurMath.Mod2(i * P1 ^ j * P2, BinCount);
         }

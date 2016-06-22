@@ -207,7 +207,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the largest component in the vector
+        /// Returns the largest component in the vector.
         /// </summary>
         /// <returns></returns>
         public int Max
@@ -217,7 +217,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns the smallest component in the vector
+        /// Returns the smallest component in the vector.
         /// </summary>
         /// <returns></returns>
         public int Min

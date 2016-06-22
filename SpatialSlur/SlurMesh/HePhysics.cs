@@ -11,7 +11,7 @@ namespace SpatialSlur.SlurMesh
 {
     /// <summary>
     /// Haphazard collection of static methods for mesh relaxation and optimization.
-    /// Only handles the calculation of forces - integration must be handled in implementation.
+    /// Note that these methods only handle the calculation of forces. Integration of mesh vertices is left up to the specific implementation.
     /// </summary>
     public static class HePhysics
     {
@@ -657,8 +657,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Adjusts edge lengths to make adjacent faces have tangent incircles.
-        /// Intended for use on triangle meshes.
+        /// Calculates forces which adjust edge lengths to make adjacent faces have tangent incircles.
+        /// Note that this method is intended for use on triangle meshes.
         /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
         /// </summary>
         /// <param name="mesh"></param>
@@ -714,7 +714,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Adjusts edge lengths to match a pair of radii associated with its end vertices.
+        /// Calculates forces which adjust the length of each edge to match a pair of radii associated with its end vertices.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -752,7 +752,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Adjusts edge lengths towards the average around their vertex.
+        /// Calculates forces which adjust edge lengths towards the average around their vertex.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -799,7 +799,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Adjust edge lengths towards the average within their face.
+        /// Calculates forces which adjust edge lengths towards the average within their face.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -1084,7 +1084,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Aligns the edges of a mesh with a given set of vectors.
+        /// Calculates forces which align the edges of a mesh with a given set of vectors.
         /// http://www.eecs.berkeley.edu/~sequin/CS285/PAPERS/Pottmann_FrFrm_arch.pdf
         /// </summary>
         /// <param name="mesh"></param>
@@ -1115,7 +1115,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Pulls vertices within each face to a common plane.
+        /// Calculates forces which pull vertices within each face to a common plane.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -1178,8 +1178,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Pulls vertices within each face to a common plane.
-        /// Ignores non-quad faces.
+        /// Calculates forces which pull vertices within each face to a common plane.
+        /// Note that this method ignores non-quad faces.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -1216,7 +1216,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Pulls vertices around each vertex to a common plane.
+        /// Calculates forces which pull vertices around each vertex to a common plane.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -1229,9 +1229,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Pulls vertices within each face to a common circle.
-        /// Intended for use on quad meshes.
-        /// Note that this method should be used in conjunction with planarize.
+        /// Calculates forces which pull vertices within each face to a common circle.
+        /// Note that this method is intended for use on quad meshes and should be used in conjunction with PlanarizeQuads.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -1388,9 +1387,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Adjusts faces around each internal degree 4 vertex to be tangent to a common cone.
-        /// Intended for use on quad meshes.
-        /// Note that this method should be used in conjunction with planarize.
+        /// Calculates forces which adjust faces around each internal degree 4 vertex to be tangent to a common cone.
+        /// Note that this method is intended for use on quad meshes and should be used in conjunction with PlanarizeQuads.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -1524,7 +1522,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Adjusts edge lengths to make quad faces tangential.
+        /// Calculates forces which adjust edge lengths to make quad faces tangential.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
@@ -1580,7 +1578,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Minimizes gaussian curvature at interior vertices.
+        /// Calculates forces which minimize gaussian curvature at interior vertices.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>

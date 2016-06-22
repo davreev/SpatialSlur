@@ -23,7 +23,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Implementation of a generic k-dimensional binary search tree.
+    /// Generic implementation of a k-dimensional binary search tree.
     /// </summary>
     public class KdTree<T>
     {
@@ -354,7 +354,8 @@ namespace SpatialSlur.SlurData
     
 
         /// <summary> 
-        /// Removes the first node in the tree which is equal to the given point.
+        /// Removes the first point in the tree which is equal to the given point.
+        /// Note that node removal can result in unbalanced trees which degrades search performance.
         /// </summary>
         /// <param name="point"></param>
         public bool Remove(VecKd point)

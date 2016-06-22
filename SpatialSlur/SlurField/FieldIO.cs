@@ -126,7 +126,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Writes the given field to an image.
+        /// Writes the given field to an existing image.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>

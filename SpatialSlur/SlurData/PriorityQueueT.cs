@@ -107,7 +107,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// Removes the minimum element from the queue and returns it.
         /// </summary>
         /// <returns></returns>
         public T RemoveMin()

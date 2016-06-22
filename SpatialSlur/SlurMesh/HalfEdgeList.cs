@@ -262,13 +262,13 @@ namespace SpatialSlur.SlurMesh
             // split edge
             SplitEdgeImpl(halfedge, 0.5);
            
-            // split left face if one exists
+            // split left face if it exists
             if (halfedge.Face != null)
                 faces.SplitFaceImpl(halfedge, halfedge.Next.Next);
 
             halfedge = halfedge.Twin.Next;
      
-            // split right face if one exists
+            // split right face if it exists
             if (halfedge.Face != null)
                 faces.SplitFaceImpl(halfedge, halfedge.Next.Next);
 

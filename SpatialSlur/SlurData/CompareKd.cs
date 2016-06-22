@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// 
     /// </summary>
-    public class CompareKd : IComparer<VecKd>
+    class CompareKd : IComparer<VecKd>
     {
         private int _k;
         private double _epsilon;
