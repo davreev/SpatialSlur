@@ -60,22 +60,22 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        public void SetVertexPositions(IList<Vec3d> vectors, bool parallel = false)
+        public void SetVertexPositions(IList<Vec3d> points, bool parallel = false)
         {
-            SizeCheck(vectors);
+            SizeCheck(points);
 
             if (parallel)
             {
                 Parallel.ForEach(Partitioner.Create(0, Count), range =>
                 {
                     for (int i = range.Item1; i < range.Item2; i++)
-                        this[i].Position = vectors[i];
+                        this[i].Position = points[i];
                 });
             }
             else
             {
                 for (int i = 0; i < Count; i++)
-                    this[i].Position = vectors[i];
+                    this[i].Position = points[i];
             }
         }
 

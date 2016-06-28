@@ -368,7 +368,8 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Negate()
         {
-            Scale(-1.0);
+            for (int i = 0; i < K; i++)
+                this[i] = -this[i];
         }
 
 

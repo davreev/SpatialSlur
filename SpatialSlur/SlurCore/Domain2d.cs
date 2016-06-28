@@ -128,7 +128,15 @@ namespace SpatialSlur.SlurCore
         public Domain2d(IEnumerable<Vec2d> points)
             : this()
         {
-            Include(points);
+            var p0 = points.ElementAt(0);
+            x.t0 = x.t1 = p0.x;
+            y.t0 = y.t1 = p0.y;
+
+            foreach (Vec2d p in points.Skip(1))
+            {
+                x.Include(p.x);
+                y.Include(p.y);
+            }
         }
 
 
@@ -318,6 +326,17 @@ namespace SpatialSlur.SlurCore
         {
             x.Translate(delta.x);
             y.Translate(delta.y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        public void Expand(double delta)
+        {
+            x.Expand(delta);
+            y.Expand(delta);
         }
 
 

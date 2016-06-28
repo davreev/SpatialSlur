@@ -54,16 +54,14 @@ namespace SpatialSlur.SlurMesh
         public static HeMesh CreateFromPolygons(IList<IList<Vec3d>> polygons, double tolerance)
         {
             List<Vec3d> points = new List<Vec3d>();
-            List<int> nsides = new List<int>();
+            int[] nsides = new int[polygons.Count];
 
-            // get all polyline points
-            foreach (IList<Vec3d> poly in polygons)
+            // get all polygon points
+            for (int i = 0; i < polygons.Count; i++)
             {
-                int n = poly.Count;
-                if (n < 3) continue;  // skip invalid polygons
-
+                var poly = polygons[i];
                 points.AddRange(poly);
-                nsides.Add(n);
+                nsides[i] = poly.Count;
             }
 
             return HeMesh.CreateFromPolygons(points, nsides, tolerance);
@@ -169,7 +167,7 @@ namespace SpatialSlur.SlurMesh
                 f1.First = _hedges[f0.First.Index];
             }
 
-            // link edges to vertices, faces, and other halfedges
+            // link halfedges to vertices, faces, and other halfedges
             for (int i = 0; i < otherHedges.Count; i++)
             {
                 Halfedge he0 = otherHedges[i];
@@ -380,7 +378,7 @@ namespace SpatialSlur.SlurMesh
                 if (f.IsUnused)
                     newVerts.Add(new Vec3d()); // add dummy vertex for unused elements
                 else
-                    newVerts.Add(f.GetCenter());
+                    newVerts.Add(f.GetBarycenter());
             }
 
             // add new faces by circulating old vertices

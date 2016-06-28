@@ -208,5 +208,59 @@ namespace SpatialSlur.SlurField
             }
         }
 
+
+        /// <summary>
+        /// Calculates the Laplacian using a normalized umbrella weighting scheme.
+        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
+        /// </summary>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public MeshVectorField GetLaplacian(bool parallel = false)
+        {
+            var result = new MeshVectorField((MeshField)this);
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// Calculates the Laplacian using a custom weighting scheme.
+        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
+        /// </summary>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public MeshVectorField GetLaplacian(IList<double> halfedgeWeights, bool parallel = false)
+        {
+            var result = new MeshVectorField((MeshField)this);
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public void UpdateLaplacian(MeshVectorField result, bool parallel = false)
+        {
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void UpdateLaplacian(IList<double> halfedgeWeights, MeshVectorField result, bool parallel = false)
+        {
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
+        }
+
+
     }
 }

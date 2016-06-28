@@ -139,7 +139,7 @@ namespace SpatialSlur.SlurField
         public MeshScalarField GetLaplacian(bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField((MeshField)this);
-            UpdateLaplacian(result.Values, parallel);
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
             return result;
         }
 
@@ -154,7 +154,7 @@ namespace SpatialSlur.SlurField
         public MeshScalarField GetLaplacian(IList<double> halfedgeWeights, bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField((MeshField)this);
-            UpdateLaplacian(halfedgeWeights, result.Values, parallel);
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
             return result;
         }
  
@@ -167,47 +167,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public void UpdateLaplacian(MeshScalarField result, bool parallel = false)
         {
-            UpdateLaplacian(result.Values, parallel);
-        }
-
-   
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public void UpdateLaplacian(IList<double> result, bool parallel = false)
-        {
-            SizeCheck(result);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), range => 
-                    UpdateLaplacian(result, range.Item1, range.Item2));
-            else
-                UpdateLaplacian(result, 0, Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void UpdateLaplacian(IList<double> result, int i0, int i1)
-        {
-            HeVertexList verts = Mesh.Vertices;
-
-            for (int i = i0; i < i1; i++)
-            {
-                double sum = 0.0;
-                int n = 0;
-
-                foreach (Halfedge he in verts[i].IncomingHalfedges)
-                {
-                    sum += Values[he.Start.Index];
-                    n++;
-                }
-
-                result[i] = sum / n - Values[i];
-            }
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
         }
 
 
@@ -219,46 +179,7 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void UpdateLaplacian(IList<double> halfedgeWeights, MeshScalarField result, bool parallel = false)
         {
-            UpdateLaplacian(halfedgeWeights, result.Values, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="halfedgeWeights"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public void UpdateLaplacian(IList<double> halfedgeWeights, IList<double> result, bool parallel = false)
-        {
-            SizeCheck(result);
-            Mesh.Halfedges.SizeCheck(halfedgeWeights);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), range => 
-                    UpdateLaplacian(halfedgeWeights, result, range.Item1, range.Item2));
-            else
-                UpdateLaplacian(halfedgeWeights, result, 0, Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void UpdateLaplacian(IList<double> halfedgeWeights, IList<double> result, int i0, int i1)
-        {
-            HeVertexList verts = Mesh.Vertices;
-
-            for (int i = i0; i < i1; i++)
-            {
-                double value = Values[i];
-                double sum = 0.0;
-
-                foreach (Halfedge he in verts[i].OutgoingHalfedges)
-                    sum += (Values[he.End.Index] - value) * halfedgeWeights[he.Index];
-
-                result[i] = sum;
-            }
+            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
         }
 
 

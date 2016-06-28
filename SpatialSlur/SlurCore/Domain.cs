@@ -90,7 +90,13 @@ namespace SpatialSlur.SlurCore
         public Domain(IEnumerable<double> values)
             : this()
         {
-            Include(values, ref t0, ref t1);
+            t0 = t1 = values.ElementAt(0);
+
+            foreach (double t in values.Skip(1))
+            {
+                if (t < t0) t0 = t;
+                else if (t > t1) t1 = t;
+            }
         }
 
 
@@ -104,7 +110,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns true if t0 != t1.
         /// </summary>
         public bool IsValid
         {
@@ -341,17 +347,13 @@ namespace SpatialSlur.SlurCore
         {
             if (IsIncreasing)
             {
-                if (t > t1) 
-                    t1 = t;
-                else if (t < t0)
-                    t0 = t;
+                if (t > t1) t1 = t;
+                else if (t < t0) t0 = t;
             }
             else
             {
-                if (t > t0)
-                    t0 = t;
-                else if (t < t1)
-                    t1 = t;
+                if (t > t0) t0 = t;
+                else if (t < t1) t1 = t;
             }
         }
 
@@ -376,10 +378,8 @@ namespace SpatialSlur.SlurCore
         {
             foreach (double t in values)
             {
-                if (t < min)
-                    min = t;
-                else if (t > max)
-                    max = t;
+                if (t < min) min = t;
+                else if (t > max) max = t;
             }
         }
 

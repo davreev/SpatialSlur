@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using Rhino.Geometry;
+
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurCore
 {
@@ -372,5 +377,36 @@ namespace SpatialSlur.SlurCore
             return m;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="values"></param>
+        /// <param name="mapper"></param>
+        public static void PaintByValue<T>(this Mesh mesh, IList<T> values, Func<T, Color> mapper, bool parallel = false)
+        {
+            if (mesh.Vertices.Count != values.Count)
+                throw new ArgumentException("The number of values provided must equal the number of vertices in the mesh.");
+
+            var vc = new Color[values.Count];
+
+            if (parallel)
+            {
+                Parallel.ForEach(Partitioner.Create(0, values.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        vc[i] = mapper(values[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < values.Count; i++)
+                    vc[i] = mapper(values[i]);
+            }
+
+            mesh.VertexColors.SetColors(vc);
+        }
     }
 }

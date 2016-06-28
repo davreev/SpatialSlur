@@ -1018,7 +1018,7 @@ namespace SpatialSlur.SlurMesh
         {
             OwnsCheck(face);
             face.UsedCheck();
-            return StellateImpl(face, face.GetCenter());
+            return StellateImpl(face, face.GetBarycenter());
         }
 
 

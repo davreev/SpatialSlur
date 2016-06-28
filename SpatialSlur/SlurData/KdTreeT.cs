@@ -44,7 +44,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Inserts point value pairs in a way that produces a more balanced tree.
+        /// Inserts point value pairs in a way that produces a balanced tree.
         /// </summary>
         public static KdTree<T> CreateBalanced(IList<VecKd> points, IList<T> values)
         {
@@ -156,23 +156,23 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int GetMinDepth()
         {
-            // DFS is inefficient here
-            // TODO replace with BFS via queue<KdNode>
-            // nodes should store depth for this approach though
-            return GetMinDepth(_root, 0);
-        }
+            var queue = new Queue<KeyValuePair<KdNode, int>>();
+            queue.Enqueue(new KeyValuePair<KdNode, int>(_root,0));
 
+            while (queue.Count > 0)
+            {
+                var t = queue.Dequeue();
+                var node = t.Key;
+                int depth = t.Value;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        /// <param name="i"></param>
-        /// <returns></returns>
-        private int GetMinDepth(KdNode node, int i)
-        {
-            if (node == null) return i;
-            return Math.Min(GetMinDepth(node.left, i + 1), GetMinDepth(node.right, i + 1));
+                if (node.IsLeaf)
+                    return depth;
+
+                queue.Enqueue(new KeyValuePair<KdNode, int>(node.left, depth + 1));
+                queue.Enqueue(new KeyValuePair<KdNode, int>(node.right, depth + 1));
+            }
+
+            return -1;
         }
 
 

@@ -60,7 +60,7 @@ namespace SpatialSlur.SlurMesh
                 if (f.IsUnused)
                     verts.Add(new Vec3d()); // add dummy vertex for unused elements
                 else
-                    verts.Add(f.GetCenter());
+                    verts.Add(f.GetBarycenter());
             }
 
             // create edge vertices (1 new vertex per halfedge pair)
@@ -295,7 +295,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < nf; i++)
             {
                 HeFace f = faces[i];
-                if (!f.IsUnused) faces.StellateImpl(f, f.GetCenter());
+                if (!f.IsUnused) faces.StellateImpl(f, f.GetBarycenter());
             }
         }
 

@@ -21,48 +21,6 @@ namespace SpatialSlur.SlurGraph
     {
         #region Static
 
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="endPoints"></param>
-        /// <param name="epsilon"></param>
-        /// <param name="allowDupEdges"></param>
-        /// <param name="nodePositions"></param>
-        /// <returns></returns>
-        public static Graph CreateFromLineSegments(IList<Vec3d> endPoints, double epsilon, bool allowDupEdges, out List<Vec3d> nodePositions)
-        {
-            int[] indexMap;
-            nodePositions = Vec3d.RemoveDuplicates(endPoints, epsilon, out indexMap);
-
-            Graph result = new Graph(nodePositions.Count, endPoints.Count >> 1);
-            var nodes = result._nodes;
-            var edges = result._edges;
-
-            // add nodes
-            nodes.AddMany(nodePositions.Count);
-
-            // add edges
-            if (allowDupEdges)
-            {
-                for (int i = 0; i < indexMap.Length; i += 2)
-                    edges.Add(indexMap[i], indexMap[i + 1]);
-            }
-            else
-            {
-                for (int i = 0; i < indexMap.Length; i += 2)
-                {
-                    Node n0 = nodes[indexMap[i]];
-                    Node n1 = nodes[indexMap[i + 1]];
-                    if (!n0.IsConnectedTo(n1)) edges.AddImpl(n0, n1);
-                }
-            }
-
-            return result;
-        }
-        */
-
-
         /// <summary>
         /// 
         /// </summary>

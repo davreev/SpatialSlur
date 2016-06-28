@@ -156,7 +156,7 @@ namespace SpatialSlur.SlurGraph
 
 
         /// <summary>
-        /// Searched for an edge between this node and the given node.
+        /// Searches for an edge between this node and the given node.
         /// Returns null if no edge exists.
         /// </summary>
         /// <param name="other"></param>

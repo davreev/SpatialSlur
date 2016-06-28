@@ -137,7 +137,17 @@ namespace SpatialSlur.SlurCore
         public Domain3d(IEnumerable<Vec3d> points)
             : this()
         {
-            Include(points);
+            var p0 = points.ElementAt(0);
+            x.t0 = x.t1 = p0.x;
+            y.t0 = y.t1 = p0.y;
+            z.t0 = z.t1 = p0.z;
+
+            foreach (Vec3d p in points.Skip(1))
+            {
+                x.Include(p.x);
+                y.Include(p.y);
+                z.Include(p.z);
+            }
         }
 
 
@@ -334,6 +344,18 @@ namespace SpatialSlur.SlurCore
             x.Translate(delta.x);
             y.Translate(delta.y);
             z.Translate(delta.z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        public void Expand(double delta)
+        {
+            x.Expand(delta);
+            y.Expand(delta);
+            z.Expand(delta);
         }
 
 

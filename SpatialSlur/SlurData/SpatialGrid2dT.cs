@@ -26,6 +26,9 @@ namespace SpatialSlur.SlurData
         public SpatialGrid2d(Domain2d domain, int binCountX, int binCountY)
             : base(binCountX * binCountY)
         {
+            if (binCountX < 1 || binCountY < 1)
+                throw new System.ArgumentOutOfRangeException("The data structure must have at least 1 bin in each dimension.");
+
             _nx = binCountX;
             _ny = binCountY;
             Domain = domain;

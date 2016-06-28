@@ -233,18 +233,20 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void PaintDisplayMesh(Func<T, Color> mapper, bool parallel = false)
         {
+            var vc = DisplayMesh.VertexColors;
+
             if (parallel)
             {
                 Parallel.ForEach(Partitioner.Create(0, Count), range =>
                 {
                     for (int i = range.Item1; i < range.Item2; i++)
-                        DisplayMesh.VertexColors[i] = mapper(Values[i]);
+                        vc[i] = mapper(Values[i]);
                 });
             }
             else
             {
                 for (int i = 0; i < Count; i++)
-                    DisplayMesh.VertexColors[i] = mapper(Values[i]);
+                    vc[i] = mapper(Values[i]);
             }
         }
     }

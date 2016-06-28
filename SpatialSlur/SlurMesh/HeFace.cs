@@ -258,7 +258,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns the average position of vertices in the face.
         /// </summary>
         /// <returns></returns>
-        public Vec3d GetCenter()
+        public Vec3d GetBarycenter()
         {
             Vec3d result = new Vec3d();
             int count = 0;

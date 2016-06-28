@@ -207,7 +207,8 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns the entries of the cotangent weighted laplacian matrix in column-major order.
+        /// Returns the entries of the cotangent-weighted Laplacian matrix in column-major order.
+        /// Based on symmetric derivation of the Laplace-Beltrami operator detailed in http://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Vallet08.pdf.
         /// </summary>
         /// <returns></returns>
         public static double[] GetLaplacianMatrix(Mesh mesh)
@@ -219,7 +220,7 @@ namespace SpatialSlur.SlurCore
             double[] areas = new double[n];
 
             Point3d[] points = mesh.Vertices.ToPoint3dArray();
-            double t = 0.5 / 3.0;
+            double t = 1.0 / 6.0;
 
             // iterate faces to collect weights and vertex areas (lower triangular only)
             foreach (MeshFace mf in mesh.Faces)

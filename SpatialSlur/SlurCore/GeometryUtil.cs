@@ -92,7 +92,6 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d ProjectToPlane(Vec3d point, Vec3d origin, Vec3d normal)
         {
-            // TODO
             return point + Vec3d.Project(origin - point, normal);
         }
 
