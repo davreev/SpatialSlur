@@ -61,7 +61,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Line[] GetEdgeLines(this HalfedgeList hedges, bool parallel = false)
+        public static Line[] GetEdgeLines(this HalfedgeList2 hedges, bool parallel = false)
         {
             Line[] result = new Line[hedges.Count >> 1];
             hedges.UpdateEdgeLines(result, parallel);
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateEdgeLines(this HalfedgeList hedges, IList<Line> result, bool parallel = false)
+        public static void UpdateEdgeLines(this HalfedgeList2 hedges, IList<Line> result, bool parallel = false)
         {
             hedges.HalfSizeCheck(result);
 
@@ -90,7 +90,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateEdgeLines(this HalfedgeList hedges, IList<Line> result, int i0, int i1)
+        private static void UpdateEdgeLines(this HalfedgeList2 hedges, IList<Line> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {

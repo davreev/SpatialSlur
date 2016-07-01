@@ -17,12 +17,12 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HalfedgeList : HeElementList<Halfedge>
+    public class HalfedgeList2 : HeElementList<Halfedge>
     {
         /// <summary>
         /// 
         /// </summary>
-        internal HalfedgeList(HeMesh mesh, int capacity = 2)
+        internal HalfedgeList2(HeMesh mesh, int capacity = 2)
             : base(mesh, capacity)
         {
         }

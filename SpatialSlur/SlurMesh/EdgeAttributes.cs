@@ -22,7 +22,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="hedges"></param>
         /// <returns></returns>
-        public static int[] GetEdgeLabels(this HalfedgeList hedges)
+        public static int[] GetEdgeLabels(this HalfedgeList2 hedges)
         {
             int[] result = new int[hedges.Count >> 1];
             hedges.UpdateEdgeLabels(result);
@@ -35,7 +35,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="hedges"></param>
         /// <param name="result"></param>
-        public static void UpdateEdgeLabels(this HalfedgeList hedges, IList<int> result)
+        public static void UpdateEdgeLabels(this HalfedgeList2 hedges, IList<int> result)
         {
             Stack<Halfedge> stack = new Stack<Halfedge>();
 
@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int[] GetEdgeLabels(this HalfedgeList hedges, Halfedge start)
+        public static int[] GetEdgeLabels(this HalfedgeList2 hedges, Halfedge start)
         {
             int[] result = new int[hedges.Count >> 1];
             hedges.UpdateEdgeLabels(start, result);
@@ -70,7 +70,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="start"></param>
         /// <param name="result"></param>
-        public static void UpdateEdgeLabels(this HalfedgeList hedges, Halfedge start, IList<int> result)
+        public static void UpdateEdgeLabels(this HalfedgeList2 hedges, Halfedge start, IList<int> result)
         {
             start.UsedCheck();
             hedges.OwnsCheck(start);
@@ -119,7 +119,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetEdgeLengths(this HalfedgeList hedges, bool parallel = false)
+        public static double[] GetEdgeLengths(this HalfedgeList2 hedges, bool parallel = false)
         {
             double[] result = new double[hedges.Count >> 1];
             hedges.UpdateEdgeLengths(result, parallel);
@@ -133,7 +133,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateEdgeLengths(this HalfedgeList hedges, IList<double> result, bool parallel = false)
+        public static void UpdateEdgeLengths(this HalfedgeList2 hedges, IList<double> result, bool parallel = false)
         {
             hedges.HalfSizeCheck(result);
 
@@ -148,7 +148,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateEdgeLengths(this HalfedgeList hedges, IList<double> result, int i0, int i1)
+        private static void UpdateEdgeLengths(this HalfedgeList2 hedges, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
@@ -168,7 +168,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="faceNormals"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetDihedralAngles(this HalfedgeList hedges, IList<Vec3d> faceNormals, bool parallel = false)
+        public static double[] GetDihedralAngles(this HalfedgeList2 hedges, IList<Vec3d> faceNormals, bool parallel = false)
         {
             double[] result = new double[hedges.Count >> 1];
             hedges.UpdateDihedralAngles(faceNormals, result, parallel);
@@ -183,7 +183,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="faceNormals"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateDihedralAngles(this HalfedgeList hedges, IList<Vec3d> faceNormals, IList<double> result, bool parallel = false)
+        public static void UpdateDihedralAngles(this HalfedgeList2 hedges, IList<Vec3d> faceNormals, IList<double> result, bool parallel = false)
         {
             hedges.HalfSizeCheck(result);
             hedges.Mesh.Faces.SizeCheck(faceNormals);
@@ -200,7 +200,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateDihedralAngles(this HalfedgeList hedges, IList<Vec3d> faceNormals, IList<double> result, int i0, int i1)
+        private static void UpdateDihedralAngles(this HalfedgeList2 hedges, IList<Vec3d> faceNormals, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {

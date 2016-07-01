@@ -97,7 +97,7 @@ namespace SpatialSlur.SlurMesh
 
 
         private HeVertexList _verts;
-        private HalfedgeList _hedges;
+        private HalfedgeList2 _hedges;
         private HeFaceList _faces;
 
 
@@ -107,7 +107,7 @@ namespace SpatialSlur.SlurMesh
         public HeMesh()
         {
             _verts = new HeVertexList(this);
-            _hedges = new HalfedgeList(this);
+            _hedges = new HalfedgeList2(this);
             _faces = new HeFaceList(this);
         }
 
@@ -118,7 +118,7 @@ namespace SpatialSlur.SlurMesh
         public HeMesh(int vertexCapacity, int halfedgeCapacity, int faceCapacity)
         {
             _verts = new HeVertexList(this, vertexCapacity);
-            _hedges = new HalfedgeList(this, halfedgeCapacity);
+            _hedges = new HalfedgeList2(this, halfedgeCapacity);
             _faces = new HeFaceList(this, faceCapacity);
         }
 
@@ -134,7 +134,7 @@ namespace SpatialSlur.SlurMesh
          
             // create element lists
             _verts = new HeVertexList(this, otherVerts.Count);
-            _hedges = new HalfedgeList(this, otherHedges.Count);
+            _hedges = new HalfedgeList2(this, otherHedges.Count);
             _faces = new HeFaceList(this, otherFaces.Count);
             
             // add new elements
@@ -198,7 +198,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HalfedgeList Halfedges
+        public HalfedgeList2 Halfedges
         { 
             get { return _hedges; }
         }
