@@ -663,7 +663,7 @@ namespace SpatialSlur.SlurMesh
         {
             mesh.Vertices.SizeCheck(forceSums);
 
-            HalfedgeList2 hedges = mesh.Halfedges;
+            HalfedgeList hedges = mesh.Halfedges;
             hedges.HalfSizeCheck(edgeLengths);
 
             for (int i = 0; i < hedges.Count; i += 2)
@@ -720,7 +720,7 @@ namespace SpatialSlur.SlurMesh
             verts.SizeCheck(forceSums);
             verts.SizeCheck(vertexRadii);
 
-            HalfedgeList2 edges = mesh.Halfedges;
+            HalfedgeList edges = mesh.Halfedges;
             edges.HalfSizeCheck(edgeLengths);
 
             for (int i = 0; i < edges.Count; i += 2)
@@ -1017,7 +1017,7 @@ namespace SpatialSlur.SlurMesh
             HeVertexList verts = mesh.Vertices;
             verts.SizeCheck(forceSums);
 
-            HalfedgeList2 hedges = mesh.Halfedges;
+            HalfedgeList hedges = mesh.Halfedges;
             hedges.HalfSizeCheck(edgeLengths);
             hedges.SizeCheck(halfedgeAngles);
 
@@ -1076,7 +1076,7 @@ namespace SpatialSlur.SlurMesh
             HeVertexList verts = mesh.Vertices;
             verts.SizeCheck(forceSums);
 
-            HalfedgeList2 hedges = mesh.Halfedges;
+            HalfedgeList hedges = mesh.Halfedges;
             hedges.HalfSizeCheck(edgeLengths);
             hedges.SizeCheck(halfedgeAngles);
 
@@ -1135,7 +1135,7 @@ namespace SpatialSlur.SlurMesh
         {
             mesh.Vertices.SizeCheck(forceSums);
 
-            HalfedgeList2 hedges = mesh.Halfedges;
+            HalfedgeList hedges = mesh.Halfedges;
             hedges.HalfSizeCheck(vectors);
 
             for (int i = 0; i < hedges.Count; i += 2)
@@ -1630,7 +1630,7 @@ namespace SpatialSlur.SlurMesh
             HeVertexList verts = mesh.Vertices;
             verts.SizeCheck(forceSums);
 
-            HalfedgeList2 hedges = mesh.Halfedges;
+            HalfedgeList hedges = mesh.Halfedges;
             hedges.HalfSizeCheck(edgeLengths);
             hedges.SizeCheck(halfedgeAngles);
 

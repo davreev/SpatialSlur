@@ -115,7 +115,7 @@
     <Compile Include="SlurGraph\RhinoExtensions.cs" />
     <Compile Include="SlurMesh\Halfedge.cs" />
     <Compile Include="SlurMesh\HalfedgeAttributes.cs" />
-    <Compile Include="SlurMesh\HalfedgeList2.cs" />
+    <Compile Include="SlurMesh\HalfedgeList.cs" />
     <Compile Include="SlurMesh\EdgeAttributes.cs" />
     <Compile Include="SlurMesh\HeElement.cs" />
     <Compile Include="SlurMesh\HeElementList.cs" />
