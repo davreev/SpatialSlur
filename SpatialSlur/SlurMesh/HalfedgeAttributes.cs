@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
                 double d = he.Span.Length;
@@ -105,7 +105,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
                 result[i] = he.GetAngle();
             }
@@ -154,10 +154,10 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he0 = hedges[i];
+                Halfedge2 he0 = hedges[i];
                 if (he0.IsUnused) continue;
 
-                Halfedge he1 = he0.Previous;
+                Halfedge2 he1 = he0.Previous;
                 double d = edgeLengths[i >> 1] * edgeLengths[he1.Index >> 1];
 
                 if (d > 0.0)
@@ -211,7 +211,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused || he.Face == null) continue;
 
                 /*
@@ -270,7 +270,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused || he.Face == null) continue;
 
                 Vec3d v0 = he.Previous.Span;
@@ -310,7 +310,7 @@ namespace SpatialSlur.SlurMesh
             // normalize weights by vertex areas
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
                 double w = result[i] * 0.5;
@@ -350,7 +350,7 @@ namespace SpatialSlur.SlurMesh
             // normalize weights by vertex areas
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
                 double w = result[i] * 0.5;
@@ -370,7 +370,7 @@ namespace SpatialSlur.SlurMesh
             // calculate cotangent weights and vertex areas
             for (int i = 0; i < hedges.Count; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused || he.Face == null) continue;
 
                 Vec3d v0 = he.Previous.Span;
@@ -499,10 +499,10 @@ namespace SpatialSlur.SlurMesh
             {
                 int j = i << 1;
 
-                Halfedge he0 = hedges[j];
+                Halfedge2 he0 = hedges[j];
                 if (he0.IsUnused) continue;
 
-                Halfedge he1 = hedges[j + 1];
+                Halfedge2 he1 = hedges[j + 1];
                 double w = 0.0;
 
                 if (he0.Face != null)
@@ -572,10 +572,10 @@ namespace SpatialSlur.SlurMesh
             {
                 int j = i << 1;
 
-                Halfedge he0 = hedges[j];
+                Halfedge2 he0 = hedges[j];
                 if (he0.IsUnused) continue;
 
-                Halfedge he1 = hedges[j + 1];
+                Halfedge2 he1 = hedges[j + 1];
                 double w = 0.0;
 
                 if (he0.Face != null)
@@ -631,13 +631,13 @@ namespace SpatialSlur.SlurMesh
 
                 double sum = 0.0;
 
-                foreach (Halfedge he in v.OutgoingHalfedges)
+                foreach (Halfedge2 he in v.OutgoingHalfedges)
                     sum += halfedgeWeights[he.Index];
 
                 if (sum > 0.0)
                 {
                     sum = 1.0 / sum;
-                    foreach (Halfedge he in v.OutgoingHalfedges)
+                    foreach (Halfedge2 he in v.OutgoingHalfedges)
                         halfedgeWeights[he.Index] *= sum;
                 }
             }
@@ -781,7 +781,7 @@ namespace SpatialSlur.SlurMesh
             {
                 int j = i << 1;
 
-                Halfedge he = hedges[j];
+                Halfedge2 he = hedges[j];
                 if (he.IsUnused) continue;
 
                 Vec3d v = he.Span;
@@ -800,7 +800,7 @@ namespace SpatialSlur.SlurMesh
             {
                 int j = i << 1;
 
-                Halfedge he = hedges[j];
+                Halfedge2 he = hedges[j];
                 if (he.IsUnused) continue;
 
                 Vec3d v = he.Span;
@@ -863,7 +863,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
                 result[i] = he.GetNormal();
             }
@@ -877,7 +877,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
                 Vec3d v = he.GetNormal();

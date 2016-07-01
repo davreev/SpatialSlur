@@ -149,7 +149,7 @@ namespace SpatialSlur.SlurField
                 double sum = 0.0;
                 int n = 0;
 
-                foreach (Halfedge he in verts[i].IncomingHalfedges)
+                foreach (Halfedge2 he in verts[i].IncomingHalfedges)
                 {
                     sum += Values[he.Start.Index];
                     n++;
@@ -197,7 +197,7 @@ namespace SpatialSlur.SlurField
                 double value = Values[i];
                 double sum = 0.0;
 
-                foreach (Halfedge he in verts[i].OutgoingHalfedges)
+                foreach (Halfedge2 he in verts[i].OutgoingHalfedges)
                     sum += (Values[he.End.Index] - value) * halfedgeWeights[he.Index];
 
                 _deltas[i] += sum * rate;

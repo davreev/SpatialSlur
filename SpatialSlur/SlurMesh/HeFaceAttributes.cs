@@ -211,7 +211,7 @@ namespace SpatialSlur.SlurMesh
                 HeFace f0 = queue.Dequeue();
                 double t0 = result[f0.Index];
 
-                foreach (Halfedge he in f0.Halfedges)
+                foreach (Halfedge2 he in f0.Halfedges)
                 {
                     HeFace f1 = he.Twin.Face;
                     if (f1 == null) continue;
@@ -426,7 +426,7 @@ namespace SpatialSlur.SlurMesh
                     // general ngon case
                     Vec3d sum = new Vec3d();
 
-                    foreach (Halfedge he in f.Halfedges)
+                    foreach (Halfedge2 he in f.Halfedges)
                         sum += halfedgeNormals[he.Index];
 
                     sum.Unitize();
@@ -541,7 +541,7 @@ namespace SpatialSlur.SlurMesh
                     Vec3d cen = f.GetBarycenter();
                     double sum = 0.0;
 
-                    foreach (Halfedge he in f.Halfedges)
+                    foreach (Halfedge2 he in f.Halfedges)
                         sum += Vec3d.Cross(he.Start.Position - cen, he.Span).Length * 0.5;
 
                     result[i] = sum;
@@ -606,7 +606,7 @@ namespace SpatialSlur.SlurMesh
                     Vec3d cen = faceCenters[i];
                     double sum = 0.0;
 
-                    foreach (Halfedge he in f.Halfedges)
+                    foreach (Halfedge2 he in f.Halfedges)
                         sum += Vec3d.Cross(he.Start.Position - cen, he.Span).Length * 0.5;
 
                     result[i] = sum;
@@ -704,10 +704,10 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = faces[i];
                 if (f.IsUnused) continue;
 
-                Halfedge he0 = f.First;
-                Halfedge he1 = he0.Next;
-                Halfedge he2 = he1.Next;
-                Halfedge he3 = he2.Next;
+                Halfedge2 he0 = f.First;
+                Halfedge2 he1 = he0.Next;
+                Halfedge2 he2 = he1.Next;
+                Halfedge2 he3 = he2.Next;
                 if (he3 == he0) continue; // ensure face has at least 4 edges
 
                 if (he3.Next == he0)

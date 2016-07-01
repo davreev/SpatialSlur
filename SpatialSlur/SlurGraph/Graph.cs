@@ -119,7 +119,7 @@ namespace SpatialSlur.SlurGraph
             // add edges
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
 
                 if (he.IsUnused)
                     edges.Add(new Edge());
@@ -151,7 +151,7 @@ namespace SpatialSlur.SlurGraph
             // add edges
             for (int i = 0; i < hedges.Count; i+=2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
          
                 if (he.IsUnused)
                     edges.Add(new Edge());

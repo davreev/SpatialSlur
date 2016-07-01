@@ -246,6 +246,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private void UpdateGradient(IList<Vec3d> result, int i0, int i1)
         {
+            // TODO refactor according to http://libigl.github.io/libigl/tutorial/tutorial.html
             HeVertexList verts = Mesh.Vertices;
 
             for (int i = i0; i < i1; i++)
@@ -257,7 +258,7 @@ namespace SpatialSlur.SlurField
                 Vec3d sum = new Vec3d();
                 int n = 0;
 
-                foreach (Halfedge he in v.OutgoingHalfedges)
+                foreach (Halfedge2 he in v.OutgoingHalfedges)
                 {
                     Vec3d d = he.Span;
                     double m = 1.0 / d.Length;
@@ -308,6 +309,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private void UpdateGradient(IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
         {
+            // TODO refactor according to http://libigl.github.io/libigl/tutorial/tutorial.html 
             HeVertexList verts = Mesh.Vertices;
 
             for (int i = i0; i < i1; i++)
@@ -318,7 +320,7 @@ namespace SpatialSlur.SlurField
                 double value = Values[i];
                 Vec3d sum = new Vec3d();
 
-                foreach (Halfedge he in v.OutgoingHalfedges)
+                foreach (Halfedge2 he in v.OutgoingHalfedges)
                 {
                     Vec3d d = he.Span;
                     double m = 1.0 / d.Length;

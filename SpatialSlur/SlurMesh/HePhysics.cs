@@ -125,7 +125,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     if (v.IsDegree2) continue; // skip corners
 
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     HeVertex v0 = he.Twin.Start;
                     HeVertex v1 = he.Previous.Start;
 
@@ -170,7 +170,7 @@ namespace SpatialSlur.SlurMesh
                 // if boundary vertex, only consider neighbours which are also on the boundary
                 if (v.IsBoundary)
                 {
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     HeVertex v0 = he.Twin.Start;
                     HeVertex v1 = he.Previous.Start;
 
@@ -236,7 +236,7 @@ namespace SpatialSlur.SlurMesh
 
                 Vec3d sum = new Vec3d();
 
-                foreach (Halfedge he in v.OutgoingHalfedges)
+                foreach (Halfedge2 he in v.OutgoingHalfedges)
                     sum += he.Span * halfedgeWeights[he.Index];
 
                 // add force vector
@@ -264,14 +264,14 @@ namespace SpatialSlur.SlurMesh
                 {
                     if (v.IsDegree2) continue; // skip corners
 
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     sum += he.Span * halfedgeWeights[he.Index];
                     he = he.Previous.Twin;
                     sum += he.Span * halfedgeWeights[he.Index];
                 }
                 else
                 {
-                    foreach (Halfedge he in v.OutgoingHalfedges)
+                    foreach (Halfedge2 he in v.OutgoingHalfedges)
                         sum += he.Span * halfedgeWeights[he.Index];
                 }
 
@@ -298,14 +298,14 @@ namespace SpatialSlur.SlurMesh
                 // if boundary vertex, only consider neighbours which are also on the boundary
                 if (v.IsBoundary)
                 {
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     sum += he.Span * halfedgeWeights[he.Index];
                     he = he.Previous.Twin;
                     sum += he.Span * halfedgeWeights[he.Index];
                 }
                 else
                 {
-                    foreach (Halfedge he in v.OutgoingHalfedges)
+                    foreach (Halfedge2 he in v.OutgoingHalfedges)
                         sum += he.Span * halfedgeWeights[he.Index];
                 }
 
@@ -387,7 +387,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     if (v.IsDegree2) continue; // skip corners
 
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     HeVertex v0 = he.Twin.Start;
                     HeVertex v1 = he.Previous.Start;
 
@@ -444,7 +444,7 @@ namespace SpatialSlur.SlurMesh
                 // if boundary vertex, only consider neighbours which are also on the boundary
                 if (v.IsBoundary)
                 {
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     HeVertex v0 = he.Twin.Start;
                     HeVertex v1 = he.Previous.Start;
 
@@ -499,7 +499,7 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
                 Vec3d frc = he.Span * strength;
@@ -526,13 +526,10 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
-
-                Vec3d frc = he.Span;
-                double mag = edgeLengths[i >> 1];
-                frc *= (mag - restLength) * strength / mag;
-
+         
+                Vec3d frc = he.Span * ((1.0 - restLength / edgeLengths[i >> 1]) * strength);
                 forceSums[he.Start.Index] += frc;
                 forceSums[he.End.Index] -= frc;
             }
@@ -557,13 +554,10 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
-                Vec3d frc = he.Span;
-                double mag = edgeLengths[i >> 1];
-                frc *= (mag - restLengths[i >> 1]) * strength / mag;
-
+                Vec3d frc = he.Span * ((1.0 - restLengths[i >> 1] / edgeLengths[i >> 1]) * strength);
                 forceSums[he.Start.Index] += frc;
                 forceSums[he.End.Index] -= frc;
             }
@@ -591,16 +585,16 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
                 Vec3d frc = he.Span;
                 double mag = edgeLengths[i >> 1];
 
                 if (mag > maxLength)
-                    frc *= (mag - maxLength) * strength / mag;
+                    frc *= (1.0 - maxLength / mag) * strength;
                 else if (mag < minLength)
-                    frc *= (mag - minLength) * strength / mag;
+                    frc *= (1.0 - minLength / mag) * strength;
                 else
                     continue;
 
@@ -630,23 +624,23 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue;
 
                 int j = i >> 1;
-                double min = minLengths[j];
-                double max = maxLengths[j];
+                double minLength = minLengths[j];
+                double maxLength = maxLengths[j];
 
-                if (min > max)
+                if (minLength > maxLength)
                     throw new ArgumentException("The given minimum length cannot be greater than the given maximum length.");
 
                 Vec3d frc = he.Span;
                 double mag = edgeLengths[j];
 
-                if (mag > max)
-                    frc *= (mag - max) * strength / mag;
-                else if (mag < min)
-                    frc *= (mag - min) * strength / mag;
+                if (mag > maxLength)
+                    frc *= (1.0 - maxLength / mag) * strength;
+                else if (mag < minLength)
+                    frc *= (1.0 - minLength / mag) * strength;
                 else
                     continue;
 
@@ -658,7 +652,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Calculates forces which adjust edge lengths to make adjacent faces have tangent incircles.
-        /// Note that this method is intended for use on triangle meshes.
+        /// Note that this method assumes triangular faces.
         /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
         /// </summary>
         /// <param name="mesh"></param>
@@ -674,16 +668,15 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused || he.IsBoundary) continue; // skip unused, boundary, or edges
 
                 // collect relevant edges
-                Halfedge he0 = he.Next;
-                Halfedge he1 = he.Previous;
-                Halfedge he2 = he.Twin.Next;
-                Halfedge he3 = he.Twin.Previous;
-                if (!(he0.Next == he1 && he2.Next == he3)) continue; // ensure both faces are tris
-
+                Halfedge2 he0 = he.Next;
+                Halfedge2 he1 = he.Previous;
+                Halfedge2 he2 = he.Twin.Next;
+                Halfedge2 he3 = he.Twin.Previous;
+          
                 // collect edge lengths
                 double d0 = edgeLengths[he0.Index >> 1];
                 double d1 = edgeLengths[he1.Index >> 1];
@@ -732,7 +725,7 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < edges.Count; i += 2)
             {
-                Halfedge he = edges[i];
+                Halfedge2 he = edges[i];
                 if (he.IsUnused) continue; // skip unused edges
 
                 // compute force vectors
@@ -774,7 +767,7 @@ namespace SpatialSlur.SlurMesh
                 double mean = 0.0;
                 int n = 0;
 
-                foreach (Halfedge he in v.OutgoingHalfedges)
+                foreach (Halfedge2 he in v.OutgoingHalfedges)
                 {
                     mean += edgeLengths[he.Index >> 1];
                     n++;
@@ -782,7 +775,7 @@ namespace SpatialSlur.SlurMesh
                 mean /= n;
 
                 // compute force vectors
-                foreach (Halfedge he in v.OutgoingHalfedges)
+                foreach (Halfedge2 he in v.OutgoingHalfedges)
                 {
                     HeVertex v0 = he.Start;
                     HeVertex v1 = he.End;
@@ -819,7 +812,7 @@ namespace SpatialSlur.SlurMesh
                 double mean = 0.0;
                 int n = 0;
 
-                foreach (Halfedge he in f.Halfedges)
+                foreach (Halfedge2 he in f.Halfedges)
                 {
                     mean += edgeLengths[he.Index >> 1];
                     n++;
@@ -827,7 +820,7 @@ namespace SpatialSlur.SlurMesh
                 mean /= n;
 
                 // compute force vectors
-                foreach (Halfedge he in f.Halfedges)
+                foreach (Halfedge2 he in f.Halfedges)
                 {
                     HeVertex v0 = he.Start;
                     HeVertex v1 = he.End;
@@ -867,9 +860,9 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i++)
             {
-                Halfedge he0 = hedges[i];
+                Halfedge2 he0 = hedges[i];
                 if (he0.IsUnused || he0.Face == null) continue; // skip unused or boundary edges
-                Halfedge he1 = he0.Next;
+                Halfedge2 he1 = he0.Next;
 
                 double err = (halfedgeAngles[he1.Index] - restAngle) * 0.25; // angle error in range [-PI/4, PI/4]
                 double m = Math.Tan(err) * (edgeLengths[i >> 1] + edgeLengths[he1.Index >> 1]) * 0.5 * strength;
@@ -910,9 +903,9 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i++)
             {
-                Halfedge he0 = hedges[i];
+                Halfedge2 he0 = hedges[i];
                 if (he0.IsUnused || he0.Face == null) continue; // skip unused or boundary edges
-                Halfedge he1 = he0.Next;
+                Halfedge2 he1 = he0.Next;
 
                 int i1 = he1.Index;
                 double err = (halfedgeAngles[i1] - restAngles[i1]) * 0.25; // angle error in range [-PI/4, PI/4]
@@ -935,32 +928,79 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Assumes triangular faces.
+        /// http://www.tsg.ne.jp/TT/cg/ElasticOrigami_Tachi_IASS2013.pdf
         /// http://www.miralab.ch/repository/papers/165.pdf
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="strength"></param>
-        /// <param name="faceNormals"></param>
-        /// <param name="dihedralAngles"></param>
-        /// <param name="restAngle"></param>
-        /// <param name="forceSums"></param>
-        public static void ConstrainDihedralAngles(HeMesh mesh, double strength, IList<Vec3d> faceNormals, IList<double> dihedralAngles, double restAngle, IList<Vec3d> forceSums)
-        {
-            throw new System.NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// http://www.miralab.ch/repository/papers/165.pdf
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="strength"></param>
-        /// <param name="faceNormals"></param>
-        /// <param name="dihedralAngles"></param>
         /// <param name="restAngles"></param>
         /// <param name="forceSums"></param>
-        public static void ConstrainDihedralAngles(HeMesh mesh, double strength, IList<Vec3d> faceNormals, IList<double> dihedralAngles, IList<double> restAngles, IList<Vec3d> forceSums)
+        public static void ConstrainDihedralAngles(HeMesh mesh, double strength, IList<double> restAngles, IList<Vec3d> forceSums)
         {
-            throw new System.NotImplementedException();
+            mesh.Vertices.SizeCheck(forceSums);
+
+            var hedges = mesh.Halfedges;
+            hedges.HalfSizeCheck(restAngles);
+
+            for (int i = 0; i < hedges.Count; i += 2)
+            {
+                var he0 = hedges[i];
+                if (he0.IsUnused || he0.IsBoundary) continue;
+                var he1 = hedges[i + 1];
+
+                var v0 = he0.Start;
+                var v1 = he1.Start;
+                var v2 = he0.Previous.Start;
+                var v3 = he1.Previous.Start;
+
+                Vec3d d01 = v0.VectorTo(v1);
+                Vec3d d02 = v0.VectorTo(v2);
+                Vec3d d03 = v0.VectorTo(v3);
+                Vec3d d21 = v2.VectorTo(v1);
+                Vec3d d31 = v3.VectorTo(v1);
+
+                // get heights
+                double h0 = Vec3d.Perp(d02, d01).Length;
+                double h1 = Vec3d.Perp(d03, d01).Length;
+                double h = 0.5 / (h0 + h1); // inv mean height
+
+                // get projection directions (face normals)
+                Vec3d n0 = Vec3d.Cross(d02, d01);
+                Vec3d n1 = Vec3d.Cross(d01, d03);
+
+                // cache length and unitize
+                double m0 = 1.0 / n0.Length;
+                double m1 = 1.0 / n1.Length;
+
+                /*
+                // angle error
+                double angle = Math.Acos(SlurMath.Clamp(n0 * n1 * m0 * m1, -1.0, 1.0)); // clamp to remove noise
+
+                // get projection magnitude
+                double m = (angle - restAngles[i >> 1]) * h * strength;
+                if (n0 * d03 < 0.0) m *= -1.0; // flip if convex
+                */
+
+                // angle error
+                double angle = Math.Acos(SlurMath.Clamp(n0 * n1 * m0 * m1, -1.0, 1.0)); // clamp to remove noise
+                angle = (n1 * d02 < 0.0) ? Math.PI - angle : angle + Math.PI; // flip if convex
+
+                // projection magnitude
+                double m = (angle - restAngles[i >> 1]) * h * strength;
+
+                // get relevant cotangents
+                double c0 = d02 * d01 * m0;
+                double c1 = d21 * d01 * m0;
+                double c2 = d03 * d01 * m1;
+                double c3 = d31 * d01 * m1;
+
+                // apply projections
+                forceSums[v0.Index] += n0 * (m * c1) + n1 * (m * c3);
+                forceSums[v1.Index] += n0 * (m * c0) + n1 * (m * c2);
+                forceSums[v2.Index] -= n0 * (m * (c0 + c1));
+                forceSums[v3.Index] -= n1 * (m * (c2 + c3));
+            }
         }
 
 
@@ -989,7 +1029,7 @@ namespace SpatialSlur.SlurMesh
                 // get average angle at vertex
                 double mean = 0.0;
                 int n = 0;
-                foreach (Halfedge he in v.OutgoingHalfedges)
+                foreach (Halfedge2 he in v.OutgoingHalfedges)
                 {
                     if (he.Face == null) continue;
                     mean += halfedgeAngles[he.Index];
@@ -998,10 +1038,10 @@ namespace SpatialSlur.SlurMesh
                 mean /= n;
 
                 // calculate forces
-                foreach (Halfedge he0 in v.OutgoingHalfedges)
+                foreach (Halfedge2 he0 in v.OutgoingHalfedges)
                 {
                     if (he0.Face == null) continue; // boundary edges
-                    Halfedge he1 = he0.Next;
+                    Halfedge2 he1 = he0.Next;
 
                     double err = (halfedgeAngles[he1.Index] - mean) * 0.25; // angle error in range [-PI/4, PI/4]
                     double m = Math.Tan(err) * (edgeLengths[he0.Index >> 1] + edgeLengths[he1.Index >> 1]) * 0.5 * strength;
@@ -1049,7 +1089,7 @@ namespace SpatialSlur.SlurMesh
                 // get average angle at vertex
                 double mean = 0.0;
                 int n = 0;
-                foreach (Halfedge he in f.Halfedges)
+                foreach (Halfedge2 he in f.Halfedges)
                 {
                     mean += halfedgeAngles[he.Index];
                     n++;
@@ -1057,9 +1097,9 @@ namespace SpatialSlur.SlurMesh
                 mean /= n;
 
                 // calculate forces
-                foreach (Halfedge he0 in f.Halfedges)
+                foreach (Halfedge2 he0 in f.Halfedges)
                 {
-                    Halfedge he1 = he0.Next;
+                    Halfedge2 he1 = he0.Next;
 
                     double err = (halfedgeAngles[he1.Index] - mean) * 0.25; // angle error in range [-PI/4, PI/4]
                     double m = Math.Tan(err) * (edgeLengths[he0.Index >> 1] + edgeLengths[he1.Index >> 1]) * 0.5 * strength;
@@ -1100,7 +1140,7 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused) continue; // skip unused edges
 
                 // project edge vector onto target vector and take difference
@@ -1128,10 +1168,10 @@ namespace SpatialSlur.SlurMesh
             {
                 if (f.IsUnused) continue;
 
-                Halfedge he0 = f.First;
-                Halfedge he1 = he0.Next;
-                Halfedge he2 = he1.Next;
-                Halfedge he3 = he2.Next;
+                Halfedge2 he0 = f.First;
+                Halfedge2 he1 = he0.Next;
+                Halfedge2 he2 = he1.Next;
+                Halfedge2 he3 = he2.Next;
                 if (he3 == he0) continue; // ensure the face has at least 4 edges
 
                 if (he3.Next == he0)
@@ -1192,10 +1232,10 @@ namespace SpatialSlur.SlurMesh
             {
                 if (f.IsUnused) continue;
 
-                Halfedge he0 = f.First;
-                Halfedge he1 = he0.Next;
-                Halfedge he2 = he1.Next;
-                Halfedge he3 = he2.Next;
+                Halfedge2 he0 = f.First;
+                Halfedge2 he1 = he0.Next;
+                Halfedge2 he2 = he1.Next;
+                Halfedge2 he3 = he2.Next;
 
                 // ensure face is quad
                 if (he3.Next != he0) continue;
@@ -1252,10 +1292,10 @@ namespace SpatialSlur.SlurMesh
                 // circular rule - opposite angles in the quad must sum to pi
                 // http://www.geometrie.tugraz.at/wallner/quad06.pdf
                 // http://vecg.cs.ucl.ac.uk/Projects/SmartGeometry/constrained_mesh/paper_docs/constrainedMesh_sigA_11.pdf
-                Halfedge he0 = f.First;
-                Halfedge he1 = he0.Next;
-                Halfedge he2 = he1.Next;
-                Halfedge he3 = he2.Next;
+                Halfedge2 he0 = f.First;
+                Halfedge2 he1 = he0.Next;
+                Halfedge2 he2 = he1.Next;
+                Halfedge2 he3 = he2.Next;
                 if (he3.Next != he0) continue; // ensure face is quad
 
                 for(int i = 0; i < 2; i++)
@@ -1412,10 +1452,10 @@ namespace SpatialSlur.SlurMesh
                 // conical rule - 2 pairs of opposite angles must have an equal sum
                 // http://www.geometrie.tugraz.at/wallner/quad06.pdf
                 // http://vecg.cs.ucl.ac.uk/Projects/SmartGeometry/constrained_mesh/paper_docs/constrainedMesh_sigA_11.pdf
-                Halfedge he0 = v.First;
-                Halfedge he1 = he0.Twin.Next;
-                Halfedge he2 = he1.Twin.Next;
-                Halfedge he3 = he2.Twin.Next;
+                Halfedge2 he0 = v.First;
+                Halfedge2 he1 = he0.Twin.Next;
+                Halfedge2 he2 = he1.Twin.Next;
+                Halfedge2 he3 = he2.Twin.Next;
                 if (he3.Twin.Next != he0) continue; // ensure vertex is degree 4
 
                 // get angle error
@@ -1542,10 +1582,10 @@ namespace SpatialSlur.SlurMesh
 
                 // tangentail rule - the length sum of the two pairs of opposite sides is equal.
                 // http://en.wikipedia.org/wiki/Tangential_quadrilateral
-                Halfedge he0 = f.First;
-                Halfedge he1 = he0.Next;
-                Halfedge he2 = he1.Next;
-                Halfedge he3 = he2.Next;
+                Halfedge2 he0 = f.First;
+                Halfedge2 he1 = he0.Next;
+                Halfedge2 he2 = he1.Next;
+                Halfedge2 he3 = he2.Next;
                 if (he3.Next != he0) continue; // ensure face is quad
 
                 // collect edge lengths
@@ -1600,16 +1640,16 @@ namespace SpatialSlur.SlurMesh
 
                 // calculate angle error
                 double sum = 0.0;
-                foreach (Halfedge he in v.OutgoingHalfedges) 
+                foreach (Halfedge2 he in v.OutgoingHalfedges) 
                     sum += Math.PI - halfedgeAngles[he.Index];
 
                 double err = (sum - SlurMath.Tau) * 0.125; // angle error in range [-PI/4, PI/4]
                 double tan = Math.Tan(err) * strength;
                 
                 // apply angle constraint around vertex
-                foreach (Halfedge he0 in v.OutgoingHalfedges)
+                foreach (Halfedge2 he0 in v.OutgoingHalfedges)
                 {
-                    Halfedge he1 = he0.Next;
+                    Halfedge2 he1 = he0.Next;
 
                     Vec3d d0 = he0.Span;
                     Vec3d d1 = he1.Span;

@@ -30,7 +30,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="halfedge"></param>
         /// <returns></returns>
-        public static Line ToLine(this Halfedge halfedge)
+        public static Line ToLine(this Halfedge2 halfedge)
         {
             Vec3d p0 = halfedge.Start.Position;
             Vec3d p1 = halfedge.End.Position;
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he = hedges[i << 1];
+                Halfedge2 he = hedges[i << 1];
                 if (he.IsUnused) continue;
                 result[i] = he.ToLine();
             }
@@ -148,7 +148,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Assumes triangular faces.
         /// </summary>
         /// <param name="faces"></param>
         /// <param name="parallel"></param>
@@ -189,7 +189,7 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = faces[i];
                 if (f.IsUnused) continue;
 
-                Halfedge he = f.First;
+                Halfedge2 he = f.First;
                 HeVertex v0 = he.Start;
                 he = he.Next;
                 HeVertex v1 = he.Start;
@@ -308,12 +308,12 @@ namespace SpatialSlur.SlurMesh
 
                 if (ne == 3)
                 {
-                    Halfedge he = f.First;
+                    Halfedge2 he = f.First;
                     result.Faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Previous.Start.Index);
                 }
                 else if (ne == 4)
                 {
-                    Halfedge he = f.First;
+                    Halfedge2 he = f.First;
                     result.Faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Next.Next.Start.Index, he.Previous.Start.Index);
                 }
                 else

@@ -66,7 +66,7 @@ namespace SpatialSlur.SlurMesh
             // create edge vertices (1 new vertex per halfedge pair)
             for (int i = 0; i < ne; i += 2)
             {
-                Halfedge he = edges[i];
+                Halfedge2 he = edges[i];
 
                 if (he.IsUnused)
                     verts.Add(new Vec3d()); // add dummy vertex for unused elements
@@ -81,7 +81,7 @@ namespace SpatialSlur.SlurMesh
                 if (f.IsUnused) continue;
 
                 HeVertex fv = verts[nv + i]; // face vertex
-                Halfedge he0 = f.First;
+                Halfedge2 he0 = f.First;
                 HeVertex v0 = he0.Start;
 
                 // ensure that the first halfedge in the face starts from a new vertex
@@ -93,12 +93,12 @@ namespace SpatialSlur.SlurMesh
                 }
 
                 // create new halfedges to face vertex and link up with old halfedges
-                Halfedge he1 = he0;
+                Halfedge2 he1 = he0;
                 do
                 {
-                    Halfedge he2 = edges.AddPair(he1.Start, fv);
-                    Halfedge.MakeConsecutive(he1.Previous, he2);
-                    Halfedge.MakeConsecutive(he2.Twin, he1);
+                    Halfedge2 he2 = edges.AddPair(he1.Start, fv);
+                    Halfedge2.MakeConsecutive(he1.Previous, he2);
+                    Halfedge2.MakeConsecutive(he2.Twin, he1);
                     he1 = he1.Next.Next;
                 } while (he1.Start != v0);
 
@@ -109,10 +109,10 @@ namespace SpatialSlur.SlurMesh
                 he1 = he0;
                 do
                 {
-                    Halfedge he2 = he1.Next;
-                    Halfedge he3 = he2.Next;
-                    Halfedge he4 = he1.Previous;
-                    Halfedge.MakeConsecutive(he3, he4);
+                    Halfedge2 he2 = he1.Next;
+                    Halfedge2 he3 = he2.Next;
+                    Halfedge2 he4 = he1.Previous;
+                    Halfedge2.MakeConsecutive(he3, he4);
 
                     // create new face if necessary
                     if (f == null)
@@ -158,7 +158,7 @@ namespace SpatialSlur.SlurMesh
                 HeVertex v = verts[i];
                 if (v.IsUnused || v.IsBoundary) continue;
 
-                Halfedge he = v.First;
+                Halfedge2 he = v.First;
                 HeVertex fv0 = he.Previous.Start;
                 HeVertex fv1 = he.Twin.Next.End;
                 v.Position = ((fv0.Position + fv1.Position) * 0.5 + v.Position) * 0.5;
@@ -180,7 +180,7 @@ namespace SpatialSlur.SlurMesh
                 Vec3d eavg = new Vec3d();
                 int n = 0;
 
-                foreach (Halfedge he in v.IncomingHalfedges)
+                foreach (Halfedge2 he in v.IncomingHalfedges)
                 {
                     eavg += he.Start.Position;
                     favg += he.Previous.Start.Position;
@@ -205,7 +205,7 @@ namespace SpatialSlur.SlurMesh
 
                 if (v.IsBoundary)
                 {
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     if (!he.IsFromDegree2) v.Position = 0.25 * he.End.Position + 0.25 * he.Previous.Start.Position + 0.5 * v.Position;
                 }
                 else
@@ -214,7 +214,7 @@ namespace SpatialSlur.SlurMesh
                     Vec3d eavg = new Vec3d();
                     int n = 0;
 
-                    foreach (Halfedge he in v.IncomingHalfedges)
+                    foreach (Halfedge2 he in v.IncomingHalfedges)
                     {
                         eavg += he.Start.Position;
                         favg += he.Previous.Start.Position;
@@ -240,7 +240,7 @@ namespace SpatialSlur.SlurMesh
 
                 if (v.IsBoundary)
                 {
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     v.Position = 0.25 * he.End.Position + 0.25 * he.Previous.Start.Position + 0.5 * v.Position;
                 }
                 else
@@ -249,7 +249,7 @@ namespace SpatialSlur.SlurMesh
                     Vec3d eavg = new Vec3d();
                     int n = 0;
 
-                    foreach (Halfedge he in v.IncomingHalfedges)
+                    foreach (Halfedge2 he in v.IncomingHalfedges)
                     {
                         eavg += he.Start.Position;
                         favg += he.Previous.Start.Position;
@@ -365,7 +365,7 @@ namespace SpatialSlur.SlurMesh
             // add one new vertex per halfedge
             for (int i = 0; i < hedges.Count; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 HeFace f = he.Face;
 
                 if (he.IsUnused || f == null)
@@ -405,7 +405,7 @@ namespace SpatialSlur.SlurMesh
             // add one new vertex per halfedge
             for (int i = 0; i < hedges.Count; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 HeFace f = he.Face;
       
                 if (he.IsUnused || f == null)
@@ -441,9 +441,9 @@ namespace SpatialSlur.SlurMesh
             // add halfedge faces (1 per halfedge in the original mesh)
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he0 = hedges[i];
+                Halfedge2 he0 = hedges[i];
                 if (he0.IsUnused || he0.IsBoundary) continue;
-                Halfedge he1 = he0.Twin;
+                Halfedge2 he1 = he0.Twin;
 
                 fv[0] = newVerts[he0.Next.Index];
                 fv[1] = newVerts[he0.Index];
@@ -462,7 +462,7 @@ namespace SpatialSlur.SlurMesh
                
                     // circulate vertex in reverse for consistent face windings
                     fv.Clear();
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     do
                     {
                         fv.Add(newVerts[he.Index]);
@@ -483,7 +483,7 @@ namespace SpatialSlur.SlurMesh
               
                     // collect indices of face halfedges
                     fv.Clear();
-                    foreach (Halfedge he in f.Halfedges)
+                    foreach (Halfedge2 he in f.Halfedges)
                         fv.Add(newVerts[he.Index]);
 
                     newFaces.AddImpl(fv);
@@ -548,7 +548,7 @@ namespace SpatialSlur.SlurMesh
             // add one new vertex per edge
             for (int i = 0; i < hedges.Count; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 HeFace f = he.Face;
 
                 if (he.IsUnused || f == null)
@@ -591,7 +591,7 @@ namespace SpatialSlur.SlurMesh
             // add one new vertex per edge
             for (int i = 0; i < hedges.Count; i++)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 HeFace f = he.Face;
 
                 if (he.IsUnused || f == null)
@@ -628,9 +628,9 @@ namespace SpatialSlur.SlurMesh
             // add faces
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he0 = hedges[i];
+                Halfedge2 he0 = hedges[i];
                 if (he0.IsUnused || he0.IsBoundary) continue;
-                Halfedge he1 = he0.Twin;
+                Halfedge2 he1 = he0.Twin;
 
                 HeFace f0 = he0.Face;
                 HeFace f1 = he1.Face;
@@ -658,7 +658,7 @@ namespace SpatialSlur.SlurMesh
        
                     // circulate vertex in reverse for consistent face windings
                     fv.Clear();
-                    Halfedge he = v.First;
+                    Halfedge2 he = v.First;
                     do
                     {
                         fv.Add(newVerts[he.Index + nf]);

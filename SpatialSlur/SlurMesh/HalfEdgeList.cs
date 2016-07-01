@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HalfedgeList : HeElementList<Halfedge>
+    public class HalfedgeList : HeElementList<Halfedge2>
     {
         /// <summary>
         /// 
@@ -43,7 +43,7 @@ namespace SpatialSlur.SlurMesh
         /// Adds an edge and its twin to the list.
         /// </summary>
         /// <param name="halfedge"></param>
-        internal void AddPair(Halfedge halfedge)
+        internal void AddPair(Halfedge2 halfedge)
         {
             Add(halfedge);
             Add(halfedge.Twin);
@@ -56,14 +56,14 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
-        internal Halfedge AddPair(HeVertex v0, HeVertex v1)
+        internal Halfedge2 AddPair(HeVertex v0, HeVertex v1)
         {
-            Halfedge he0 = new Halfedge();
-            Halfedge he1 = new Halfedge();
+            Halfedge2 he0 = new Halfedge2();
+            Halfedge2 he1 = new Halfedge2();
 
             he0.Start = v0;
             he1.Start = v1;
-            Halfedge.MakeTwins(he0, he1);
+            Halfedge2.MakeTwins(he0, he1);
 
             AddPair(he0);
             return he0;
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="halfedge"></param>
-        public void Remove(Halfedge halfedge)
+        public void Remove(Halfedge2 halfedge)
         {
             halfedge.UsedCheck();
             OwnsCheck(halfedge);
@@ -89,10 +89,10 @@ namespace SpatialSlur.SlurMesh
         /// Note that this method does not update face->halfedge references.
         /// </summary>
         /// <param name="halfedge"></param>
-        internal void RemovePair(Halfedge halfedge)
+        internal void RemovePair(Halfedge2 halfedge)
         {
-            Halfedge he0 = halfedge;
-            Halfedge he1 = he0.Twin;
+            Halfedge2 he0 = halfedge;
+            Halfedge2 he1 = he0.Twin;
 
             HeVertex v0 = he0.Start;
             HeVertex v1 = he1.Start;
@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurMesh
             }
             else
             {
-                Halfedge.MakeConsecutive(he0.Previous, he1.Next); // update halfedge-halfedge refs
+                Halfedge2.MakeConsecutive(he0.Previous, he1.Next); // update halfedge-halfedge refs
                 if (he0 == v0.First) v0.First = he1.Next; // update vertex-halfedge ref if necessary
             }
 
@@ -113,7 +113,7 @@ namespace SpatialSlur.SlurMesh
             }
             else
             {
-                Halfedge.MakeConsecutive(he1.Previous, he0.Next); // update halfedge-halfedge refs
+                Halfedge2.MakeConsecutive(he1.Previous, he0.Next); // update halfedge-halfedge refs
                 if (he1 == v1.First) v1.First = he0.Next; // update vertex-halfedge ref if necessary
             }
 
@@ -131,7 +131,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="halfedge"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public Halfedge SplitEdge(Halfedge halfedge, double t = 0.5)
+        public Halfedge2 SplitEdge(Halfedge2 halfedge, double t = 0.5)
         {
             halfedge.UsedCheck();
             OwnsCheck(halfedge);
@@ -146,16 +146,16 @@ namespace SpatialSlur.SlurMesh
         /// <param name="halfedge"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        internal Halfedge SplitEdgeImpl(Halfedge halfedge, double t = 0.5)
+        internal Halfedge2 SplitEdgeImpl(Halfedge2 halfedge, double t = 0.5)
         {
-            Halfedge he0 = halfedge;
-            Halfedge he1 = he0.Twin;
+            Halfedge2 he0 = halfedge;
+            Halfedge2 he1 = he0.Twin;
 
             HeVertex v0 = he0.Start;
             HeVertex v1 = Mesh.Vertices.Add(he0.PointAt(t));
 
-            Halfedge he2 = AddPair(v0, v1);
-            Halfedge he3 = he2.Twin;
+            Halfedge2 he2 = AddPair(v0, v1);
+            Halfedge2 he3 = he2.Twin;
 
             // update halfedge->vertex references
             he0.Start = v1;
@@ -176,10 +176,10 @@ namespace SpatialSlur.SlurMesh
             }
 
             // update halfedge->halfedge refs
-            Halfedge.MakeConsecutive(he0.Previous, he2);
-            Halfedge.MakeConsecutive(he2, he0);
-            Halfedge.MakeConsecutive(he3, he1.Next);
-            Halfedge.MakeConsecutive(he1, he3);
+            Halfedge2.MakeConsecutive(he0.Previous, he2);
+            Halfedge2.MakeConsecutive(he2, he0);
+            Halfedge2.MakeConsecutive(he3, he1.Next);
+            Halfedge2.MakeConsecutive(he1, he3);
 
             return he2;
         }
@@ -241,7 +241,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns the new edge outgoing from the new vertex or null on failure.
         /// Assumes triangle mesh.
         /// </summary>
-        public Halfedge SplitEdgeFace(Halfedge halfedge)
+        public Halfedge2 SplitEdgeFace(Halfedge2 halfedge)
         {
             halfedge.UsedCheck();
             OwnsCheck(halfedge);
@@ -255,7 +255,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="halfedge"></param>
         /// <returns></returns>
-        internal Halfedge SplitEdgeFaceImpl(Halfedge halfedge)
+        internal Halfedge2 SplitEdgeFaceImpl(Halfedge2 halfedge)
         {
             var faces = Mesh.Faces;
 
@@ -285,7 +285,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="halfedge"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public bool CollapseEdge(Halfedge halfedge, double t = 0.5)
+        public bool CollapseEdge(Halfedge2 halfedge, double t = 0.5)
         {
             halfedge.UsedCheck();
             OwnsCheck(halfedge);
@@ -300,10 +300,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="halfedge"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        internal bool CollapseEdgeImpl(Halfedge halfedge, double t = 0.5)
+        internal bool CollapseEdgeImpl(Halfedge2 halfedge, double t = 0.5)
         {
-            Halfedge he0 = halfedge;
-            Halfedge he1 = he0.Twin;
+            Halfedge2 he0 = halfedge;
+            Halfedge2 he1 = he0.Twin;
 
             HeVertex v0 = he0.Start; // to be removed
             HeVertex v1 = he1.Start;
@@ -326,7 +326,7 @@ namespace SpatialSlur.SlurMesh
             */
 
             // update vertex refs of all edges emanating from v0
-            foreach (Halfedge he in v0.OutgoingHalfedges) 
+            foreach (Halfedge2 he in v0.OutgoingHalfedges) 
                 he.Start = v1;
 
             // update halfedge ref of v1 if necessary
@@ -334,8 +334,8 @@ namespace SpatialSlur.SlurMesh
                 v1.First = he1.Next; // maintains vertex boundary condition
 
             // update halfedge-halfedge refs
-            Halfedge.MakeConsecutive(he0.Previous, he0.Next);
-            Halfedge.MakeConsecutive(he1.Previous, he1.Next);
+            Halfedge2.MakeConsecutive(he0.Previous, he0.Next);
+            Halfedge2.MakeConsecutive(he1.Previous, he1.Next);
 
             // update halfedge refs of faces if necessary and deal with potential collapse by merging
             if (f0 != null)
@@ -368,7 +368,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="halfedge"></param>
         /// <returns></returns>
-        public bool SpinEdge(Halfedge halfedge)
+        public bool SpinEdge(Halfedge2 halfedge)
         {
             halfedge.UsedCheck();
             OwnsCheck(halfedge);
@@ -391,13 +391,13 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="halfedge"></param>
         /// <returns></returns>
-        internal void SpinEdgeImpl(Halfedge halfedge)
+        internal void SpinEdgeImpl(Halfedge2 halfedge)
         {
-            Halfedge he0 = halfedge;
-            Halfedge he1 = he0.Twin;
+            Halfedge2 he0 = halfedge;
+            Halfedge2 he1 = he0.Twin;
 
-            Halfedge he2 = he0.Next;
-            Halfedge he3 = he1.Next;
+            Halfedge2 he2 = he0.Next;
+            Halfedge2 he3 = he1.Next;
 
             HeVertex v0 = he0.Start;
             HeVertex v1 = he1.Start;
@@ -422,12 +422,12 @@ namespace SpatialSlur.SlurMesh
             he3.Face = f0;
 
             // update halfedge->halfedge refs
-            Halfedge.MakeConsecutive(he0, he2.Next);
-            Halfedge.MakeConsecutive(he1, he3.Next);
-            Halfedge.MakeConsecutive(he1.Previous, he2);
-            Halfedge.MakeConsecutive(he0.Previous, he3);
-            Halfedge.MakeConsecutive(he2, he1);
-            Halfedge.MakeConsecutive(he3, he0);
+            Halfedge2.MakeConsecutive(he0, he2.Next);
+            Halfedge2.MakeConsecutive(he1, he3.Next);
+            Halfedge2.MakeConsecutive(he1.Previous, he2);
+            Halfedge2.MakeConsecutive(he0.Previous, he3);
+            Halfedge2.MakeConsecutive(he2, he1);
+            Halfedge2.MakeConsecutive(he3, he0);
         }
 
 

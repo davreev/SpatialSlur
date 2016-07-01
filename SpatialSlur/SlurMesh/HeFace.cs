@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurMesh
     [Serializable]
     public class HeFace:HeElement
     {
-        private Halfedge _first;
+        private Halfedge2 _first;
    
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the first halfedge in the face.
         /// </summary>
-        public Halfedge First
+        public Halfedge2 First
         {
             get { return _first; }
             internal set { _first = value; }
@@ -63,7 +63,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
           
                 do
                 {
@@ -101,7 +101,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
                 int count = 0;
 
                 do
@@ -122,7 +122,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
 
                 do
                 {
@@ -136,11 +136,11 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Iterates over the face's halfedges.
         /// </summary>
-        public IEnumerable<Halfedge> Halfedges
+        public IEnumerable<Halfedge2> Halfedges
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
 
                 do
                 {
@@ -160,7 +160,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
 
                 do
                 {
@@ -188,7 +188,7 @@ namespace SpatialSlur.SlurMesh
         [Obsolete("Use Degree property instead.")]
         public int CountEdges()
         {
-            Halfedge he = _first;
+            Halfedge2 he = _first;
             int count = 0;
 
             do
@@ -207,7 +207,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public int CountBoundaryEdges()
         {
-            Halfedge he = _first;
+            Halfedge2 he = _first;
             int count = 0;
 
             do
@@ -226,7 +226,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public int CountBoundaryVertices()
         {
-            Halfedge he = _first;
+            Halfedge2 he = _first;
             int count = 0;
 
             do
@@ -245,9 +245,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public Halfedge FindEdgeBetween(HeFace other)
+        public Halfedge2 FindEdgeBetween(HeFace other)
         {
-            foreach (Halfedge he in Halfedges)
+            foreach (Halfedge2 he in Halfedges)
                 if (he.Twin.Face == other) return he;
 
             return null;
@@ -289,7 +289,7 @@ namespace SpatialSlur.SlurMesh
             else
             {
                 result = new Vec3d();
-                foreach (Halfedge he in Halfedges)
+                foreach (Halfedge2 he in Halfedges)
                     result += he.GetNormal();
             }
         

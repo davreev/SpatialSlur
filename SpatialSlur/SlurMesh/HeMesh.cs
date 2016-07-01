@@ -142,7 +142,7 @@ namespace SpatialSlur.SlurMesh
                 _verts.Add(new HeVertex(otherVerts[i].Position));
 
             for (int i = 0; i < otherHedges.Count; i++)
-                _hedges.Add(new Halfedge());
+                _hedges.Add(new Halfedge2());
 
             for (int i = 0; i < otherFaces.Count; i++)
                 _faces.Add(new HeFace());
@@ -170,8 +170,8 @@ namespace SpatialSlur.SlurMesh
             // link halfedges to vertices, faces, and other halfedges
             for (int i = 0; i < otherHedges.Count; i++)
             {
-                Halfedge he0 = otherHedges[i];
-                Halfedge he1 = _hedges[i];
+                Halfedge2 he0 = otherHedges[i];
+                Halfedge2 he1 = _hedges[i];
 
                 he1.Previous = _hedges[he0.Previous.Index];
                 he1.Next = _hedges[he0.Next.Index];
@@ -281,7 +281,7 @@ namespace SpatialSlur.SlurMesh
                 _verts.Add(new HeVertex(otherVerts[i].Position));
 
             for (int i = 0; i < otherHedges.Count; i++)
-                _hedges.Add(new Halfedge());
+                _hedges.Add(new Halfedge2());
 
             for (int i = 0; i < otherFaces.Count; i++)
                 _faces.Add(new HeFace());
@@ -309,8 +309,8 @@ namespace SpatialSlur.SlurMesh
             // link new edges to new vertices, halfedges, and faces
             for (int i = 0; i < otherHedges.Count; i++)
             {
-                Halfedge he0 = other._hedges[i];
-                Halfedge he1 = _hedges[i + ne];
+                Halfedge2 he0 = other._hedges[i];
+                Halfedge2 he1 = _hedges[i + ne];
 
                 he1.Previous = _hedges[he0.Previous.Index + ne];
                 he1.Next = _hedges[he0.Next.Index + ne];
@@ -396,7 +396,7 @@ namespace SpatialSlur.SlurMesh
 
             return result;
         }
-
+     
 
         /*
         /// <summary>
@@ -479,7 +479,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="halfedge"></param>
         /// <returns></returns>
-        public bool Owns(Halfedge halfedge)
+        public bool Owns(Halfedge2 halfedge)
         {
             return _hedges.Owns(halfedge);
         }
@@ -527,9 +527,9 @@ namespace SpatialSlur.SlurMesh
         /// Returns the first halfedge from each hole in the mesh.
         /// </summary>
         /// <returns></returns>
-        public List<Halfedge> GetHoles()
+        public List<Halfedge2> GetHoles()
         {
-            List<Halfedge> result = new List<Halfedge>();
+            List<Halfedge2> result = new List<Halfedge2>();
             int currTag = _hedges.NextTag;
 
             for (int i = 0; i < _hedges.Count; i++)

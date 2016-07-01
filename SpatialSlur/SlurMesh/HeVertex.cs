@@ -20,7 +20,7 @@ namespace SpatialSlur.SlurMesh
     public class HeVertex : HeElement
     {
         private Vec3d _position;
-        private Halfedge _first;
+        private Halfedge2 _first;
 
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns the first halfedge starting at this vertex.
         /// Note that if the vertex is on the mesh boundary, the first halfedge must have a null face reference.
         /// </summary>
-        public Halfedge First
+        public Halfedge2 First
         {
             get { return _first; }
             internal set { _first = value; }
@@ -107,7 +107,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
                 int count = 0;
 
                 do
@@ -166,7 +166,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
 
                 do
                 {
@@ -181,11 +181,11 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Iterates over all halfedges starting from this vertex.
         /// </summary>
-        public IEnumerable<Halfedge> OutgoingHalfedges
+        public IEnumerable<Halfedge2> OutgoingHalfedges
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
 
                 do
                 {
@@ -199,11 +199,11 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Iterates over all halfedges ending at this vertex.
         /// </summary>
-        public IEnumerable<Halfedge> IncomingHalfedges
+        public IEnumerable<Halfedge2> IncomingHalfedges
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
 
                 do
                 {
@@ -223,7 +223,7 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                Halfedge he = _first;
+                Halfedge2 he = _first;
 
                 do
                 {
@@ -241,9 +241,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public Halfedge FindHalfedgeTo(HeVertex other)
+        public Halfedge2 FindHalfedgeTo(HeVertex other)
         {
-            foreach (Halfedge he in OutgoingHalfedges)
+            foreach (Halfedge2 he in OutgoingHalfedges)
                 if (he.End == other) return he;
 
             return null;
@@ -258,7 +258,7 @@ namespace SpatialSlur.SlurMesh
         {
             Vec3d result = new Vec3d();
 
-            foreach (Halfedge he in OutgoingHalfedges)
+            foreach (Halfedge2 he in OutgoingHalfedges)
             {
                 if (he.Face == null) continue;
                 result += he.GetNormal();

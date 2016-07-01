@@ -37,11 +37,11 @@ namespace SpatialSlur.SlurMesh
         /// <param name="result"></param>
         public static void UpdateEdgeLabels(this HalfedgeList hedges, IList<int> result)
         {
-            Stack<Halfedge> stack = new Stack<Halfedge>();
+            Stack<Halfedge2> stack = new Stack<Halfedge2>();
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge he = hedges[i];
+                Halfedge2 he = hedges[i];
                 if (he.IsUnused || result[i >> 1] != 0) continue; // skip if unused or already visited
 
                 stack.Push(he);
@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int[] GetEdgeLabels(this HalfedgeList hedges, Halfedge start)
+        public static int[] GetEdgeLabels(this HalfedgeList hedges, Halfedge2 start)
         {
             int[] result = new int[hedges.Count >> 1];
             hedges.UpdateEdgeLabels(start, result);
@@ -70,13 +70,13 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="start"></param>
         /// <param name="result"></param>
-        public static void UpdateEdgeLabels(this HalfedgeList hedges, Halfedge start, IList<int> result)
+        public static void UpdateEdgeLabels(this HalfedgeList hedges, Halfedge2 start, IList<int> result)
         {
             start.UsedCheck();
             hedges.OwnsCheck(start);
             hedges.HalfSizeCheck(result);
 
-            Stack<Halfedge> stack = new Stack<Halfedge>();
+            Stack<Halfedge2> stack = new Stack<Halfedge2>();
             stack.Push(start);
             UpdateEdgeLabels(stack, result);
         }
@@ -85,14 +85,14 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Assumes the result array contains default values.
         /// </summary>
-        private static void UpdateEdgeLabels(Stack<Halfedge> stack, IList<int> result)
+        private static void UpdateEdgeLabels(Stack<Halfedge2> stack, IList<int> result)
         {
             // TODO finish implementation
             throw new NotImplementedException();
 
             while (stack.Count > 0)
             {
-                Halfedge he = stack.Pop();
+                Halfedge2 he = stack.Pop();
                 int ei = he.Index >> 1;
                 if (he.Face == null || result[ei] != 0) continue; // skip if already flagged
 
@@ -152,7 +152,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge he = hedges[i << 1];
+                Halfedge2 he = hedges[i << 1];
                 if (he.IsUnused) continue;
                 result[i] = he.Span.Length;
             }
@@ -161,6 +161,8 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns the dihedral angle for each pair of halfedges in the mesh.
+        /// Dihedral angle is in range [0-Tau] where 0 is max convex and Tau is max concave.
+        /// Assumes the given face normals are unitized.
         /// </summary>
         /// <param name="hedges"></param>
         /// <param name="faceNormals"></param>
@@ -202,12 +204,35 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
+                Halfedge2 he = hedges[i << 1];
+                if (he.IsUnused || he.IsBoundary) continue;
+
+                Vec3d n0 = faceNormals[he.Face.Index];
+                Vec3d n1 = faceNormals[he.Twin.Face.Index];
+
+                double angle = Math.Acos(SlurMath.Clamp(n0 * n1, -1.0, 1.0)); // clamp dot product to remove noise
+                if (n1 * he.Next.Span < 0.0) angle *= -1.0; // negate if convex
+
+                result[i] = angle + Math.PI; 
+            }
+        }
+       
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void UpdateDihedralAngles(this HalfedgeList hedges, IList<Vec3d> faceNormals, IList<double> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
                 Halfedge he = hedges[i << 1];
                 if (he.IsUnused || he.IsBoundary) continue;
 
-                double angle = Vec3d.Angle(faceNormals[he.Face.Index], faceNormals[he.Twin.Face.Index]);
-                result[i] = angle;
+                double d = faceNormals[he.Face.Index] * faceNormals[he.Twin.Face.Index];
+                result[i] = Math.Acos(SlurMath.Clamp(d, -1.0, 1.0)); // clamp dot product to remove noise
             }
         }
+        */
     }
 }
