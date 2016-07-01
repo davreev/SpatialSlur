@@ -426,7 +426,7 @@ namespace SpatialSlur.SlurCore
 
                 double wsum = 0.0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     int j = he.End.Index;
                     result[i * nv + j] = -1.0;
@@ -461,7 +461,7 @@ namespace SpatialSlur.SlurCore
 
                 double wsum = 0.0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     int j = he.End.Index;
                     double w = halfedgeWeights[he.Index];

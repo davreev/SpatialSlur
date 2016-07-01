@@ -37,11 +37,11 @@ namespace SpatialSlur.SlurMesh
         /// <param name="result"></param>
         public static void UpdateEdgeLabels(this HalfedgeList hedges, IList<int> result)
         {
-            Stack<Halfedge2> stack = new Stack<Halfedge2>();
+            Stack<Halfedge> stack = new Stack<Halfedge>();
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
-                Halfedge2 he = hedges[i];
+                Halfedge he = hedges[i];
                 if (he.IsUnused || result[i >> 1] != 0) continue; // skip if unused or already visited
 
                 stack.Push(he);
@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int[] GetEdgeLabels(this HalfedgeList hedges, Halfedge2 start)
+        public static int[] GetEdgeLabels(this HalfedgeList hedges, Halfedge start)
         {
             int[] result = new int[hedges.Count >> 1];
             hedges.UpdateEdgeLabels(start, result);
@@ -70,13 +70,13 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedges"></param>
         /// <param name="start"></param>
         /// <param name="result"></param>
-        public static void UpdateEdgeLabels(this HalfedgeList hedges, Halfedge2 start, IList<int> result)
+        public static void UpdateEdgeLabels(this HalfedgeList hedges, Halfedge start, IList<int> result)
         {
             start.UsedCheck();
             hedges.OwnsCheck(start);
             hedges.HalfSizeCheck(result);
 
-            Stack<Halfedge2> stack = new Stack<Halfedge2>();
+            Stack<Halfedge> stack = new Stack<Halfedge>();
             stack.Push(start);
             UpdateEdgeLabels(stack, result);
         }
@@ -85,14 +85,14 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Assumes the result array contains default values.
         /// </summary>
-        private static void UpdateEdgeLabels(Stack<Halfedge2> stack, IList<int> result)
+        private static void UpdateEdgeLabels(Stack<Halfedge> stack, IList<int> result)
         {
             // TODO finish implementation
             throw new NotImplementedException();
 
             while (stack.Count > 0)
             {
-                Halfedge2 he = stack.Pop();
+                Halfedge he = stack.Pop();
                 int ei = he.Index >> 1;
                 if (he.Face == null || result[ei] != 0) continue; // skip if already flagged
 
@@ -152,7 +152,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge2 he = hedges[i << 1];
+                Halfedge he = hedges[i << 1];
                 if (he.IsUnused) continue;
                 result[i] = he.Span.Length;
             }
@@ -204,7 +204,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = i0; i < i1; i++)
             {
-                Halfedge2 he = hedges[i << 1];
+                Halfedge he = hedges[i << 1];
                 if (he.IsUnused || he.IsBoundary) continue;
 
                 Vec3d n0 = faceNormals[he.Face.Index];

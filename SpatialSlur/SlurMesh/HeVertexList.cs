@@ -413,9 +413,9 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal void RemoveSimple(HeVertex vertex)
         {
-            Halfedge2 he0 = vertex.First;
-            Halfedge2 he1 = he0.Twin;
-            Halfedge2 he2 = he1.Next;
+            Halfedge he0 = vertex.First;
+            Halfedge he1 = he0.Twin;
+            Halfedge he2 = he1.Next;
 
             HeVertex v0 = vertex; // to be removed
             HeVertex v1 = he1.Start;
@@ -425,8 +425,8 @@ namespace SpatialSlur.SlurMesh
             he2.Start = v1;
 
             // update halfedge->halfedge refs
-            Halfedge2.MakeConsecutive(he0.Previous, he0.Next);
-            Halfedge2.MakeConsecutive(he1.Previous, he2);
+            Halfedge.MakeConsecutive(he0.Previous, he0.Next);
+            Halfedge.MakeConsecutive(he1.Previous, he2);
 
             // flag for removal
             v0.MakeUnused();
@@ -466,11 +466,11 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         internal bool MergeVerticesImpl(HeVertex v0, HeVertex v1, double t = 0.5)
         {
-            Halfedge2 he0 = v0.First;
-            Halfedge2 he1 = v1.First;
+            Halfedge he0 = v0.First;
+            Halfedge he1 = v1.First;
 
-            Halfedge2 he2 = he0.Previous;
-            Halfedge2 he3 = he1.Previous;
+            Halfedge he2 = he0.Previous;
+            Halfedge he3 = he1.Previous;
 
             // if vertices are consecutive, just collapse the halfedge between them
             if (he0 == he3)
@@ -479,12 +479,12 @@ namespace SpatialSlur.SlurMesh
                 return Mesh.Halfedges.CollapseEdgeImpl(he1, 1.0 - t);
 
             // update halfedge->vertex refs for all edges emanating from v1
-            foreach (Halfedge2 he in v0.OutgoingHalfedges)
+            foreach (Halfedge he in v0.OutgoingHalfedges)
                 he.Start = v1;
 
             // update halfedge->halfedge refs
-            Halfedge2.MakeConsecutive(he3, he0);
-            Halfedge2.MakeConsecutive(he2, he1);
+            Halfedge.MakeConsecutive(he3, he0);
+            Halfedge.MakeConsecutive(he2, he1);
 
             // deal with potential collapse of boundary loops on either side of the merge
             if (he1.Next == he2)
@@ -514,7 +514,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he0"></param>
         /// <param name="he1"></param>
         /// <returns></returns>
-        public Halfedge2 SplitVertex(Halfedge2 he0, Halfedge2 he1)
+        public Halfedge SplitVertex(Halfedge he0, Halfedge he1)
         {
             he0.UsedCheck();
             he1.UsedCheck();
@@ -536,7 +536,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he0"></param>
         /// <param name="he1"></param>
         /// <returns></returns>
-        internal Halfedge2 SplitVertexImpl(Halfedge2 he0, Halfedge2 he1)
+        internal Halfedge SplitVertexImpl(Halfedge he0, Halfedge he1)
         {
             // if the same edge or vertex is degree 2 then just split the edge
             if (he0 == he1 || he0.IsFromDegree2)
@@ -545,15 +545,15 @@ namespace SpatialSlur.SlurMesh
             HeVertex v0 = he0.Start;
             HeVertex v1 = Add(v0.Position);
 
-            Halfedge2 he2 = Mesh.Halfedges.AddPair(v0, v1);
-            Halfedge2 he3 = he2.Twin;
+            Halfedge he2 = Mesh.Halfedges.AddPair(v0, v1);
+            Halfedge he3 = he2.Twin;
 
             // update halfedge->face refs
             he2.Face = he0.Face;
             he3.Face = he1.Face;
 
             // update start vertex of all outoging edges between he0 and he1
-            Halfedge2 he = he0;
+            Halfedge he = he0;
             do
             {
                 he.Start = v1;
@@ -573,10 +573,10 @@ namespace SpatialSlur.SlurMesh
             }
 
             // update halfedge->halfedge refs
-            Halfedge2.MakeConsecutive(he0.Previous, he2);
-            Halfedge2.MakeConsecutive(he2, he0);
-            Halfedge2.MakeConsecutive(he1.Previous, he3);
-            Halfedge2.MakeConsecutive(he3, he1);
+            Halfedge.MakeConsecutive(he0.Previous, he2);
+            Halfedge.MakeConsecutive(he2, he0);
+            Halfedge.MakeConsecutive(he1.Previous, he3);
+            Halfedge.MakeConsecutive(he3, he1);
 
             return he2;
         }
@@ -588,7 +588,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he0"></param>
         /// <param name="he1"></param>
         /// <returns></returns>
-        public bool DetatchVertex(Halfedge2 he0, Halfedge2 he1)
+        public bool DetatchVertex(Halfedge he0, Halfedge he1)
         {
             he0.UsedCheck();
             he1.UsedCheck();
@@ -613,7 +613,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he0"></param>
         /// <param name="he1"></param>
         /// <returns></returns>
-        internal bool DetatchVertexImpl(Halfedge2 he0, Halfedge2 he1)
+        internal bool DetatchVertexImpl(Halfedge he0, Halfedge he1)
         {
             //TODO
             throw new NotImplementedException();

@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class Halfedge2:HeElement
+    public class Halfedge:HeElement
     {
         #region Static
 
@@ -27,7 +27,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he0"></param>
         /// <param name="he1"></param>
         /// <returns></returns>
-        internal static bool AreConsecutive(Halfedge2 he0, Halfedge2 he1)
+        internal static bool AreConsecutive(Halfedge he0, Halfedge he1)
         {
             return (he0.Next == he1 || he1.Next == he0);
         }
@@ -38,7 +38,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="he0"></param>
         /// <param name="he1"></param>
-        internal static void MakeConsecutive(Halfedge2 he0, Halfedge2 he1)
+        internal static void MakeConsecutive(Halfedge he0, Halfedge he1)
         {
             he0.Next = he1;
             he1.Previous = he0;
@@ -50,7 +50,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="he0"></param>
         /// <param name="he1"></param>
-        internal static void MakeTwins(Halfedge2 he0, Halfedge2 he1)
+        internal static void MakeTwins(Halfedge he0, Halfedge he1)
         {
             he0.Twin = he1;
             he1.Twin = he0;
@@ -58,9 +58,9 @@ namespace SpatialSlur.SlurMesh
 
         #endregion
 
-        private Halfedge2 _prev;
-        private Halfedge2 _next;
-        private Halfedge2 _twin;
+        private Halfedge _prev;
+        private Halfedge _next;
+        private Halfedge _twin;
         private HeVertex _start;
         private HeFace _face;
 
@@ -68,13 +68,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         ///
         /// </summary>
-        internal Halfedge2() { }
+        internal Halfedge() { }
 
         
         /// <summary>
         /// Returns the previous halfedge in the face.
         /// </summary>
-        public Halfedge2 Previous
+        public Halfedge Previous
         {
             get { return _prev; }
             internal set { _prev = value; }
@@ -84,7 +84,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the next halfedge in the face.
         /// </summary>
-        public Halfedge2 Next
+        public Halfedge Next
         {
             get { return _next; }
             internal set { _next = value; }
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the oppositely oriented adjacent halfedge
         /// </summary>
-        public Halfedge2 Twin
+        public Halfedge Twin
         {
             get { return _twin; }
             internal set { _twin = value; }
@@ -279,10 +279,10 @@ namespace SpatialSlur.SlurMesh
         /// Returns null if no boundary halfedge is found.
         /// </summary>
         /// <returns></returns>
-        internal Halfedge2 FindBoundary()
+        internal Halfedge FindBoundary()
         {
             // if (IsUnused) return null;
-            Halfedge2 he = this;
+            Halfedge he = this;
 
             do
             {
@@ -297,12 +297,12 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Circulates the face starting from this halfedge.
         /// </summary>
-        public IEnumerable<Halfedge2> CirculateFace
+        public IEnumerable<Halfedge> CirculateFace
         {
             get
             {
                 // if (IsUnused) yield break;
-                Halfedge2 he = this;
+                Halfedge he = this;
 
                 do
                 {
@@ -316,12 +316,12 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Circulates the start vertex starting from this halfedge.
         /// </summary>
-        public IEnumerable<Halfedge2> CirculateStart
+        public IEnumerable<Halfedge> CirculateStart
         {
             get
             {
                 // if (IsUnused) yield break;
-                Halfedge2 he = this;
+                Halfedge he = this;
 
                 do
                 {

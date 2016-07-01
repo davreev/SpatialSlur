@@ -258,7 +258,7 @@ namespace SpatialSlur.SlurField
                 Vec3d sum = new Vec3d();
                 int n = 0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     Vec3d d = he.Span;
                     double m = 1.0 / d.Length;
@@ -320,7 +320,7 @@ namespace SpatialSlur.SlurField
                 double value = Values[i];
                 Vec3d sum = new Vec3d();
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     Vec3d d = he.Span;
                     double m = 1.0 / d.Length;

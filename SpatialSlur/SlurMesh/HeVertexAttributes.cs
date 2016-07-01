@@ -165,7 +165,7 @@ namespace SpatialSlur.SlurMesh
                 HeVertex v0 = queue.Dequeue();
                 double t0 = result[v0.Index];
 
-                foreach (Halfedge2 he in v0.IncomingHalfedges)
+                foreach (Halfedge he in v0.IncomingHalfedges)
                 {
                     HeVertex v1 = he.Start;
                     int i1 = v1.Index;
@@ -227,7 +227,7 @@ namespace SpatialSlur.SlurMesh
                 double t0 = values[i];
 
                 // check first neighbour
-                Halfedge2 first = v0.First.Twin;
+                Halfedge first = v0.First.Twin;
                 double t1 = values[first.Start.Index];
 
                 bool last = (t1 < t0); // was the last neighbour lower?
@@ -235,7 +235,7 @@ namespace SpatialSlur.SlurMesh
                 first = first.Next.Twin;
 
                 // circulate remaining neighbours
-                Halfedge2 he = first;
+                Halfedge he = first;
                 do
                 {
                     t1 = values[he.Start.Index];
@@ -317,7 +317,7 @@ namespace SpatialSlur.SlurMesh
                 if (v.IsUnused) continue;
 
                 double sum = 0.0;
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     if (he.Face == null) continue;
                     sum += halfedgeAreas[he.Index];
@@ -375,7 +375,7 @@ namespace SpatialSlur.SlurMesh
 
                 double sum = 0.0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     if (he.Face == null) continue;
 
@@ -484,7 +484,7 @@ namespace SpatialSlur.SlurMesh
                 double sum = 0.0;
                 int n = 0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     if (he.Face == null) continue; // skip boundary edges
                     sum += (edgeLengths[he.Index >> 1] + edgeLengths[he.Previous.Index >> 1] - edgeLengths[he.Next.Index >> 1]) * 0.5;
@@ -584,7 +584,7 @@ namespace SpatialSlur.SlurMesh
                 if (v.IsUnused || v.IsBoundary) continue;
 
                 double sum = 0.0;
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                     sum += Math.PI - he.GetAngle();
 
                 result[i] = Math.Abs(SlurMath.Tau - sum);
@@ -639,7 +639,7 @@ namespace SpatialSlur.SlurMesh
                 if (v.IsUnused || v.IsBoundary) continue;
 
                 double sum = 0.0;
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                     sum += Math.PI - halfedgeAngles[he.Index];
 
                 result[i] = Math.Abs(SlurMath.Tau - sum);
@@ -785,7 +785,7 @@ namespace SpatialSlur.SlurMesh
 
                 Vec3d sum = new Vec3d();
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     if (he.Face == null) continue;
                     sum += halfedgeNormals[he.Index];
@@ -843,7 +843,7 @@ namespace SpatialSlur.SlurMesh
                 Vec3d sum = new Vec3d();
                 int n = 0;
 
-                foreach (Halfedge2 he in v.IncomingHalfedges)
+                foreach (Halfedge he in v.IncomingHalfedges)
                 {
                     sum += he.Start.Position;
                     n++;
@@ -902,7 +902,7 @@ namespace SpatialSlur.SlurMesh
 
                 Vec3d sum = new Vec3d();
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                     sum += he.Span * halfedgeWeights[he.Index];
 
                 result[i] = sum;
@@ -998,7 +998,7 @@ namespace SpatialSlur.SlurMesh
                 double sum = 0.0;
                 int n = 0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     sum += (values[he.End.Index] - t);
                     n++;
@@ -1023,7 +1023,7 @@ namespace SpatialSlur.SlurMesh
                 Vec3d sum = new Vec3d();
                 int n = 0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                 {
                     sum += (values[he.End.Index] - t);
                     n++;
@@ -1123,7 +1123,7 @@ namespace SpatialSlur.SlurMesh
                 double t = values[i];
                 double sum = 0.0;
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                     sum += (values[he.End.Index] - t) * halfedgeWeights[he.Index];
 
                 result[i] = sum;
@@ -1144,7 +1144,7 @@ namespace SpatialSlur.SlurMesh
                 Vec3d t = values[i];
                 Vec3d sum = new Vec3d();
 
-                foreach (Halfedge2 he in v.OutgoingHalfedges)
+                foreach (Halfedge he in v.OutgoingHalfedges)
                     sum += (values[he.End.Index] - t) * halfedgeWeights[he.Index];
 
                 result[i] = sum;
