@@ -21,6 +21,7 @@ namespace SpatialSlur.SlurField
         private double _dx, _dy;
         private double _dxInv, _dyInv; // cached to avoid uneccesary divs
         private readonly int _nx, _ny, _n;
+        private readonly double _nxInv; // cached to avoid uneccesary divs
 
         // delegates for methods which depend on the field's boundary type
         private Func<Vec2d, int> _indexAt;
@@ -37,6 +38,8 @@ namespace SpatialSlur.SlurField
             _nx = countX;
             _ny = countY;
             _n = _nx * _ny;
+
+            _nxInv = 1.0 / _nx;
         }
 
 
@@ -64,6 +67,8 @@ namespace SpatialSlur.SlurField
             _nx = other._nx;
             _ny = other._ny;
             _n = other._n;
+
+            _nxInv = other._nxInv;
 
             Domain = other._domain;
             BoundaryType = other._boundaryType;
@@ -156,17 +161,12 @@ namespace SpatialSlur.SlurField
         {
             get
             {
-                Vec2d p = new Vec2d(_x0, _y0);
-
-                for (int i = 0; i < _ny; i++)
+                for (int j = 0; j < _ny; j++)
                 {
-                    for (int j = 0; j < _nx; j++)
+                    for (int i = 0; i < _nx; i++)
                     {
-                        yield return p;
-                        p.x += _dx;
+                        yield return CoordinateAt(i,j);
                     }
-                    p.x = _x0; // reset x
-                    p.y += _dy;
                 }
             }
         }
@@ -246,9 +246,36 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == _nx) { j++; i = 0; }
-                    points[index] = new Vec2d(i * _dx + _x0, j * _dy + _y0);
+                    points[index] = CoordinateAt(i, j);
                 }
             });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index2"></param>
+        /// <returns></returns>
+        public Vec2d CoordinateAt(Vec2i index2)
+        {
+            return new Vec2d(
+                index2.x * _dx + _x0,
+                index2.y * _dy + _y0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
+        public Vec2d CoordinateAt(int i, int j)
+        {
+            return new Vec2d(
+                i * _dx + _x0,
+                j * _dy + _y0);
         }
 
 
@@ -293,6 +320,33 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public Vec2i ExpandIndex(int index)
         {
+            int j = (int)(index * _nxInv);
+            int i = index - j * _nx;
+            return new Vec2i(i, j);
+        }
+
+
+        /// <summary>
+        /// Converts a 1 dimensional index into a 2 dimensional index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        public void ExpandIndex(int index, out int i, out int j)
+        {
+            j = (int)(index * _nxInv);
+            i = index - j * _nx;
+        }
+     
+
+        /*
+        /// <summary>
+        /// Converts a 1 dimensional index into a 2 dimensional index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Vec2i ExpandIndex(int index)
+        {
             int j = index / _nx;
             int i = index - j * _nx;
             return new Vec2i(i, j);
@@ -310,7 +364,8 @@ namespace SpatialSlur.SlurField
             j = index / _nx;
             i = index - j * _nx;
         }
-
+        */
+      
 
         /// <summary>
         /// Returns the index of the value nearest to the given point.
@@ -482,8 +537,8 @@ namespace SpatialSlur.SlurField
 
             corners[0] = index;
             corners[1] = index + 1;
-            corners[2] = index + 1 + _nx;
-            corners[3] = index + _nx;
+            corners[2] = index + _nx;
+            corners[3] = index + 1 + _nx;
 
             // compute weights using fractional components
             result.SetWeights(u, v);
@@ -498,31 +553,21 @@ namespace SpatialSlur.SlurField
             double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i);
             double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
 
-            /*
+            // bit mask (0 = in bounds, 1 = out of bounds)
             int mask = 0;
-            if (i < 0 || i >= _nx) mask |= 1;
-            if (j < 0 || j >= _ny) mask |= 2;
-            if (i < -1 || i >= _nx - 1) mask |= 4;
-            if (j < -1 || j >= _ny - 1) mask |= 8;
-            */
+            if (!SlurMath.Contains(i, 0, _nx)) mask |= 1;
+            if (!SlurMath.Contains(j, 0, _ny)) mask |= 2;
+            if (!SlurMath.Contains(i + 1, 0, _nx)) mask |= 4;
+            if (!SlurMath.Contains(j + 1, 0, _ny)) mask |= 8;
 
             // set corner indices
             int index = FlattenIndex(i, j);
             int[] corners = result.Corners;
 
-            // bit mask (1 = out of bounds, 0 = in bounds)
-            int mask = 0;
-            if (i < 0 || i >= _nx) mask |= 1;
-            if (j < 0 || j >= _ny) mask |= 2;
-
-            i++; j++;
-            if (i < 0 || i >= _nx) mask |= 4;
-            if (j < 0 || j >= _ny) mask |= 8;
-
-            corners[0] = ((mask & 3) > 0) ? _n : index; // 00 11
-            corners[1] = ((mask & 6) > 0) ? _n : index + 1; // 01 10
-            corners[2] = ((mask & 12) > 0) ? _n : index + 1 + _nx; // 11 00
-            corners[3] = ((mask & 9) > 0) ? _n : index + _nx; // 10 01
+            corners[0] = ((mask & 3) == 0) ? index : _n; // 00 11
+            corners[1] = ((mask & 6) == 0) ? index + 1 : _n; // 01 10
+            corners[2] = ((mask & 9) == 0) ? index + _nx : _n; // 10 01
+            corners[3] = ((mask & 12) == 0) ? index + 1 + _nx : _n; // 11 00
 
             // compute weights using fractional components
             result.SetWeights(u, v);
@@ -537,25 +582,25 @@ namespace SpatialSlur.SlurField
             double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i);
             double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
 
-            // offsets
-            int di = 1;
-            int dj = _nx;
+            // clamp and get offsets
+            int di, dj;
+            di = dj = 0;
 
-            // clamp whole components and adjust offsets if necessary
-            if (i < 0) { i = 0; di = 0; }
-            else if (i >= _nx - 1) { i = _nx - 1; di = 0; }
+            if (i < 0) { i = 0; }
+            else if (i >= _nx - 1) { i = _nx - 1; }
+            else { di = 1; }
 
-            if (j < 0) { j = 0; dj = 0; }
-            else if (j >= _ny - 1) { j = _ny - 1; dj = 0; }
+            if (j < 0) { j = 0; }
+            else if (j >= _ny - 1) { j = _ny - 1; }
+            else { dj = _nx; }
 
             // set corner indices
             int index = FlattenIndex(i, j);
             int[] corners = result.Corners;
-
             corners[0] = index;
             corners[1] = index + di;
-            corners[2] = index + di + dj;
-            corners[3] = index + dj;
+            corners[2] = index + dj;
+            corners[3] = index + di + dj;
 
             // compute weights using fractional components
             result.SetWeights(u, v);
@@ -581,11 +626,10 @@ namespace SpatialSlur.SlurField
             // set corner indices
             int index = FlattenIndex(i, j);
             int[] corners = result.Corners;
-
             corners[0] = index;
             corners[1] = index + di;
-            corners[2] = index + di + dj;
-            corners[3] = index + dj;
+            corners[2] = index + dj;
+            corners[3] = index + di + dj;
 
             // compute weights using fractional components
             result.SetWeights(u, v);

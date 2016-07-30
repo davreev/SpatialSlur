@@ -159,9 +159,9 @@ namespace SpatialSlur.SlurMesh
                 if (v.IsUnused || v.IsBoundary) continue;
 
                 Halfedge he = v.First;
-                HeVertex fv0 = he.Previous.Start;
-                HeVertex fv1 = he.Twin.Next.End;
-                v.Position = ((fv0.Position + fv1.Position) * 0.5 + v.Position) * 0.5;
+                HeVertex v0 = he.Previous.Start;
+                HeVertex v1 = he.Twin.Next.End;
+                v.Position = ((v0.Position + v1.Position) * 0.5 + v.Position) * 0.5;
             }
         }
 

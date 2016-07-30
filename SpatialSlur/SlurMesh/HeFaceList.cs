@@ -297,10 +297,33 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public Queue<HeFace> GetBreadthFirstOrder(HeFace start)
+        public IEnumerable<HeFace> GetBreadthFirstOrder(HeFace start)
         {
-            // TODO
-            throw new NotImplementedException();
+            OwnsCheck(start);
+
+            if (start.IsUnused)
+                yield break;
+
+            var queue = new Queue<HeFace>();
+            int currTag = NextTag;
+
+            queue.Enqueue(start);
+            start.Tag = currTag;
+
+            while (queue.Count > 0)
+            {
+                HeFace f0 = queue.Dequeue();
+                yield return f0;
+
+                foreach (HeFace f1 in f0.AdjacentFaces)
+                {
+                    if (f1.Tag != currTag)
+                    {
+                        f1.Tag = currTag;
+                        queue.Enqueue(f1);
+                    }
+                }
+            }
         }
 
 
@@ -309,10 +332,33 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public Stack<HeFace> GetDepthFirstOrder(HeFace start)
+        public IEnumerable<HeFace> GetDepthFirstOrder(HeFace start)
         {
-            // TODO
-            throw new NotImplementedException();
+            OwnsCheck(start);
+
+            if (start.IsUnused)
+                yield break;
+
+            var stack = new Stack<HeFace>();
+            int currTag = NextTag;
+
+            stack.Push(start);
+            start.Tag = currTag;
+
+            while (stack.Count > 0)
+            {
+                HeFace f0 = stack.Pop();
+                yield return f0;
+
+                foreach (HeFace f1 in f0.AdjacentFaces)
+                {
+                    if (f1.Tag != currTag)
+                    {
+                        f1.Tag = currTag;
+                        stack.Push(f1);
+                    }
+                }
+            }
         }
 
 
@@ -321,7 +367,7 @@ namespace SpatialSlur.SlurMesh
         /// This is intended for use on quad meshes.
         /// http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf
         /// </summary>
-        public void UnifyFaceOrientation(int direction)
+        public void UnifyFaceOrientation(bool flip)
         {
             Stack<Halfedge> stack = new Stack<Halfedge>();
             int currTag = NextTag;
@@ -331,12 +377,134 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = this[i];
                 if (f.IsUnused || f.Tag == currTag) continue; // skip if unused or already visited
 
-                stack.Push((direction == 0)? f.First: f.First.Next);
+                // check flip
+                if (flip) f.First = f.First.Next;
+       
+                // flag as visited
+                f.Tag = currTag;
+     
+                // add to stack
+                stack.Push(f.First);
                 UnifyFaceOrientation(stack, currTag);
             }
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        public void UnifyFaceOrientation(HeFace start)
+        {
+            start.UsedCheck();
+            OwnsCheck(start);
+
+            Stack<Halfedge> stack = new Stack<Halfedge>();
+            int currTag = NextTag;
+        
+            // flag as visited
+            start.Tag = currTag;
+
+            // add first halfedge to stack
+            stack.Push(start.First);
+            UnifyFaceOrientation(stack, currTag);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UnifyFaceOrientation(Stack<Halfedge> stack, int currTag)
+        {
+            var next = new Halfedge[4];
+
+            while (stack.Count > 0)
+            {
+                Halfedge he0 = stack.Pop();
+
+                foreach(Halfedge he1 in QuadNeighbours(he0))
+                {
+                    HeFace f1 = he1.Face;
+                    if (f1 != null && f1.Tag != currTag)
+                    {
+                        f1.First = he1;
+                        f1.Tag = currTag;
+                        stack.Push(he1);
+                    }
+                }     
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="halfedge"></param>
+        /// <returns></returns>
+        private IEnumerable<Halfedge> QuadNeighbours(Halfedge halfedge)
+        {
+            yield return halfedge.Twin.Next.Next; // down
+            yield return halfedge.Next.Next.Twin; // up
+            yield return halfedge.Previous.Twin.Previous; // left
+            yield return halfedge.Next.Twin.Next; // right
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UnifyFaceOrientation(Stack<Halfedge> stack, int currTag)
+        {
+            while (stack.Count > 0)
+            {
+                Halfedge he0 = stack.Pop();
+       
+                // down
+                Halfedge he1 = he0.Twin.Next.Next;
+                HeFace f1 = he1.Face;
+                if(f1 != null && f1.Tag != currTag)
+                {
+                    f1.First = he1;
+                    f1.Tag = currTag;
+                    stack.Push(he1);
+                }
+
+                // up
+                he1 = he0.Next.Next.Twin;
+                f1 = he1.Face;
+                if (f1 != null && f1.Tag != currTag)
+                {
+                    f1.First = he1;
+                    f1.Tag = currTag;
+                    stack.Push(he1);
+                }
+
+                // left
+                he1 = he0.Previous.Twin.Previous;
+                f1 = he1.Face;
+                if (f1 != null && f1.Tag != currTag)
+                {
+                    f1.First = he1;
+                    f1.Tag = currTag;
+                    stack.Push(he1);
+                }
+
+                // right
+                he1 = he0.Next.Twin.Next;
+                f1 = he1.Face;
+                if (f1 != null && f1.Tag != currTag)
+                {
+                    f1.First = he1;
+                    f1.Tag = currTag;
+                    stack.Push(he1);
+                }
+            }
+        }
+        */
+
+
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -374,38 +542,10 @@ namespace SpatialSlur.SlurMesh
                 stack.Push(he.Next.Next.Twin); // up
                 stack.Push(he.Previous.Twin.Previous); // left
                 stack.Push(he.Next.Twin.Next); // right
-            }
-        }
 
-
-        /*
-        /// <summary>
-        /// Assumes the given elements are valid for the operation.
-        /// </summary>
-        /// <param name="start"></param>
-        internal void UnifyOrientationImpl(Halfedge start, IList<bool> faceMask)
-        {
-            Stack<Halfedge> stack = new Stack<Halfedge>();
-            stack.Push(start);
-
-            // conduct depth first search
-            while (stack.Count > 0)
-            {
-                Halfedge he = stack.Pop();
-                HeFace f = he.Face;
-                int fi = f.Index;
-                if (f == null || faceMask[fi]) continue; // skip boundary halfedges or those whose face has already been visited
-
-                // turn face and flag as visited
-                f.First = he;
-                faceMask[fi] = true;
-
-                // add next halfedges to stack 
-                // give preference to one direction over to minimize discontinuities
-                stack.Push(he.Twin.Next.Next); // down
-                stack.Push(he.Next.Next.Twin); // up
-                stack.Push(he.Previous.Twin.Previous); // left
-                stack.Push(he.Next.Twin.Next); // right
+                // TODO perform visited check before adding to the stack
+                // flag elements as soon as they're added to stack to avoid dups
+                // test alt implementation
             }
         }
         */
@@ -414,9 +554,9 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="flip"></param>
         /// <returns></returns>
-        public List<List<Halfedge>> GetFaceStrips(int direction)
+        public List<List<Halfedge>> GetFaceStrips(bool flip)
         {
             var result = new List<List<Halfedge>>();
             Stack<Halfedge> stack = new Stack<Halfedge>();
@@ -427,21 +567,21 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = this[i];
                 if (f.IsUnused || f.Tag == currTag) continue; // skip if unused or already visited
 
-                stack.Push((direction == 0)? f.First: f.First.Next);
+                stack.Push((flip)? f.First.Next: f.First);
                 GetFaceStrips(stack, currTag, result);
             }
 
             return result;
         }
 
-
+       
         /// <summary>
         /// 
         /// </summary>
         /// <param name="start"></param>
-        /// <param name="direction"></param>
+        /// <param name="flip"></param>
         /// <returns></returns>
-        public List<List<Halfedge>> GetFaceStrips(HeFace start, int direction)
+        public List<List<Halfedge>> GetFaceStrips(HeFace start, bool flip)
         {
             start.UsedCheck();
             OwnsCheck(start);
@@ -449,7 +589,7 @@ namespace SpatialSlur.SlurMesh
             var result = new List<List<Halfedge>>();
             Stack<Halfedge> stack = new Stack<Halfedge>();
      
-            stack.Push((direction == 0) ? start.First : start.First.Next);
+            stack.Push((flip) ? start.First.Next : start.First);
             GetFaceStrips(stack, NextTag, result);
 
             return result;
@@ -461,7 +601,53 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         private void GetFaceStrips(Stack<Halfedge> stack, int currTag, List<List<Halfedge>> result)
         {
-            while(stack.Count > 0)
+            while (stack.Count > 0)
+            {
+                Halfedge he0 = stack.Pop();
+                HeFace f0 = he0.Face;
+                if (f0 == null || f0.Tag == currTag) continue; // don't start from boundary halfedges or those with visited faces
+
+                // backtrack to first encountered visited face or boundary
+                Halfedge he1 = he0;
+                HeFace f1 = he1.Face;
+                do
+                {
+                    he1 = he1.Twin.Next.Next;
+                    f1 = he1.Face;
+                } while (f1 != null && f1.Tag != currTag && f1 != f0);
+
+                // collect halfedges in strip
+                List<Halfedge> strip = new List<Halfedge>();
+                he1 = he1.Previous.Previous.Twin;
+                f1 = he1.Face;
+                do
+                {
+                    // add left and right neighbours to stack
+                    stack.Push(he1.Previous.Twin.Previous);
+                    stack.Push(he1.Next.Twin.Next);
+
+                    // add current halfedge to strip and flag face as visited
+                    strip.Add(he1);
+                    f1.Tag = currTag;
+
+                    // advance to next halfedge
+                    he1 = he1.Next.Next.Twin;
+                    f1 = he1.Face;
+                } while (f1 != null && f1.Tag != currTag);
+
+                strip.Add(he1); // add last halfedge
+                result.Add(strip);
+            }
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetFaceStrips(Stack<Halfedge> stack, int currTag, List<List<Halfedge>> result)
+        {
+            while (stack.Count > 0)
             {
                 Halfedge first = stack.Pop();
                 HeFace f = first.Face;
@@ -482,6 +668,9 @@ namespace SpatialSlur.SlurMesh
                 f = he.Face;
                 do
                 {
+                    // TODO perform visited check & null check before adding to the stack
+                    // flag elements as soon as they're added to stack to avoid dups
+
                     // add left/right neighbours to stack
                     stack.Push(he.Previous.Twin.Previous);
                     stack.Push(he.Next.Twin.Next);
@@ -498,66 +687,6 @@ namespace SpatialSlur.SlurMesh
                 strip.Add(he); // add last halfedge
                 result.Add(strip);
             }
-        }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="direction"></param>
-        /// <returns></returns>
-        public List<List<Halfedge>> GetFaceStrips(HeFace start, int direction)
-        {
-            start.UsedCheck();
-            OwnsCheck(start);
-
-            List<List<Halfedge>> strips = new List<List<Halfedge>>();
-            Stack<Halfedge> stack = new Stack<Halfedge>();
-
-            stack.Push((direction == 0)? start.First: start.First.Next);
-            int currTag = NextTag;
-
-            // conduct depth first search
-            do
-            {
-                Halfedge first = stack.Pop();
-                HeFace f = first.Face;
-                if (f == null || f.Tag == currTag) continue; // don't start from boundary halfedges or those with visited faces
-
-                // backtrack to first encountered visited face or boundary
-                Halfedge he = first;
-                f = he.Twin.Face;
-                while (f != null && f.Tag != currTag)
-                {
-                    he = he.Twin.Next.Next; // down
-                    f = he.Twin.Face;
-                    if (he == first) break; // break if back at first halfedge
-                }
-
-                // collect halfedges in strip
-                List<Halfedge> strip = new List<Halfedge>();
-                f = he.Face;
-                do
-                {
-                    // add left/right neighbours to stack
-                    stack.Push(he.Previous.Twin.Previous);
-                    stack.Push(he.Next.Twin.Next);
-
-                    // add current halfedge to strip and flag face as visited
-                    strip.Add(he);
-                    f.Tag = currTag;
-
-                    // advance to next halfedge
-                    he = he.Next.Next.Twin;
-                    f = he.Face;
-                } while (f != null && f.Tag != currTag);
-
-                strips.Add(strip);
-            } while (stack.Count > 0);
-
-            return strips;
         }
         */
 

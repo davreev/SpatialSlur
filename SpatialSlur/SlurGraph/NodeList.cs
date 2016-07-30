@@ -168,6 +168,76 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public IEnumerable<Node> GetBreadthFirstOrder(Node start)
+        {
+            OwnsCheck(start);
+
+            if (start.IsUnused)
+                yield break;
+
+            var queue = new Queue<Node>();
+            int currTag = NextTag;
+
+            queue.Enqueue(start);
+            start.Tag = currTag;
+
+            while (queue.Count > 0)
+            {
+                Node n0 = queue.Dequeue();
+                yield return n0;
+
+                foreach (Node n1 in n0.Neighbours)
+                {
+                    if (n1.Tag != currTag)
+                    {
+                        n1.Tag = currTag;
+                        queue.Enqueue(n1);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public IEnumerable<Node> GetDepthFirstOrder(Node start)
+        {
+            OwnsCheck(start);
+
+            if (start.IsUnused)
+                yield break;
+
+            var stack = new Stack<Node>();
+            int currTag = NextTag;
+
+            stack.Push(start);
+            start.Tag = currTag;
+
+            while (stack.Count > 0)
+            {
+                Node n0 = stack.Pop();
+                yield return n0;
+
+                foreach (Node n1 in n0.Neighbours)
+                {
+                    if (n1.Tag != currTag)
+                    {
+                        n1.Tag = currTag;
+                        stack.Push(n1);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="n0"></param>
         /// <param name="n1"></param>
         public void MergeNodes(Node n0, Node n1)

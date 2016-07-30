@@ -287,6 +287,36 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Equivalent of List.FindIndex for IList.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="match"></param>
+        /// <returns></returns>
+        public static int FindIndex<T>(this IList<T> list, Predicate<T> match)
+        {
+            return list.FindIndex(0, match);
+        }
+
+
+        /// <summary>
+        /// Equivalent of List.FindIndex for IList.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="match"></param>
+        /// <returns></returns>
+        public static int FindIndex<T>(this IList<T> list, int from, Predicate<T> match)
+        {
+            for (int i = from; i < list.Count; i++)
+            {
+                if (match(list[i]))
+                    return i;
+            }
+
+            return -1;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>

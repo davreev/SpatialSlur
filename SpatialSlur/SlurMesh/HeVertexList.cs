@@ -155,10 +155,33 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public Queue<HeVertex> GetBreadthFirstOrder(HeVertex start)
+        public IEnumerable<HeVertex> GetBreadthFirstOrder(HeVertex start)
         {
-            // TODO
-            throw new NotImplementedException();
+            OwnsCheck(start);
+
+            if (start.IsUnused)
+                yield break;
+
+            var queue = new Queue<HeVertex>();
+            int currTag = NextTag;
+
+            queue.Enqueue(start);
+            start.Tag = currTag;
+
+            while (queue.Count > 0)
+            {
+                HeVertex v0 = queue.Dequeue();
+                yield return v0;
+
+                foreach (HeVertex v1 in v0.ConnectedVertices)
+                {
+                    if (v1.Tag != currTag)
+                    {
+                        v1.Tag = currTag;
+                        queue.Enqueue(v1);
+                    }
+                }
+            }
         }
 
 
@@ -167,10 +190,33 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public Stack<HeVertex> GetDepthFirstOrder(HeVertex start)
+        public IEnumerable<HeVertex> GetDepthFirstOrder(HeVertex start)
         {
-            // TODO
-            throw new NotImplementedException();
+            OwnsCheck(start);
+
+            if (start.IsUnused)
+                yield break;
+
+            var stack = new Stack<HeVertex>();
+            int currTag = NextTag;
+
+            stack.Push(start);
+            start.Tag = currTag;
+
+            while (stack.Count > 0)
+            {
+                HeVertex v0 = stack.Pop();
+                yield return v0;
+
+                foreach (HeVertex v1 in v0.ConnectedVertices)
+                {
+                    if (v1.Tag != currTag)
+                    {
+                        v1.Tag = currTag;
+                        stack.Push(v1);
+                    }
+                }
+            }
         }
 
 

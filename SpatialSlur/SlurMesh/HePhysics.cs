@@ -969,24 +969,16 @@ namespace SpatialSlur.SlurMesh
                 Vec3d n0 = Vec3d.Cross(d02, d01);
                 Vec3d n1 = Vec3d.Cross(d01, d03);
 
-                // cache length and unitize
+                // cache length
                 double m0 = 1.0 / n0.Length;
                 double m1 = 1.0 / n1.Length;
 
-                /*
                 // angle error
-                double angle = Math.Acos(SlurMath.Clamp(n0 * n1 * m0 * m1, -1.0, 1.0)); // clamp to remove noise
+                double angle = Math.Acos(SlurMath.Clamp(n0 * n1 * m0 * m1, -1.0, 1.0));
+                if (n1 * d02 < 0.0) angle *= -1.0; // negate if convex
+                angle += Math.PI;
 
-                // get projection magnitude
-                double m = (angle - restAngles[i >> 1]) * h * strength;
-                if (n0 * d03 < 0.0) m *= -1.0; // flip if convex
-                */
-
-                // angle error
-                double angle = Math.Acos(SlurMath.Clamp(n0 * n1 * m0 * m1, -1.0, 1.0)); // clamp to remove noise
-                angle = (n1 * d02 < 0.0) ? Math.PI - angle : angle + Math.PI; // flip if convex
-
-                // projection magnitude
+                // force magnitude
                 double m = (angle - restAngles[i >> 1]) * h * strength;
 
                 // get relevant cotangents
@@ -1236,9 +1228,7 @@ namespace SpatialSlur.SlurMesh
                 Halfedge he1 = he0.Next;
                 Halfedge he2 = he1.Next;
                 Halfedge he3 = he2.Next;
-
-                // ensure face is quad
-                if (he3.Next != he0) continue;
+                if (he3.Next != he0) continue; // skip non quads
 
                 HeVertex v0 = he0.Start;
                 HeVertex v1 = he1.Start;
@@ -1296,9 +1286,9 @@ namespace SpatialSlur.SlurMesh
                 Halfedge he1 = he0.Next;
                 Halfedge he2 = he1.Next;
                 Halfedge he3 = he2.Next;
-                if (he3.Next != he0) continue; // ensure face is quad
+                if (he3.Next != he0) continue; // skip non quads
 
-                for(int i = 0; i < 2; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     // calculate angle error
                     double err = (Math.PI - halfedgeAngles[he1.Index] - halfedgeAngles[he3.Index]) * 0.25; // angle error in range [-PI/4, PI/4]
@@ -1456,7 +1446,7 @@ namespace SpatialSlur.SlurMesh
                 Halfedge he1 = he0.Twin.Next;
                 Halfedge he2 = he1.Twin.Next;
                 Halfedge he3 = he2.Twin.Next;
-                if (he3.Twin.Next != he0) continue; // ensure vertex is degree 4
+                if (he3.Twin.Next != he0) continue; // skip non degree 4 verts
 
                 // get angle error
                 double err = ((halfedgeAngles[he0.Index] + halfedgeAngles[he2.Index]) - (halfedgeAngles[he1.Index] + halfedgeAngles[he3.Index])) * 0.25; // angle error in range [-PI/4, PI/4]
@@ -1586,7 +1576,7 @@ namespace SpatialSlur.SlurMesh
                 Halfedge he1 = he0.Next;
                 Halfedge he2 = he1.Next;
                 Halfedge he3 = he2.Next;
-                if (he3.Next != he0) continue; // ensure face is quad
+                if (he3.Next != he0) continue; // skip non quads
 
                 // collect edge lengths
                 double d0 = edgeLengths[he0.Index >> 1];

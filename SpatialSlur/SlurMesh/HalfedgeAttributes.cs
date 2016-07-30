@@ -383,76 +383,6 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
-        /// <summary>
-        /// Calculates the symmetric cotangent weight for each halfedge.
-        /// Assumes triangular faces.
-        /// Based on Pinkall and Polthier's derivation of the Laplace-Beltrami operator discussed in http://reuter.mit.edu/papers/reuter-smi09.pdf.
-        /// </summary>
-        /// <param name="hedges"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static double[] GetCotanWeights(this HalfedgeList hedges, bool parallel = false)
-        {
-            double[] result = new double[hedges.Count];
-            hedges.UpdateCotanWeights(result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="hedges"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void UpdateCotanWeights(this HalfedgeList hedges, IList<double> result, bool parallel = false)
-        {
-            hedges.SizeCheck(result);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), range =>
-                    hedges.UpdateCotanWeights(result, range.Item1, range.Item2));
-            else
-                hedges.UpdateCotanWeights(result, 0, hedges.Count >> 1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void UpdateCotanWeights(this HalfedgeList hedges, IList<double> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                int j = i << 1;
-
-                Halfedge he0 = hedges[j];
-                if (he0.IsUnused) continue;
-
-                Halfedge he1 = hedges[j + 1];
-                double w = 0.0;
-
-                if (he0.Face != null)
-                {
-                    Vec3d v0 = he0.Previous.Span;
-                    Vec3d v1 = he0.Next.Twin.Span;
-                    w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
-                }
-
-                if (he1.Face != null)
-                {
-                    Vec3d v0 = he1.Previous.Span;
-                    Vec3d v1 = he1.Next.Twin.Span;
-                    w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
-                }
-
-                result[j] = result[j + 1] = w * 0.5;
-            }
-        }
-        */
-
-
         /// <summary>
         /// Calculates the cotangent weight for each halfedge.
         /// Assumes triangular faces.
@@ -522,6 +452,74 @@ namespace SpatialSlur.SlurMesh
                 w *= 0.5;
                 result[j] = w / vertexAreas[he0.Start.Index];
                 result[j + 1] = w / vertexAreas[he1.Start.Index];
+            }
+        }
+
+
+        /// <summary>
+        /// Calculates the symmetric cotangent weight for each halfedge.
+        /// Assumes triangular faces.
+        /// Based on Pinkall and Polthier's derivation of the Laplace-Beltrami operator discussed in http://reuter.mit.edu/papers/reuter-smi09.pdf.
+        /// </summary>
+        /// <param name="hedges"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static double[] GetCotanWeightsSymmetric(this HalfedgeList hedges, bool parallel = false)
+        {
+            double[] result = new double[hedges.Count];
+            hedges.UpdateCotanWeightsSymmetric(result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hedges"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void UpdateCotanWeightsSymmetric(this HalfedgeList hedges, IList<double> result, bool parallel = false)
+        {
+            hedges.SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), range =>
+                    hedges.UpdateCotanWeightsSymmetric(result, range.Item1, range.Item2));
+            else
+                hedges.UpdateCotanWeightsSymmetric(result, 0, hedges.Count >> 1);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void UpdateCotanWeightsSymmetric(this HalfedgeList hedges, IList<double> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                int j = i << 1;
+
+                Halfedge he0 = hedges[j];
+                if (he0.IsUnused) continue;
+
+                Halfedge he1 = hedges[j + 1];
+                double w = 0.0;
+
+                if (he0.Face != null)
+                {
+                    Vec3d v0 = he0.Previous.Span;
+                    Vec3d v1 = he0.Next.Twin.Span;
+                    w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
+                }
+
+                if (he1.Face != null)
+                {
+                    Vec3d v0 = he1.Previous.Span;
+                    Vec3d v1 = he1.Next.Twin.Span;
+                    w += v0 * v1 / Vec3d.Cross(v0, v1).Length;
+                }
+
+                result[j] = result[j + 1] = w * 0.5;
             }
         }
 
@@ -642,89 +640,6 @@ namespace SpatialSlur.SlurMesh
                 }
             }
         }
-
-
-        /*
-        /// <summary>
-        /// Applies normalization of halfedge weights based on given vertex areas.
-        /// Note that this breaks symmetry between halfedge pairs.
-        /// Intended for use on triangle meshes.
-        /// </summary>
-        /// <param name="hedges"></param>
-        /// <param name="halfedgeWeights"></param>
-        /// <param name="vertexAreas"></param>
-        /// <param name="parallel"></param>
-        public static void NormalizeHalfedgeWeights(this HalfedgeList hedges, IList<double> halfedgeWeights, IList<double> vertexAreas, bool parallel = false)
-        {
-            hedges.SizeCheck(halfedgeWeights);
-
-            var verts = hedges.Mesh.Vertices;
-            hedges.Mesh.Vertices.SizeCheck(vertexAreas);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.NormalizeHalfedgeWeights(halfedgeWeights, vertexAreas, range.Item1, range.Item2));
-            else
-                verts.NormalizeHalfedgeWeights(halfedgeWeights, vertexAreas, 0, verts.Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void NormalizeHalfedgeWeights(this HeVertexList verts, IList<double> halfedgeWeights, IList<double> vertexAreas, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                HeVertex v = verts[i];
-                if (v.IsUnused) continue;
-
-                double a = 1.0 / vertexAreas[i];
-
-                foreach (Halfedge he in v.OutgoingHalfedges)
-                    halfedgeWeights[he.Index] *= a;
-            }
-        }
-
-
-        /// <summary>
-        /// Applies symmetric normalization of halfedge weights based on vertex areas.
-        /// Intended for use on triangle meshes.
-        /// Based on symmetric derivation of the Laplace-Beltrami operator detailed in http://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Vallet08.pdf.
-        /// </summary>
-        /// <param name="hedges"></param>
-        /// <param name="halfedgeWeights"></param>
-        /// <param name="vertexAreas"></param>
-        /// <param name="parallel"></param>
-        public static void NormalizeHalfedgeWeightsSymmetric(this HalfedgeList hedges, IList<double> halfedgeWeights, IList<double> vertexAreas, bool parallel = false)
-        {
-            hedges.SizeCheck(halfedgeWeights);
-            hedges.Mesh.Vertices.SizeCheck(vertexAreas);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), range =>
-                    hedges.NormalizeHalfedgeWeightsSymmetric(halfedgeWeights, vertexAreas, range.Item1, range.Item2));
-            else
-                hedges.NormalizeHalfedgeWeightsSymmetric(halfedgeWeights, vertexAreas, 0, hedges.Count >> 1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void NormalizeHalfedgeWeightsSymmetric(this HalfedgeList hedges, IList<double> halfedgeWeights, IList<double> vertexAreas, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                int j = i << 1;
-                Halfedge he = hedges[j];
-                if (he.IsUnused) continue;
-
-                double w = halfedgeWeights[j] / Math.Sqrt(vertexAreas[he.Start.Index] * vertexAreas[he.End.Index]);
-                halfedgeWeights[j] = halfedgeWeights[j + 1] = w;
-            }
-        }
-        */
 
 
         /// <summary>

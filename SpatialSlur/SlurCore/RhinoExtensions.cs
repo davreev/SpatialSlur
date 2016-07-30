@@ -309,7 +309,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns the transform matrix for this plane.
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
@@ -344,7 +344,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns the inverse transform matrix for this plane.
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>

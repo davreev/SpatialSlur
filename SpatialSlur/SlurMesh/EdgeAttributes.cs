@@ -17,6 +17,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     public static class EdgeAttributes
     {
+      
         /// <summary>
         /// 
         /// </summary>
@@ -38,17 +39,23 @@ namespace SpatialSlur.SlurMesh
         public static void UpdateEdgeLabels(this HalfedgeList hedges, IList<int> result)
         {
             Stack<Halfedge> stack = new Stack<Halfedge>();
+            int currTag = hedges.NextTag;
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
                 Halfedge he = hedges[i];
-                if (he.IsUnused || result[i >> 1] != 0) continue; // skip if unused or already visited
+                if (he.IsUnused || he.Tag == currTag) continue; // skip if unused or already visited
 
+                // set label and flag as visited
+                result[he.Index >> 1] = 0;
+                he.Tag = he.Twin.Tag = currTag;
+
+                // add to stack
                 stack.Push(he);
-                UpdateEdgeLabels(stack, result);
+                UpdateEdgeLabels(stack, currTag, result);
             }
         }
-
+      
 
         /// <summary>
         /// 
@@ -62,7 +69,7 @@ namespace SpatialSlur.SlurMesh
             hedges.UpdateEdgeLabels(start, result);
             return result;
         }
-
+    
 
         /// <summary>
         /// 
@@ -77,38 +84,44 @@ namespace SpatialSlur.SlurMesh
             hedges.HalfSizeCheck(result);
 
             Stack<Halfedge> stack = new Stack<Halfedge>();
+            int currTag = hedges.NextTag;
+       
+            // set label and flag as visited
+            result[start.Index >> 1] = 0;
+            start.Tag = start.Twin.Tag = currTag;
+
+            // add to stack
             stack.Push(start);
-            UpdateEdgeLabels(stack, result);
+            UpdateEdgeLabels(stack, currTag, result);
         }
 
 
         /// <summary>
         /// Assumes the result array contains default values.
         /// </summary>
-        private static void UpdateEdgeLabels(Stack<Halfedge> stack, IList<int> result)
+        private static void UpdateEdgeLabels(Stack<Halfedge> stack, int currTag, IList<int> result)
         {
-            // TODO finish implementation
-            throw new NotImplementedException();
-
             while (stack.Count > 0)
             {
-                Halfedge he = stack.Pop();
-                int ei = he.Index >> 1;
-                if (he.Face == null || result[ei] != 0) continue; // skip if already flagged
+                Halfedge he0 = stack.Pop();
+                Halfedge he1 = he0.Twin.Next;
+                int id = result[he0.Index >> 1] + 1;
 
-                result[ei] = 1; // flag edge
+                do
+                {
+                    // set result and add to stack if not yet visited
+                    if (he1.Tag != currTag && he1.Face != null)
+                    {
+                        result[he1.Index >> 1] = id & 1; // set result
 
-                /*
-                // break if on boundary
-                if (he.IsBoundary == null) continue;
-                */
+                        Halfedge he2 = he1.Twin;
+                        he1.Tag = he2.Tag = currTag;
+                        stack.Push(he2);
+                    }
 
-                // add next halfedges to stack 
-                // give preference to one direction over to minimize discontinuities
-                stack.Push(he.Twin.Next.Next); // down
-                stack.Push(he.Next.Next.Twin); // up
-                stack.Push(he.Previous.Twin.Previous); // left
-                stack.Push(he.Next.Twin.Next); // right
+                    he1 = he1.Twin.Next;
+                    id++;
+                } while (he1 != he0);
             }
         }
 

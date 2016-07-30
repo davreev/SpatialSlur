@@ -270,10 +270,6 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         public void SpatialFunction(Func<Vec3d, T> func)
         {
-            double x0 = Domain.x.t0;
-            double y0 = Domain.y.t0;
-            double z0 = Domain.z.t0;
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j, k;
@@ -283,8 +279,7 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
-
-                    _values[index] = func(new Vec3d(i * ScaleX + x0, j * ScaleY + y0, k * ScaleZ + z0));
+                    _values[index] = func(CoordinateAt(i, j, k));
                 }
             });
         }
@@ -309,7 +304,6 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
-
                     _values[index] = func(i * ScaleX + x0, j * ScaleY + y0, k * ScaleZ + z0);
                 }
             });
@@ -324,9 +318,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void SpatialFunction<U>(Func<Vec3d, U, T> func, Field3d<U> other)
         {
-            double x0 = Domain.x.t0;
-            double y0 = Domain.y.t0;
-            double z0 = Domain.z.t0;
             var u = other.Values;
 
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -339,7 +330,7 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    _values[index] = func(new Vec3d(i * ScaleX + x0, j * ScaleY + y0, k * ScaleZ + z0), u[index]);
+                    _values[index] = func(CoordinateAt(i, j, k), u[index]);
                 }
             });
         }

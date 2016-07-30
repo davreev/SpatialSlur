@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="colors"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Color LerpSpectrum(IList<Color> colors, double t)
+        public static Color Lerp(IList<Color> colors, double t)
         {
             int last = colors.Count - 1;
             t *= last;
@@ -42,7 +42,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="colors"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Vec3d LerpSpectrum(IList<Vec3d> colors, double t)
+        public static Vec3d Lerp(IList<Vec3d> colors, double t)
         {
             int last = colors.Count - 1;
             t *= last;

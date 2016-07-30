@@ -243,9 +243,6 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         public void SpatialFunction(Func<Vec2d, T> func)
         {
-            double x0 = Domain.x.t0;
-            double y0 = Domain.y.t0;
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
                 int i, j;
@@ -254,8 +251,7 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
- 
-                    _values[index] = func(new Vec2d(i * ScaleX + x0, j * ScaleY + y0));
+                    _values[index] = func(CoordinateAt(i,j));
                 }
             });
         }
@@ -278,7 +274,6 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-
                     _values[index] = func(i * ScaleX + x0, j * ScaleY + y0);
                 }
             });
@@ -293,8 +288,6 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void SpatialFunction<U>(Func<Vec2d, U, T> func, Field2d<U> other)
         {
-            double x0 = Domain.x.t0;
-            double y0 = Domain.y.t0;
             var u = other.Values;
      
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
@@ -305,8 +298,7 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-
-                    _values[index] = func(new Vec2d(i * ScaleX + x0, j * ScaleY + y0), u[index]);
+                    _values[index] = func(CoordinateAt(i, j), u[index]);
                 }
             });
         }
@@ -332,7 +324,6 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-
                     _values[index] = func(i * ScaleX + x0, j * ScaleY + y0, u[index]);
                 }
             });
@@ -384,7 +375,6 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-    
                     _values[index] = func(new Vec2d(i * ti, j * tj));
                 }
             });
@@ -434,7 +424,6 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-
                     _values[index] = func(new Vec2d(i * ti, j * tj), u[index]);
                 }
             });

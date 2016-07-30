@@ -226,6 +226,60 @@ namespace SpatialSlur.SlurField
         }
 
 
+
+        /// <summary>
+        /// Sets this field to some function of its vertex positions.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunction(Func<Vec3d, T> func, bool parallel = false)
+        {
+            var verts = Mesh.Vertices;
+
+            if (parallel)
+            {
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _values[i] = func(verts[i].Position);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    _values[i] = func(verts[i].Position);
+            }
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of its vertex positions and another field.
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="func"></param>
+        /// <param name="other"></param>
+        public void SpatialFunction<U>(Func<Vec3d, U, T> func, MeshField<U> other, bool parallel = false)
+        {
+            SizeCheck(other);
+            var verts = Mesh.Vertices;
+            var u = other.Values;
+
+            if (parallel)
+            {
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        _values[i] = func(verts[i].Position, u[i]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Count; i++)
+                    _values[i] = func(verts[i].Position, u[i]);
+            }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>

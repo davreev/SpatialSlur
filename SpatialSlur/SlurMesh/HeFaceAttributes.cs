@@ -189,6 +189,8 @@ namespace SpatialSlur.SlurMesh
         /// <param name="result"></param>
         public static void UpdateFaceDepths(this HeFaceList faces, IEnumerable<HeFace> sources, IList<double> edgeLengths, IList<double> result)
         {
+            // TODO switch to pq implementation
+
             faces.SizeCheck(result);
             faces.Mesh.Halfedges.HalfSizeCheck(edgeLengths);
 
@@ -480,7 +482,7 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = faces[i];
                 if (f.IsUnused) continue;
 
-                Vec3d v = Vec3d.Cross(f.First.Span, f.First.Next.Span);
+                Vec3d v = f.First.GetNormal();
                 v.Unitize();
                 result[i] = v;
             }

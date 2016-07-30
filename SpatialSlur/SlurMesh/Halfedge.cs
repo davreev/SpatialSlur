@@ -281,7 +281,6 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal Halfedge FindBoundary()
         {
-            // if (IsUnused) return null;
             Halfedge he = this;
 
             do
@@ -301,7 +300,6 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                // if (IsUnused) yield break;
                 Halfedge he = this;
 
                 do
@@ -320,7 +318,6 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                // if (IsUnused) yield break;
                 Halfedge he = this;
 
                 do

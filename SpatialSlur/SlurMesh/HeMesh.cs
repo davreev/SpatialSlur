@@ -381,11 +381,21 @@ namespace SpatialSlur.SlurMesh
                     newVerts.Add(f.GetBarycenter());
             }
 
+            // TODO prientation of dual faces is opposite of original faces
+            // circulate in opposite direction?
+
             // add new faces by circulating old vertices
             var fv = new List<HeVertex>();
             foreach (HeVertex v in _verts)
             {
-                if (v.IsUnused || v.IsBoundary) continue;
+                //if (v.IsUnused || v.IsBoundary) continue;
+
+                // add dummy face for unused or boundary vertices
+                if (v.IsUnused || v.IsBoundary)
+                {
+                    newFaces.Add(new HeFace()); 
+                    continue;
+                }
 
                 foreach (HeFace f in v.SurroundingFaces)
                     fv.Add(newVerts[f.Index]);
@@ -548,6 +558,82 @@ namespace SpatialSlur.SlurMesh
 
             return result;
         }
+
+
+        /// <summary>
+        /// Returns the entries of the incidence matrix in column-major order.
+        /// </summary>
+        /// <returns></returns>
+        public static double[] GetIncidenceMatrix()
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Returns the entries of the Laplacian matrix in column-major order.
+        /// </summary>
+        /// <returns></returns>
+        public double[] GetLaplacianMatrix()
+        {
+            int nv = _verts.Count;
+            double[] result = new double[nv * nv];
+
+            for (int i = 0; i < nv; i++)
+            {
+                HeVertex v = _verts[i];
+                if (v.IsUnused) continue;
+
+                double wsum = 0.0;
+
+                foreach (Halfedge he in v.OutgoingHalfedges)
+                {
+                    int j = he.End.Index;
+                    result[i * nv + j] = -1.0;
+                    wsum++;
+                }
+
+                result[i + i * nv] = wsum;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns the entries of the Laplacian matrix in column-major order.
+        /// </summary>
+        /// <param name="halfedgeWeights"></param>
+        /// <returns></returns>
+        public double[] GetLaplacianMatrix(IList<double> halfedgeWeights)
+        {
+            _hedges.SizeCheck(halfedgeWeights);
+
+            int nv = _verts.Count;
+            double[] result = new double[nv * nv];
+
+            for (int i = 0; i < nv; i++)
+            {
+                HeVertex v = _verts[i];
+                if (v.IsUnused) continue;
+
+                double wsum = 0.0;
+
+                foreach (Halfedge he in v.OutgoingHalfedges)
+                {
+                    int j = he.End.Index;
+                    double w = halfedgeWeights[he.Index];
+                    result[i * nv + j] = -w;
+                    wsum += w;
+                }
+
+                result[i * nv + i] = wsum;
+            }
+
+            return result;
+        }
+
     }
 }
 

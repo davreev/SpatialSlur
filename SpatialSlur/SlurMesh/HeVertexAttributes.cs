@@ -143,8 +143,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="result"></param>
         public static void UpdateVertexDepths(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeLengths, IList<double> result)
         {
+            // TODO switch to pq implementation
+
             verts.SizeCheck(result);
-            verts.Mesh.Halfedges.SizeCheck(edgeLengths);
+            verts.Mesh.Halfedges.HalfSizeCheck(edgeLengths);
 
             var queue = new Queue<HeVertex>();
             result.Set(Double.PositiveInfinity);

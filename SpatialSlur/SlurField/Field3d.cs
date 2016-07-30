@@ -23,6 +23,7 @@ namespace SpatialSlur.SlurField
         private double _dx, _dy, _dz;
         private double _dxInv, _dyInv, _dzInv; // cached to avoid uneccesary divs
         private readonly int _nx, _ny, _nz, _nxy, _n;
+        private readonly double _nxInv, _nxyInv; // cached to avoid uneccesary divs
 
         // delegates for methods which depend on the field's boundary type
         private Func<Vec3d, int> _indexAt;
@@ -46,6 +47,9 @@ namespace SpatialSlur.SlurField
             _nz = countZ;
             _nxy = _nx * _ny;
             _n = _nxy * _nz;
+
+            _nxInv = 1.0 / _nx;
+            _nxyInv = 1.0 / _nxy;
         }
 
 
@@ -76,6 +80,9 @@ namespace SpatialSlur.SlurField
             _nz = other._nz;
             _nxy = other._nxy;
             _n = other._n;
+
+            _nxInv = other._nxInv;
+            _nxyInv = other._nxyInv;
 
             Domain = other._domain;
             BoundaryType = other._boundaryType;
@@ -195,22 +202,15 @@ namespace SpatialSlur.SlurField
         {
             get
             {
-                Vec3d p = new Vec3d(_x0, _y0, _z0);
-
-                for (int i = 0; i < _nz; i++)
+                for (int k = 0; k < _nz; k++)
                 {
                     for (int j = 0; j < _ny; j++)
                     {
-                        for (int k = 0; k < _nx; k++)
+                        for (int i = 0; i < _nx; i++)
                         {
-                            yield return p;
-                            p.x += _dx;
+                            yield return CoordinateAt(i, j, k);
                         }
-                        p.x = _x0; // reset x
-                        p.y += _dy;
                     }
-                    p.y = _y0; // reset y
-                    p.z += _dz;
                 }
             }
         }
@@ -294,9 +294,39 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == _nx) { j++; i = 0; }
                     if (j == _ny) { k++; j = 0; }
-                    points[index] = new Vec3d(i * _dx + _x0, j * _dy + _y0, k * _dz + _z0);
+                    points[index] = CoordinateAt(i, j, k);
                 }
             });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index3"></param>
+        /// <returns></returns>
+        public Vec3d CoordinateAt(Vec3i index3)
+        {
+            return new Vec3d(
+                index3.x * _dx + _x0,
+                index3.y * _dy + _y0,
+                index3.z * _dz + _z0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        public Vec3d CoordinateAt(int i, int j, int k)
+        {
+            return new Vec3d(
+                i * _dx + _x0,
+                j * _dy + _y0,
+                k * _dz + _z0);
         }
 
 
@@ -342,6 +372,37 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public Vec3i ExpandIndex(int index)
         {
+            int k = (int)(index * _nxyInv);
+            int i = index - k * _nxy; // store remainder in i
+            int j = (int)(i * _nxInv);
+            return new Vec3i(i - j * _nx, j, k);
+        }
+
+
+        /// <summary>
+        /// Converts a 1 dimensional index into a 3 dimensional index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        public void ExpandIndex(int index, out int i, out int j, out int k)
+        {
+            k = (int)(index * _nxyInv);
+            i = index - k * _nxy; // store remainder in i
+            j = (int)(i * _nxInv);
+            i -= j * _nx;
+        }
+        
+
+        /*
+        /// <summary>
+        /// Converts a 1 dimensional index into a 3 dimensional index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Vec3i ExpandIndex(int index)
+        {
             int k = index / _nxy;
             int i = index - k * _nxy; // store remainder in i
             int j = i / _nx;
@@ -363,6 +424,7 @@ namespace SpatialSlur.SlurField
             j = i / _nx;
             i -= j * _nx;
         }
+        */
 
 
         /// <summary>
@@ -561,20 +623,19 @@ namespace SpatialSlur.SlurField
             // set corner indices
             int index = FlattenIndex(i, j, k);
             int[] corners = result.Corners;
-
             corners[0] = index;
             corners[1] = index + 1;
-            corners[2] = index + 1 + _nx;
-            corners[3] = index + _nx;
+            corners[2] = index + _nx;
+            corners[3] = index + 1 + _nx;
             corners[4] = index + _nxy;
             corners[5] = index + 1 + _nxy;
-            corners[6] = index + 1 + _nx + _nxy;
-            corners[7] = index + _nx + _nxy;
+            corners[6] = index + _nx + _nxy;
+            corners[7] = index + 1 + _nx + _nxy;
 
             // compute weights using fractional components
             result.SetWeights(u, v, w);
         }
-
+       
 
         /// <summary>
         /// 
@@ -589,39 +650,26 @@ namespace SpatialSlur.SlurField
             double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
             double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k);
 
-            /*
+            // create bit mask (1 = out of bounds, 0 = in bounds)
             int mask = 0;
-            if (i < 0 || i >= _nx) mask |= 1;
-            if (j < 0 || j >= _ny) mask |= 2;
-            if (k < 0 || k >= _nz) mask |= 4;
-            if (i < -1 || i >= _nx - 1) mask |= 8;
-            if (j < -1 || j >= _ny - 1) mask |= 16;
-            if (k < -1 || k >= _nz - 1) mask |= 32;
-            */
+            if (!SlurMath.Contains(i, 0, _nx)) mask |= 1;
+            if (!SlurMath.Contains(j, 0, _ny)) mask |= 2;
+            if (!SlurMath.Contains(k, 0, _nz)) mask |= 4;
+            if (!SlurMath.Contains(i + 1, 0, _nx)) mask |= 8;
+            if (!SlurMath.Contains(j + 1, 0, _ny)) mask |= 16;
+            if (!SlurMath.Contains(k + 1, 0, _nz)) mask |= 32;
 
             // set corner indices
             int index = FlattenIndex(i, j, k);
             int[] corners = result.Corners;
-
-            // create bit mask (1 = out of bounds, 0 = in bounds)
-            int mask = 0;
-            if (i < 0 || i >= _nx) mask |= 1;
-            if (j < 0 || j >= _ny) mask |= 2;
-            if (k < 0 || k >= _nz) mask |= 4;
-
-            i++; j++; k++;
-            if (i < 0 || i >= _nx) mask |= 8;
-            if (j < 0 || j >= _ny) mask |= 16;
-            if (k < 0 || k >= _nz) mask |= 32;
-
-            corners[0] = ((mask & 7) > 0) ? _n : index; // 000 111
-            corners[1] = ((mask & 14) > 0) ? _n : index + 1; // 001 110
-            corners[2] = ((mask & 28) > 0) ? _n : index + 1 + _nx; // 011 100
-            corners[3] = ((mask & 21) > 0) ? _n : index + _nx; // 010 101
-            corners[4] = ((mask & 35) > 0) ? _n : index + _nxy; // 100 011
-            corners[5] = ((mask & 42) > 0) ? _n : index + 1 + _nxy; // 101 010
-            corners[6] = ((mask & 56) > 0) ? _n : index + 1 + _nx + _nxy; // 111 000
-            corners[7] = ((mask & 49) > 0) ? _n : index + _nx + _nxy; // 110 001
+            corners[0] = ((mask & 7) == 0) ? index : _n; // 000 111
+            corners[1] = ((mask & 14) == 0) ? index + 1 : _n; // 001 110
+            corners[2] = ((mask & 21) == 0) ? index + _nx : _n; // 010 101
+            corners[3] = ((mask & 28) == 0) ? index + 1 + _nx : _n; // 011 100
+            corners[4] = ((mask & 35) == 0) ? index + _nxy : _n; // 100 011
+            corners[5] = ((mask & 42) == 0) ? index + 1 + _nxy : _n; // 101 010
+            corners[6] = ((mask & 49) == 0) ? index + _nx + _nxy : _n; // 110 001
+            corners[7] = ((mask & 56) == 0) ? index + 1 + _nx + _nxy : _n; // 111 000
 
             // compute weights using fractional components
             result.SetWeights(u, v, w);
@@ -641,33 +689,33 @@ namespace SpatialSlur.SlurField
             double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j);
             double w = SlurMath.Fract((point.z - _z0) * _dzInv, out k);
 
-            // offsets
-            int di = 1;
-            int dj = _nx;
-            int dk = _nxy;
+            // clamp and get offsets
+            int di, dj, dk;
+            di = dj = dk = 0;
 
-            // clamp whole components and adjust offsets if necessary
-            if (i < 0) { i = 0; di = 0; }
-            else if (i >= _nx - 1) { i = _nx - 1; di = 0; }
+            if (i < 0) { i = 0; }
+            else if (i >= _nx - 1) { i = _nx - 1; }
+            else { di = 1; }
 
-            if (j < 0) { j = 0; dj = 0; }
-            else if (j >= _ny - 1) { j = _ny - 1; dj = 0; }
+            if (j < 0) { j = 0; }
+            else if (j >= _ny - 1) { j = _ny - 1; }
+            else { dj = _nx; }
 
-            if (k < 0) { k = 0; dk = 0; }
-            else if (k >= _nz - 1) { k = _nz - 1; dk = 0; }
+            if (k < 0) { k = 0; }
+            else if (k >= _nz - 1) { k = _nz - 1; }
+            else { dk = _nxy; }
 
             // set corner indices
             int index = FlattenIndex(i, j, k);
             int[] corners = result.Corners;
-
             corners[0] = index;
             corners[1] = index + di;
-            corners[2] = index + di + dj;
-            corners[3] = index + dj;
+            corners[2] = index + dj;
+            corners[3] = index + di + dj;
             corners[4] = index + dk;
             corners[5] = index + di + dk;
-            corners[6] = index + di + dj + dk;
-            corners[7] = index + dj + dk;
+            corners[6] = index + dj + dk;
+            corners[7] = index + di + dj + dk;
 
             // compute weights using fractional components
             result.SetWeights(u, v, w);
@@ -700,16 +748,15 @@ namespace SpatialSlur.SlurField
             // set corner indices
             int index = FlattenIndex(i, j, k);
             int[] corners = result.Corners;
-
             corners[0] = index;
             corners[1] = index + di;
-            corners[2] = index + di + dj;
-            corners[3] = index + dj;
+            corners[2] = index + dj;
+            corners[3] = index + di + dj;
             corners[4] = index + dk;
             corners[5] = index + di + dk;
-            corners[6] = index + di + dj + dk;
-            corners[7] = index + dj + dk;
-
+            corners[6] = index + dj + dk;
+            corners[7] = index + di + dj + dk;
+   
             // compute weights using fractional components
             result.SetWeights(u, v, w);
         }

@@ -1019,7 +1019,7 @@ namespace SpatialSlur.SlurField
                 Mesh chunk = new Mesh();
                 Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
            
-                // flatten loop for better parallelization
+                // flatten loop for cleaner parallelization
                 for (int i = range.Item1; i < range.Item2; i++, i3.x++)
                 {
                     // increment 3d index
@@ -1191,7 +1191,7 @@ namespace SpatialSlur.SlurField
                 Mesh chunk = new Mesh();
                 Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
 
-                // flatten loop for better parallelization
+                // flatten loop for cleaner parallelization
                 for (int i = range.Item1; i < range.Item2; i++, i3.x++)
                 {
                     // increment 3d index
@@ -1391,7 +1391,7 @@ namespace SpatialSlur.SlurField
                 Mesh chunk = new Mesh();
                 Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
           
-                // flatten loop for better parallelization
+                // flatten loop for cleaner parallelization
                 for (int i = range.Item1; i < range.Item2; i++, i3.x++)
                 {
                     // increment 3d index

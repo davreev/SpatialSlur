@@ -257,5 +257,27 @@ namespace SpatialSlur.SlurGraph
             return String.Format("Graph (N:{0} E:{1})", _nodes.Count, _edges.Count);
         }
 
+
+        /// <summary>
+        /// Returns the entries of the Laplacian matrix in column-major order.
+        /// </summary>
+        /// <returns></returns>
+        public static double[] GetLaplacianMatrix()
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Returns the entries of the Laplacian matrix in column-major order.
+        /// </summary>
+        /// <param name="edgeWeights"></param>
+        /// <returns></returns>
+        public static double[] GetLaplacianMatrix(IList<double> edgeWeights)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
     }
 }

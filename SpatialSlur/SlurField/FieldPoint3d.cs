@@ -79,13 +79,13 @@ namespace SpatialSlur.SlurField
 
             _weights[0] = u1 * v1 * w1;
             _weights[1] = u * v1 * w1;
-            _weights[2] = u * v * w1;
-            _weights[3] = u1 * v * w1;
+            _weights[2] = u1 * v * w1;
+            _weights[3] = u * v * w1;
 
             _weights[4] = u1 * v1 * w;
             _weights[5] = u * v1 * w;
-            _weights[6] = u * v * w;
-            _weights[7] = u1 * v * w;
+            _weights[6] = u1 * v * w;
+            _weights[7] = u * v * w;
         }
 
 
