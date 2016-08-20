@@ -18,8 +18,10 @@ namespace SpatialSlur.SlurField
         private double _x0, _y0; // cached for convenience
 
         private FieldBoundaryType _boundaryType;
+
         private double _dx, _dy;
         private double _dxInv, _dyInv; // cached to avoid uneccesary divs
+
         private readonly int _nx, _ny, _n;
         private readonly double _nxInv; // cached to avoid uneccesary divs
 
@@ -586,13 +588,13 @@ namespace SpatialSlur.SlurField
             int di, dj;
             di = dj = 0;
 
-            if (i < 0) { i = 0; }
-            else if (i >= _nx - 1) { i = _nx - 1; }
-            else { di = 1; }
+            if (i < 0) i = 0;
+            else if (i > _nx - 1) i = _nx - 1;
+            else if (i < _nx - 1) di = 1;
 
-            if (j < 0) { j = 0; }
-            else if (j >= _ny - 1) { j = _ny - 1; }
-            else { dj = _nx; }
+            if (j < 0) j = 0;
+            else if (j > _ny - 1) j = _ny - 1;
+            else if (j < _ny - 1) dj = _nx;
 
             // set corner indices
             int index = FlattenIndex(i, j);

@@ -355,7 +355,7 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void UpdateFaceMeans(IList<double> result, bool parallel = false)
         {
-            SizeCheck(result);
+            Mesh.Faces.SizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, Mesh.Faces.Count), range => 

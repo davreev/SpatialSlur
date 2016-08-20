@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>

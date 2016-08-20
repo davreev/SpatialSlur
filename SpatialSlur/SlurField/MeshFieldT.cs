@@ -258,6 +258,7 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
         /// <param name="other"></param>
+        /// <param name="parallel"></param>
         public void SpatialFunction<U>(Func<Vec3d, U, T> func, MeshField<U> other, bool parallel = false)
         {
             SizeCheck(other);

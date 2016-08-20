@@ -18,6 +18,7 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public class ScalarField3d : Field3d<double>
     {
+        // TODO refactor operators as per VectorField3d
 
         // delegates for boundary dependant functions
         private Action<IList<double>> _getLaplacian;
@@ -550,40 +551,26 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    double value = Values[index];
-                    double sum = 0.0;
+                    double tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
+                    
+                    double ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
 
-                    // x
-                    if (i == 0)
-                        sum += (BoundaryValue + Values[index + 1] - 2.0 * value) * dx;
-                    else if (i == CountX - 1)
-                        sum += (Values[index - 1] + BoundaryValue - 2.0 * value) * dx;
-                    else
-                        sum += (Values[index - 1] + Values[index + 1] - 2.0 * value) * dx;
-
-                    // y
-                    if (j == 0)
-                        sum += (BoundaryValue + Values[index + CountX] - 2.0 * value) * dy;
-                    else if (j == CountY - 1)
-                        sum += (Values[index - CountX] + BoundaryValue - 2.0 * value) * dy;
-                    else
-                        sum += (Values[index - CountX] + Values[index + CountX] - 2.0 * value) * dy;
-
-                    // z
-                    if(k == 0)
-                        sum += (BoundaryValue + Values[index + CountXY] - 2.0 * value) * dz;
-                    else if(k == CountZ -1)
-                        sum += (Values[index - CountXY] + BoundaryValue - 2.0 * value) * dz;
-                    else
-                        sum += (Values[index - CountXY] + Values[index + CountXY] - 2.0 * value) * dz;
-
-                    result[index] = sum;
+                    double tz0 = (k == 0) ? BoundaryValue : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? BoundaryValue : Values[index + CountXY];
+                  
+                    double t = Values[index] * 2.0;
+                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
                 }
             });
         }
 
 
-        //
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
         private void GetLaplacianEqual(IList<double> result)
         {
             double dx = 1.0 / (ScaleX * ScaleX);
@@ -600,40 +587,26 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    double value = Values[index];
-                    double sum = 0.0;
+                    double tx0 = (i == 0) ? Values[index] : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
 
-                    // x
-                    if (i == 0)
-                        sum += (Values[index + 1] - value) * dx;
-                    else if (i == CountX - 1)
-                        sum += (Values[index - 1] - value) * dx;
-                    else
-                        sum += (Values[index - 1] + Values[index + 1] - 2.0 * value) * dx;
+                    double ty0 = (j == 0) ? Values[index] : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
 
-                    // y
-                    if (j == 0)
-                        sum += (Values[index + CountX] - value) * dy;
-                    else if (j == CountY - 1)
-                        sum += (Values[index - CountX] - value) * dy;
-                    else
-                        sum += (Values[index - CountX] + Values[index + CountX] - 2.0 * value) * dy;
-
-                    // z
-                    if (k == 0)
-                        sum += (Values[index + CountXY] - value) * dz;
-                    else if (k == CountZ - 1)
-                        sum += (Values[index - CountXY] - value) * dz;
-                    else
-                        sum += (Values[index - CountXY] + Values[index + CountXY] - 2.0 * value) * dz;
-
-                    result[index] = sum;
+                    double tz0 = (k == 0) ? Values[index] : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? Values[index] : Values[index + CountXY];
+         
+                    double t = Values[index] * 2.0;
+                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
                 }
             });
         }
 
 
-        //
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
         private void GetLaplacianPeriodic(IList<double> result)
         {
             double dx = 1.0 / (ScaleX * ScaleX);
@@ -650,34 +623,17 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    double value = Values[index];
-                    double sum = 0.0;
+                    double tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
 
-                    // x
-                    if (i == 0)
-                        sum += (Values[index - 1 + CountX] + Values[index + 1] - 2.0 * value) * dx;
-                    else if (i == CountX - 1)
-                        sum += (Values[index - 1] + Values[index + 1 - CountX] - 2.0 * value) * dx;
-                    else
-                        sum += (Values[index - 1] + Values[index + 1] - 2.0 * value) * dx;
+                    double ty0 = (j == 0) ? Values[index - CountX + CountXY] : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? Values[index + CountX - CountXY] : Values[index + CountX];
 
-                    // y
-                    if (j == 0)
-                        sum += (Values[index - CountX + CountXY] + Values[index + CountX] - 2.0 * value) * dy;
-                    else if (j == CountY - 1)
-                        sum += (Values[index - CountX] + Values[index + CountX - CountXY] - 2.0 * value) * dy;
-                    else
-                        sum += (Values[index - CountX] + Values[index + CountX] - 2.0 * value) * dy;
+                    double tz0 = (k == 0) ? Values[index - CountXY + Count] : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? Values[index + CountXY - Count] : Values[index + CountXY];
 
-                    // z
-                    if (k == 0)
-                        sum += (Values[index - CountXY + Count] + Values[index +CountXY] - 2.0 * value) * dz;
-                    else if (k == CountZ - 1)
-                        sum += (Values[index - CountXY] + Values[index + CountXY - Count] - 2.0 * value) * dz;
-                    else
-                        sum += (Values[index - CountXY] + Values[index + CountXY] - 2.0 * value) * dz;
-
-                    result[index] = sum;
+                    double t = Values[index] * 2.0;
+                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
                 }
             });
         }
@@ -734,33 +690,16 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    double gx,gy,gz;
+                    double tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        gx = (Values[index + 1] - BoundaryValue) * dx;
-                    else if (i == CountX - 1)
-                        gx = (BoundaryValue - Values[index - 1]) * dx;
-                    else
-                        gx = (Values[index + 1] - Values[index - 1]) * dx;
+                    double ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        gy = (Values[index + CountX] - BoundaryValue) * dy;
-                    else if (j == CountY - 1)
-                        gy = (BoundaryValue - Values[index - CountX]) * dy;
-                    else
-                        gy = (Values[index + CountX] - Values[index - CountX]) * dy;
+                    double tz0 = (k == 0) ? BoundaryValue : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? BoundaryValue : Values[index + CountXY];
 
-                    //z
-                    if(k == 0)
-                        gz = (Values[index + CountXY] - BoundaryValue) * dy;
-                    else if(k == CountZ-1)
-                        gz = (BoundaryValue - Values[index - CountXY]) * dy;
-                    else
-                        gz = (Values[index + CountXY] - Values[index - CountXY]) * dy;
-
-                    result[index] = new Vec3d(gx, gy, gz);
+                    result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
                 }
             });
         }
@@ -785,34 +724,16 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    double value = Values[index];
-                    double gx, gy, gz;
+                    double tx0 = (i == 0) ? Values[index] : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        gx = (Values[index + 1] - value) * dx;
-                    else if (i == CountX - 1)
-                        gx = (value - Values[index - 1]) * dx;
-                    else
-                        gx = (Values[index + 1] - Values[index - 1]) * dx;
+                    double ty0 = (j == 0) ? Values[index] : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        gy = (Values[index + CountX] - value) * dy;
-                    else if (j == CountY - 1)
-                        gy = (value - Values[index - CountX]) * dy;
-                    else
-                        gy = (Values[index + CountX] - Values[index - CountX]) * dy;
+                    double tz0 = (k == 0) ? Values[index] : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? Values[index] : Values[index + CountXY];
 
-                    //z
-                    if (k == 0)
-                        gz = (Values[index + CountXY] - value) * dy;
-                    else if (k == CountZ - 1)
-                        gz = (value - Values[index - CountXY]) * dy;
-                    else
-                        gz = (Values[index + CountXY] - Values[index - CountXY]) * dy;
-
-                    result[index] = new Vec3d(gx, gy, gz);
+                    result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
                 }
             });
         }
@@ -837,33 +758,16 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    double gx, gy, gz;
+                    double tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        gx = (Values[index + 1] - Values[index - 1 + CountX]) * dx;
-                    else if (i == CountX - 1)
-                        gx = (Values[index + 1 - CountX] - Values[index - 1]) * dx;
-                    else
-                        gx = (Values[index + 1] - Values[index - 1]) * dx;
+                    double ty0 = (j == 0) ? Values[index - CountX + CountXY] : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? Values[index + CountX - CountXY] : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        gy = (Values[index + CountX] - Values[index - CountX + CountXY]) * dy;
-                    else if (j == CountY - 1)
-                        gy = (Values[index + CountX - CountXY] - Values[index - CountX]) * dy;
-                    else
-                        gy = (Values[index + CountX] - Values[index - CountX]) * dy;
+                    double tz0 = (k == 0) ? Values[index - CountXY + Count] : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? Values[index + CountXY - Count] : Values[index + CountXY];
 
-                    //z
-                    if (k == 0)
-                        gz = (Values[index + CountXY] - Values[index - CountXY + Count]) * dy;
-                    else if (k == CountZ - 1)
-                        gz = (Values[index + CountXY - Count] - Values[index - CountXY]) * dy;
-                    else
-                        gz = (Values[index + CountXY] - Values[index - CountXY]) * dy;
-
-                    result[index] = new Vec3d(gx, gy, gz);
+                    result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
                 }
             });
         }

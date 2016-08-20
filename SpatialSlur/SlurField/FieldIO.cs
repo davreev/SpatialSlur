@@ -216,5 +216,16 @@ namespace SpatialSlur.SlurField
             if (bytesPerPixel < 4)
                 throw new NotSupportedException("The pixel format of the given bitmap is not supported.");
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        public static void WriteFGA(Field3d<Vec3d> field)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
     }
 }
