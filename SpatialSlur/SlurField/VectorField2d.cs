@@ -232,26 +232,14 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    Vec2d value = Values[index];
-                    Vec2d sum = new Vec2d();
+                    Vec2d tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
 
-                    // x
-                    if (i == 0)
-                        sum += (BoundaryValue + Values[index + 1] - 2.0 * value) * dx;
-                    else if (i == CountX - 1)
-                        sum += (Values[index - 1] + BoundaryValue - 2.0 * value) * dx;
-                    else
-                        sum += (Values[index - 1] + Values[index + 1] - 2.0 * value) * dx;
+                    Vec2d ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
 
-                    // y
-                    if (j == 0)
-                        sum += (BoundaryValue + Values[index + CountX] - 2.0 * value) * dy;
-                    else if (j == CountY - 1)
-                        sum += (Values[index - CountX] + BoundaryValue - 2.0 * value) * dy;
-                    else
-                        sum += (Values[index - CountX] + Values[index + CountX] - 2.0 * value) * dy;
-
-                    result[index] = sum;
+                    Vec2d t = Values[index] * 2.0;
+                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
                 }
             });
         }
@@ -274,26 +262,14 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    Vec2d value = Values[index];
-                    Vec2d sum = new Vec2d();
+                    Vec2d tx0 = (i == 0) ? Values[index] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
 
-                    // x
-                    if (i == 0)
-                        sum += (Values[index + 1] - value) * dx;
-                    else if (i == CountX - 1)
-                        sum += (Values[index - 1] - value) * dx;
-                    else
-                        sum += (Values[index - 1] + Values[index + 1] - 2.0 * value) * dx;
+                    Vec2d ty0 = (j == 0) ? Values[index] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
 
-                    // y
-                    if (j == 0)
-                        sum += (Values[index + CountX] - value) * dy;
-                    else if (j == CountY - 1)
-                        sum += (Values[index - CountX] - value) * dy;
-                    else
-                        sum += (Values[index - CountX] + Values[index + CountX] - 2.0 * value) * dy;
-
-                    result[index] = sum;
+                    Vec2d t = Values[index] * 2.0;
+                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
                 }
             });
         }
@@ -316,26 +292,14 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    Vec2d value = Values[index];
-                    Vec2d sum = new Vec2d();
+                    Vec2d tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
 
-                    // x
-                    if (i == 0)
-                        sum += (Values[index - 1 + CountX] + Values[index + 1] - 2.0 * value) * dx;
-                    else if (i == CountX - 1)
-                        sum += (Values[index - 1] + Values[index + 1 - CountX] - 2.0 * value) * dx;
-                    else
-                        sum += (Values[index - 1] + Values[index + 1] - 2.0 * value) * dx;
+                    Vec2d ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
 
-                    // y
-                    if (j == 0)
-                        sum += (Values[index - CountX + Count] + Values[index + CountX] - 2.0 * value) * dy;
-                    else if (j == CountY - 1)
-                        sum += (Values[index - CountX] + Values[index + CountX - Count] - 2.0 * value) * dy;
-                    else
-                        sum += (Values[index - CountX] + Values[index + CountX] - 2.0 * value) * dy;
-
-                    result[index] = sum;
+                    Vec2d t = Values[index] * 2.0;
+                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
                 }
             });
         }
@@ -390,25 +354,13 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    double sum = 0.0;
+                    Vec2d tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        sum += (Values[index + 1].x - BoundaryValue.x) * dx;
-                    else if (i == CountX - 1)
-                        sum += (BoundaryValue.x - Values[index - 1].x) * dx;
-                    else
-                       sum += (Values[index + 1].x - Values[index - 1].x) * dx;
+                    Vec2d ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        sum += (Values[index + CountX].y - BoundaryValue.y) * dy;
-                    else if (j == CountY - 1)
-                        sum += (BoundaryValue.y - Values[index - CountX].y) * dy;
-                    else
-                        sum += (Values[index + CountX].y - Values[index - CountX].y) * dy;
-
-                    result[index] = sum;
+                    result[index] = (tx1.x - tx0.x) * dx + (ty1.y - ty0.y) * dy; 
                 }
             });
         }
@@ -431,26 +383,13 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    Vec2d value = Values[index];
-                    double sum = 0.0;
+                    Vec2d tx0 = (i == 0) ? Values[index] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        sum += (Values[index + 1].x - value.x) * dx;
-                    else if (i == CountX - 1)
-                        sum += (value.x - Values[index - 1].x) * dx;
-                    else
-                        sum += (Values[index + 1].x - Values[index - 1].x) * dx;
+                    Vec2d ty0 = (j == 0) ? Values[index] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        sum += (Values[index + CountX].y - value.y) * dy;
-                    else if (j == CountY - 1)
-                        sum += (value.y - Values[index - CountX].y) * dy;
-                    else
-                        sum += (Values[index + CountX].y - Values[index - CountX].y) * dy;
-
-                    result[index] = sum;
+                    result[index] = (tx1.x - tx0.x) * dx + (ty1.y - ty0.y) * dy; 
                 }
             });
         }
@@ -473,25 +412,13 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    double sum = 0.0;
+                    Vec2d tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        sum += (Values[index + 1].x - Values[index - 1 + CountX].x) * dx;
-                    else if (i == CountX - 1)
-                        sum += (Values[index + 1 - CountX].x - Values[index - 1].x) * dx;
-                    else
-                       sum += (Values[index + 1].x - Values[index - 1].x) * dx;
+                    Vec2d ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        sum += (Values[index + CountX].y - Values[index - CountX + Count].y) * dy;
-                    else if (j == CountY - 1)
-                        sum += (Values[index + CountX - Count].y - Values[index - CountX].y) * dy;
-                    else
-                        sum += (Values[index + CountX].y - Values[index - CountX].y) * dy;
-
-                    result[index] = sum;
+                    result[index] = (tx1.x - tx0.x) * dx + (ty1.y - ty0.y) * dy; 
                 }
             });
         }
@@ -546,25 +473,13 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    double dp, dq;
+                    Vec2d tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        dp = Values[index + 1].x - BoundaryValue.x;
-                    else if (i == CountX - 1)
-                        dp = BoundaryValue.x - Values[index - 1].x;
-                    else
-                        dp = Values[index + 1].x - Values[index - 1].x;
+                    Vec2d ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        dq = Values[index + CountX].y - BoundaryValue.y;
-                    else if (j == CountY - 1)
-                        dq = BoundaryValue.y - Values[index - CountX].y;
-                    else
-                        dq = Values[index + CountX].y - Values[index - CountX].y;
-
-                    result[index] = dq * dx - dp * dy;
+                    result[index] = (tx1.y - tx0.y) * dx - (ty1.x - ty0.x) * dy;
                 }
             });
         }
@@ -587,26 +502,13 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    Vec2d value = Values[i];
-                    double dp, dq;
+                    Vec2d tx0 = (i == 0) ? Values[index] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        dp = Values[index + 1].x - value.x;
-                    else if (i == CountX - 1)
-                        dp = value.x - Values[index - 1].x;
-                    else
-                        dp = Values[index + 1].x - Values[index - 1].x;
+                    Vec2d ty0 = (j == 0) ? Values[index] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        dq = Values[index + CountX].y - value.y;
-                    else if (j == CountY - 1)
-                        dq = value.y - Values[index - CountX].y;
-                    else
-                        dq = Values[index + CountX].y - Values[index - CountX].y;
-
-                    result[index] = dq * dx - dp * dy;
+                    result[index] = (tx1.y - tx0.y) * dx - (ty1.x - ty0.x) * dy;
                 }
             });
         }
@@ -629,25 +531,13 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
 
-                    double dp, dq;
+                    Vec2d tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
 
-                    //x
-                    if (i == 0)
-                        dp = Values[index + 1].x - Values[index - 1 + CountX].x;
-                    else if (i == CountX - 1)
-                        dp = Values[index + 1 - CountX].x - Values[index - 1].x;
-                    else
-                        dp = Values[index + 1].x - Values[index - 1].x;
+                    Vec2d ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
 
-                    //y
-                    if (j == 0)
-                        dq = Values[index + CountX].y - Values[index - CountX + Count].y;
-                    else if (j == CountY - 1)
-                        dq = Values[index + CountX - Count].y - Values[index - CountX].y;
-                    else
-                        dq = Values[index + CountX].y - Values[index - CountX].y;
-
-                    result[index] = dq * dx - dp * dy;
+                    result[index] = (tx1.y - tx0.y) * dx - (ty1.x - ty0.x) * dy;
                 }
             });
         }
