@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurGraph
     public abstract class GraphElement
     {
         private int _index = -1;
-        private int _tag;
+        private int _tag; // tag for topological searches, validation etc.
 
 
         /// <summary>

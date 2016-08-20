@@ -81,10 +81,10 @@ namespace SpatialSlur.SlurGraph
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <returns></returns>
-        public static double[] GetNodeDepths(this DiNodeList nodes, IEnumerable<DiNode> sources, IList<double> edgeLengths)
+        public static double[] GetNodeDistances(this DiNodeList nodes, IEnumerable<DiNode> sources, IList<double> edgeLengths)
         {
             double[] result = new double[nodes.Count];
-            nodes.UpdateNodeDepths(sources, edgeLengths, result);
+            nodes.UpdateNodeDistances(sources, edgeLengths, result);
             return result;
         }
 
@@ -96,7 +96,7 @@ namespace SpatialSlur.SlurGraph
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDepths(this DiNodeList nodes, IEnumerable<DiNode> sources, IList<double> edgeLengths, IList<double> result)
+        public static void UpdateNodeDistances(this DiNodeList nodes, IEnumerable<DiNode> sources, IList<double> edgeLengths, IList<double> result)
         {
             // TODO switch to pq implementation
 
