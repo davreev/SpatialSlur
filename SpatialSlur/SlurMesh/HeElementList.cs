@@ -212,6 +212,24 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="keys"></param>
+        public void Reorder<U>(U[] keys)
+        {
+            SizeCheck(keys);
+
+            // sort by keys
+            Array.Sort(keys, _list, 0, _n);
+
+            // reindex
+            for (int i = 0; i < _n; i++)
+                _list[i].Index = i;
+        }
+
+
         /// Returns true if the given element belongs to this list.
         public bool Owns(T element)
         {
@@ -240,6 +258,5 @@ namespace SpatialSlur.SlurMesh
             if (attributes.Count != _n)
                 throw new ArgumentException("The number of attributes provided must match the number of elements in the mesh.");
         }
-
     }
 }

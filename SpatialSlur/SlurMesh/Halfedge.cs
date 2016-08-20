@@ -162,7 +162,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public Vec3d Span
         {
-            get { return _start.VectorTo(_twin._start); }
+            get { return _twin._start.Position - _start.Position; }
         }
 
 

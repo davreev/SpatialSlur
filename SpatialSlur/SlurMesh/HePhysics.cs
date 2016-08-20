@@ -736,7 +736,7 @@ namespace SpatialSlur.SlurMesh
                 double rest = vertexRadii[v0.Index] + vertexRadii[v1.Index];
                 //if (mag > rest) continue; // for compression only
 
-                Vec3d frc = v0.VectorTo(v1);
+                Vec3d frc = v1.Position - v0.Position;
                 frc *= (mag - rest) * strength / mag;
                 forceSums[v0.Index] += frc;
                 forceSums[v1.Index] -= frc;
@@ -780,7 +780,7 @@ namespace SpatialSlur.SlurMesh
                     HeVertex v0 = he.Start;
                     HeVertex v1 = he.End;
 
-                    Vec3d frc = v0.VectorTo(v1);
+                    Vec3d frc = v1.Position - v0.Position;
                     double mag = edgeLengths[he.Index >> 1];
 
                     frc *= (mag - mean) * strength / mag;
@@ -825,7 +825,7 @@ namespace SpatialSlur.SlurMesh
                     HeVertex v0 = he.Start;
                     HeVertex v1 = he.End;
 
-                    Vec3d frc = v0.VectorTo(v1);
+                    Vec3d frc = v1.Position - v0.Position;
                     double mag = edgeLengths[he.Index >> 1];
 
                     frc *= (mag - mean) * strength / mag;
@@ -954,11 +954,16 @@ namespace SpatialSlur.SlurMesh
                 var v2 = he0.Previous.Start;
                 var v3 = he1.Previous.Start;
 
-                Vec3d d01 = v0.VectorTo(v1);
-                Vec3d d02 = v0.VectorTo(v2);
-                Vec3d d03 = v0.VectorTo(v3);
-                Vec3d d21 = v2.VectorTo(v1);
-                Vec3d d31 = v3.VectorTo(v1);
+                Vec3d p0 = v0.Position;
+                Vec3d p1 = v1.Position;
+                Vec3d p2 = v2.Position;
+                Vec3d p3 = v3.Position;
+
+                Vec3d d01 = p1 - p0;
+                Vec3d d02 = p2 - p0;
+                Vec3d d03 = p3 - p0;
+                Vec3d d21 = p1 - p2;
+                Vec3d d31 = p1 - p3;
 
                 // get heights
                 double h0 = Vec3d.Perp(d02, d01).Length;

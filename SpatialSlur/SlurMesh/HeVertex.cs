@@ -149,17 +149,6 @@ namespace SpatialSlur.SlurMesh
 
      
         /// <summary>
-        /// Returns a vector spanning from this vertex to another.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public Vec3d VectorTo(HeVertex other)
-        {
-            return other._position - _position;
-        }
-
-
-        /// <summary>
         /// Iterates over all connected vertices.
         /// </summary>
         public IEnumerable<HeVertex> ConnectedVertices

@@ -77,7 +77,7 @@ namespace SpatialSlur.SlurMesh
                 // vertex must be unused or on the mesh boundary
                 if (!(v.IsUnused || v.IsBoundary)) return null;
 
-                // prevents creation of faces non-manifold faces (those which use the same vertex more than once)
+                // prevents creation of non-manifold faces (those which use the same vertex more than once)
                 if (v.Tag == currTag) return null;
                 v.Tag = currTag;
 
@@ -134,7 +134,7 @@ namespace SpatialSlur.SlurMesh
                 // vertex must be unused or on the mesh boundary
                 if (!(v.IsUnused || v.IsBoundary)) return null;
 
-                // prevents creation of faces non-manifold faces (those which use the same vertex more than once)
+                // prevents creation of non-manifold faces (those which use the same vertex more than once)
                 if (v.Tag == currTag) return null;
                 v.Tag = currTag;
             }
@@ -161,15 +161,21 @@ namespace SpatialSlur.SlurMesh
 
                 HeVertex v = vertices[i];
                 if (v.IsUnused) continue;
+
                 Halfedge he = v.FindHalfedgeTo(vertices[j]); // search for an existing halfedge between consecutive vertices
+                if (he == null) continue;
+
+                if (he.Face != null) return null; // the found halfedge can't already have a face
+                faceLoop[i] = he;
      
-                // if halfedge does exist, it can't have a face
+                /*
                 if (he == null)
                     continue;
                 else if (he.Face == null) 
                     faceLoop[i] = he; 
                 else 
                     return null;
+                 */
             }
 
             /*
@@ -623,6 +629,7 @@ namespace SpatialSlur.SlurMesh
                 do
                 {
                     // add left and right neighbours to stack
+                    // TODO only add if not yet visited and @ irregular vertex or boundary
                     stack.Push(he1.Previous.Twin.Previous);
                     stack.Push(he1.Next.Twin.Next);
 
@@ -692,17 +699,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Orients each quad such that the first halfedge has the shortest diagonal.
-        /// This is intended for use on quad meshes.
+        /// Orients each face such that the first halfedge returns the minimum value for the given function.
         /// </summary>
         /// <param name="parallel"></param>
-        public void OrientQuadsToShortestDiagonal(bool parallel = false)
+        public void OrientToMin(Func<Halfedge,double> selector, bool parallel = false)
         {
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), range => 
-                    OrientQuadsToShortestDiagonal(range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    OrientToMin(selector, range.Item1, range.Item2));
             else
-                OrientQuadsToShortestDiagonal(0, Count);
+                OrientToMin(selector, 0, Count);
         }
 
 
@@ -711,7 +717,39 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="i0"></param>
         /// <param name="i1"></param>
-        private void OrientQuadsToShortestDiagonal(int i0, int i1)
+        private void OrientToMin(Func<Halfedge, double> selector, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                HeFace f = this[i];
+                if (f.IsUnused) continue;
+
+                f.First = f.Halfedges.SelectMin(selector);
+            }
+        }
+
+
+        /// <summary>
+        /// Orients each quad such that the first halfedge has the shortest diagonal.
+        /// This is intended for use on quad meshes.
+        /// </summary>
+        /// <param name="parallel"></param>
+        public void OrientQuadsToMinDiagonal(bool parallel = false)
+        {
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    OrientQuadsToMinDiagonal(range.Item1, range.Item2));
+            else
+                OrientQuadsToMinDiagonal(0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        private void OrientQuadsToMinDiagonal(int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {

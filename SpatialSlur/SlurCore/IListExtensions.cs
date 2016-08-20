@@ -302,6 +302,7 @@ namespace SpatialSlur.SlurCore
         /// Equivalent of List.FindIndex for IList.
         /// </summary>
         /// <param name="list"></param>
+        /// <param name="from"></param>
         /// <param name="match"></param>
         /// <returns></returns>
         public static int FindIndex<T>(this IList<T> list, int from, Predicate<T> match)
@@ -324,7 +325,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="list"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static T QuickSelect<T, U>(this IList<T> list, int n) where T : IComparable<T>
+        public static T QuickSelect<T, U>(this IList<T> list, int n) 
+            where T : IComparable<T>
         {
             return list.QuickSelect(n, 0, list.Count - 1, (x, y) => x.CompareTo(y));
         }
@@ -340,7 +342,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        public static T QuickSelect<T, U>(this IList<T> list, int n, int from, int to) where T : IComparable<T>
+        public static T QuickSelect<T, U>(this IList<T> list, int n, int from, int to) 
+            where T : IComparable<T>
         {
             return list.QuickSelect(n, from, to, (x, y) => x.CompareTo(y));
         }
@@ -456,7 +459,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="n"></param>
         /// <param name="items"></param>
         /// <returns></returns>
-        public static T QuickSelect<T, U>(this IList<T> list, int n, IList<U> items) where T : IComparable<T>
+        public static T QuickSelect<T, U>(this IList<T> list, int n, IList<U> items) 
+            where T : IComparable<T>
         {
             return list.QuickSelect(n, 0, list.Count - 1, (x, y) => x.CompareTo(y), items);
         }
@@ -473,7 +477,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="to"></param>
         /// <param name="items"></param>
         /// <returns></returns>
-        public static T QuickSelect<T, U>(this IList<T> list, int n, int from, int to, IList<U> items) where T : IComparable<T>
+        public static T QuickSelect<T, U>(this IList<T> list, int n, int from, int to, IList<U> items) 
+            where T : IComparable<T>
         {
            return list.QuickSelect(n, from, to, (x, y) => x.CompareTo(y), items);
         }
@@ -557,7 +562,9 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        //
+        /// <summary>
+        /// 
+        /// </summary>
         private static int Partition<T, U>(this IList<T> list, int from, int to, Comparison<T> compare, IList<U> items)
         {
             T pivot = list[from]; // get pivot element

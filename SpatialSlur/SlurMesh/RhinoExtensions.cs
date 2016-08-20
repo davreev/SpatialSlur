@@ -55,6 +55,48 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
+       /// <summary>
+       /// Returns the circumcircle of a triangular face.
+       /// Assumes face is triangular.
+       /// http://mathworld.wolfram.com/Incenter.html
+       /// </summary>
+       /// <returns></returns>
+       public static Circle GetCircumcircle(this HeFace face)
+       {
+           // TODO
+       }
+       */
+
+
+        /*
+        /// <summary>
+        /// Returns the circumcircle of a triangular face.
+        /// Assumes face is triangular.
+        /// http://mathworld.wolfram.com/Incenter.html
+        /// </summary>
+        /// <returns></returns>
+        public static Circle GetIncircle(this HeFace face)
+        {
+            // TODO
+            Vec3d p0 = _first.Previous.Start.Position;
+            Vec3d p1 = _first.Start.Position;
+            Vec3d p2 = _first.Next.Start.Position;
+
+            double d01 = p0.DistanceTo(p1);
+            double d12 = p1.DistanceTo(p2);
+            double d20 = p2.DistanceTo(p0);
+
+            double p = (d01 + d12 + d20) * 0.5; // semiperimeter
+            double pInv = 1.0 / p; // inverse semiperimeter
+            radius = Math.Sqrt(p * (p - d01) * (p - d12) * (p - d20)) * pInv; // triangle area (Heron's formula) / semiperimeter
+
+            pInv *= 0.5; // inverse perimeter
+            return p0 * (d12 * pInv) + p1 * (d20 * pInv) + p2 * (d01 * pInv);
+        }
+        */
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -293,32 +335,43 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public static Mesh ToRhinoMesh(this HeMesh mesh)
         {
-            // TODO support different triangulation schemes for n-gons.
             Mesh result = new Mesh();
+            var verts = result.Vertices;
+            var faces = result.Faces;
 
             // add vertices
             foreach (HeVertex v in mesh.Vertices)
-                result.Vertices.Add(v.Position.ToPoint3d());
+                verts.Add(v.Position.ToPoint3d());
 
             // add faces
             foreach (HeFace f in mesh.Faces)
             {
-                if (f.IsUnused) continue;
+                if (f.IsUnused)
+                {
+                    faces.AddFace(new MeshFace()); // add placeholder for unused faces
+                    continue;
+                }
+
                 int ne = f.Degree;
 
                 if (ne == 3)
                 {
                     Halfedge he = f.First;
-                    result.Faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Previous.Start.Index);
+                    faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Previous.Start.Index);
                 }
                 else if (ne == 4)
                 {
                     Halfedge he = f.First;
-                    result.Faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Next.Next.Start.Index, he.Previous.Start.Index);
+                    faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Next.Next.Start.Index, he.Previous.Start.Index);
                 }
                 else
                 {
-                    // TODO triangulate face
+                    // TODO support different triangulation schemes for n-gons
+                    int last = verts.Count;
+                    verts.Add(f.GetBarycenter().ToPoint3d());
+
+                    foreach (Halfedge he in f.Halfedges)
+                        faces.AddFace(he.Start.Index, he.End.Index, last);
                 }
             }
 
@@ -333,19 +386,25 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public static Mesh ToRhinoMeshUnwelded(this HeMesh mesh)
         {
-            // TODO support different triangulation schemes for n-gons.
             Mesh result = new Mesh();
+            var verts = result.Vertices;
+            var faces = result.Faces;
 
             // add vertices per face
             foreach (HeFace f in mesh.Faces)
             {
-                if (f.IsUnused) continue;
+                if (f.IsUnused)
+                {
+                    faces.AddFace(new MeshFace()); // add placeholder for unused faces
+                    continue;
+                }
+
                 int ne = 0;
 
                 // add face vertices
                 foreach(HeVertex v in f.Vertices)
                 {
-                    result.Vertices.Add(v.Position.ToPoint3d());
+                    verts.Add(v.Position.ToPoint3d());
                     ne++;
                 }
 
@@ -353,16 +412,25 @@ namespace SpatialSlur.SlurMesh
                 if (ne == 3)
                 {
                     int n = result.Vertices.Count;
-                    result.Faces.AddFace(n - 3, n - 2, n - 1);
+                    faces.AddFace(n - 3, n - 2, n - 1);
                 }
                 else if (ne == 4)
                 {
                     int n = result.Vertices.Count;
-                    result.Faces.AddFace(n - 4, n - 3, n - 2, n - 1);
+                    faces.AddFace(n - 4, n - 3, n - 2, n - 1);
                 }
                 else
                 {
-                    // TODO triangulate face
+                    // TODO support different triangulation schemes for n-gons.
+                    int last = verts.Count;
+                    verts.Add(f.GetBarycenter().ToPoint3d());
+
+                    int offset = last - ne;
+                    for (int i = 0; i < ne; i++)
+                    {
+                        int j = (i + 1) % ne;
+                        faces.AddFace(offset + i, offset + j, last);
+                    }
                 }
             }
 

@@ -349,7 +349,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes 0 and 1 for t0 and t1 respectively
+        /// Assumes 0 and 1 for t0 and t1 respectively.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>

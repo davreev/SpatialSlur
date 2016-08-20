@@ -308,5 +308,26 @@ namespace SpatialSlur.SlurMesh
             var next = _first.Next;
             return next.Start.Position + GeometryUtil.GetCurvatureVector(_first.Twin.Span, next.Span);
         }
+
+
+        /// <summary>
+        /// Returns the circumcenter of a triangular face.
+        /// Assumes face is triangular.
+        /// http://mathworld.wolfram.com/Incenter.html
+        /// </summary>
+        /// <returns></returns>
+        public Vec3d GetIncenter()
+        {
+            Vec3d p0 = _first.Previous.Start.Position;
+            Vec3d p1 = _first.Start.Position;
+            Vec3d p2 = _first.Next.Start.Position;
+
+            double d01 = p0.DistanceTo(p1);
+            double d12 = p1.DistanceTo(p2);
+            double d20 = p2.DistanceTo(p0);
+            double pInv = 1.0 / (d01 + d12 + d20); // inverse perimeter
+
+            return p0 * (d12 * pInv) + p1 * (d20 * pInv) + p2 * (d01 * pInv);
+        }
     }
 }

@@ -87,7 +87,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// returns a random 3d vector with a 0.0 to 1.0 range in each dimension
+        /// returns a random vector with a 0.0 to 1.0 range in each dimension.
         /// </summary>
         /// <param name="random"></param>
         public static Vec3d NextVec3d(this Random random)
@@ -97,7 +97,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a random 2d vector which has components within the given domain
+        /// Returns a random vector which has components within the given domain.
         /// </summary>
         /// <param name="random"></param>
         /// <param name="domain"></param>
@@ -109,7 +109,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a random 2d vector which has components within the given domain
+        /// Returns a random vector which has components within the given domain.
         /// </summary>
         /// <param name="random"></param>
         /// <param name="domain"></param>
@@ -121,7 +121,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a random 3d vector with a -1.0 to 1.0 range in each dimension
+        /// Returns a random vector with a -1.0 to 1.0 range in each dimension.
         /// </summary>
         /// <param name="random"></param>
         public static Vec3d NextVec3d2(this Random random)
@@ -152,17 +152,15 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Removes elements from the list for which correspond with false values in the mask
+        /// Removes elements from the list for which correspond with false values in the mask.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
         /// <param name="include"></param>
         public static void Compact<T>(this List<T> list, IList<bool> include)
         {
-            if (list.Count != include.Count)
-                throw new ArgumentException("The size of the mask must match the size of the list.");
-
             int marker = 0;
+
             for (int i = 0; i < list.Count; i++)
             {
                 T t = list[i];
@@ -196,6 +194,64 @@ namespace SpatialSlur.SlurCore
         {
             while (list.Count < list.Capacity)
                 list.Add(value);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="?"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        public static T SelectMin<T, U>(this IEnumerable<T> collection, Func<T, U> selector)
+            where U : IComparable<U>
+        {
+            T tMin = collection.ElementAt(0);
+            U uMin = selector(tMin);
+
+            foreach (T t in collection.Skip(1))
+            {
+                U u = selector(t);
+
+                if (u.CompareTo(uMin) < 0)
+                {
+                    tMin = t;
+                    uMin = u;
+                }
+            }
+
+            return tMin;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="?"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        public static T SelectMax<T, U>(this IEnumerable<T> collection, Func<T, U> selector)
+            where U : IComparable<U>
+        {
+            T tMax = collection.ElementAt(0);
+            U uMax = selector(tMax);
+
+            foreach (T t in collection.Skip(1))
+            {
+                U u = selector(t);
+
+                if (u.CompareTo(uMax) > 0)
+                {
+                    tMax = t;
+                    uMax = u;
+                }
+            }
+
+            return tMax;
         }
     }
 }

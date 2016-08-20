@@ -126,10 +126,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <returns></returns>
-        public static double[] GetVertexDepths(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeLengths)
+        public static double[] GetVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeLengths)
         {
             double[] result = new double[verts.Count];
-            verts.UpdateVertexDepths(sources, edgeLengths, result);
+            verts.UpdateVertexDistances(sources, edgeLengths, result);
             return result;
         }
 
@@ -141,7 +141,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
-        public static void UpdateVertexDepths(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeLengths, IList<double> result)
+        public static void UpdateVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeLengths, IList<double> result)
         {
             // TODO switch to pq implementation
 
@@ -502,6 +502,8 @@ namespace SpatialSlur.SlurMesh
         /// Calculates mean curvature as half the length of the laplacian of vertex positions.
         /// </summary>
         /// <param name="verts"></param>
+        /// <param name="vertexLaplacians"></param>
+        /// <param name="parallel"></param>
         /// <returns></returns>
         public static double[] GetMeanCurvature(this HeVertexList verts, IList<Vec3d> vertexLaplacians, bool parallel = false)
         {
@@ -515,7 +517,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="verts"></param>
+        /// <param name="vertexLaplacians"></param>
         /// <param name="result"></param>
+        /// <param name="parallel"></param>
         public static void UpdateMeanCurvature(this HeVertexList verts, IList<Vec3d> vertexLaplacians, IList<double> result, bool parallel = false)
         {
             verts.SizeCheck(result);

@@ -385,6 +385,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="mesh"></param>
         /// <param name="values"></param>
         /// <param name="mapper"></param>
+        /// <param name="parallel"></param>
         public static void PaintByValue<T>(this Mesh mesh, IList<T> values, Func<T, Color> mapper, bool parallel = false)
         {
             if (mesh.Vertices.Count != values.Count)

@@ -52,6 +52,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Creates a pair of halfedges between the given vertices and add them to the list.
+        /// Returns the halfedge starting from v0.
         /// Note that the face, previous, and next references of the new halfedges are left unassigned.
         /// </summary>
         /// <param name="v0"></param>
@@ -238,7 +239,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Splits an edge by adding a new vertex in the middle. 
         /// Faces adjacent to the given edge are also split at the new vertex.
-        /// Returns the new edge outgoing from the new vertex or null on failure.
+        /// Returns the new halfedge outgoing from the new vertex or null on failure.
         /// Assumes triangle mesh.
         /// </summary>
         public Halfedge SplitEdgeFace(Halfedge halfedge)
@@ -475,6 +476,216 @@ namespace SpatialSlur.SlurMesh
             return e0;
         }
         */
+
+
+        /// <summary>
+        /// Returns the new boundary halfedge created at the detatch interface.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        public Halfedge DetatchEdge(Halfedge halfedge)
+        {
+            halfedge.UsedCheck();
+            OwnsCheck(halfedge);
+
+            // halfedge must be adjacent to 2 faces
+            if (halfedge.IsBoundary)
+                return null;
+
+            return DetatchEdgeImpl(halfedge);
+        }
+
+
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        internal Halfedge DetatchEdgeImpl(Halfedge halfedge)
+        {
+            var he0 = halfedge;
+            var he1 = he0.Twin;
+
+            int mask = 0;
+            if (he0.Start.IsBoundary) mask |= 1;
+            if (he1.Start.IsBoundary) mask |= 2;
+
+            switch (mask)
+            {
+                case 0:
+                    return DetatchEdgeInterior(he0);
+                case 1:
+                    return DetatchEdgeMixed(he1);
+                case 2:
+                    return DetatchEdgeMixed(he0);
+                case 3:
+                    return DetatchEdgeBoundary(he0);
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Neither vertex is on the mesh boundary
+        /// </summary>
+        /// <param name="halfedge"></param>
+        internal Halfedge DetatchEdgeInterior(Halfedge halfedge)
+        {
+            var he0 = halfedge;
+            var he1 = he0.Twin;
+
+            var v0 = he0.Start;
+            var v1 = he1.Start;
+
+            var he2 = AddPair(v1, v0);
+            var he3 = he2.Twin;
+
+            var f1 = he1.Face;
+
+            // update halfedge-face refs
+            he2.Face = f1;
+            he3.Face = null;
+            he1.Face = null;
+
+            //update face-halfedge ref if necessary
+            if (f1.First == he1)
+                f1.First = he2;
+
+            // update halfedge-halfedge refs @ v0
+            Halfedge.MakeConsecutive(he2, he1.Next);
+            Halfedge.MakeConsecutive(he1, he3);
+
+            // update halfedge-halfedge refs @ v1
+            Halfedge.MakeConsecutive(he1.Previous, he2);
+            Halfedge.MakeConsecutive(he3, he1);
+
+            // update vertex-halfedge refs
+            v0.First = he3;
+            v1.First = he1;
+
+            return he3;
+        }
+
+
+        /// <summary>
+        /// Both vertices are on the mesh boundary
+        /// </summary>
+        /// <param name="halfedge"></param>
+        internal Halfedge DetatchEdgeBoundary(Halfedge halfedge)
+        {
+            var verts = Mesh.Vertices;
+
+            var he0 = halfedge;
+            var he1 = he0.Twin;
+
+            var v0 = he0.Start;
+            var v1 = he1.Start;
+            var v2 = verts.Add(v0.Position);
+            var v3 = verts.Add(v1.Position);
+
+            var he2 = AddPair(v3, v2);
+            var he3 = he2.Twin;
+            var he4 = v0.First;
+            var he5 = v1.First;
+
+            var f1 = he1.Face;
+
+            // update halfedge-face refs
+            he2.Face = f1;
+            he3.Face = null;
+            he1.Face = null;
+
+            //update face-halfedge ref if necessary
+            if (f1.First == he1)
+                f1.First = he2;
+
+            // update halfedge-halfedge refs @ v0
+            Halfedge.MakeConsecutive(he2, he1.Next);
+            Halfedge.MakeConsecutive(he4.Previous, he3);
+            Halfedge.MakeConsecutive(he1, he4);
+       
+            // update halfedge-halfedge refs @ v1
+            Halfedge.MakeConsecutive(he1.Previous, he2);
+            Halfedge.MakeConsecutive(he5.Previous, he1);
+            Halfedge.MakeConsecutive(he3, he5);
+        
+            // update vertex-halfedge refs
+            v1.First = he1;
+            v2.First = he3;
+            v3.First = he5;
+
+            //update halfedge-vertex refs around each new vert
+            var he = he2;
+            do
+            {
+                he.Start = v3;
+                he = he.Twin.Next;
+            } while (he != he2);
+
+            he = he3;
+            do
+            {
+                he.Start = v2;
+                he = he.Twin.Next;
+            } while (he != he3);
+
+            return he3;
+        }
+
+
+        /// <summary>
+        /// Vertex at the end of the given halfedge is on the boundary.
+        /// </summary>
+        /// <param name="halfedge"></param>
+        internal Halfedge DetatchEdgeMixed(Halfedge halfedge)
+        {
+            var verts = Mesh.Vertices;
+
+            var he0 = halfedge;
+            var he1 = he0.Twin;
+
+            var v0 = he0.Start;
+            var v1 = he1.Start;
+            var v2 = verts.Add(v1.Position);
+
+            var he2 = AddPair(v2, v0);
+            var he3 = he2.Twin;
+            var he4 = v1.First;
+
+            var f1 = he1.Face;
+
+            // update halfedge-face refs
+            he2.Face = f1;
+            he3.Face = null;
+            he1.Face = null;
+
+            //update face-halfedge ref if necessary
+            if (f1.First == he1)
+                f1.First = he2;
+
+            // update halfedge-halfedge refs @ v0
+            Halfedge.MakeConsecutive(he2, he1.Next);
+            Halfedge.MakeConsecutive(he1.Previous, he2);
+
+            // update halfedge-halfedge refs @ v1
+            Halfedge.MakeConsecutive(he4.Previous, he1);
+            Halfedge.MakeConsecutive(he1, he3);
+            Halfedge.MakeConsecutive(he3, he4);
+
+            // update vertex-halfedge refs
+            v0.First = he3;
+            v1.First = he1;
+            v2.First = he4;
+          
+            //update halfedge-vertex refs around each new vert
+            var he = he2;
+            do
+            {
+                he.Start = v2;
+                he = he.Twin.Next;
+            } while (he != he2);
+
+            return he3;
+        }
 
         #endregion
 

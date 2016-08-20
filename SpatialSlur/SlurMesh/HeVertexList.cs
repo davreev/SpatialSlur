@@ -626,44 +626,6 @@ namespace SpatialSlur.SlurMesh
 
             return he2;
         }
-      
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="he0"></param>
-        /// <param name="he1"></param>
-        /// <returns></returns>
-        public bool DetatchVertex(Halfedge he0, Halfedge he1)
-        {
-            he0.UsedCheck();
-            he1.UsedCheck();
-
-            var hedges = Mesh.Halfedges;
-            hedges.OwnsCheck(he0);
-            hedges.OwnsCheck(he1);
-
-            if (he0 == he1) 
-                return false;
-
-            if (he0.Start != he1.Start)
-                return false;
-
-            return DetatchVertexImpl(he0, he1);
-        }
-
-
-        /// <summary>
-        /// Assumes the given elements are valid for the operation.
-        /// </summary>
-        /// <param name="he0"></param>
-        /// <param name="he1"></param>
-        /// <returns></returns>
-        internal bool DetatchVertexImpl(Halfedge he0, Halfedge he1)
-        {
-            //TODO
-            throw new NotImplementedException();
-        }
 
         #endregion
 

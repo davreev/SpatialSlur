@@ -172,10 +172,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <returns></returns>
-        public static double[] GetFaceDepths(this HeFaceList faces, IEnumerable<HeFace> sources, IList<double> edgeLengths)
+        public static double[] GetFaceDistances(this HeFaceList faces, IEnumerable<HeFace> sources, IList<double> edgeLengths)
         {
             double[] result = new double[faces.Count];
-            faces.UpdateFaceDepths(sources, edgeLengths, result);
+            faces.UpdateFaceDistances(sources, edgeLengths, result);
             return result;
         }
 
@@ -187,7 +187,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
-        public static void UpdateFaceDepths(this HeFaceList faces, IEnumerable<HeFace> sources, IList<double> edgeLengths, IList<double> result)
+        public static void UpdateFaceDistances(this HeFaceList faces, IEnumerable<HeFace> sources, IList<double> edgeLengths, IList<double> result)
         {
             // TODO switch to pq implementation
 
@@ -319,6 +319,118 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = faces[i];
                 if (f.IsUnused) continue;
                 result[i] = f.GetCircumcenter();
+            }
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// Assumes triangular faces.
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static Vec3d[] GetFaceIncenters(this HeFaceList faces, bool parallel = false)
+        {
+            Vec3d[] result = new Vec3d[faces.Count];
+            faces.UpdateFaceIncenters(result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void UpdateFaceIncenters(this HeFaceList faces, IList<Vec3d> result, bool parallel = false)
+        {
+            faces.SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
+                    UpdateFaceIncenters(faces, result, range.Item1, range.Item2));
+            else
+                UpdateFaceIncenters(faces, result, 0, faces.Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void UpdateFaceIncenters(this HeFaceList faces, IList<Vec3d> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                HeFace f = faces[i];
+                if (f.IsUnused) continue;
+                result[i] = f.GetIncenter();
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Assumes triangular faces.
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static Vec3d[] GetFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, bool parallel = false)
+        {
+            Vec3d[] result = new Vec3d[faces.Count];
+            faces.UpdateFaceIncenters(edgeLengths, result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void UpdateFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, IList<Vec3d> result, bool parallel = false)
+        {
+            faces.SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
+                    UpdateFaceIncenters(faces, edgeLengths, result, range.Item1, range.Item2));
+            else
+                UpdateFaceIncenters(faces, edgeLengths, result, 0, faces.Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void UpdateFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, IList<Vec3d> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                HeFace f = faces[i];
+                if (f.IsUnused) continue;
+
+                var he0 = f.First;
+                var he1 = he0.Next;
+                var he2 = he1.Next;
+
+                Vec3d p0 = he0.Start.Position;
+                Vec3d p1 = he1.Start.Position;
+                Vec3d p2 = he2.Start.Position;
+
+                double d01 = edgeLengths[he0.Index >> 1];
+                double d12 = edgeLengths[he1.Index >> 1]; 
+                double d20 = edgeLengths[he2.Index >> 1]; 
+                double pInv = 1.0 / (d01 + d12 + d20); // inverse perimeter
+
+                result[i] = p0 * (d12 * pInv) + p1 * (d20 * pInv) + p2 * (d01 * pInv);
             }
         }
 
