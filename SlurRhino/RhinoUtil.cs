@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
-using SpatialSlur.SlurGraph;
-using SpatialSlur.SlurMesh;
 using Rhino.Geometry;
 
+/*
+ * Notes
+ */
 
-namespace SpatialSlur.SlurCore
+namespace SpatialSlur.SlurRhino
 {
     /// <summary>
     /// General purpose static utility methods for use in Rhino.

@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Rhino.Geometry;
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurField;
+using Rhino.Geometry;
 
-namespace SpatialSlur.SlurField
+/*
+    Notes
+
+    TODO
+    Remove RhinoCommon dependency
+    Return batches of tri meshes as List<int>[] and List<Vec3d>[]
+*/
+
+namespace SpatialSlur.SlurRhino
 {
     /// <summary>
     /// 
@@ -558,7 +565,12 @@ namespace SpatialSlur.SlurField
         };
 
 
-        /*
+       /*
+
+       Note 
+       With Bourke's approach, the same edge is often interpolated multiple times within a given voxel.
+       The modified implementation above avoids this.
+
         // Bourke edge table
         private static readonly int[] _edgeTable =
         {
@@ -858,7 +870,7 @@ namespace SpatialSlur.SlurField
            new int[]{}
        };
        */
-      
+
         #endregion
 
 
@@ -907,7 +919,7 @@ namespace SpatialSlur.SlurField
         /// <param name="nz"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<double> values, Domain3d domain, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(double[] values, Domain3d domain, int nx, int ny, int nz, double thresh)
         {
             // get voxel dimensions
             double dx = domain.x.Span / (nx - 1);
@@ -935,7 +947,7 @@ namespace SpatialSlur.SlurField
         /// <param name="nz"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<double> values, IList<Vec3d> normals, Domain3d domain, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(double[] values, Vec3d[] normals, Domain3d domain, int nx, int ny, int nz, double thresh)
         {
             // get voxel dimensions
             double dx = domain.x.Span / (nx - 1);
@@ -954,39 +966,6 @@ namespace SpatialSlur.SlurField
 
         /// <summary>
         /// Returns an isosurface mesh at the given threshold.
-        /// Assumes cubic voxels of size 1.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate(IList<double> values, int nx, int ny, int nz, double thresh)
-        {
-            return Evaluate(values, 1.0, 1.0, 1.0, nx, ny, nz, thresh);
-        }
-
-
-        /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
-        /// Assumes cubic voxels of size 1.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="normals"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate(IList<double> values, IList<Vec3d> normals, int nx, int ny, int nz, double thresh)
-        {
-            return Evaluate(values, normals, 1.0, 1.0, 1.0, nx, ny, nz, thresh);
-        }
-
-
-        /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
         /// <param name="dx"></param>
@@ -997,11 +976,11 @@ namespace SpatialSlur.SlurField
         /// <param name="nz"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<double> values, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(double[] values, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
         {
             int nxy = nx * ny;
             int n = nxy * nz;
-
+        
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
             Vec3d[] cornerOffsets = GetCornerOffsets(dx, dy, dz);
@@ -1022,7 +1001,6 @@ namespace SpatialSlur.SlurField
                 // flatten loop for cleaner parallelization
                 for (int i = range.Item1; i < range.Item2; i++, i3.x++)
                 {
-                    // increment 3d index
                     if (i3.x == nx) { i3.x = 0; i3.y++; }
                     if (i3.y == ny) { i3.y = 0; i3.z++; }
                     if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
@@ -1040,7 +1018,7 @@ namespace SpatialSlur.SlurField
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
                     // set voxel corners
-                    Vec3d p0 = new Vec3d(i3.x * dx, i3.y * dy, i3.z * dz);
+                    Vec3d p0 = new Vec3d(dx * i3.x, dy * i3.y, dz * i3.z);
                     for (int j = 0; j < 8; j++)
                         voxelCorners[j] = p0 + cornerOffsets[j];
 
@@ -1060,101 +1038,6 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /*
-        /// <summary>
-        /// Alternative implementation
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        /// <param name="dz"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate2(IList<double> values, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
-        {
-            int nxy = nx * ny;
-            int n = nxy * nz;
-      
-            // resulting mesh
-            Mesh result = new Mesh();
-            Object locker = new Object();
-
-            // process voxels in chunks
-            Parallel.ForEach(Partitioner.Create(0, n - nxy), range =>
-            {
-                Vec3d[] voxelCorners = new Vec3d[8];
-                double[] voxelValues = new double[8];
-                Mesh chunk = new Mesh();
-                Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
-
-                // flatten loop for better parallelization
-                for (int index = range.Item1; index < range.Item2; index++, i3.x++)
-                {
-                    // increment 3d index
-                    if (i3.x == nx) { i3.x = 0; i3.y++; }
-                    if (i3.y == ny) { i3.y = 0; i3.z++; }
-                    if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
-
-                    // set voxel values
-                    voxelValues[0] = values[index];
-                    voxelValues[1] = values[index + 1];
-                    voxelValues[2] = values[index + 1 + nx];
-                    voxelValues[3] = values[index + nx];
-                    voxelValues[4] = values[index + nxy];
-                    voxelValues[5] = values[index + 1 + nxy];
-                    voxelValues[6] = values[index + 1 + nx + nxy];
-                    voxelValues[7] = values[index + nx + nxy];
-
-                    //get case index
-                    int caseIndex = 0;
-                    if (voxelValues[0] < thresh) caseIndex |= 1;
-                    if (voxelValues[1] < thresh) caseIndex |= 2;
-                    if (voxelValues[2] < thresh) caseIndex |= 4;
-                    if (voxelValues[3] < thresh) caseIndex |= 8;
-                    if (voxelValues[4] < thresh) caseIndex |= 16;
-                    if (voxelValues[5] < thresh) caseIndex |= 32;
-                    if (voxelValues[6] < thresh) caseIndex |= 64;
-                    if (voxelValues[7] < thresh) caseIndex |= 128;
-
-                    // if current voxel isn't on thresholdold move to the next
-                    if (caseIndex == 0 || caseIndex == 255) continue;
-
-                    // set voxel corners
-                    double x0 = i3.x * dx;
-                    double y0 = i3.y * dy;
-                    double z0 = i3.z * dz;
-                    double x1 = x0 + dx;
-                    double y1 = y0 + dy;
-                    double z1 = z0 + dz;
-                    voxelCorners[0].Set(x0, y0, z0);
-                    voxelCorners[1].Set(x1, y0, z0);
-                    voxelCorners[2].Set(x1, y1, z0);
-                    voxelCorners[3].Set(x0, y1, z0);
-                    voxelCorners[4].Set(x0, y0, z1);
-                    voxelCorners[5].Set(x1, y0, z1);
-                    voxelCorners[6].Set(x1, y1, z1);
-                    voxelCorners[7].Set(x0, y1, z1);
-
-                    // mesh the current voxel
-                    MeshVoxel(voxelCorners, voxelValues, caseIndex, thresh, chunk);
-                }
-
-                // append chunk
-                if (chunk.Vertices.Count > 0)
-                {
-                    lock (locker)
-                        result.Append(chunk);
-                }
-            });
-
-            return result;
-        }
-        */
-    
-
         /// <summary>
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
@@ -1168,7 +1051,7 @@ namespace SpatialSlur.SlurField
         /// <param name="nz"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<double> values, IList<Vec3d> normals, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(double[] values, Vec3d[] normals, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
         {
             int nxy = nx * ny;
             int n = nxy * nz;
@@ -1246,7 +1129,7 @@ namespace SpatialSlur.SlurField
         /// <param name="ny"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<IList<double>> values, Domain3d domain, int nx, int ny, double thresh)
+        public static Mesh Evaluate(IList<double[]> values, Domain3d domain, int nx, int ny, double thresh)
         {
             // get voxel dimensions
             double dx = domain.x.Span / (nx - 1);
@@ -1267,20 +1150,6 @@ namespace SpatialSlur.SlurField
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate(IList<IList<double>> values, int nx, int ny, double thresh)
-        {
-            return Evaluate(values, 1.0, 1.0, 1.0, nx, ny, thresh);
-        }
-
-
-        /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
-        /// </summary>
-        /// <param name="values"></param>
         /// <param name="dx"></param>
         /// <param name="dy"></param>
         /// <param name="dz"></param>
@@ -1288,9 +1157,9 @@ namespace SpatialSlur.SlurField
         /// <param name="ny"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<IList<double>> values, double dx, double dy, double dz, int nx, int ny, double thresh)
+        public static Mesh Evaluate(IList<double[]> values, double dx, double dy, double dz, int nx, int ny, double thresh)
         {
-            int nxy = nx * ny; // expected number of values per layer
+            int nxy = nx * ny; // number of values per layer
 
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
@@ -1322,16 +1191,15 @@ namespace SpatialSlur.SlurField
                             int caseIndex = 0;
                             for (int i = 0; i < 4; i++)
                             {
-                                double t = vals0[index + indexOffsets[i]];
-                                if (t < thresh) caseIndex |= (1 << i);
-                                voxelValues[i] = t;
-                            }
+                                int j = i + 4;
 
-                            for (int i = 4; i < 8; i++)
-                            {
-                                double t = vals1[index + indexOffsets[i - 4]];
-                                if (t < thresh) caseIndex |= (1 << i);
-                                voxelValues[i] = t;
+                                double t0 = vals0[index + indexOffsets[i]];
+                                if (t0 < thresh) caseIndex |= (1 << i);
+                                voxelValues[i] = t0;
+
+                                double t1 = vals1[index + indexOffsets[i]];
+                                if (t1 < thresh) caseIndex |= (1 << j);
+                                voxelValues[j] = t1;
                             }
 
                             // if current voxel isn't on thresholdold, move to the next
@@ -1370,7 +1238,7 @@ namespace SpatialSlur.SlurField
         /// <param name="nz"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<Vec3d> points, IList<double> values, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(Vec3d[] points, double[] values, int nx, int ny, int nz, double thresh)
         {
             int nxy = nx * ny;
             int n = nxy * nz;
@@ -1479,10 +1347,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="nx"></param>
-        /// <param name="nxy"></param>
-        /// <returns></returns>
         private static Vec3i ExpandIndex(int index, int nx, int nxy)
         {
             int k = index / nxy;

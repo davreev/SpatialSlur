@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurGraph;
 using Rhino.Geometry;
 
 /*
  * Notes
- * 
- */ 
+ */
 
-namespace SpatialSlur.SlurCore
+namespace SpatialSlur.SlurRhino
 {
     /// <summary>
     /// Static methods for creating SpatialSlur objects from Rhino objects.
