@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes
@@ -26,13 +22,16 @@ namespace SpatialSlur.SlurCore
         public static Color Lerp(IList<Color> colors, double t)
         {
             int last = colors.Count - 1;
-            t *= last;
-            int i = (int)Math.Floor(t);
 
-            if (i < 0) return colors[0];
-            else if (i >= last) return colors[last];
+            int i;
+            t = SlurMath.Fract(t * last, out i);
 
-            return colors[i].LerpTo(colors[i + 1], t - i);
+            if (i < 0)
+                return colors[0];
+            else if (i >= last)
+                return colors[last];
+
+            return colors[i].LerpTo(colors[i + 1], t);
         }
 
 
@@ -45,13 +44,16 @@ namespace SpatialSlur.SlurCore
         public static Vec3d Lerp(IList<Vec3d> colors, double t)
         {
             int last = colors.Count - 1;
-            t *= last;
-            int i = (int)Math.Floor(t);
 
-            if (i < 0) return colors[0];
-            else if (i >= last) return colors[last];
+            int i;
+            t = SlurMath.Fract(t * last, out i);
 
-            return Vec3d.Lerp(colors[i], colors[i + 1], t - i);
+            if (i < 0)
+                return colors[0];
+            else if (i >= last)
+                return colors[last];
+
+            return Vec3d.Lerp(colors[i], colors[i + 1], t);
         }
 
 

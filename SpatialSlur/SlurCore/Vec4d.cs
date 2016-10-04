@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 /*
  * Notes
  * 
- * TODO finish implementation
+ * TODO 
+ * Finish implementation
  */ 
 
 namespace SpatialSlur.SlurCore

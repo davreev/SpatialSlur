@@ -4,9 +4,12 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Rhino.Geometry;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
+
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurField
 {
@@ -26,48 +29,52 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="duplicateMesh"></param>
-        public MeshScalarField(MeshField other, bool duplicateMesh = false)
-            : base(other, duplicateMesh)
-        {
-        }
-
-
-        /// <summary>
         ///
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="duplicateMesh"></param>
-        public MeshScalarField(MeshScalarField other, bool duplicateMesh = false)
-            : base(other, duplicateMesh)
+        public MeshScalarField(MeshScalarField other)
+            : base(other)
         {
-        }
-
-
-        /// <summary>
-        /// Returns the interpolated value at a given point in the field
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public override double Evaluate(MeshPoint point)
-        {
-            MeshFace face = DisplayMesh.Faces[point.FaceIndex];
-            double result = 0.0;
-
-            int n = (face.IsQuad) ? 4 : 3;
-            for (int i = 0; i < n; i++)
-                result += Values[face[i]] * point.T[i];
-
-            return result;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="i2"></param>
+        /// <param name="w0"></param>
+        /// <param name="w1"></param>
+        /// <param name="w2"></param>
+        /// <returns></returns>
+        public override double Evaluate(int i0, int i1, int i2, double w0, double w1, double w2)
+        {
+            return Values[i0] * w0 + Values[i1] * w1 + Values[i2] * w2;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
+        /// <returns></returns>
+        public override double Evaluate(IList<int> indices, IList<double> weights)
+        {
+            double result = 0.0;
+
+            for (int i = 0; i < indices.Count; i++)
+                result += Values[indices[i]] * weights[i];
+
+            return result;
+        }
+   
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parallel"></param>
         public void Normalize(bool parallel = false)
         {
             Normalize(new Domain(Values), parallel);
@@ -77,6 +84,8 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="parallel"></param>
         public void Normalize(Domain domain, bool parallel = false)
         {
             if (parallel)
@@ -138,7 +147,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public MeshScalarField GetLaplacian(bool parallel = false)
         {
-            MeshScalarField result = new MeshScalarField((MeshField)this);
+            MeshScalarField result = new MeshScalarField(Mesh);
             Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
             return result;
         }
@@ -153,7 +162,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public MeshScalarField GetLaplacian(IList<double> halfedgeWeights, bool parallel = false)
         {
-            MeshScalarField result = new MeshScalarField((MeshField)this);
+            MeshScalarField result = new MeshScalarField(Mesh);
             Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
             return result;
         }
@@ -193,7 +202,7 @@ namespace SpatialSlur.SlurField
             // TODO conduct further research into vertex-based mesh vector fields
             // http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
             
-            MeshVectorField result = new MeshVectorField(this);
+            MeshVectorField result = new MeshVectorField(Mesh);
             UpdateGradient(result, parallel);
             return result;
         }
@@ -207,7 +216,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public MeshVectorField GetGradient(IList<double> halfedgeWeights, bool parallel = false)
         {
-            MeshVectorField result = new MeshVectorField(this);
+            MeshVectorField result = new MeshVectorField(Mesh);
             UpdateGradient(halfedgeWeights, result, parallel);
             return result;
         }

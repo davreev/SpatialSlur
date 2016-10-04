@@ -178,7 +178,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the halfedge starts at a degree 1 vertex.
         /// </summary>
-        internal bool IsFromDegree1
+        internal bool IsAtDegree1
         {
             get { return _twin == _prev; }
         }
@@ -187,7 +187,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the halfedge starts at a degree 2 vertex
         /// </summary>
-        public bool IsFromDegree2
+        public bool IsAtDegree2
         {
             get { return _twin._next == _prev._twin; }
         }
@@ -196,7 +196,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the halfedge starts at a degree 3 vertex.
         /// </summary>
-        public bool IsFromDegree3
+        public bool IsAtDegree3
         {
             get { return _twin._next._twin == _prev._twin._prev; }
         }
@@ -208,6 +208,15 @@ namespace SpatialSlur.SlurMesh
         internal bool IsInDegenerate
         {
             get { return _next == _prev; }
+        }
+
+
+        /// <summary>
+        /// Returns true if the halfegde has no adjacent face.
+        /// </summary>
+        public bool IsInHole
+        {
+            get { return _face == null; }
         }
 
 
@@ -232,7 +241,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns true if the halfedge is the first from its start vertex.
         /// </summary>
-        public bool IsFirstFromStart
+        public bool IsFirstAtStart
         {
             get { return this == _start.First; }
         }
@@ -248,18 +257,19 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Flags both the halfedge and its twin as unused.
         /// </summary>
         internal override void MakeUnused()
         {
             _start = null;
+            _twin._start = null;
         }
 
 
         /// <summary>
         /// Makes the halfedge the first outgoing from its start vertex.
         /// </summary>
-        internal void MakeFirstFromStart()
+        internal void MakeFirstAtStart()
         {
             _start.First = this;
         }
@@ -267,26 +277,84 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Makes the halfedge the first in its face.
+        /// Assumes halfedge has an adjacent face.
         /// </summary>
         public void MakeFirstInFace()
         {
-            if (_face != null) _face.First = this;
+            _face.First = this;
         }
 
 
         /// <summary>
-        /// Returns the first boundary halfedge encountered when circulating the start vertex.
-        /// Returns null if no boundary halfedge is found.
+        /// Returns the first faceless halfedge encountered when circulating forwards around the start vertex.
+        /// Returns null if no such halfedge is found.
         /// </summary>
         /// <returns></returns>
-        internal Halfedge FindBoundary()
+        internal Halfedge NextBoundaryAtStart()
         {
-            Halfedge he = this;
+            Halfedge he = this._twin._next;
 
             do
             {
-                if (he.Face == null) return he;
-                he = he.Twin.Next;
+                if (he._face == null) return he;
+                he = he._twin._next;
+            } while (he != this);
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Returns the first faceless halfedge encountered when circulating backwards around the start vertex.
+        /// Returns null if no such halfedge is found.
+        /// </summary>
+        /// <returns></returns>
+        internal Halfedge PrevBoundaryAtStart()
+        {
+            Halfedge he = this._prev._twin;
+
+            do
+            {
+                if (he._face == null) return he;
+                he = he._prev._twin;
+            } while (he != this);
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Returns the first boundary halfedge encountered when circulating forwards around the face.
+        /// Returns null if no such halfedge is found.
+        /// </summary>
+        /// <returns></returns>
+        public Halfedge NextBoundaryInFace()
+        {
+            Halfedge he = this._next;
+
+            do
+            {
+                if (he._twin._face == null) return he;
+                he = he._next;
+            } while (he != this);
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Returns the first boundary halfedge encountered when circulating backwards around the face.
+        /// Returns null if no such halfedge is found.
+        /// </summary>
+        /// <returns></returns>
+        public Halfedge PrevBoundaryInFace()
+        {
+            Halfedge he = this._prev;
+
+            do
+            {
+                if (he._twin._face == null) return he;
+                he = he._prev;
             } while (he != this);
 
             return null;
@@ -305,7 +373,7 @@ namespace SpatialSlur.SlurMesh
                 do
                 {
                     yield return he;
-                    he = he.Next;
+                    he = he._next;
                 } while (he != this);
             }
         }
@@ -323,7 +391,7 @@ namespace SpatialSlur.SlurMesh
                 do
                 {
                     yield return he;
-                    he = he.Twin.Next;
+                    he = he._twin._next;
                 } while (he != this);
             }
         }

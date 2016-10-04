@@ -40,7 +40,7 @@ namespace SpatialSlur.SlurGraph
             var edges = result._edges;
 
             // add nodes
-            nodes.AddMany(nodePositions.Count);
+            nodes.AddMultiple(nodePositions.Count);
 
             // add edges
             int mask = 0;
@@ -114,7 +114,7 @@ namespace SpatialSlur.SlurGraph
             var edges = result._edges;
    
             // add nodes
-            nodes.AddMany(verts.Count);
+            nodes.AddMultiple(verts.Count);
 
             // add edges
             for (int i = 0; i < hedges.Count; i += 2)
@@ -146,7 +146,7 @@ namespace SpatialSlur.SlurGraph
             var edges = result._edges;
 
             // add nodes
-            nodes.AddMany(faces.Count);
+            nodes.AddMultiple(faces.Count);
 
             // add edges
             for (int i = 0; i < hedges.Count; i+=2)

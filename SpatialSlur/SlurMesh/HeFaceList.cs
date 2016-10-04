@@ -62,29 +62,26 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeFace Add(IList<int> vertexIndices)
         {
-            int n = vertexIndices.Count;
-            if (n < 3) return null; // no degenerate faces allowed
+            int nv = vertexIndices.Count;
+            if (nv < 3) return null; // no degenerate faces allowed
 
-            HeVertex[] fv = new HeVertex[n];
+            HeVertex[] faceVerts = new HeVertex[nv];
             var verts = Mesh.Vertices;
             int currTag = verts.NextTag;
      
             // collect and validate vertices
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < nv; i++)
             {
                 var v = verts[vertexIndices[i]];
-
-                // vertex must be unused or on the mesh boundary
-                if (!(v.IsUnused || v.IsBoundary)) return null;
-
+           
                 // prevents creation of non-manifold faces (those which use the same vertex more than once)
                 if (v.Tag == currTag) return null;
                 v.Tag = currTag;
 
-                fv[i] = v;
+                faceVerts[i] = v;
             }
 
-            return AddImpl(fv);
+            return AddImpl(faceVerts);
         }
 
 
@@ -125,24 +122,21 @@ namespace SpatialSlur.SlurMesh
             if (vertices.Count < 3) return null; // no degenerate faces allowed
             var verts = Mesh.Vertices;
             int currTag = verts.NextTag;
-            
+
             // validate vertices
             foreach (HeVertex v in vertices)
             {
                 verts.OwnsCheck(v);
 
-                // vertex must be unused or on the mesh boundary
-                if (!(v.IsUnused || v.IsBoundary)) return null;
-
                 // prevents creation of non-manifold faces (those which use the same vertex more than once)
                 if (v.Tag == currTag) return null;
                 v.Tag = currTag;
             }
-         
+
             return AddImpl(vertices);
         }
-
   
+       
         /// <summary>
         /// Assumes the given elements are valid for the operation.
         /// http://pointclouds.org/blog/nvcs/martin/index.php
@@ -155,53 +149,48 @@ namespace SpatialSlur.SlurMesh
             Halfedge[] faceLoop = new Halfedge[n];
 
             // collect all existing halfedges in the new face
-            for (int i = 0, j = 1; i < n; i++, j++)
+            for (int i = 0; i < n; i++)
             {
-                if (j == n) j = 0; // wrap j
-
                 HeVertex v = vertices[i];
+
+                // the vertex must be unused or on the mesh boundary
                 if (v.IsUnused) continue;
+                else if (!v.IsBoundary) return null;
 
+                int j = (i == n - 1) ? 0 : i + 1;
                 Halfedge he = v.FindHalfedgeTo(vertices[j]); // search for an existing halfedge between consecutive vertices
-                if (he == null) continue;
 
-                if (he.Face != null) return null; // the found halfedge can't already have a face
+                // if a halfedge is found, it can't already have a face
+                if (he == null) continue;
+                else if (he.Face != null) return null;
+                
                 faceLoop[i] = he;
-     
-                /*
-                if (he == null)
-                    continue;
-                else if (he.Face == null) 
-                    faceLoop[i] = he; 
-                else 
-                    return null;
-                 */
             }
 
             /*
             // avoids creation of non-manifold vertices
             // if two consecutive new halfedges share a used vertex then that vertex will be non-manifold upon adding the face
-            for (int i = 0, j = 1; i < n; i++, j++)
+            for (int i = 0; i < n; i++)
             {
-                if (j == n) j = 0; // wrap j
+                int j = (i == n - 1) ? 0 : i + 1;
                 if (faceLoop[i] == null && faceLoop[j] == null && !vertices[j].IsUnused) 
                     return null;
             }
             */
-
+     
             HeFace newFace = new HeFace();
             Add(newFace); // add face to list
             var hedges = Mesh.Halfedges;
 
-            // create any missing halfedge pairs in the face loop and assign the new face
-            for (int i = 0, j = 1; i < n; i++, j++)
+            // create any missing halfedge pairs in the face loop
+            for (int i = 0; i < n; i++)
             {
-                if (j == n) j = 0; // wrap j
                 Halfedge he = faceLoop[i];
 
                 // if missing a halfedge, add a pair between consecutive vertices
                 if (he == null)
                 {
+                    int j = (i == n - 1) ? 0 : i + 1;
                     he = hedges.AddPair(vertices[i], vertices[j]);
                     faceLoop[i] = he;
                 }
@@ -210,9 +199,9 @@ namespace SpatialSlur.SlurMesh
             }
 
             // link consecutive halfedges
-            for (int i = 0, j = 1; i < n; i++, j++)
+            for (int i = 0; i < n; i++)
             {
-                if (j == n) j = 0; // wrap j
+                int j = (i == n - 1) ? 0 : i + 1;
                 Halfedge he0 = faceLoop[i];
                 Halfedge he1 = faceLoop[j];
 
@@ -242,7 +231,7 @@ namespace SpatialSlur.SlurMesh
                             // otherwise, update the first halfedge from v1 if necessary
                             if (he2 != he1)
                             {
-                                Halfedge he = he1.FindBoundary(); // find the next boundary halfedge around v1 (must exist if halfedges aren't consecutive)
+                                Halfedge he = he1.NextBoundaryAtStart(); // find the next boundary halfedge around v1 (must exist if halfedges aren't consecutive)
                                 v1.First = he;
 
                                 Halfedge.MakeConsecutive(he.Previous, he2);
@@ -251,7 +240,7 @@ namespace SpatialSlur.SlurMesh
                             }
                             else if (he1 == v1.First)
                             {
-                                Halfedge he = he1.FindBoundary(); // find the next boundary halfedge around v1
+                                Halfedge he = he1.NextBoundaryAtStart(); // find the next boundary halfedge around v1
                                 if (he != null) v1.First = he;
                             }
                             break;
@@ -293,7 +282,7 @@ namespace SpatialSlur.SlurMesh
                 }
             }
 
-            newFace.First = faceLoop[0]; // set first halfedge in face
+            newFace.First = faceLoop[0]; // set first halfedge in the new face
             return newFace;
         }
 
@@ -510,59 +499,12 @@ namespace SpatialSlur.SlurMesh
         */
 
 
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="direction"></param>
-        public void UnifyFaceOrientation(HeFace start, int direction)
-        {
-            start.UsedCheck();
-            OwnsCheck(start);
-
-            Stack<Halfedge> stack = new Stack<Halfedge>();
-            stack.Push((direction == 0)? start.First: start.First.Next);
-            UnifyFaceOrientation(stack, NextTag);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void UnifyFaceOrientation(Stack<Halfedge> stack, int currTag)
-        {
-            while (stack.Count > 0)
-            {
-                Halfedge he = stack.Pop();
-                HeFace f = he.Face;
-                if (f == null || f.Tag == currTag) continue; // skip boundary halfedges or those whose face has already been visited
-
-                // turn face and flag as visited
-                f.First = he;
-                f.Tag = currTag;
-
-                // add next halfedges to stack 
-                // give preference to one direction over to minimize discontinuities
-                stack.Push(he.Twin.Next.Next); // down
-                stack.Push(he.Next.Next.Twin); // up
-                stack.Push(he.Previous.Twin.Previous); // left
-                stack.Push(he.Next.Twin.Next); // right
-
-                // TODO perform visited check before adding to the stack
-                // flag elements as soon as they're added to stack to avoid dups
-                // test alt implementation
-            }
-        }
-        */
-
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="flip"></param>
         /// <returns></returns>
-        public List<List<Halfedge>> GetFaceStrips(bool flip)
+        public List<List<Halfedge>> GetQuadStrips(bool flip)
         {
             var result = new List<List<Halfedge>>();
             Stack<Halfedge> stack = new Stack<Halfedge>();
@@ -574,7 +516,7 @@ namespace SpatialSlur.SlurMesh
                 if (f.IsUnused || f.Tag == currTag) continue; // skip if unused or already visited
 
                 stack.Push((flip)? f.First.Next: f.First);
-                GetFaceStrips(stack, currTag, result);
+                GetQuadStrips(stack, currTag, result);
             }
 
             return result;
@@ -587,7 +529,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="start"></param>
         /// <param name="flip"></param>
         /// <returns></returns>
-        public List<List<Halfedge>> GetFaceStrips(HeFace start, bool flip)
+        public List<List<Halfedge>> GetQuadStrips(HeFace start, bool flip)
         {
             start.UsedCheck();
             OwnsCheck(start);
@@ -596,7 +538,7 @@ namespace SpatialSlur.SlurMesh
             Stack<Halfedge> stack = new Stack<Halfedge>();
      
             stack.Push((flip) ? start.First.Next : start.First);
-            GetFaceStrips(stack, NextTag, result);
+            GetQuadStrips(stack, NextTag, result);
 
             return result;
         }
@@ -605,13 +547,15 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private void GetFaceStrips(Stack<Halfedge> stack, int currTag, List<List<Halfedge>> result)
+        private void GetQuadStrips(Stack<Halfedge> stack, int currTag, List<List<Halfedge>> result)
         {
             while (stack.Count > 0)
             {
                 Halfedge he0 = stack.Pop();
                 HeFace f0 = he0.Face;
-                if (f0 == null || f0.Tag == currTag) continue; // don't start from boundary halfedges or those with visited faces
+
+                // don't start from boundary halfedges or those with visited faces
+                if (f0 == null || f0.Tag == currTag) continue; 
 
                 // backtrack to first encountered visited face or boundary
                 Halfedge he1 = he0;
@@ -701,23 +645,22 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Orients each face such that the first halfedge returns the minimum value for the given function.
         /// </summary>
+        /// <param name="selector"></param>
         /// <param name="parallel"></param>
-        public void OrientToMin(Func<Halfedge,double> selector, bool parallel = false)
+        public void OrientFacesToMin(Func<Halfedge,double> selector, bool parallel = false)
         {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, Count), range =>
-                    OrientToMin(selector, range.Item1, range.Item2));
+                    OrientFacesToMin(selector, range.Item1, range.Item2));
             else
-                OrientToMin(selector, 0, Count);
+                OrientFacesToMin(selector, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i0"></param>
-        /// <param name="i1"></param>
-        private void OrientToMin(Func<Halfedge, double> selector, int i0, int i1)
+        private void OrientFacesToMin(Func<Halfedge, double> selector, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
@@ -725,6 +668,36 @@ namespace SpatialSlur.SlurMesh
                 if (f.IsUnused) continue;
 
                 f.First = f.Halfedges.SelectMin(selector);
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parallel"></param>
+        public void OrientFacesToBoundary(bool parallel)
+        {
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    OrientFacesToBoundary(range.Item1, range.Item2));
+            else
+                OrientFacesToBoundary(0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void OrientFacesToBoundary(int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                HeFace f = this[i];
+                if (f.IsUnused) continue;
+
+                Halfedge he = f.FindBoundary();
+                if (he != null) f.First = he;
             }
         }
 
@@ -981,7 +954,7 @@ namespace SpatialSlur.SlurMesh
                 }
                 else
                 {
-                    he.MakeFirstFromStart();
+                    he.MakeFirstAtStart();
                     he.Face = null;
                 }
 
@@ -1014,10 +987,6 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal void MergeFacesImpl(Halfedge halfedge)
         {
-            // TODO debug
-            // encountered bug when used to clean up invalid faces within CollapseEdge
-            var hedges = Mesh.Halfedges;
-
             Halfedge he0 = halfedge;
             Halfedge he1 = he0.Twin;
 
@@ -1037,25 +1006,23 @@ namespace SpatialSlur.SlurMesh
             }
 
             // update face refs for all halfedges in f0
-            Halfedge he = he0.Next; // can skip he0 as it's being removed
-            do{
+            foreach(Halfedge he in he0.CirculateFace.Skip(1))
                 he.Face = f1;
-                he = he.Next;
-            }while(he != he0);
 
             // remove halfedge pair between the two faces
+            var hedges = Mesh.Halfedges;
             hedges.RemovePair(he0);
 
             // clean up potential valence 1 vertices
             he0 = he0.Next;
-            while (he0.IsFromDegree1)
+            while (he0.IsAtDegree1)
             {
                 hedges.RemovePair(he0);
                 he0 = he0.Next;
             }
 
             he1 = he1.Next;
-            while (he1.IsFromDegree1)
+            while (he1.IsAtDegree1)
             {
                 hedges.RemovePair(he1);
                 he1 = he1.Next;
@@ -1068,45 +1035,7 @@ namespace SpatialSlur.SlurMesh
             // flag elements for removal
             f0.MakeUnused();
         }
-
-
-        /// <summary>
-        /// Simplified merge for degenerate faces.
-        /// </summary>
-        /// <param name="halfedge"></param>
-        /// <returns></returns>
-        internal void MergeInvalidFace(Halfedge halfedge)
-        {
-            Halfedge he0 = halfedge;
-            Halfedge he1 = he0.Twin;
-            Halfedge he2 = he0.Next;
-
-            HeVertex v0 = he0.Start;
-            HeVertex v1 = he1.Start;
-
-            HeFace f0 = he0.Face; // face to be removed
-            HeFace f1 = he1.Face;
-
-            // update halfedge ref for f1 if necessary
-            if (f1 != null && f1.First == he1) f1.First = he2;
-
-            // update halfedge refs for v0 and v1 if necessary
-            if (v0.First == he0) v0.First = he1.Next;
-            if (v1.First == he1) v1.First = he2;
-
-            // update face ref for he2
-            he2.Face = f1;
-
-            // update halfedge->halfedge refs
-            Halfedge.MakeConsecutive(he1.Previous, he2);
-            Halfedge.MakeConsecutive(he2, he1.Next);
-
-            // flag elements for removal
-            he0.MakeUnused();
-            he1.MakeUnused();
-            if(f0 != null) f0.MakeUnused();
-        }
-
+   
 
         /// <summary>
         /// Splits a face by creating a new halfedge pair between the start vertices of the given halfedges.

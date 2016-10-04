@@ -5,13 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */ 
 
-namespace SpatialSlur.SlurData
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public class VecKd
+    public class Vecd
     {
         #region Static
 
@@ -21,14 +24,21 @@ namespace SpatialSlur.SlurData
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double Dot(VecKd v0, VecKd v1)
+        public static double Dot(Vecd v0, Vecd v1)
         {
-            double result = 0.0;
+            return VecMath.Dot(v0._values, v1._values, v0.Count);
+        }
 
-            for (int i = 0; i < v0.K; i++)
-                result += v0[i] * v1[i];
 
-            return result;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="result"></param>
+        public static void Add(Vecd v0, Vecd v1, Vecd result)
+        {
+            VecMath.Add(v0._values, v1._values, v0.Count, result._values);
         }
 
         #endregion
@@ -40,13 +50,10 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="k"></param>
-        public VecKd(int k)
+        /// <param name="count"></param>
+        public Vecd(int count)
         {
-            if (k < 2)
-                throw new System.ArgumentOutOfRangeException("The vector must have at least 2 dimensions");
-
-            _values = new double[k];
+            _values = new double[count];
         }
 
 
@@ -54,21 +61,31 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public VecKd(VecKd other)
-            : this(other.K)
+        public Vecd(Vecd other)
+            : this(other.Count)
         {
-            Array.Copy(other._values, _values, K);
+            Set(other);
         }
 
 
         /// <summary>
-        /// 
+        /// Binds to an existing double array.
         /// </summary>
         /// <param name="values"></param>
-        public VecKd(IList<double> values)
+        public Vecd(double[] values)
+        {
+            _values = values;
+        }
+
+
+        /// <summary>
+        /// Copies values from an existing ICollection.
+        /// </summary>
+        /// <param name="values"></param>
+        public Vecd(ICollection<double> values)
             : this(values.Count)
         {
-            _values.Set(values);
+            values.CopyTo(_values, 0);
         }
 
 
@@ -76,7 +93,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public VecKd(Vec2d other)
+        public Vecd(Vec2d other)
             : this(2)
         {
             this[0] = other.x;
@@ -88,7 +105,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public VecKd(Vec3d other)
+        public Vecd(Vec3d other)
             : this(3)
         {
             this[0] = other.x;
@@ -100,14 +117,14 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Returns the number of dimensions in this vector.
         /// </summary>
-        public int K
+        public int Count
         {
             get { return _values.Length; }
         }
 
 
         /// <summary>
-        /// Returns the element at the given index.
+        /// Returns the value at the given index.
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
@@ -121,7 +138,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Returns the underlying array of values.
         /// </summary>
-        public IList<double> Values
+        public double[] Values
         {
             get { return _values; }
         }
@@ -131,9 +148,9 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public void Set(VecKd other)
+        public void Set(Vecd other)
         {
-            Array.Copy(other._values, _values, K);
+            other._values.CopyTo(_values, 0);
         }
 
 
@@ -143,12 +160,9 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool Equals(VecKd other, double epsilon)
+        public bool Equals(Vecd other, double epsilon)
         {
-            for (int i = 0; i < K; i++)
-                if (Math.Abs(other[i] - this[i]) >= epsilon) return false;
-
-            return true;
+            return VecMath.Equals(_values, other._values, epsilon, Count);
         }
 
 
@@ -158,12 +172,20 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool Equals(VecKd other, VecKd epsilon)
+        public bool Equals(Vecd other, Vecd epsilon)
         {
-            for (int i = 0; i < K; i++)
-                if (Math.Abs(other[i] - this[i]) >= epsilon[i]) return false;
+            return VecMath.Equals(_values, other._values, epsilon._values, Count);
+        }
 
-            return true;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public double Dot(Vecd other)
+        {
+            return VecMath.Dot(_values, other._values, Count);
         }
 
 
@@ -173,7 +195,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public double GetLength()
         {
-            return Math.Sqrt(GetSquareLength());
+            return Math.Sqrt(VecMath.Dot(_values, _values, Count));
         }
 
 
@@ -183,14 +205,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public double GetSquareLength()
         {
-            double result = 0.0;
-            for (int i = 0; i < K; i++)
-            {
-                double x = this[i];
-                result += x * x;
-            }
-
-            return result;
+            return VecMath.Dot(_values, _values, Count);
         }
 
 
@@ -200,11 +215,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public double GetManhattanLength()
         {
-            double result = 0.0;
-            for (int i = 0; i < K; i++)
-                result += Math.Abs(this[i]);
-
-            return result;
+            return VecMath.ManhattanLength(_values, Count);
         }
 
 
@@ -213,9 +224,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public double DistanceTo(VecKd other)
+        public double DistanceTo(Vecd other)
         {
-            return Math.Sqrt(SquareDistanceTo(other));
+            return Math.Sqrt(VecMath.SquareDistance(_values, other._values, Count));
         }
 
 
@@ -224,16 +235,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public double SquareDistanceTo(VecKd other)
+        public double SquareDistanceTo(Vecd other)
         {
-            double result = 0.0;
-            for (int i = 0; i < K; i++)
-            {
-                double d = other[i] - this[i];
-                result += d * d;
-            }
-
-            return result;
+            return VecMath.SquareDistance(_values, other._values, Count);
         }
 
 
@@ -242,13 +246,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public double ManhattanDistanceTo(VecKd other)
+        public double ManhattanDistanceTo(Vecd other)
         {
-            double result = 0.0;
-            for (int i = 0; i < K; i++)
-                result += Math.Abs(other[i] - this[i]);
-
-            return result;
+            return VecMath.ManhattanDistance(_values, other._values, Count);
         }
 
 
@@ -257,10 +257,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public void Add(VecKd other)
+        public void Add(Vecd other)
         {
-            for (int i = 0; i < K; i++)
-                this[i] += other[i];
+            VecMath.Add(_values, other._values, Count, _values);
         }
 
 
@@ -269,10 +268,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <param name="result"></param>
-        public void Add(VecKd other, VecKd result)
+        public void Add(Vecd other, Vecd result)
         {
-            for (int i = 0; i < K; i++)
-                result[i] = this[i] + other[i];
+            VecMath.Add(_values, other._values, Count, result._values);
         }
 
 
@@ -281,10 +279,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public void Subtract(VecKd other)
+        public void Subtract(Vecd other)
         {
-            for (int i = 0; i < K; i++)
-                this[i] -= other[i];
+            VecMath.Subtract(_values, other._values, Count, _values);
         }
 
 
@@ -293,10 +290,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <param name="result"></param>
-        public void Subtract(VecKd other, VecKd result)
+        public void Subtract(Vecd other, Vecd result)
         {
-            for (int i = 0; i < K; i++)
-                result[i] = this[i] - other[i];
+            VecMath.Subtract(_values, other._values, Count, result._values);
         }
 
 
@@ -307,8 +303,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public void Scale(double factor)
         {
-            for (int i = 0; i < K; i++)
-                this[i] *= factor;
+            VecMath.Scale(_values, factor, Count, _values);
         }
 
 
@@ -317,10 +312,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="factor"></param>
         /// <param name="result"></param>
-        public void Scale(double factor, VecKd result)
+        public void Scale(double factor, Vecd result)
         {
-            for (int i = 0; i < K; i++)
-                result[i] = this[i] * factor;
+            VecMath.Scale(_values, factor, Count, result._values);
         }
 
 
@@ -330,10 +324,9 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public void AddScaled(VecKd other, double factor)
+        public void AddScaled(Vecd other, double factor)
         {
-            for (int i = 0; i < K; i++)
-                this[i] += other[i] * factor;
+            VecMath.AddScaled(_values, other._values, factor, Count, _values);
         }
 
 
@@ -343,10 +336,9 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         /// <param name="factor"></param>
         /// <param name="result"></param>
-        public void AddScaled(VecKd other, double factor, VecKd result)
+        public void AddScaled(Vecd other, double factor, Vecd result)
         {
-            for (int i = 0; i < K; i++)
-                result[i] = this[i] + other[i] * factor;
+            VecMath.AddScaled(_values, other._values, factor, Count, result._values);
         }
 
 
@@ -355,21 +347,16 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public bool Unitize()
         {
-            double d = GetSquareLength();
-            if (d == 0.0) return false;
-
-            Scale(1.0 / Math.Sqrt(d));
-            return true;
+            return VecMath.Unitize(_values, Count, _values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public void Negate()
+        public bool Unitize(Vecd result)
         {
-            for (int i = 0; i < K; i++)
-                this[i] = -this[i];
+            return VecMath.Unitize(_values, Count, result._values);
         }
 
 
@@ -378,13 +365,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <param name="factor"></param>
-        public void LerpTo(VecKd other, double factor)
+        public void LerpTo(Vecd other, double factor)
         {
-            for (int i = 0; i < K; i++)
-            {
-                double x = this[i];
-                this[i] = x + (other[i] - x) * factor;
-            }
+            VecMath.Lerp(_values, other._values, factor, Count, _values);
         }
 
 
@@ -394,14 +377,9 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         /// <param name="factor"></param>
         /// <param name="result"></param>
-        public void LerpTo(VecKd other, double factor, VecKd result)
+        public void LerpTo(Vecd other, double factor, Vecd result)
         {
-            for (int i = 0; i < K; i++)
-            {
-                double x = this[i];
-                result[i] = x + (other[i] - x) * factor;
-            }
+            VecMath.Lerp(_values, other._values, factor, Count, result._values);
         }
-
     }
 }

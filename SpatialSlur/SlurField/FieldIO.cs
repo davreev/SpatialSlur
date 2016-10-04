@@ -152,20 +152,41 @@ namespace SpatialSlur.SlurField
                 BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, pf);
                 byte* first = (byte*)bmpData.Scan0;
 
-                for (int y = 0; y < bitmap.Height; y++)
+                if (bpp == 3)
                 {
-                    byte* currLn = first + (y * bmpData.Stride);
-
-                    for (int x = 0; x < bitmap.Width; x++)
+                    for (int y = 0; y < bitmap.Height; y++)
                     {
-                        int bx = x * bpp;
-                        byte b = currLn[bx];
-                        byte g = currLn[bx + 1];
-                        byte r = currLn[bx + 2];
-                        byte a = currLn[bx + 3];
+                        byte* currLn = first + (y * bmpData.Stride);
 
-                        values[index++] = mapper(Color.FromArgb(a,r,g,b));
+                        for (int x = 0; x < bitmap.Width; x++)
+                        {
+                            int bx = x * bpp;
+                            byte b = currLn[bx];
+                            byte g = currLn[bx + 1];
+                            byte r = currLn[bx + 2];
+
+                            values[index++] = mapper(Color.FromArgb(r, g, b));
+                        }
                     }
+                }
+                else
+                {
+                    for (int y = 0; y < bitmap.Height; y++)
+                    {
+                        byte* currLn = first + (y * bmpData.Stride);
+
+                        for (int x = 0; x < bitmap.Width; x++)
+                        {
+                            int bx = x * bpp;
+                            byte b = currLn[bx];
+                            byte g = currLn[bx + 1];
+                            byte r = currLn[bx + 2];
+                            byte a = currLn[bx + 3];
+
+                            values[index++] = mapper(Color.FromArgb(a, r, g, b));
+                        }
+                    }
+
                 }
 
                 bitmap.UnlockBits(bmpData);
@@ -180,26 +201,46 @@ namespace SpatialSlur.SlurField
         {
             PixelFormat pf = bitmap.PixelFormat;
             int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
-            PixelFormatCheck(bpp); // ensure 4 bytes per pixel
+            PixelFormatCheck(bpp);
 
             unsafe
             {
                 BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, pf);
                 byte* first = (byte*)bmpData.Scan0;
 
-                for (int y = 0; y < bitmap.Height; y++)
+                if (bpp == 3)
                 {
-                    byte* currLn = first + (y * bmpData.Stride);
-
-                    for (int x = 0; x < bitmap.Width; x++)
+                    for (int y = 0; y < bitmap.Height; y++)
                     {
-                        Color c = mapper(values[index++]);
+                        byte* currLn = first + (y * bmpData.Stride);
 
-                        int bx = x * bpp;
-                        currLn[bx] = c.B;
-                        currLn[bx + 1] = c.G;
-                        currLn[bx + 2] = c.R;
-                        currLn[bx + 3] = c.A;
+                        for (int x = 0; x < bitmap.Width; x++)
+                        {
+                            Color c = mapper(values[index++]);
+
+                            int bx = x * bpp;
+                            currLn[bx] = c.B;
+                            currLn[bx + 1] = c.G;
+                            currLn[bx + 2] = c.R;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < bitmap.Height; y++)
+                    {
+                        byte* currLn = first + (y * bmpData.Stride);
+
+                        for (int x = 0; x < bitmap.Width; x++)
+                        {
+                            Color c = mapper(values[index++]);
+
+                            int bx = x * bpp;
+                            currLn[bx] = c.B;
+                            currLn[bx + 1] = c.G;
+                            currLn[bx + 2] = c.R;
+                            currLn[bx + 3] = c.A;
+                        }
                     }
                 }
 
@@ -213,7 +254,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static void PixelFormatCheck(int bytesPerPixel)
         {
-            if (bytesPerPixel < 4)
+            if (bytesPerPixel < 3)
                 throw new NotSupportedException("The pixel format of the given bitmap is not supported.");
         }
 

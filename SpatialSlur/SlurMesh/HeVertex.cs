@@ -76,7 +76,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         internal override bool IsValid
         {
-            get { return !_first.IsFromDegree1; }
+            get { return !_first.IsAtDegree1; }
         }
 
 
@@ -126,7 +126,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public bool IsDegree2
         {
-            get { return _first.IsFromDegree2; }
+            get { return _first.IsAtDegree2; }
         }
 
 
@@ -135,7 +135,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public bool IsDegree3
         {
-            get { return _first.IsFromDegree3; }
+            get { return _first.IsAtDegree3; }
         }
 
 

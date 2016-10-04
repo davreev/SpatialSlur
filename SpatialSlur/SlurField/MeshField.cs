@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using Rhino.Geometry;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 
+/*
+ * Notes
+ */
+ 
 namespace SpatialSlur.SlurField
 {
     /// <summary>
@@ -16,7 +18,6 @@ namespace SpatialSlur.SlurField
     public abstract class MeshField
     {
         private readonly HeMesh _mesh;
-        private Mesh _displayMesh; // underlying rhino mesh used for display and closest point queries
         private readonly int _n;
 
 
@@ -26,39 +27,8 @@ namespace SpatialSlur.SlurField
         /// <param name="mesh"></param>
         protected MeshField(HeMesh mesh)
         {
-            if (mesh == null)
-                throw new ArgumentNullException("mesh");
-
             _mesh = mesh;
             _n = _mesh.Vertices.Count;
-            RebuildDisplayMesh();
-        }
-
-
-        /// <summary>
-        /// Constructs a new mesh field from a given Rhino mesh.
-        /// </summary>
-        /// <param name="mesh"></param>
-        protected MeshField(Mesh mesh)
-        {
-            if (mesh == null)
-                throw new ArgumentNullException("mesh");
-
-            _mesh = RhinoFactory.CreateHeMesh(mesh);
-            _n = _mesh.Vertices.Count;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="duplicateMesh"></param>
-        protected MeshField(MeshField field, bool duplicateMesh = false)
-        {
-            _mesh = (duplicateMesh) ? new HeMesh(field._mesh) : field._mesh;
-            _n = field._n;
-            RebuildDisplayMesh();
         }
 
 
@@ -83,20 +53,10 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Returns the HeMesh instance associated with this field.
         /// Topological modifications made to this mesh should be followed by a call to Resize.
-        /// Geometrical modifications made to this mesh should be followed by a call to RebuildDisplayMesh.
         /// </summary>
         public HeMesh Mesh
         {
             get { return _mesh; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Mesh DisplayMesh
-        {
-            get { return _displayMesh; }
         }
 
         
@@ -105,44 +65,12 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void Resize()
         {
-            if (!IsExpired) return;
-
             // TODO
             throw new NotImplementedException();
+
+            // if (!IsExpired) return;
         }
        
-
-        /// <summary>
-        /// This should be called before painting the display mesh if changes have been made to the underlying HeMesh instance.
-        /// </summary>
-        public void RebuildDisplayMesh()
-        {
-            _displayMesh = _mesh.ToRhinoMesh();
-            _displayMesh.VertexColors.CreateMonotoneMesh(Color.Empty);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public MeshPoint ClosestMeshPoint(Vec3d point)
-        {
-            return _displayMesh.ClosestMeshPoint(point.ToPoint3d(), 0.0);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="maxDistance"></param>
-        public MeshPoint ClosestMeshPoint(Vec3d point, double maxDistance)
-        {
-            return _displayMesh.ClosestMeshPoint(point.ToPoint3d(), maxDistance);
-        }
-
 
         /// <summary>
         /// 

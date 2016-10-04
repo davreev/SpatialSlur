@@ -368,5 +368,15 @@ namespace SpatialSlur.SlurCore
             other -= this;
             return other.ManhattanLength;
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public int[] ToArray()
+        {
+            return new int[] { x, y, z };
+        }
     }
 }

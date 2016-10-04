@@ -202,7 +202,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="U"></typeparam>
-        /// <param name="?"></param>
+        /// <param name="collection"></param>
         /// <param name="selector"></param>
         /// <returns></returns>
         public static T SelectMin<T, U>(this IEnumerable<T> collection, Func<T, U> selector)
@@ -231,7 +231,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="U"></typeparam>
-        /// <param name="?"></param>
+        /// <param name="collection"></param>
         /// <param name="selector"></param>
         /// <returns></returns>
         public static T SelectMax<T, U>(this IEnumerable<T> collection, Func<T, U> selector)

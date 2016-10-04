@@ -204,7 +204,6 @@ namespace SpatialSlur.SlurGraph
         private void Compact(ref DiEdge[] edges, ref int count)
         {
             int marker = 0;
-
             for (int i = 0; i < count; i++)
             {
                 DiEdge e = edges[i];

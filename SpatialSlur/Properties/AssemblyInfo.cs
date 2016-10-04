@@ -35,3 +35,5 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyVersion("0.1.4.*")]
 
+// Expose internals to dependant projects
+[assembly: InternalsVisibleTo("SlurRhino")]

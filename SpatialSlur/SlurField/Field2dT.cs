@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+/*
+ * Notes
+ */ 
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>
@@ -50,9 +54,8 @@ namespace SpatialSlur.SlurField
         protected Field2d(Field2d<T> other)
             : base(other)
         {
-            int n = Count + 1;
-            _values = new T[n];
-            Array.Copy(other._values, _values, n);
+            _values = new T[Count + 1];
+            Set(other);
         }
 
 
@@ -90,7 +93,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Set(Field2d<T> other)
         {
-            Array.Copy(other._values, _values, Count);
+            other._values.CopyTo(_values, 0);
         }
 
 
@@ -138,11 +141,7 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         public void Function(Func<T, T> func)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i]);
-            });
+            VecMath.FunctionParallel(func, _values, Count, _values);
         }
 
 
@@ -154,13 +153,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Function<U>(Func<U, T> func, Field2d<U> other)
         {
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(u[i]);
-            });
+            VecMath.FunctionParallel(func, other._values, Count, _values);
         }
 
 
@@ -172,13 +165,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public void Function<U>(Func<T, U, T> func, Field2d<U> other)
         {
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], u[i]);
-            });
+            VecMath.FunctionParallel(func, _values, other._values, Count, _values);
         }
 
 
@@ -188,39 +175,25 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="U"></typeparam>
         /// <typeparam name="V"></typeparam>
         /// <param name="func"></param>
-        /// <param name="otherU"></param>
-        /// <param name="otherV"></param>
-        public void Function<U, V>(Func<U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        public void Function<U, V>(Func<U, V, T> func, Field2d<U> f0, Field2d<V> f1)
         {
-            var u = otherU.Values;
-            var v = otherV.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(u[i], v[i]);
-            });
+            VecMath.FunctionParallel(func, f0._values, f1._values, Count, _values);
         }
 
 
         /// <summary>
-        ///  Sets this field to some function of itself and two other fields.
+        /// Sets this field to some function of itself and two other fields.
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <typeparam name="V"></typeparam>
         /// <param name="func"></param>
-        /// <param name="otherU"></param>
-        /// <param name="otherV"></param>
-        public void Function<U, V>(Func<T, U, V, T> func, Field2d<U> otherU, Field2d<V> otherV)
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        public void Function<U, V>(Func<T, U, V, T> func, Field2d<U> f0, Field2d<V> f1)
         {
-            var u = otherU.Values;
-            var v = otherV.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], u[i], v[i]);
-            });
+            VecMath.FunctionParallel(func, _values, f0._values, f1._values, Count, _values);
         }
 
 
@@ -496,22 +469,17 @@ namespace SpatialSlur.SlurField
                 return;
             }
 
-            Domain2d d = other.Domain;
-            double ti = 1.0 / (CountX - 1);
-            double tj = 1.0 / (CountY - 1);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
                 {
+                    FieldPoint2d fp = new FieldPoint2d();
                     int i, j;
                     ExpandIndex(range.Item1, out i, out j);
-                    FieldPoint2d fp = new FieldPoint2d();
-
+                
                     for (int index = range.Item1; index < range.Item2; index++, i++)
                     {
                         if (i == CountX) { j++; i = 0; }
 
-                        Vec2d p = d.Evaluate(new Vec2d(i * ti, j * tj));
-                        other.FieldPointAt(p, fp);
+                        other.FieldPointAt(CoordinateAt(i,j), fp);
                         _values[index] = other.Evaluate(fp);
                     }
                 });

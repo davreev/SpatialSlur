@@ -4,14 +4,14 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Rhino.Geometry;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 
-
 /*
  * Notes
- * TODO conduct further research into vertex-based mesh vector fields
+ * 
+ * TODO 
+ * Further research into vertex-based mesh vector fields
  * 
  * References
  * http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
@@ -38,37 +38,60 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="duplicateMesh"></param>
-        public MeshVectorField(MeshField other, bool duplicateMesh = false)
-            : base(other, duplicateMesh)
+        public MeshVectorField(MeshVectorField other)
+            : base(other)
         {
         }
 
 
+        /*
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="duplicateMesh"></param>
-        public MeshVectorField(MeshVectorField other, bool duplicateMesh = false)
-            : base(other, duplicateMesh)
-        {
-        }
-
-
-        /// <summary>
-        /// 
+        /// Returns the interpolated value at a given point in the field.
+        /// Assumes triangular faces in the queried mesh.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
         public override Vec3d Evaluate(MeshPoint point)
         {
-            MeshFace face = DisplayMesh.Faces[point.FaceIndex];
+            MeshFace face = point.Mesh.Faces[point.FaceIndex];
             Vec3d result = new Vec3d();
-            int count = (face.IsQuad) ? 4 : 3;
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < 3; i++)
                 result += Values[face[i]] * point.T[i];
+
+            return result;
+        }
+        */
+    
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="i2"></param>
+        /// <param name="w0"></param>
+        /// <param name="w1"></param>
+        /// <param name="w2"></param>
+        /// <returns></returns>
+        public override Vec3d Evaluate(int i0, int i1, int i2, double w0, double w1, double w2)
+        {
+            return Values[i0] * w0 + Values[i1] * w1 + Values[i2] * w2;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
+        /// <returns></returns>
+        public override Vec3d Evaluate(IList<int> indices, IList<double> weights)
+        {
+            Vec3d result = new Vec3d();
+
+            for (int i = 0; i < indices.Count; i++)
+                result += Values[indices[i]] * weights[i];
 
             return result;
         }
@@ -81,7 +104,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public MeshScalarField GetMagnitudes(bool parallel = false)
         {
-            MeshScalarField result = new MeshScalarField(this);
+            MeshScalarField result = new MeshScalarField(Mesh);
             UpdateMagnitudes(result.Values, parallel);
             return result;
         }
@@ -217,7 +240,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public MeshVectorField GetLaplacian(bool parallel = false)
         {
-            var result = new MeshVectorField((MeshField)this);
+            var result = new MeshVectorField(Mesh);
             Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
             return result;
         }
@@ -232,7 +255,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public MeshVectorField GetLaplacian(IList<double> halfedgeWeights, bool parallel = false)
         {
-            var result = new MeshVectorField((MeshField)this);
+            var result = new MeshVectorField(Mesh);
             Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
             return result;
         }

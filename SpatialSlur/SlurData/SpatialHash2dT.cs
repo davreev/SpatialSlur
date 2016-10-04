@@ -7,8 +7,8 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * Search methods may return the contents of the same bin multiple times since different points (i,j,k) may hash to the same index.
- * Similarly, insertion methods may add the given item to the same bin multiple times.
+ * Region search methods may return the contents of the same bin multiple times since different points (i,j,k) may hash to the same index.
+ * Similarly, region insertion methods may add the given item to the same bin multiple times.
  * 
  * References
  * http://www.beosil.com/download/CollisionDetectionHashing_VMV03.pdf

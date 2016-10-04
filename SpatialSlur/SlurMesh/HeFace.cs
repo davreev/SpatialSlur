@@ -97,7 +97,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the number of edges in the face.
         /// </summary>
-        public int Degree
+        public int EdgeCount
         {
             get
             {
@@ -182,26 +182,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the number of edges in the face.
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete("Use Degree property instead.")]
-        public int CountEdges()
-        {
-            Halfedge he = _first;
-            int count = 0;
-
-            do
-            {
-                count++;
-                he = he.Next;
-            } while (he != _first);
-
-            return count;
-        }
-
-
-        /// <summary>
         /// Returns the number of boundary edges in the face.
         /// </summary>
         /// <returns></returns>
@@ -236,6 +216,25 @@ namespace SpatialSlur.SlurMesh
             } while (he != _first);
 
             return count;
+        }
+
+
+        /// <summary>
+        /// Returns the first boundary halfedge encountered when circulating the face.
+        /// Returns null if no such halfedge is found.
+        /// </summary>
+        /// <returns></returns>
+        public Halfedge FindBoundary()
+        {
+            Halfedge he = _first;
+
+            do
+            {
+                if (he.Twin.Face == null) return he;
+                he = he.Next;
+            } while (he != _first);
+
+            return null;
         }
 
 

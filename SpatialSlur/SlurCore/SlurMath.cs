@@ -11,7 +11,7 @@ namespace SpatialSlur.SlurCore
     /// </summary>
     public static class SlurMath
     {
-        public const double Tau = Math.PI * 2.0;
+        public const double TwoPI = Math.PI * 2.0;
         public const double HalfPI = Math.PI * 0.5;
         public const double InvPI = 1.0 / Math.PI;
 
@@ -298,7 +298,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes that the divisor (n) is positive to save a few ticks.
+        /// Assumes that the divisor n is positive to save a few ticks.
         /// </summary>
         /// <param name="a"></param>
         /// <param name="n"></param>

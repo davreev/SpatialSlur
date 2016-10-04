@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 /*
  * Notes
  * 
- * For a max priority queue, simply invert the comparer delegate.
+ * For a max priority queue, invert the comparer delegate.
  */
 
 namespace SpatialSlur.SlurData
@@ -134,7 +134,7 @@ namespace SpatialSlur.SlurData
         {
             int j = i >> 1;
 
-            while (i > 1 && IsGreater(j, i))
+            while (i > 1 && HasPriority(i, j))
             {
                 _heap.Swap(i, j);
                 i = j;
@@ -150,7 +150,62 @@ namespace SpatialSlur.SlurData
         private void Sink(int i)
         {
             int j = i << 1;
-           
+
+            while (j <= _n)
+            {
+                // pick the higher priority of i's children (j or j+1)
+                if (j < _n && HasPriority(j + 1, j)) j++;
+
+                // break if heap invariant is satisfied
+                if (!HasPriority(j, i)) break;
+
+                _heap.Swap(i, j);
+                i = j;
+                j <<= 1;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns true if item i has priority over item j.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
+        private bool HasPriority(int i, int j)
+        {
+            return _compare(_heap[i], _heap[j]) < 0;
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        private void Swim(int i)
+        {
+            int j = i >> 1;
+
+            while (i > 1 && IsGreater(j, i))
+            {
+                _heap.Swap(i, j);
+                i = j;
+                j >>= 1;
+            }
+        }
+        */
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        private void Sink(int i)
+        {
+            int j = i << 1;
+
             while (j <= _n)
             {
                 if (j < _n && IsGreater(j, j + 1)) j++; // pick the smaller (higher priority) of the two children
@@ -161,8 +216,10 @@ namespace SpatialSlur.SlurData
                 j <<= 1;
             }
         }
+        */
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -173,5 +230,6 @@ namespace SpatialSlur.SlurData
         {
             return _compare(_heap[i], _heap[j]) > 0;
         }
+        */
     }
 }

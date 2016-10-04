@@ -45,7 +45,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="quantity"></param>
         /// <param name="capacity"></param>
-        public void AddMany(int quantity, int capacity = 2)
+        public void AddMultiple(int quantity, int capacity = 2)
         {
             for (int i = 0; i < quantity; i++)
                 Add(new Node(capacity));

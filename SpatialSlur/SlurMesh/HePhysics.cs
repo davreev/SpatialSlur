@@ -1,5 +1,4 @@
-﻿using Rhino.Geometry;
-using SpatialSlur.SlurCore;
+﻿using SpatialSlur.SlurCore;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1638,7 +1637,7 @@ namespace SpatialSlur.SlurMesh
                 foreach (Halfedge he in v.OutgoingHalfedges) 
                     sum += Math.PI - halfedgeAngles[he.Index];
 
-                double err = (sum - SlurMath.Tau) * 0.125; // angle error in range [-PI/4, PI/4]
+                double err = (sum - SlurMath.TwoPI) * 0.125; // angle error in range [-PI/4, PI/4]
                 double tan = Math.Tan(err) * strength;
                 
                 // apply angle constraint around vertex
@@ -1665,23 +1664,23 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates forces which pull vertices towards a target mesh.
+        ///
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="target"></param>
+        /// <param name="closestPoint"></param>
         /// <param name="strength"></param>
         /// <param name="forceSums"></param>
         /// <param name="parallel"></param>
-        public static void ConstrainTo(HeMesh mesh, Mesh target, double strength, IList<Vec3d> forceSums, bool parallel = false)
+        public static void ConstrainTo(HeMesh mesh, Func<Vec3d,Vec3d> closestPoint, double strength, IList<Vec3d> forceSums, bool parallel = false)
         {
             HeVertexList verts = mesh.Vertices;
             verts.SizeCheck(forceSums);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                ConstrainTo(mesh, target, strength, forceSums, range.Item1, range.Item2));
+                ConstrainTo(mesh, closestPoint, strength, forceSums, range.Item1, range.Item2));
             else
-                ConstrainTo(mesh, target, strength, forceSums, 0, verts.Count);
+                ConstrainTo(mesh, closestPoint, strength, forceSums, 0, verts.Count);
         }
 
 
@@ -1689,12 +1688,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="target"></param>
+        /// <param name="closestPoint"></param>
         /// <param name="strength"></param>
         /// <param name="forceSums"></param>
         /// <param name="i0"></param>
         /// <param name="i1"></param>
-        private static void ConstrainTo(HeMesh mesh, Mesh target, double strength, IList<Vec3d> forceSums, int i0, int i1)
+        private static void ConstrainTo(HeMesh mesh, Func<Vec3d, Vec3d> closestPoint, double strength, IList<Vec3d> forceSums, int i0, int i1)
         {
             var verts = mesh.Vertices;
 
@@ -1703,8 +1702,8 @@ namespace SpatialSlur.SlurMesh
                 HeVertex v = verts[i];
                 if (v.IsUnused) continue;
 
-                Point3d p = v.Position.ToPoint3d();
-                forceSums[i] += (target.ClosestPoint(p) - p).ToVec3d() * strength;
+                Vec3d p = v.Position;
+                forceSums[i] += (closestPoint(p) - p) * strength;
             }
         }
     }

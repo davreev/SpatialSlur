@@ -13,7 +13,8 @@ using SpatialSlur.SlurCore;
  * KdTree search performance degrades at higher dimensions
  * In general the number of nodes should be larger than 2^k for decent performance.
  * 
- * TODO Compare to array-based implementation
+ * TODO 
+ * Compare to array-based implementation
  * 
  * References
  * https://www.cs.umd.edu/class/spring2008/cmsc420/L19.kd-trees.pdf
@@ -46,17 +47,27 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Inserts point value pairs in a way that produces a balanced tree.
         /// </summary>
-        public static KdTree<T> CreateBalanced(IList<VecKd> points, IList<T> values)
+        public static KdTree<T> CreateBalanced(IList<Vecd> points, IList<T> values)
+        {
+            return CreateBalanced(points.ConvertAll(p => p.Values), values);
+        }
+
+
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a balanced tree.
+        /// </summary>
+        public static KdTree<T> CreateBalanced(IList<double[]> points, IList<T> values)
         {
             if (points.Count != values.Count)
                 throw new ArgumentException("Must provide an equal number of points and values.");
 
             // create tree using dimension of first point
-            KdTree<T> result = new KdTree<T>(points[0].K);
+            int k = points[0].Length;
+            KdTree<T> result = new KdTree<T>(k);
 
-            // check dimension of other points
+            // verify dimension of remaining points
             for (int i = 1; i < points.Count; i++)
-                result.DimCheck(points[i]);
+                if (points[i].Length != k) throw new ArgumentException("All given points must be of the same dimension.");
 
             result._root = result.InsertBalanced(points, values, 0, points.Count - 1, 0);
             result._n = points.Count;
@@ -180,9 +191,9 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="point"></param>
-        private void DimCheck(VecKd point)
+        private void DimCheck(Vecd point)
         {
-            if (_k != point.K)
+            if (_k != point.Count)
                 throw new System.ArgumentException("The given point must have the same number of dimensions as this tree.");
         }
 
@@ -192,10 +203,10 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public bool Contains(VecKd point)
+        public bool Contains(Vecd point)
         {
             DimCheck(point);
-            return Find(_root, point, 0) != null;
+            return Find(_root, point.Values, 0) != null;
         }
 
 
@@ -206,10 +217,10 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool Contains(VecKd point, out T value)
+        public bool Contains(Vecd point, out T value)
         {
             DimCheck(point);
-            KdNode n = Find(_root, point, 0);
+            KdNode n = Find(_root, point.Values, 0);
 
             if (n == null)
             {
@@ -231,12 +242,12 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode Find(KdNode node, VecKd point, int i)
+        private KdNode Find(KdNode node, double[] point, int i)
         {
             if (node == null) 
                 return null;
 
-            if (point.Equals(node.point, _epsilon)) 
+            if (VecMath.Equals(point,node.point,_epsilon,_k))
                 return node;
 
             // wrap dimension
@@ -254,10 +265,10 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <param name="value"></param>
-        public void Insert(VecKd point, T value)
+        public void Insert(Vecd point, T value)
         {
             DimCheck(point);
-            _root = Insert(_root, point, value, 0);
+            _root = Insert(_root, point.Values, value, 0);
             _n++;
         }
       
@@ -269,7 +280,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="value"></param>
         /// <param name="i"></param>
-        private KdNode Insert(KdNode node, VecKd point, T value, int i)
+        private KdNode Insert(KdNode node, double[] point, T value, int i)
         {
             if (node == null)
                 return new KdNode(point, value);
@@ -296,7 +307,7 @@ namespace SpatialSlur.SlurData
         /// <param name="to"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode InsertBalanced(IList<VecKd> points, IList<T> values, int from, int to, int i)
+        private KdNode InsertBalanced(IList<double[]> points, IList<T> values, int from, int to, int i)
         {
             // stopping conditions
             if (from > to)
@@ -309,24 +320,21 @@ namespace SpatialSlur.SlurData
 
             // sort the median element
             int mid = ((to - from) >> 1) + from;
-            CompareKd comparer = new CompareKd(i, _epsilon);
-            VecKd pt = points.QuickSelect(mid, from, to, comparer, values);
+            KdComparer comparer = new KdComparer(i, _epsilon);
+            double[] midPt = points.QuickSelect(mid, from, to, comparer, values);
 
             // make sure there's no duplicate elements to the left of the median
             int j = from;
             while(j < mid)
             {
-                if (comparer.Compare(points[j], pt) == 0)
+                if (comparer.Compare(points[j], midPt) == 0)
                     points.Swap(j, --mid);
                 else
                     j++;
             }
 
-            // check dimension and create node 
-            DimCheck(points[mid]);
+            // create node and recurse on left and right children
             KdNode node = new KdNode(points[mid], values[mid]);
-
-            // recurse on left and right children
             node.left = InsertBalanced(points, values, from, mid - 1, i + 1);
             node.right = InsertBalanced(points, values, mid + 1, to, i + 1);
             return node;
@@ -338,7 +346,7 @@ namespace SpatialSlur.SlurData
         /// Finds the first node in the tree which is equal to the given point and flags it for removal.
         /// </summary>
         /// <param name="point"></param>
-        public bool Remove(VecKd point)
+        public bool Remove(Vecdd point)
         {
             // TODO implement compact method to remove flagged nodes
             DimCheck(point);
@@ -358,12 +366,12 @@ namespace SpatialSlur.SlurData
         /// Note that node removal can result in unbalanced trees which degrades search performance.
         /// </summary>
         /// <param name="point"></param>
-        public bool Remove(VecKd point)
+        public bool Remove(Vecd point)
         {
             DimCheck(point);
 
             int n = _n;
-            _root = Remove(_root, point, 0);
+            _root = Remove(_root, point.Values, 0);
             return n != _n;
         }
 
@@ -376,7 +384,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode Remove(KdNode node, VecKd point, int i)
+        private KdNode Remove(KdNode node, double[] point, int i)
         {
             if (node == null)
                 return null;
@@ -384,7 +392,7 @@ namespace SpatialSlur.SlurData
             // wrap dimension
             if (i == _k) i = 0;
 
-            if (point.Equals(node.point, _epsilon))
+            if (VecMath.Equals(point, node.point, _epsilon, _k))
             {
                 // found the node to delete
                 if (node.right != null)
@@ -461,12 +469,12 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
-        public List<T> EuclideanSearch(VecKd point, double range)
+        public List<T> EuclideanSearch(Vecd point, double range)
         {
             DimCheck(point);
 
             List<T> result = new List<T>();
-            EuclideanSearch(_root, point, range * range, result, 0);
+            EuclideanSearch(_root, point.Values, range * range, result, 0);
             return result;
         }
 
@@ -479,7 +487,7 @@ namespace SpatialSlur.SlurData
         /// <param name="range"></param>
         /// <param name="result"></param>
         /// <param name="i"></param>
-        private void EuclideanSearch(KdNode node, VecKd point, double range, List<T> result, int i)
+        private void EuclideanSearch(KdNode node, double[] point, double range, List<T> result, int i)
         {
             if (node == null) return;
 
@@ -487,7 +495,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // enqueue value if node is within range
-            if (point.SquareDistanceTo(node.point) < range) 
+            if (VecMath.SquareDistance(point, node.point, _k) < range)
                 result.Add(node.value);
 
             double d = point[i] - node.point[i]; // signed distance to cut plane
@@ -511,13 +519,13 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
-        public List<T> BoxSearch(VecKd point, VecKd range)
+        public List<T> BoxSearch(Vecd point, Vecd range)
         {
             DimCheck(point);
             DimCheck(range);
 
             List<T> result = new List<T>();
-            BoxSearch(_root, point, range, result, 0);
+            BoxSearch(_root, point.Values, range.Values, result, 0);
             return result;
         }
 
@@ -530,7 +538,7 @@ namespace SpatialSlur.SlurData
         /// <param name="range"></param>
         /// <param name="result"></param>
         /// <param name="i"></param>
-        private void BoxSearch(KdNode node, VecKd point, VecKd range, List<T> result, int i)
+        private void BoxSearch(KdNode node, double[] point, double[] range, List<T> result, int i)
         {
             if (node == null) return;
 
@@ -538,7 +546,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if within range
-            if (point.Equals(node.point, range))
+            if (VecMath.Equals(point, node.point, range, _k))
                 result.Add(node.value);
 
             // if left side of tree
@@ -563,12 +571,12 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
-        public List<T> ManhattanSearch(VecKd point, double range)
+        public List<T> ManhattanSearch(Vecd point, double range)
         {
             DimCheck(point);
 
             List<T> result = new List<T>();
-            ManhattanSearch(_root, point, range, result, 0);
+            ManhattanSearch(_root, point.Values, range, result, 0);
             return result;
         }
 
@@ -581,7 +589,7 @@ namespace SpatialSlur.SlurData
         /// <param name="range"></param>
         /// <param name="result"></param>
         /// <param name="i"></param>
-        private void ManhattanSearch(KdNode node, VecKd point, double range, List<T> result, int i)
+        private void ManhattanSearch(KdNode node, double[] point, double range, List<T> result, int i)
         {
             if (node == null) return;
 
@@ -589,7 +597,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if within range
-            if (point.ManhattanDistanceTo(node.point) < range)
+            if (VecMath.ManhattanDistance(point, node.point, _k) < range)
                 result.Add(node.value);
 
             double d = point[i] - node.point[i]; // signed distance to cut plane
@@ -614,12 +622,12 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public T EuclideanNearest(VecKd point)
+        public T EuclideanNearest(Vecd point)
         {
             DimCheck(point);
 
             NearestHelper result = new NearestHelper();
-            EuclideanNearest(_root, point, 0, result);
+            EuclideanNearest(_root, point.Values, 0, result);
 
             return result.value;
         }
@@ -633,12 +641,12 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
-        public T EuclideanNearest(VecKd point, out double distance)
+        public T EuclideanNearest(Vecd point, out double distance)
         {
             DimCheck(point);
 
             NearestHelper result = new NearestHelper();
-            EuclideanNearest(_root, point, 0, result);
+            EuclideanNearest(_root, point.Values, 0, result);
 
             distance = Math.Sqrt(result.distance);
             return result.value;
@@ -652,7 +660,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="result"></param>
         /// <param name="i"></param>
-        private void EuclideanNearest(KdNode node, VecKd point, int i, NearestHelper result)
+        private void EuclideanNearest(KdNode node, double[] point, int i, NearestHelper result)
         {
             if (node == null) return;
 
@@ -660,7 +668,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // update nearest if necessary
-            double d = point.SquareDistanceTo(node.point);
+            double d = VecMath.SquareDistance(point, node.point, _k);
             if (d < result.distance)
             {
                 result.value = node.value;
@@ -691,15 +699,15 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public T[] EuclideanNearestN(VecKd point, int n)
+        public T[] EuclideanNearestN(Vecd point, int n)
         {
             DimCheck(point);
 
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree.");
 
-            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
-            EuclideanNearestN(_root, point, n, 0, result);
+            SortedList<double, T> result = new SortedList<double, T>(new DupComparer<double>());
+            EuclideanNearestN(_root, point.Values, n, 0, result);
             
             // return first n values
             return result.Values.SubArray(0, n);
@@ -714,15 +722,15 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="distances"></param>
         /// <returns></returns>
-        public T[] EuclideanNearestN(VecKd point, int n, out double[] distances)
+        public T[] EuclideanNearestN(Vecd point, int n, out double[] distances)
         {
             DimCheck(point);
 
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree.");
 
-            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
-            EuclideanNearestN(_root, point, n, 0, result);
+            SortedList<double, T> result = new SortedList<double, T>(new DupComparer<double>());
+            EuclideanNearestN(_root, point.Values, n, 0, result);
 
             // get first n distances
             distances = result.Keys.SubArray(0, n);
@@ -741,7 +749,7 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void EuclideanNearestN(KdNode node, VecKd point, int n, int i, SortedList<double, T> result)
+        private void EuclideanNearestN(KdNode node, double[] point, int n, int i, SortedList<double, T> result)
         {
             if (node == null) return;
 
@@ -749,7 +757,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if closer than nth element
-            double d = point.SquareDistanceTo(node.point);
+            double d = VecMath.SquareDistance(point, node.point, _k);
             if (result.Count < n || d < result.Keys[n-1])
                 result.Add(d, node.value);
 
@@ -777,12 +785,12 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public T ManhattanNearest(VecKd point)
+        public T ManhattanNearest(Vecd point)
         {
             DimCheck(point);
 
             NearestHelper result = new NearestHelper();
-            ManhattanNearest(_root, point, 0, result);
+            ManhattanNearest(_root, point.Values, 0, result);
 
             return result.value;
         }
@@ -796,12 +804,12 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
-        public T ManhattanNearest(VecKd point, out double distance)
+        public T ManhattanNearest(Vecd point, out double distance)
         {
             DimCheck(point);
 
             NearestHelper result = new NearestHelper();
-            ManhattanNearest(_root, point, 0, result);
+            ManhattanNearest(_root, point.Values, 0, result);
 
             distance = result.distance;
             return result.value;
@@ -815,7 +823,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="result"></param>
         /// <param name="i"></param>
-        private void ManhattanNearest(KdNode node, VecKd point, int i, NearestHelper result)
+        private void ManhattanNearest(KdNode node, double[] point, int i, NearestHelper result)
         {
             if (node == null) return;
 
@@ -823,7 +831,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // update nearest if necessary
-            double d = point.ManhattanDistanceTo(node.point);
+            double d = VecMath.ManhattanDistance(point, node.point, _k); 
             if (d < result.distance)
             {
                 result.value = node.value;
@@ -854,15 +862,15 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public T[] ManhattanNearestN(VecKd point, int n)
+        public T[] ManhattanNearestN(Vecd point, int n)
         {
             DimCheck(point);
 
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree");
 
-            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
-            ManhattanNearestN(_root, point, n, 0, result);
+            SortedList<double, T> result = new SortedList<double, T>(new DupComparer<double>());
+            ManhattanNearestN(_root, point.Values, n, 0, result);
 
             // return first n values
             return result.Values.SubArray(0, n);
@@ -877,15 +885,15 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="distances"></param>
         /// <returns></returns>
-        public T[] ManhattanNearestN(VecKd point, int n, out double[] distances)
+        public T[] ManhattanNearestN(Vecd point, int n, out double[] distances)
         {
             DimCheck(point);
 
             if (n < 1 || n > _n)
                 throw new ArgumentException("n must be greater than 0 and less than or equal the number of points in the tree");
 
-            SortedList<double, T> result = new SortedList<double, T>(new DuplicateComparer<double>());
-            ManhattanNearestN(_root, point, n, 0, result);
+            SortedList<double, T> result = new SortedList<double, T>(new DupComparer<double>());
+            ManhattanNearestN(_root, point.Values, n, 0, result);
 
             // get first n distances
             distances = result.Keys.SubArray(0, n);
@@ -904,7 +912,7 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void ManhattanNearestN(KdNode node, VecKd point, int n, int i, SortedList<double, T> result)
+        private void ManhattanNearestN(KdNode node, double[] point, int n, int i, SortedList<double, T> result)
         {
             if (node == null) return;
 
@@ -912,7 +920,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if closer than nth element
-            double d = point.ManhattanDistanceTo(node.point);
+            double d = VecMath.ManhattanDistance(node.point, point, _k);
             if (result.Count < n || d < result.Keys[n - 1])
                 result.Add(d, node.value);
 
@@ -940,7 +948,7 @@ namespace SpatialSlur.SlurData
         private class KdNode
         {
             public KdNode left, right;
-            public readonly VecKd point;
+            public readonly double[] point;
             public readonly T value;
             // public int depth; // handy to store depth if want to avoid recursion
             // public bool isRemoved; // flag nodes as removed
@@ -960,10 +968,61 @@ namespace SpatialSlur.SlurData
             /// </summary>
             /// <param name="point"></param>
             /// <param name="value"></param>
-            public KdNode(VecKd point, T value)
+            public KdNode(double[] point, T value)
             {
                 this.point = point;
                 this.value = value;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class KdComparer : IComparer<double[]>
+        {
+            public int k; // dimension used for comparison
+            public double epsilon; // equality tolerance
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="k"></param>
+            /// <param name="epsilon"></param>
+            public KdComparer(int k, double epsilon)
+            {
+                this.k = k;
+                this.epsilon = epsilon;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="p0"></param>
+            /// <param name="p1"></param>
+            /// <returns></returns>
+            public int Compare(double[] p0, double[] p1)
+            {
+                double d = p0[k] - p1[k];
+                return (Math.Abs(d) < epsilon) ? 0 : Math.Sign(d);
+            }
+        }
+
+
+        /// <summary>
+        /// Comparer that treats equality as greater than.
+        /// Used to avoid errors related to duplicate keys.
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        private class DupComparer<U> : IComparer<U> 
+            where U : IComparable
+        {
+            public int Compare(U x, U y)
+            {
+                int result = x.CompareTo(y);
+                return (result == 0) ? 1 : result;
             }
         }
 
@@ -976,22 +1035,5 @@ namespace SpatialSlur.SlurData
             public T value;
             public double distance = Double.PositiveInfinity;
         }
-
-
-        /// <summary>
-        /// Comparer that treats equality as greater than.
-        /// Used to avoid errors related to duplicate keys.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        private class DuplicateComparer<U> : IComparer<U> 
-            where U : IComparable
-        {
-            public int Compare(U x, U y)
-            {
-                int result = x.CompareTo(y);
-                return (result == 0) ? 1 : result;
-            }
-        }
-
     }
 }

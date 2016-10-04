@@ -167,7 +167,55 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns entries of a rotation matrix in column-major order.
+        /// Returns the aspect ratio of the triangle defined by 3 given points.
+        /// This is defined as the longest edge / shortest altitude.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static double GetTriAspect(Vec3d[] points)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Returns the aspect ratio of the tetrahedra defined by 4 given points.
+        /// This is defined as the longest edge / shortest altitude.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static double GetTetraAspect(Vec3d[] points)
+        {
+            // get length of longest edge
+            double d0 = 0.0;
+            for (int i = 0; i < 4; i++)
+            {
+                Vec3d p0 = points[i];
+
+                for (int j = i + 1; j < 4; j++)
+                    d0 = Math.Max(d0, p0.SquareDistanceTo(points[j]));
+            }
+
+            // get shortest altitude
+            double d1 = Double.PositiveInfinity;
+            for (int i = 0; i < 4; i++)
+            {
+                Vec3d p0 = points[i];
+                Vec3d p1 = points[(i + 1) & 3];
+                Vec3d p2 = points[(i + 2) & 3];
+                Vec3d p3 = points[(i + 3) & 3];
+
+                Vec3d d = Vec3d.Project(p1 - p0, Vec3d.Cross(p2 - p0, p3 - p0));
+                d1 = Math.Min(d1, d.SquareLength);
+            }
+
+            return Math.Sqrt(d0) / Math.Sqrt(d1);
+        }
+
+
+        /// <summary>
+        /// Returns entries of a rotation matrix in column major order.
         /// Assumes the given axis is unit length.
         /// </summary>
         /// <param name="axis"></param>
@@ -248,11 +296,38 @@ namespace SpatialSlur.SlurCore
         /// <param name="vector"></param>
         /// <param name="delta"></param>
         /// <param name="result"></param>
-        public static void GetGradient(Func<VecKd, double> func, VecKd vector, double delta, VecKd result)
+        public static void GetGradient(Func<Vecd, double> func, Vecd vector, double delta, Vecd result)
         {
             double d2 = 1.0 / (delta * 2.0);
 
-            for (int i = 0; i < vector.K; i++)
+            for (int i = 0; i < vector.Count; i++)
+            {
+                double t = vector[i];
+
+                vector[i] = t + delta;
+                double g0 = func(vector);
+
+                vector[i] = t - delta;
+                double g1 = func(vector);
+
+                result[i] = (g0 - g1) * d2;
+                vector[i] = t;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the gradient of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="vector"></param>
+        /// <param name="delta"></param>
+        /// <param name="result"></param>
+        public static void GetGradient(Func<double[], double> func, double[] vector, double delta, double[] result)
+        {
+            double d2 = 1.0 / (delta * 2.0);
+
+            for (int i = 0; i < vector.Length; i++)
             {
                 double t = vector[i];
 
@@ -321,6 +396,7 @@ namespace SpatialSlur.SlurCore
         }
 
 
+
         /// <summary>
         /// Returns the entries of the covariance matrix in column-major order.
         /// </summary>
@@ -357,31 +433,61 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns the the entries of the covariance matrix in column-major order.
+        /// 
         /// </summary>
         /// <param name="vectors"></param>
         /// <returns></returns>
-        public static double[] GetCovarianceMatrix(IList<VecKd> vectors)
+        public static double[] GetCovarianceMatrix(IList<Vecd> vectors)
         {
-            int n = vectors[0].K;
+            Vecd mean;
+            return GetCovarianceMatrix(vectors, out mean);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="mean"></param>
+        /// <returns></returns>
+        public static double[] GetCovarianceMatrix(IList<Vecd> vectors, out Vecd mean)
+        {
+            int n = vectors[0].Count;
+            double[] result = new double[n * n];
+
+            GetCovarianceMatrix(vectors, result, out mean);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns the the entries of the covariance matrix in column-major order.
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="result"></param>
+        /// <param name="mean"></param>
+        public static void GetCovarianceMatrix(IList<Vecd> vectors, double[] result, out Vecd mean)
+        {
+            int n = vectors[0].Count;
 
             // calculate mean
-            VecKd mean = new VecKd(n);
-            foreach (VecKd v in vectors) mean.Add(v);
-            mean.Scale(1 / vectors.Count);
+            mean = new Vecd(n);
+            foreach (Vecd v in vectors) mean.Add(v);
+            mean.Scale(1.0 / vectors.Count);
 
             // calculate lower triangular covariance matrix
-            double[] result = new double[n * n];
-            VecKd d = new VecKd(n);
-
-            for (int k = 0; k < vectors.Count; k++)
+            for (int i = 0; i < vectors.Count; i++)
             {
-                vectors[k].Subtract(mean, d);
+                double[] vec = vectors[i].Values;
 
-                for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++)
                 {
-                    for (int j = i; j < n; j++)
-                        result[i * n + j] += d[i] * d[j];
+                    double dj = vec[j] - mean[j];
+                    result[j * n + j] += dj * dj; // diagonal entry
+
+                    for (int k = j + 1; k < n; k++)
+                        result[j * n + k] += dj * (vec[k] - mean[k]);
                 }
             }
 
@@ -391,8 +497,74 @@ namespace SpatialSlur.SlurCore
                 for (int j = 0; j < i; j++)
                     result[j * n + i] = result[i * n + j];
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        public static double[] GetCovarianceMatrix(IList<double[]> vectors)
+        {
+            double[] mean;
+            return GetCovarianceMatrix(vectors, out mean);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="mean"></param>
+        /// <returns></returns>
+        public static double[] GetCovarianceMatrix(IList<double[]> vectors, out double[] mean)
+        {
+            int n = vectors[0].Length;
+            double[] result = new double[n * n];
+            
+            GetCovarianceMatrix(vectors, result, out mean);
 
             return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="result"></param>
+        /// <param name="mean"></param>
+        public static void GetCovarianceMatrix(IList<double[]> vectors, double[] result, out double[] mean)
+        {
+            int n = vectors[0].Length;
+
+            // calculate mean
+            mean = new double[n];
+            foreach (double[] v in vectors) VecMath.Add(mean,v,n,mean);
+            VecMath.Scale(mean, 1.0 / vectors.Count, n, mean);
+
+            // calculate lower triangular covariance matrix
+            for (int i = 0; i < vectors.Count; i++)
+            {
+                double[] vec = vectors[i];
+       
+                for (int j = 0; j < n; j++)
+                {
+                    double dj = vec[j] - mean[j];
+                    result[j * n + j] += dj * dj; // diagonal entry
+
+                    for (int k = j + 1; k < n; k++)
+                        result[j * n + k] += dj * (vec[k] - mean[k]);
+                }
+            }
+
+            // fill out upper triangular
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < i; j++)
+                    result[j * n + i] = result[i * n + j];
+            }
         }
     }
 }

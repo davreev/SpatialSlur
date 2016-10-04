@@ -39,20 +39,15 @@ namespace SpatialSlur.SlurMesh
         public static void UpdateEdgeLabels(this HalfedgeList hedges, IList<int> result)
         {
             Stack<Halfedge> stack = new Stack<Halfedge>();
-            int currTag = hedges.NextTag;
 
             for (int i = 0; i < hedges.Count; i += 2)
             {
                 Halfedge he = hedges[i];
-                if (he.IsUnused || he.Tag == currTag) continue; // skip if unused or already visited
+                if (he.IsUnused || result[i >> 1] != 0) continue; // skip if unused or already visited
 
-                // set label and flag as visited
-                result[he.Index >> 1] = 0;
-                he.Tag = he.Twin.Tag = currTag;
-
-                // add to stack
-                stack.Push(he);
-                UpdateEdgeLabels(stack, currTag, result);
+                result[he.Index >> 1] = 1;
+                stack.Push((he.Face == null) ? he.Twin : he);
+                UpdateEdgeLabels(stack, result);
             }
         }
       
@@ -84,35 +79,66 @@ namespace SpatialSlur.SlurMesh
             hedges.HalfSizeCheck(result);
 
             Stack<Halfedge> stack = new Stack<Halfedge>();
-            int currTag = hedges.NextTag;
-       
-            // set label and flag as visited
-            result[start.Index >> 1] = 0;
-            start.Tag = start.Twin.Tag = currTag;
 
-            // add to stack
-            stack.Push(start);
-            UpdateEdgeLabels(stack, currTag, result);
+            result[start.Index >> 1] = 1;
+            stack.Push((start.Face == null) ? start.Twin : start);
+            UpdateEdgeLabels(stack, result);
         }
 
 
         /// <summary>
         /// Assumes the result array contains default values.
         /// </summary>
-        private static void UpdateEdgeLabels(Stack<Halfedge> stack, int currTag, IList<int> result)
+        private static void UpdateEdgeLabels(Stack<Halfedge> stack, IList<int> result)
         {
             while (stack.Count > 0)
             {
                 Halfedge he0 = stack.Pop();
+                int label = -result[he0.Index >> 1];
+
+                // circulate face
+                Halfedge he1 = he0.Next;
+                while (he1 != he0)
+                {
+                    int index = he1.Index >> 1;
+
+                    // bypass if already visited
+                    if (result[index] == 0)
+                    {
+                        // set label
+                        result[index] = label;
+
+                        // add twin to stack if not on boundary
+                        Halfedge he2 = he1.Twin;
+                        if (he2.Face != null) stack.Push(he2);
+                    }
+
+                    he1 = he1.Next;
+                    label = -label;
+                }
+            }
+        }
+
+
+        /*
+        /// <summary>
+        /// Assumes the result array contains default values.
+        /// </summary>
+        private static void UpdateEdgeLabels(Stack<Halfedge> stack, int currTag, IList<int> result)
+        {
+            // TODO terminate circulation at mesh boundary
+            while (stack.Count > 0)
+            {
+                Halfedge he0 = stack.Pop();
                 Halfedge he1 = he0.Twin.Next;
-                int id = result[he0.Index >> 1] + 1;
+                int label = result[he0.Index >> 1] + 1;
 
                 do
                 {
                     // set result and add to stack if not yet visited
                     if (he1.Tag != currTag && he1.Face != null)
                     {
-                        result[he1.Index >> 1] = id & 1; // set result
+                        result[he1.Index >> 1] = label & 1; // set result
 
                         Halfedge he2 = he1.Twin;
                         he1.Tag = he2.Tag = currTag;
@@ -120,10 +146,11 @@ namespace SpatialSlur.SlurMesh
                     }
 
                     he1 = he1.Twin.Next;
-                    id++;
+                    label++; // increment label regardless
                 } while (he1 != he0);
             }
         }
+        */
 
 
         /// <summary>

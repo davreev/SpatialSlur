@@ -78,6 +78,20 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Returns the topological depth of all vertices connected to a set of sources.
+        /// </summary>
+        /// <param name="verts"></param>
+        /// <param name="sources"></param>
+        /// <returns></returns>
+        public static int[] GetVertexDepths(this HeVertexList verts, IEnumerable<int> sources)
+        {
+            int[] result = new int[verts.Count];
+            verts.UpdateVertexDepths(sources, result);
+            return result;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="verts"></param>
@@ -100,7 +114,42 @@ namespace SpatialSlur.SlurMesh
                 result[v.Index] = 0;
             }
 
-            // breadth first search from sources
+            GetVertexDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="verts"></param>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        public static void UpdateVertexDepths(this HeVertexList verts, IEnumerable<int> sources, IList<int> result)
+        {
+            verts.SizeCheck(result);
+
+            var queue = new Queue<HeVertex>();
+            result.Set(Int32.MaxValue);
+
+            // enqueue sources and set to zero
+            foreach (int vi in sources)
+            {
+                var v = verts[vi];
+                if (v.IsUnused) continue;
+
+                queue.Enqueue(v);
+                result[vi] = 0;
+            }
+
+            GetVertexDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetVertexDepths(Queue<HeVertex> queue, IList<int> result)
+        {
             while (queue.Count > 0)
             {
                 HeVertex v0 = queue.Dequeue();
@@ -124,12 +173,27 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="verts"></param>
         /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
+        /// <param name="edgeWeights"></param>
         /// <returns></returns>
-        public static double[] GetVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeLengths)
+        public static double[] GetVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeWeights)
         {
             double[] result = new double[verts.Count];
-            verts.UpdateVertexDistances(sources, edgeLengths, result);
+            verts.UpdateVertexDistances(sources, edgeWeights, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns the topological distance of all vertices connected to a set of sources.
+        /// </summary>
+        /// <param name="verts"></param>
+        /// <param name="sources"></param>
+        /// <param name="edgeWeights"></param>
+        /// <returns></returns>
+        public static double[] GetVertexDistances(this HeVertexList verts, IEnumerable<int> sources, IList<double> edgeWeights)
+        {
+            double[] result = new double[verts.Count];
+            verts.UpdateVertexDistances(sources, edgeWeights, result);
             return result;
         }
 
@@ -139,14 +203,12 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="verts"></param>
         /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
+        /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        public static void UpdateVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeLengths, IList<double> result)
+        public static void UpdateVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeWeights, IList<double> result)
         {
-            // TODO switch to pq implementation
-
             verts.SizeCheck(result);
-            verts.Mesh.Halfedges.HalfSizeCheck(edgeLengths);
+            verts.Mesh.Halfedges.HalfSizeCheck(edgeWeights);
 
             var queue = new Queue<HeVertex>();
             result.Set(Double.PositiveInfinity);
@@ -161,7 +223,48 @@ namespace SpatialSlur.SlurMesh
                 result[v.Index] = 0.0;
             }
 
-            // breadth first search from sources
+            UpdateVertexDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="verts"></param>
+        /// <param name="sources"></param>
+        /// <param name="edgeWeights"></param>
+        /// <param name="result"></param>
+        public static void UpdateVertexDistances(this HeVertexList verts, IEnumerable<int> sources, IList<double> edgeWeights, IList<double> result)
+        {
+            verts.SizeCheck(result);
+            verts.Mesh.Halfedges.HalfSizeCheck(edgeWeights);
+
+            var queue = new Queue<HeVertex>();
+            result.Set(Double.PositiveInfinity);
+
+            // enqueue sources and set to zero
+            foreach (int vi in sources)
+            {
+                var v = verts[vi];
+                if (v.IsUnused) continue;
+
+                queue.Enqueue(v);
+                result[vi] = 0.0;
+            }
+
+            UpdateVertexDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queue"></param>
+        /// <param name="edgeWeights"></param>
+        /// <param name="result"></param>
+        private static void UpdateVertexDistances(Queue<HeVertex> queue, IList<double> edgeWeights, IList<double> result)
+        {
+            // TODO switch to priority queue implementation
             while (queue.Count > 0)
             {
                 HeVertex v0 = queue.Dequeue();
@@ -171,7 +274,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     HeVertex v1 = he.Start;
                     int i1 = v1.Index;
-                    double t1 = t0 + edgeLengths[he.Index >> 1];
+                    double t1 = t0 + edgeWeights[he.Index >> 1];
 
                     if (t1 < result[i1])
                     {
@@ -593,7 +696,7 @@ namespace SpatialSlur.SlurMesh
                 foreach (Halfedge he in v.OutgoingHalfedges)
                     sum += Math.PI - he.GetAngle();
 
-                result[i] = Math.Abs(SlurMath.Tau - sum);
+                result[i] = Math.Abs(SlurMath.TwoPI - sum);
             }
         }
 
@@ -648,7 +751,7 @@ namespace SpatialSlur.SlurMesh
                 foreach (Halfedge he in v.OutgoingHalfedges)
                     sum += Math.PI - halfedgeAngles[he.Index];
 
-                result[i] = Math.Abs(SlurMath.Tau - sum);
+                result[i] = Math.Abs(SlurMath.TwoPI - sum);
             }
         }
 

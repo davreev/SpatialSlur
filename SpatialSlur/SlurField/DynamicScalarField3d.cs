@@ -9,7 +9,6 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes 
- * TODO refactor names of methods that modify the field deltas
  */
 
 namespace SpatialSlur.SlurField
@@ -161,7 +160,7 @@ namespace SpatialSlur.SlurField
                     double tz1 = (k == CountZ - 1) ? BoundaryValue : Values[index + CountXY];
 
                     double t = Values[index] * 2.0;
-                    _deltas[index] += (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
+                    _deltas[index] += ((tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz) * rate;
                 }
             });
         }
@@ -196,7 +195,7 @@ namespace SpatialSlur.SlurField
                     double tz1 = (k == CountZ - 1) ? Values[index] : Values[index + CountXY];
 
                     double t = Values[index] * 2.0;
-                    _deltas[index] += (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
+                    _deltas[index] += ((tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz) * rate;
                 }
             });
         }
@@ -231,7 +230,7 @@ namespace SpatialSlur.SlurField
                     double tz1 = (k == CountZ - 1) ? Values[index + CountXY - Count] : Values[index + CountXY];
 
                     double t = Values[index] * 2.0;
-                    _deltas[index] += (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
+                    _deltas[index] += ((tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz) * rate;
                 }
             });
         }
@@ -271,43 +270,37 @@ namespace SpatialSlur.SlurField
 
                     double value = Values[index];
                     double sum = 0.0;
-                    double m, md;
+                    double m, dm;
 
                     //-x
                     m = (i == 0) ? BoundaryValue - value : Values[index - 1] - value;
-                    m *= dx;
-                    md = Math.Abs(m) - slope;
-                    if (md > 0.0) sum += Math.Sign(m) * md;
+                    dm = Math.Abs(m * dx) - slope;
+                    if (dm > 0.0) sum += Math.Sign(m) * dm;
 
                     //+x
                     m = (i == CountX - 1) ? BoundaryValue - value : Values[index + 1] - value;
-                    m *= dx;
-                    md = Math.Abs(m) - slope;
-                    if (md > 0.0) sum += Math.Sign(m) * md;
+                    dm = Math.Abs(m * dx) - slope;
+                    if (dm > 0.0) sum += Math.Sign(m) * dm;
 
                     //-y
                     m = (j == 0) ? BoundaryValue - value : Values[index - CountX] - value;
-                    m *= dy;
-                    md = Math.Abs(m) - slope;
-                    if (md > 0.0) sum += Math.Sign(m) * md;
+                    dm = Math.Abs(m * dy) - slope;
+                    if (dm > 0.0) sum += Math.Sign(m) * dm;
 
                     //+y
                     m = (j == CountY - 1) ? BoundaryValue - value : Values[index + CountX] - value;
-                    m *= dy;
-                    md = Math.Abs(m) - slope;
-                    if (md > 0.0) sum += Math.Sign(m) * md;
+                    dm = Math.Abs(m * dy) - slope;
+                    if (dm > 0.0) sum += Math.Sign(m) * dm;
 
                     //-z
                     m = (k == 0) ? BoundaryValue - value : Values[index - CountXY] - value;
-                    m *= dz;
-                    md = Math.Abs(m) - slope;
-                    if (md > 0.0) sum += Math.Sign(m) * md;
+                    dm = Math.Abs(m * dz) - slope;
+                    if (dm > 0.0) sum += Math.Sign(m) * dm;
 
                     //+z
                     m = (k == CountZ - 1) ? BoundaryValue - value : Values[index + CountXY] - value;
-                    m *= dz;
-                    md = Math.Abs(m) - slope;
-                    if (md > 0.0) sum += Math.Sign(m) * md;
+                    dm = Math.Abs(m * dz) - slope;
+                    if (dm > 0.0) sum += Math.Sign(m) * dm;
 
                     _deltas[index] += sum * rate;
                 }
@@ -419,38 +412,32 @@ namespace SpatialSlur.SlurField
 
                     //-x
                     m = (i == 0) ? Values[index - 1 + CountX] - value : Values[index - 1] - value;
-                    m *= dx;
-                    md = Math.Abs(m) - slope;
+                    md = Math.Abs(m * dx) - slope;
                     if (md > 0.0) sum += Math.Sign(m) * md;
 
                     //+x
                     m = (i == CountX - 1) ? Values[index + 1 - CountX] - value : Values[index + 1] - value;
-                    m *= dx;
-                    md = Math.Abs(m) - slope;
+                    md = Math.Abs(m * dx) - slope;
                     if (md > 0.0) sum += Math.Sign(m) * md;
 
                     //-y
                     m = (j == 0) ? Values[index - CountX + CountXY] - value : Values[index - CountX] - value;
-                    m *= dy;
-                    md = Math.Abs(m) - slope;
+                    md = Math.Abs(m * dy) - slope;
                     if (md > 0.0) sum += Math.Sign(m) * md;
 
                     //+y
                     m = (j == CountY - 1) ? Values[index + CountX - CountXY] - value : Values[index + CountX] - value;
-                    m *= dy;
-                    md = Math.Abs(m) - slope;
+                    md = Math.Abs(m * dy) - slope;
                     if (md > 0.0) sum += Math.Sign(m) * md;
 
                     //-z
                     m = (k == 0) ? Values[index - CountXY + Count] - value : Values[index - CountXY] - value;
-                    m *= dz;
-                    md = Math.Abs(m) - slope;
+                    md = Math.Abs(m * dz) - slope;
                     if (md > 0.0) sum += Math.Sign(m) * md;
 
                     //+z
                     m = (k == CountZ - 1) ? Values[index + CountXY - Count] - value : Values[index + CountXY] - value;
-                    m *= dz;
-                    md = Math.Abs(m) - slope;
+                    md = Math.Abs(m * dz) - slope;
                     if (md > 0.0) sum += Math.Sign(m) * md;
 
                     _deltas[index] += sum * rate;

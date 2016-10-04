@@ -153,7 +153,7 @@ namespace SpatialSlur.SlurField
                     double ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
 
                     double t = Values[index] * 2.0;
-                    _deltas[index] += (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
+                    _deltas[index] += ((tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy) * rate;
                 }
             });
         }
@@ -183,7 +183,7 @@ namespace SpatialSlur.SlurField
                     double ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
 
                     double t = Values[index] * 2.0;
-                    _deltas[index] += (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
+                    _deltas[index] += ((tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy) * rate;
                 }
             });
         }
@@ -213,7 +213,7 @@ namespace SpatialSlur.SlurField
                     double ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
 
                     double t = Values[index] * 2.0;
-                    _deltas[index] += (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
+                    _deltas[index] += ((tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy) * rate;
                 }
             });
         }

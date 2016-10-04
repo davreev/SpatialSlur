@@ -55,9 +55,8 @@ namespace SpatialSlur.SlurField
         protected Field3d(Field3d<T> other)
             : base(other)
         {
-            int n = Count + 1;
-            _values = new T[n];
-            Array.Copy(other._values, _values, n);
+            _values = new T[Count + 1];
+            Set(other);
         }
 
 
@@ -95,7 +94,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Set(Field3d<T> other)
         {
-            Array.Copy(other._values, _values, Count);
+            other._values.CopyTo(_values, 0);
         }
 
 
@@ -106,7 +105,21 @@ namespace SpatialSlur.SlurField
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <param name="parallel"></param>
-        public void SetBlock(T value, Vec3i from, Vec3i to, bool parallel = false)
+        public void Set(T value, Vec3i from, Vec3i to, bool parallel = false)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="parallel"></param>
+        public void Set(Field3d<T> other, Vec3i from, Vec3i to, bool parallel = false)
         {
             // TODO
             throw new NotImplementedException();
@@ -169,11 +182,7 @@ namespace SpatialSlur.SlurField
         /// <param name="func"></param>
         public void Function(Func<T, T> func)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i]);
-            });
+            VecMath.FunctionParallel(func, _values, Count, _values);
         }
 
 
@@ -185,13 +194,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Function<U>(Func<U, T> func, Field3d<U> other)
         {
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(u[i]);
-            });
+            VecMath.FunctionParallel(func, other._values, Count, _values);
         }
 
 
@@ -203,13 +206,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Function<U>(Func<T, U, T> func, Field3d<U> other)
         {
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], u[i]);
-            });
+            VecMath.FunctionParallel(func, _values, other._values, Count, _values);
         }
 
 
@@ -219,18 +216,11 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="U"></typeparam>
         /// <typeparam name="V"></typeparam>
         /// <param name="func"></param>
-        /// <param name="otherU"></param>
-        /// <param name="otherV"></param>
-        public void Function<U, V>(Func<U, V, T> func, Field3d<U> otherU, Field3d<V> otherV)
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        public void Function<U, V>(Func<U, V, T> func, Field3d<U> f0, Field3d<V> f1)
         {
-            var u = otherU.Values;
-            var v = otherV.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(u[i], v[i]);
-            });
+            VecMath.FunctionParallel(func, f0._values, f1._values, Count, _values);
         }
 
 
@@ -240,18 +230,11 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="U"></typeparam>
         /// <typeparam name="V"></typeparam>
         /// <param name="func"></param>
-        /// <param name="otherU"></param>
-        /// <param name="otherV"></param>
-        public void Function<U, V>(Func<T, U, V, T> func, Field3d<U> otherU, Field3d<V> otherV)
+        /// <param name="f0"></param>
+        /// <param name="f1"></param>
+        public void Function<U, V>(Func<T, U, V, T> func, Field3d<U> f0, Field3d<V> f1)
         {
-            var u = otherU.Values;
-            var v = otherV.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    _values[i] = func(_values[i], u[i], v[i]);
-            });
+            VecMath.FunctionParallel(func, _values, f0._values, f1._values, Count, _values);
         }
 
 
@@ -382,7 +365,7 @@ namespace SpatialSlur.SlurField
             throw new NotImplementedException();
         }
 
-
+        
         /// <summary>
         /// Sets a subset of this field to some function of its coordinates.
         /// </summary>
@@ -547,24 +530,18 @@ namespace SpatialSlur.SlurField
                 return;
             }
 
-            Domain3d d = other.Domain;
-            double ti = 1.0 / (CountX - 1);
-            double tj = 1.0 / (CountY - 1);
-            double tk = 1.0 / (CountZ - 1);
-
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
+                FieldPoint3d fp = new FieldPoint3d();
                 int i, j, k;
                 ExpandIndex(range.Item1, out i, out j, out k);
-                FieldPoint3d fp = new FieldPoint3d();
-
+       
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    Vec3d p = d.Evaluate(new Vec3d(i * ti, j * tj, k * tk));
-                    other.FieldPointAt(p, fp);
+                    other.FieldPointAt(CoordinateAt(i, j, k), fp);
                     _values[index] = other.Evaluate(fp);
                 }
             });

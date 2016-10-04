@@ -206,7 +206,7 @@ namespace SpatialSlur.SlurMesh
                 if (v.IsBoundary)
                 {
                     Halfedge he = v.First;
-                    if (!he.IsFromDegree2) v.Position = 0.25 * he.End.Position + 0.25 * he.Previous.Start.Position + 0.5 * v.Position;
+                    if (!he.IsAtDegree2) v.Position = 0.25 * he.End.Position + 0.25 * he.Previous.Start.Position + 0.5 * v.Position;
                 }
                 else
                 {

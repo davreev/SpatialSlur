@@ -111,21 +111,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Add(ScalarField2d other)
         {
-            Add(other.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        public void Add(IList<double> values)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] += values[i];
-            });
+            VecMath.AddParallel(Values, other.Values, Count, Values);
         }
 
 
@@ -136,22 +122,7 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void Add(ScalarField2d other, ScalarField2d result)
         {
-            Add(other.Values, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="result"></param>
-        public void Add(IList<double> values, IList<double> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = Values[i] + values[i];
-            });
+            VecMath.AddParallel(Values, other.Values, Count, result.Values);
         }
 
 
@@ -161,21 +132,7 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public void Multiply(ScalarField2d other)
         {
-            Multiply(other.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        public void Multiply(IList<double> values)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] *= values[i];
-            });
+            VecMath.MultiplyParallel(Values, other.Values, Count, Values);
         }
 
 
@@ -186,37 +143,39 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public void Multiply(ScalarField2d other, ScalarField2d result)
         {
-            Multiply(other.Values, result.Values);
+            VecMath.MultiplyParallel(Values, other.Values, Count, result.Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="values"></param>
+        /// <param name="other"></param>
+        public void Divide(ScalarField2d other)
+        {
+            VecMath.DivideParallel(Values, other.Values, Count, Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
         /// <param name="result"></param>
-        public void Multiply(IList<double> values, IList<double> result)
+        public void Divide(ScalarField2d other, ScalarField2d result)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = Values[i] * values[i];
-            });
+            VecMath.DivideParallel(Values, other.Values, Count, result.Values);
         }
 
 
         /// <summary>
-        /// 
+        /// Linerly interpolates values in this field towards corresponding values in another.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="other"></param>
         /// <param name="factor"></param>
-        public void LerpTo(double value, double factor)
+        public void LerpTo(ScalarField2d other, double factor)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurMath.Lerp(Values[i], value, factor);
-            });
+            VecMath.LerpParallel(Values, other.Values, factor, Count, Values);
         }
 
 
@@ -225,50 +184,10 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="other"></param>
         /// <param name="factor"></param>
-        public void LerpTo(ScalarField2d other, double factor)
+        /// <param name="result"></param>
+        public void LerpTo(ScalarField2d other, double factor, ScalarField2d result)
         {
-            LerpTo(other.Values, factor);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="factor"></param>
-        public void LerpTo(IList<double> values, double factor)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurMath.Lerp(Values[i], values[i], factor);
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="factors"></param>
-        public void LerpTo(double value, ScalarField2d factors)
-        {
-            LerpTo(value, factors.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="factors"></param>
-        public void LerpTo(double value, IList<double> factors)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurMath.Lerp(Values[i], value, factors[i]);
-            });
+            VecMath.LerpParallel(Values, other.Values, factor, Count, result.Values);
         }
 
 
@@ -279,22 +198,19 @@ namespace SpatialSlur.SlurField
         /// <param name="factors"></param>
         public void LerpTo(ScalarField2d other, ScalarField2d factors)
         {
-            LerpTo(other.Values, factors.Values);
+            VecMath.LerpParallel(Values, other.Values, factors.Values, Count, Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="values"></param>
+        /// <param name="other"></param>
         /// <param name="factors"></param>
-        public void LerpTo(IList<double> values, IList<double> factors)
+        /// <param name="result"></param>
+        public void LerpTo(ScalarField2d other, ScalarField2d factors, ScalarField2d result)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurMath.Lerp(Values[i], values[i], factors[i]);
-            });
+            VecMath.LerpParallel(Values, other.Values, factors.Values, Count, result.Values);
         }
 
 
@@ -303,20 +219,16 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void Normalize()
         {
-            Normalize(new Domain(Values));
+            VecMath.NormalizeParallel(Values, new Domain(Values), Count, Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public void Normalize(Domain domain)
+        public void Normalize(ScalarField2d result)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = domain.Normalize(Values[i]);
-            });
+            VecMath.NormalizeParallel(Values, new Domain(Values), Count, result.Values);
         }
 
 
@@ -326,7 +238,18 @@ namespace SpatialSlur.SlurField
         /// <param name="to"></param>
         public void Remap(Domain to)
         {
-            Remap(new Domain(Values), to);
+            VecMath.RemapParallel(Values, new Domain(Values), to, Count, Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="to"></param>
+        /// <param name="result"></param>
+        public void Remap(Domain to, ScalarField2d result)
+        {
+            VecMath.RemapParallel(Values, new Domain(Values), to, Count, result.Values);
         }
 
 
@@ -337,11 +260,19 @@ namespace SpatialSlur.SlurField
         /// <param name="to"></param>
         public void Remap(Domain from, Domain to)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i] = SlurCore.Domain.Remap(Values[i], from, to);
-            });
+            VecMath.RemapParallel(Values, from, to, Count, Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="result"></param>
+        public void Remap(Domain from, Domain to, ScalarField2d result)
+        {
+            VecMath.RemapParallel(Values, from, to, Count, result.Values);
         }
 
    

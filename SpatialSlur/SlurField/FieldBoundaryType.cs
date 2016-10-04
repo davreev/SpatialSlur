@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurField
         Constant,
         /// <summary>Assumes values beyond the field domain are equal to the closest value in the field.</summary>
         Equal,
-        /// <summary>Assumes field repeats in all directions.</summary>
+        /// <summary>Assumes field repeats infinitely in all directions.</summary>
         Periodic
     }
 }

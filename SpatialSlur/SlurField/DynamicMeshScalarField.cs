@@ -4,9 +4,12 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Rhino.Geometry;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
+
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -33,9 +36,8 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="duplicateMesh"></param>
-        public DynamicMeshScalarField(MeshField other, bool duplicateMesh = false)
-            : base(other, duplicateMesh)
+        public DynamicMeshScalarField(MeshScalarField other)
+            : base(other)
         {
             _deltas = new double[Count];
         }
@@ -45,24 +47,11 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="duplicateMesh"></param>
-        public DynamicMeshScalarField(MeshScalarField other, bool duplicateMesh = false)
-            : base(other, duplicateMesh)
+        public DynamicMeshScalarField(DynamicMeshScalarField other)
+            : base(other)
         {
             _deltas = new double[Count];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="duplicateMesh"></param>
-        public DynamicMeshScalarField(DynamicMeshScalarField other, bool duplicateMesh = false)
-            : base(other, duplicateMesh)
-        {
-            _deltas = new double[Count];
-            Array.Copy(other._deltas, _deltas, Count);
+            other._deltas.CopyTo(_deltas, 0);
         }
 
 
@@ -83,7 +72,7 @@ namespace SpatialSlur.SlurField
         public void Set(DynamicMeshScalarField other)
         {
             base.Set(other);
-            Array.Copy(other._deltas, _deltas, Count);
+            other._deltas.CopyTo(_deltas, 0);
         }
 
 
@@ -322,17 +311,33 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Assumes weights sum to 1.
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="i2"></param>
+        /// <param name="w0"></param>
+        /// <param name="w1"></param>
+        /// <param name="w2"></param>
         /// <param name="amount"></param>
-        public void DepositAt(MeshPoint point, double amount)
+        public void DepositAt(int i0, int i1, int i2, double w0, double w1, double w2, double amount)
         {
-            MeshFace face = DisplayMesh.Faces[point.FaceIndex];
-            int count = (face.IsQuad) ? 4 : 3;
+            _deltas[i0] += amount * w0;
+            _deltas[i1] += amount * w1;
+            _deltas[i2] += amount * w2;
+        }
 
-            for (int i = 0; i < count; i++)
-                _deltas[face[i]] += amount * point.T[i];
+
+        /// <summary>
+        /// Assumes weights sum to 1.
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
+        /// <param name="amount"></param>
+        public void DepositAt(IList<int> indices, IList<double> weights, double amount)
+        {
+            for (int i = 0; i < indices.Count; i++)
+                _deltas[indices[i]] += amount * weights[i];
         }
 
 
@@ -348,8 +353,9 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
-        /// 
+        /// Assumes triangular faces in the queried mesh.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="target"></param>
@@ -358,6 +364,7 @@ namespace SpatialSlur.SlurField
         {
             DepositAt(point, (target - Evaluate(point)) * rate);
         }
+        */
 
 
         /// <summary>
@@ -371,8 +378,9 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
-        /// 
+        /// Assumes triangular faces in the queried mesh.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="rate"></param>
@@ -380,5 +388,6 @@ namespace SpatialSlur.SlurField
         {
             DepositAt(point, -Evaluate(point) * rate);
         }
+        */
     }
 }

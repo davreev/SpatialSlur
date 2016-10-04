@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
-using Rhino.Geometry;
 
 /*
  * Notes
@@ -328,11 +327,10 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
         /// <returns></returns>
         public List<HeMesh> SplitDisjoint()
         {
-            // TODO alt implementation which add mesh elements directly
+            // TODO alt implementation which returns map to original mesh
             List<HeMesh> result = new List<HeMesh>(); // list of connected components
 
             Vec2i[] map = new Vec2i[_verts.Count]; // map for each vertex in the parent mesh ( [x, y] => [component index, vertex index])
@@ -413,7 +411,7 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = _faces[i];
                 if (f.IsUnused) continue;
 
-                int ne = f.Degree;
+                int ne = f.EdgeCount;
 
                 if (ne == 4)
                     _faces.SplitFace(f.First, f.First.Next.Next);
@@ -428,108 +426,135 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeMesh GetDual()
         {
-            // TODO implement more direct dual creation
-            // spinning edges for closed meshes
-            // or adding edge pairs directly rather than adding face by face
-            HeMesh result = new HeMesh();
-            var newVerts = result.Vertices;
-            var newFaces = result.Faces;
+            HeMesh dual = new HeMesh();
+            var dualVerts = dual._verts;
+            var dualHedges = dual._hedges;
+            var dualFaces = dual._faces;
 
-            // add new vertices (1 per face)
+            // add new faces (1 per vertex in primal mesh)
+            foreach (HeVertex v in _verts)
+                dualFaces.Add(new HeFace());
+
+            // add new vertices (1 per face in primal mesh)
             foreach (HeFace f in _faces)
             {
                 if (f.IsUnused)
-                    newVerts.Add(new Vec3d()); // add dummy vertex for unused elements
+                    dualVerts.Add(new HeVertex()); // add placeholder vertex for unused faces
                 else
-                    newVerts.Add(f.GetBarycenter());
+                    dualVerts.Add(f.GetBarycenter());
             }
 
-            // TODO orientation of dual faces is opposite of original faces
-            // circulate in opposite direction?
-
-            // add new faces by circulating old vertices
-            var fv = new List<HeVertex>();
-            foreach (HeVertex v in _verts)
-            {
-                //if (v.IsUnused || v.IsBoundary) continue;
-
-                // add dummy face for unused or boundary vertices
-                if (v.IsUnused || v.IsBoundary)
-                {
-                    newFaces.Add(new HeFace()); 
-                    continue;
-                }
-
-                foreach (HeFace f in v.SurroundingFaces)
-                    fv.Add(newVerts[f.Index]);
-
-                newFaces.AddImpl(fv);
-                fv.Clear();
-            }
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns the dual of the mesh.
-        /// </summary>
-        public HeMesh GetDual2()
-        {
-            HeMesh result = new HeMesh();
-            var newVerts = result._verts;
-            var newHedges = result._hedges;
-            var newFaces = result._faces;
-
-            // add new faces (1 per vertex in original mesh)
-            foreach (HeVertex v in _verts)
-                newFaces.Add(new HeFace());
-
-            // add new vertices (1 per face in original mesh)
-            foreach (HeFace f in _faces)
-            {
-                if (f.IsUnused)
-                    newVerts.Add(new HeVertex()); // add dummy vertex for unused faces
-                else
-                    newVerts.Add(f.GetBarycenter());
-            }
-        
-            // add new halfedges and link them to faces and verts
+            // add new halfedges pairs
             for (int i = 0; i < _hedges.Count; i += 2)
             {
                 var he0 = _hedges[i];
                 var he1 = _hedges[i + 1];
 
-                var f0 = he0.Face;
-                var f1 = he1.Face;
-
                 var v0 = he0.Start;
                 var v1 = he1.Start;
 
-                // skip boundary edges and non-manifold dual edges
-                if (f0 == null || f1 == null || (v0.IsBoundary && v1.IsBoundary))
+                // add placeholder edge for boundary edges and non-manifold dual edges
+                if (v0.IsBoundary && v1.IsBoundary)
                 {
-                    newHedges.AddPair(null, null); // add placeholder edge
+                    dualHedges.AddPair(null, null);
                     continue;
                 }
 
-                var he = newHedges.AddPair(newVerts[f1.Index], newVerts[f0.Index]);
+                var he = dualHedges.AddPair(dualVerts[he1.Face.Index], dualVerts[he0.Face.Index]);
 
                 if (!v0.IsBoundary)
-                    he.Face = newFaces[v0.Index];
+                    he.Face = dualFaces[v0.Index];
 
                 if (!v1.IsBoundary)
-                    he.Twin.Face = newFaces[v1.Index];
+                    he.Twin.Face = dualFaces[v1.Index];
             }
             
-            // link halfedges to eachother
+            // set halfedge->halfedge refs
             for (int i = 0; i < _hedges.Count; i++)
             {
-                // TODO
+                if (dualHedges[i].IsUnused) continue;
+
+                var he0 = _hedges[i];
+                var he1 = he0.Previous;
+
+                // backtrack to first valid dual edge
+                while (dualHedges[he1.Index].IsUnused)
+                    he1 = he1.Previous;
+
+                Halfedge.MakeConsecutive(dualHedges[he0.Index], dualHedges[he1.Twin.Index]);
             }
 
-            return result;
+            // set face->halfegde refs
+            for(int i = 0; i < _verts.Count; i++)
+            {
+                var v = _verts[i];
+                if (v.IsBoundary || v.IsUnused) continue;
+                dualFaces[i].First = dualHedges[v.First.Index];
+            }
+
+            // set vertex->halfedge refs
+            for (int i = 0; i < dualHedges.Count; i++)
+            {
+                var he = dualHedges[i];
+                if (he.IsUnused) continue;
+
+                var v = he.Start;
+                if (v.IsUnused || he.Face == null)
+                    v.First = he;
+            }
+
+            return dual;
         }
+
+
+        /*
+   /// <summary>
+   /// Returns the dual of the mesh.
+   /// </summary>
+   public HeMesh GetDual()
+   {
+       // TODO implement more direct dual creation
+       // spinning edges for closed meshes
+       // or adding edge pairs directly rather than adding face by face
+       HeMesh result = new HeMesh();
+       var newVerts = result.Vertices;
+       var newFaces = result.Faces;
+
+       // add new vertices (1 per face)
+       foreach (HeFace f in _faces)
+       {
+           if (f.IsUnused)
+               newVerts.Add(new Vec3d()); // add dummy vertex for unused elements
+           else
+               newVerts.Add(f.GetBarycenter());
+       }
+
+       // TODO orientation of dual faces is opposite of original faces
+       // circulate in opposite direction?
+
+       // add new faces by circulating old vertices
+       var fv = new List<HeVertex>();
+       foreach (HeVertex v in _verts)
+       {
+           //if (v.IsUnused || v.IsBoundary) continue;
+
+           // add dummy face for unused or boundary vertices
+           if (v.IsUnused || v.IsBoundary)
+           {
+               newFaces.Add(new HeFace()); 
+               continue;
+           }
+
+           foreach (HeFace f in v.SurroundingFaces)
+               fv.Add(newVerts[f.Index]);
+
+           newFaces.AddImpl(fv);
+           fv.Clear();
+       }
+
+       return result;
+   }
+   */
 
 
         /// <summary>

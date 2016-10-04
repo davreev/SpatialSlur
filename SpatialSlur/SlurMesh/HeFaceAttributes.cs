@@ -104,7 +104,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var f = faces[i];
                 if (f.IsUnused) continue;
-                result[i] = f.Degree;
+                result[i] = f.EdgeCount;
             }
         }
 
@@ -379,6 +379,7 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         /// <param name="faces"></param>
+        /// <param name="edgeLengths"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
         public static Vec3d[] GetFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, bool parallel = false)
@@ -390,9 +391,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Assumes triangular faces.
         /// </summary>
         /// <param name="faces"></param>
+        /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
         public static void UpdateFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, IList<Vec3d> result, bool parallel = false)

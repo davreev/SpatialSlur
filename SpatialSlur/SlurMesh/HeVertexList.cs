@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -419,6 +420,32 @@ namespace SpatialSlur.SlurMesh
             return result;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="epsilon"></param>
+        public void MergeCoincidentVertices(double epsilon)
+        {
+            // TODO 
+            // consider case of n coincident vertices
+            throw new NotImplementedException();
+
+            List<Vec3d> pts = new List<Vec3d>();
+            List<int> ids = new List<int>();
+
+            for(int i = 0; i < Count; i++)
+            {
+                HeVertex v = this[i];
+                if (v.IsUnused || !v.IsBoundary) continue;
+
+                pts.Add(v.Position);
+                ids.Add(i);
+            }
+
+            // find coincidence with hash
+        }
+
         #region Euler Operators
 
         /// <summary>
@@ -459,8 +486,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal void RemoveSimple(HeVertex vertex)
         {
-            Halfedge he0 = vertex.First;
-            Halfedge he1 = he0.Twin;
+            Halfedge he0 = vertex.First; // to be removed
+            Halfedge he1 = he0.Twin; // to be removed
             Halfedge he2 = he1.Next;
 
             HeVertex v0 = vertex; // to be removed
@@ -477,13 +504,13 @@ namespace SpatialSlur.SlurMesh
             // flag for removal
             v0.MakeUnused();
             he0.MakeUnused();
-            he1.MakeUnused();
         }
 
 
         /// <summary>
         /// Merges a pair of boundary vertices.
         /// The first vertex is flagged as unused.
+        /// Note that this method may produce non-manifold vertices.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -500,7 +527,7 @@ namespace SpatialSlur.SlurMesh
             if (v0 == v1)
                 return false;
 
-            if (!(v0.IsBoundary && v1.IsBoundary)) 
+            if (!v0.IsBoundary || !v1.IsBoundary) 
                 return false;
 
             return MergeVerticesImpl(v0, v1, t);
@@ -512,17 +539,16 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         internal bool MergeVerticesImpl(HeVertex v0, HeVertex v1, double t = 0.5)
         {
-            Halfedge he0 = v0.First;
+            // if vertices are connected, just collapse the edge between them (check considers non-manifold case)
+            Halfedge he0 = v0.FindHalfedgeTo(v1);
+            if (he0 != null)
+                return Mesh.Halfedges.CollapseEdgeImpl(he0, t);
+
+            he0 = v0.First;
             Halfedge he1 = v1.First;
 
             Halfedge he2 = he0.Previous;
             Halfedge he3 = he1.Previous;
-
-            // if vertices are consecutive, just collapse the halfedge between them
-            if (he0 == he3)
-                return Mesh.Halfedges.CollapseEdgeImpl(he0, t);
-            else if (he1 == he2)
-                return Mesh.Halfedges.CollapseEdgeImpl(he1, 1.0 - t);
 
             // update halfedge->vertex refs for all edges emanating from v1
             foreach (Halfedge he in v0.OutgoingHalfedges)
@@ -534,16 +560,11 @@ namespace SpatialSlur.SlurMesh
 
             // deal with potential collapse of boundary loops on either side of the merge
             if (he1.Next == he2)
-            {
-                Mesh.Faces.MergeInvalidFace(he1);
-                v1.First = he0; // maintain boundary status of v1
-            }
-
+                Mesh.Halfedges.CleanupDegenerateHole(he1);
+      
             if (he0.Next == he3)
-            {
-                Mesh.Faces.MergeInvalidFace(he0);
-            }
-
+                Mesh.Halfedges.CleanupDegenerateHole(he0);
+          
             // flag elements for removal
             v0.MakeUnused();
 
@@ -585,7 +606,7 @@ namespace SpatialSlur.SlurMesh
         internal Halfedge SplitVertexImpl(Halfedge he0, Halfedge he1)
         {
             // if the same edge or vertex is degree 2 then just split the edge
-            if (he0 == he1 || he0.IsFromDegree2)
+            if (he0 == he1 || he0.IsAtDegree2)
                 return Mesh.Halfedges.SplitEdgeImpl(he0, 0.0);
 
             HeVertex v0 = he0.Start;

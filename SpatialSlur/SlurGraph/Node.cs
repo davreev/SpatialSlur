@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurGraph
     public class Node : GraphElement
     {
         private Edge[] _edges;
-        private int _n;
+        private int _count;
         private int _degree; // explicitly store degree to keep up with edge removal
 
 
@@ -38,7 +38,7 @@ namespace SpatialSlur.SlurGraph
         {
             get
             {
-                for (int i = 0; i < _n; i++)
+                for (int i = 0; i < _count; i++)
                 {
                     Edge e = _edges[i];
                     if (!e.IsUnused) yield return e.Other(this);
@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurGraph
         {
             get
             {
-                for (int i = 0; i < _n; i++)
+                for (int i = 0; i < _count; i++)
                 {
                     Edge e = _edges[i];
                     if (!e.IsUnused) yield return e;
@@ -80,7 +80,7 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         public int EdgeCount
         {
-            get { return _n; }
+            get { return _count; }
         }
 
 
@@ -108,13 +108,13 @@ namespace SpatialSlur.SlurGraph
         internal void OnRemove()
         {
             // remove edges (flags node as unused)
-            for(int i = 0; i < _n; i++)
+            for(int i = 0; i < _count; i++)
             {
                 Edge e = _edges[i];
                 if (!e.IsUnused) e.OnRemove();
             }
 
-            _n = 0; // reset edge list
+            _count = 0; // reset edge list
         }
    
 
@@ -125,22 +125,22 @@ namespace SpatialSlur.SlurGraph
         {
             int marker = 0;
 
-            for (int i = 0; i < _n; i++)
+            for (int i = 0; i < _count; i++)
             {
                 Edge e = _edges[i];
                 if (!e.IsUnused)
                     _edges[marker++] = e;
             }
 
-            _n = marker;
+            _count = marker;
 
             // trim array if length is greater than twice _n
-            int maxLength = Math.Max(_n << 1, 2);
+            int maxLength = Math.Max(_count << 1, 2);
             if (_edges.Length > maxLength)
                 Array.Resize(ref _edges, maxLength);
 
             // prevent object loitering
-            Array.Clear(_edges, _n, _edges.Length - _n);
+            Array.Clear(_edges, _count, _edges.Length - _count);
         }
 
 
@@ -163,7 +163,7 @@ namespace SpatialSlur.SlurGraph
         /// <returns></returns>
         public Edge FindEdgeTo(Node other)
         {
-            for (int i = 0; i < _n; i++)
+            for (int i = 0; i < _count; i++)
             {
                 Edge e = _edges[i];
                 if (!e.IsUnused && e.Other(this) == other)
@@ -193,10 +193,10 @@ namespace SpatialSlur.SlurGraph
         internal void AddEdge(Edge edge)
         {
             // resize if necessary
-            if (_n == _edges.Length)
+            if (_count == _edges.Length)
                 Array.Resize(ref _edges, _edges.Length << 1);
 
-            _edges[_n++] = edge;
+            _edges[_count++] = edge;
             _degree++;
         }
     }

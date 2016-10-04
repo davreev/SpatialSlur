@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurData;
 
 /*
  * Notes 
@@ -79,12 +80,12 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="nodes"></param>
         /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
+        /// <param name="edgeWeights"></param>
         /// <returns></returns>
-        public static double[] GetNodeDistances(this NodeList nodes, IEnumerable<Node> sources, IList<double> edgeLengths)
+        public static double[] GetNodeDistances(this NodeList nodes, IEnumerable<Node> sources, IList<double> edgeWeights)
         {
             double[] result = new double[nodes.Count];
-            nodes.UpdateNodeDistances(sources, edgeLengths, result);
+            nodes.UpdateNodeDistances(sources, edgeWeights, result);
             return result;
         }
 
@@ -94,14 +95,13 @@ namespace SpatialSlur.SlurGraph
         /// </summary>
         /// <param name="nodes"></param>
         /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
+        /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDistances(this NodeList nodes, IEnumerable<Node> sources, IList<double> edgeLengths, IList<double> result)
+        public static void UpdateNodeDistances(this NodeList nodes, IEnumerable<Node> sources, IList<double> edgeWeights, IList<double> result)
         {
             // TODO switch to pq implementation
-            
             nodes.SizeCheck(result);
-            nodes.Graph.Edges.SizeCheck(edgeLengths);
+            nodes.Graph.Edges.SizeCheck(edgeWeights);
 
             var queue = new Queue<Node>();
             result.Set(Double.PositiveInfinity);
@@ -126,7 +126,7 @@ namespace SpatialSlur.SlurGraph
                 {
                     Node n1 = e.Other(n0);
                     int i1 = n1.Index;
-                    double t1 = t0 + edgeLengths[e.Index];
+                    double t1 = t0 + edgeWeights[e.Index];
 
                     if (t1 < result[i1])
                     {
