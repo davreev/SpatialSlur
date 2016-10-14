@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurGraph
     /// 
     /// </summary>
     [Serializable]
-    public class DiEdgeList : GraphElementList<DiGraph, DiEdge>
+    public partial class DiEdgeList : GraphElementList<DiGraph, DiEdge>
     {
         /// <summary>
         /// 

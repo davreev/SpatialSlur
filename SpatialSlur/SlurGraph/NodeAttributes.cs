@@ -16,18 +16,17 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// 
     /// </summary>
-    public static class NodeAttributes
+    public partial class NodeList
     {
         /// <summary>
         ///  Gets the topological depth of each node from a given set of source nodes via breadth first search.
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <returns></returns>
-        public static int[] GetNodeDepths(this NodeList nodes, IEnumerable<Node> sources)
+        public int[] GetNodeDepths(IEnumerable<Node> sources)
         {
-            int[] result = new int[nodes.Count];
-            nodes.UpdateNodeDepths(sources, result);
+            var result = new int[Count];
+            GetNodeDepths(sources, result);
             return result;
         }
 
@@ -35,12 +34,11 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDepths(this NodeList nodes, IEnumerable<Node> sources, IList<int> result)
+        public void GetNodeDepths(IEnumerable<Node> sources, IList<int> result)
         {
-            nodes.SizeCheck(result);
+            SizeCheck(result);
 
             var queue = new Queue<Node>();
             result.Set(int.MaxValue);
@@ -48,13 +46,61 @@ namespace SpatialSlur.SlurGraph
             // set sources to zero and enqueue
             foreach (Node n in sources)
             {
-                nodes.OwnsCheck(n);
+                OwnsCheck(n);
                 if (n.IsUnused) continue;
 
                 queue.Enqueue(n);
                 result[n.Index] = 0;
             }
 
+            GetNodeDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <returns></returns>
+        public int[] GetNodeDepths(IEnumerable<int> sources)
+        {
+            var result = new int[Count];
+            GetNodeDepths(sources, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        public void GetNodeDepths(IEnumerable<int> sources, IList<int> result)
+        {
+            SizeCheck(result);
+
+            var queue = new Queue<Node>();
+            result.Set(int.MaxValue);
+
+            // set sources to zero and enqueue
+            foreach (int ni in sources)
+            {
+                Node n = this[ni];
+                if (n.IsUnused) continue;
+
+                queue.Enqueue(n);
+                result[n.Index] = 0;
+            }
+
+            GetNodeDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetNodeDepths(Queue<Node> queue, IList<int> result)
+        {
             // breadth first search from sources
             while (queue.Count > 0)
             {
@@ -78,14 +124,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Gets the topological distance of each node from a given set of source nodes via breadth first search.
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <param name="edgeWeights"></param>
         /// <returns></returns>
-        public static double[] GetNodeDistances(this NodeList nodes, IEnumerable<Node> sources, IList<double> edgeWeights)
+        public double[] GetNodeDistances(IEnumerable<Node> sources, IList<double> edgeWeights)
         {
-            double[] result = new double[nodes.Count];
-            nodes.UpdateNodeDistances(sources, edgeWeights, result);
+            var result = new double[Count];
+            GetNodeDistances(sources, edgeWeights, result);
             return result;
         }
 
@@ -93,15 +138,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDistances(this NodeList nodes, IEnumerable<Node> sources, IList<double> edgeWeights, IList<double> result)
+        public void GetNodeDistances(IEnumerable<Node> sources, IList<double> edgeWeights, IList<double> result)
         {
-            // TODO switch to pq implementation
-            nodes.SizeCheck(result);
-            nodes.Graph.Edges.SizeCheck(edgeWeights);
+            SizeCheck(result);
+            Graph.Edges.SizeCheck(edgeWeights);
 
             var queue = new Queue<Node>();
             result.Set(Double.PositiveInfinity);
@@ -109,13 +152,23 @@ namespace SpatialSlur.SlurGraph
             // set sources to zero and enqueue
             foreach (Node n in sources)
             {
-                nodes.OwnsCheck(n);
+                OwnsCheck(n);
                 if (n.IsUnused) continue;
 
                 queue.Enqueue(n);
                 result[n.Index] = 0.0;
             }
 
+            GetNodeDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetNodeDistances(Queue<Node> queue, IList<double> edgeWeights, IList<double> result)
+        {
+            // TODO switch to pq implementation
             // breadth first search from sources
             while (queue.Count > 0)
             {
@@ -141,14 +194,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Computes the Laplacian using a normalized umbrella weighting scheme.
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="nodeValues"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetLaplacian(this NodeList nodes, IList<double> nodeValues, bool parallel = false)
+        public double[] GetLaplacian(IList<double> nodeValues, bool parallel = false)
         {
-            double[] result = new double[nodes.Count];
-            nodes.UpdateLaplacian(nodeValues, result, parallel);
+            var result = new double[Count];
+            GetLaplacian(nodeValues, result, parallel);
             return result;
         }
 
@@ -156,31 +208,30 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="nodeValues"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateLaplacian(this NodeList nodes, IList<double> nodeValues, IList<double> result, bool parallel = false)
+        public void GetLaplacian(IList<double> nodeValues, IList<double> result, bool parallel = false)
         {
-            nodes.SizeCheck(nodeValues);
-            nodes.SizeCheck(result);
+            SizeCheck(nodeValues);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, nodes.Count), range =>
-                    nodes.UpdateLaplacian(nodeValues, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian(nodeValues, result, range.Item1, range.Item2));
             else
-                nodes.UpdateLaplacian(nodeValues, result, 0, nodes.Count);
+                GetLaplacian(nodeValues, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateLaplacian(this NodeList nodes, IList<double> nodeValues, IList<double> result, int i0, int i1)
+        private void GetLaplacian(IList<double> nodeValues, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                var n0 = nodes[i];
+                var n0 = this[i];
                 if (n0.IsUnused) continue;
 
                 double sum = 0.0;
@@ -195,15 +246,14 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Computes the Laplacian using a given set of edge weights.
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="nodeValues"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetLaplacian(this NodeList nodes, IList<double> nodeValues, IList<double> edgeWeights, bool parallel = false)
+        public double[] GetLaplacian2(IList<double> nodeValues, IList<double> edgeWeights, bool parallel = false)
         {
-            double[] result = new double[nodes.Count];
-            nodes.UpdateLaplacian(nodeValues, edgeWeights, result, parallel);
+            var result = new double[Count];
+            GetLaplacian2(nodeValues, edgeWeights, result, parallel);
             return result;
         }
 
@@ -211,37 +261,147 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="nodeValues"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateLaplacian(this NodeList nodes, IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, bool parallel = false)
+        public void GetLaplacian2(IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, bool parallel = false)
         {
-            nodes.SizeCheck(nodeValues);
-            nodes.SizeCheck(result);
-            nodes.Graph.Edges.SizeCheck(edgeWeights);
+            SizeCheck(nodeValues);
+            SizeCheck(result);
+            Graph.Edges.SizeCheck(edgeWeights);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, nodes.Count), range =>
-                    nodes.UpdateLaplacian(nodeValues, edgeWeights, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian2(nodeValues, edgeWeights, result, range.Item1, range.Item2));
             else
-                nodes.UpdateLaplacian(nodeValues, edgeWeights, result, 0, nodes.Count);
+                GetLaplacian2(nodeValues, edgeWeights, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateLaplacian(this NodeList nodes, IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, int i0, int i1)
+        private void GetLaplacian2(IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                var n0 = nodes[i];
+                var n0 = this[i];
                 if (n0.IsUnused) continue;
 
                 double val = nodeValues[i];
                 double sum = 0.0;
+                foreach (var e in n0.Edges)
+                {
+                    Node n1 = e.Other(n0);
+                    sum += (nodeValues[n1.Index] - val) * edgeWeights[e.Index];
+                }
+
+                result[i] = sum;
+            }
+        }
+
+
+        /// <summary>
+        /// Computes the Laplacian using a normalized umbrella weighting scheme.
+        /// </summary>
+        /// <param name="nodeValues"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public Vec3d[] GetLaplacian(IList<Vec3d> nodeValues, bool parallel = false)
+        {
+            var result = new Vec3d[Count];
+            GetLaplacian(nodeValues, result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nodeValues"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void GetLaplacian(IList<Vec3d> nodeValues, IList<Vec3d> result, bool parallel = false)
+        {
+            SizeCheck(nodeValues);
+            SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian(nodeValues, result, range.Item1, range.Item2));
+            else
+                GetLaplacian(nodeValues, result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetLaplacian(IList<Vec3d> nodeValues, IList<Vec3d> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                var n0 = this[i];
+                if (n0.IsUnused) continue;
+
+                Vec3d sum = new Vec3d();
+                foreach (var n1 in n0.Neighbours)
+                    sum += nodeValues[n1.Index];
+
+                result[i] = sum / n0.Degree - nodeValues[i];
+            }
+        }
+
+
+        /// <summary>
+        /// Computes the Laplacian using a given set of edge weights.
+        /// </summary>
+        /// <param name="nodeValues"></param>
+        /// <param name="edgeWeights"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public Vec3d[] GetLaplacian2(IList<Vec3d> nodeValues, IList<double> edgeWeights, bool parallel = false)
+        {
+            var result = new Vec3d[Count];
+            GetLaplacian2(nodeValues, edgeWeights, result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nodeValues"></param>
+        /// <param name="edgeWeights"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void GetLaplacian2(IList<Vec3d> nodeValues, IList<double> edgeWeights, IList<Vec3d> result, bool parallel = false)
+        {
+            SizeCheck(nodeValues);
+            SizeCheck(result);
+            Graph.Edges.SizeCheck(edgeWeights);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian2(nodeValues, edgeWeights, result, range.Item1, range.Item2));
+            else
+                GetLaplacian2(nodeValues, edgeWeights, result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetLaplacian2(IList<Vec3d> nodeValues, IList<double> edgeWeights, IList<Vec3d> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                var n0 = this[i];
+                if (n0.IsUnused) continue;
+
+                Vec3d val = nodeValues[i];
+                Vec3d sum = new Vec3d();
                 foreach (var e in n0.Edges)
                 {
                     Node n1 = e.Other(n0);

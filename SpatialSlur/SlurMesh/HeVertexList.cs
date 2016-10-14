@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeVertexList : HeElementList<HeVertex>
+    public partial class HeVertexList : HeElementList<HeVertex>
     {
         /// <summary>
         /// 

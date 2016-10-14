@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurGraph
     /// 
     /// </summary>
     [Serializable]
-    public class NodeList : GraphElementList<Graph, Node>
+    public partial class NodeList : GraphElementList<Graph, Node>
     {
         /// <summary>
         /// 

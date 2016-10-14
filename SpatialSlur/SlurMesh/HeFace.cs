@@ -95,27 +95,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the number of edges in the face.
-        /// </summary>
-        public int EdgeCount
-        {
-            get
-            {
-                Halfedge he = _first;
-                int count = 0;
-
-                do
-                {
-                    count++;
-                    he = he.Next;
-                } while (he != _first);
-
-                return count;
-            }
-        }
-
-
-        /// <summary>
         /// Iterates over the face's vertices.
         /// </summary>
         public IEnumerable<HeVertex> Vertices
@@ -178,6 +157,25 @@ namespace SpatialSlur.SlurMesh
         internal override void MakeUnused()
         {
             _first = null;
+        }
+
+
+        /// <summary>
+        /// Returns the number of edges in the face.
+        /// </summary>
+        /// <returns></returns>
+        public int CountEdges()
+        {
+            Halfedge he = _first;
+            int count = 0;
+
+            do
+            {
+                count++;
+                he = he.Next;
+            } while (he != _first);
+
+            return count;
         }
 
 

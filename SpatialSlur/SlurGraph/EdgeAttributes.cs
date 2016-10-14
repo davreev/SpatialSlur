@@ -15,19 +15,18 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// 
     /// </summary>
-    public static class EdgeAttributes
+    public partial class EdgeList
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edges"></param>
         /// <param name="nodePositions"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetEdgeLengths(this EdgeList edges, IList<Vec3d> nodePositions, bool parallel = false)
+        public double[] GetEdgeLengths(IList<Vec3d> nodePositions, bool parallel = false)
         {
-            double[] result = new double[edges.Count];
-            edges.UpdateEdgeLengths(nodePositions, result, parallel);
+            var result = new double[Count];
+            GetEdgeLengths(nodePositions, result, parallel);
             return result;
         }
 
@@ -35,31 +34,30 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edges"></param>
         /// <param name="nodePositions"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateEdgeLengths(this EdgeList edges, IList<Vec3d> nodePositions, IList<double> result, bool parallel = false)
+        public void GetEdgeLengths(IList<Vec3d> nodePositions, IList<double> result, bool parallel = false)
         {
-            edges.SizeCheck(result);
-            edges.Graph.Nodes.SizeCheck(nodePositions);
+            SizeCheck(result);
+            Graph.Nodes.SizeCheck(nodePositions);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, edges.Count), range =>
-                    edges.UpdateEdgeLengths(nodePositions, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetEdgeLengths(nodePositions, result, range.Item1, range.Item2));
             else
-                edges.UpdateEdgeLengths(nodePositions, result, 0, edges.Count);
+                GetEdgeLengths(nodePositions, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateEdgeLengths(this EdgeList edges, IList<Vec3d> nodePositions, IList<double> result, int i0, int i1)
+        private void GetEdgeLengths(IList<Vec3d> nodePositions, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                var e = edges[i];
+                var e = this[i];
                 if (e.IsUnused) continue;
                 result[i] = nodePositions[e.Start.Index].DistanceTo(nodePositions[e.End.Index]);
             }

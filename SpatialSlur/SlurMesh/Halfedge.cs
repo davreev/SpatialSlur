@@ -203,7 +203,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the halfedge is in a degenerate face.
+        /// Returns true if the halfedge is in a degenerate face or hole.
         /// </summary>
         internal bool IsInDegenerate
         {
@@ -221,7 +221,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the halfedge is in a triangular face.
+        /// Returns true if the halfedge is in a triangular face or hole.
         /// </summary>
         public bool IsInTri
         {
@@ -230,7 +230,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the halfedge is in a quadrilateral face.
+        /// Returns true if the halfedge is in a quadrilateral face or hole.
         /// </summary>
         public bool IsInQuad
         {

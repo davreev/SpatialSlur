@@ -13,66 +13,19 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
-    /// Extension methods for calculating various face attributes.
+    /// Methods for calculating various face attributes.
     /// </summary>
-    public static class HeFaceAttributes
+    public partial class HeFaceList
     {
-        /// <summary>
-        /// Returns the boundary status of each face.
-        /// </summary>
-        /// <param name="faces"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static bool[] GetFaceBoundaryStatus(this HeFaceList faces, bool parallel = false)
-        {
-            bool[] result = new bool[faces.Count];
-            faces.UpdateFaceBoundaryStatus(result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="faces"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void UpdateFaceBoundaryStatus(this HeFaceList faces, IList<bool> result, bool parallel = false)
-        {
-            faces.SizeCheck(result);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceBoundaryStatus(result, range.Item1, range.Item2));
-            else
-                faces.UpdateFaceBoundaryStatus(result, 0, faces.Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void UpdateFaceBoundaryStatus(this HeFaceList faces, IList<bool> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                var f = faces[i];
-                if (f.IsUnused) continue;
-                result[i] = f.IsBoundary;
-            }
-        }
-
-
         /// <summary>
         /// Returns the number of edges in each face.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFaceDegrees(this HeFaceList faces, bool parallel = false)
+        public int[] GetFaceEdgeCounts(bool parallel = false)
         {
-            int[] result = new int[faces.Count];
-            faces.UpdateFaceDegrees(result, parallel);
+            var result = new int[Count];
+            GetFaceEdgeCounts(result, parallel);
             return result;
         }
 
@@ -80,45 +33,86 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceDegrees(this HeFaceList faces, IList<int> result, bool parallel = false)
+        public void GetFaceEdgeCounts(IList<int> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceDergees(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceEdgeCounts(result, range.Item1, range.Item2));
             else
-                faces.UpdateFaceDergees(result, 0, faces.Count);
+                GetFaceEdgeCounts(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceDergees(this HeFaceList faces, IList<int> result, int i0, int i1)
+        private void GetFaceEdgeCounts(IList<int> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                var f = faces[i];
+                var f = this[i];
                 if (f.IsUnused) continue;
-                result[i] = f.EdgeCount;
+                result[i] = f.CountEdges();
+            }
+        }
+
+        /// <summary>
+        /// Returns the number of boundary edges in each face.
+        /// </summary>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public int[] GetFaceBoundaryCounts(bool parallel = false)
+        {
+            var result = new int[Count];
+            GetFaceBoundaryCounts(result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void GetFaceBoundaryCounts(IList<int> result, bool parallel = false)
+        {
+            SizeCheck(result);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceBoundaryCounts(result, range.Item1, range.Item2));
+            else
+                GetFaceBoundaryCounts(result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetFaceBoundaryCounts(IList<int> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                var f = this[i];
+                if (f.IsUnused) continue;
+                result[i] = f.CountBoundaryEdges();
             }
         }
 
 
         /// <summary>
-        /// Returns the topological depth of all faces connected to a set of sources.
+        /// Calculates the topological depth of all faces connected to a set of sources.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="sources"></param>
         /// <returns></returns>
-        public static int[] GetFaceDepths(this HeFaceList faces, IEnumerable<HeFace> sources)
+        public int[] GetFaceDepths(IEnumerable<HeFace> sources)
         {
-            int[] result = new int[faces.Count];
-            faces.UpdateFaceDepths(sources, result);
+            var result = new int[Count];
+            GetFaceDepths(sources, result);
             return result;
         }
 
@@ -126,12 +120,11 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void UpdateFaceDepths(this HeFaceList faces, IEnumerable<HeFace> sources, IList<int> result)
+        public void GetFaceDepths(IEnumerable<HeFace> sources, IList<int> result)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             var queue = new Queue<HeFace>();
             result.Set(Int32.MaxValue);
@@ -139,14 +132,61 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (HeFace f in sources)
             {
-                faces.OwnsCheck(f);
+                OwnsCheck(f);
                 if (f.IsUnused) continue;
 
                 queue.Enqueue(f);
                 result[f.Index] = 0;
             }
 
-            // breadth first search from sources
+            GetFaceDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <returns></returns>
+        public int[] GetFaceDepths(IEnumerable<int> sources)
+        {
+            var result = new int[Count];
+            GetFaceDepths(sources, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        public void GetFaceDepths(IEnumerable<int> sources, IList<int> result)
+        {
+            SizeCheck(result);
+
+            var queue = new Queue<HeFace>();
+            result.Set(Int32.MaxValue);
+
+            // enqueue sources and set to zero
+            foreach (int fi in sources)
+            {
+                var f = this[fi];
+                if (f.IsUnused) continue;
+
+                queue.Enqueue(f);
+                result[fi] = 0;
+            }
+
+            GetFaceDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetFaceDepths(Queue<HeFace> queue, IList<int> result)
+        {
             while (queue.Count > 0)
             {
                 HeFace f0 = queue.Dequeue();
@@ -166,16 +206,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the topological distance of all faces connected to a set of sources.
+        /// Calculates the topological distance of all faces connected to a set of sources.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
+        /// <param name="edgeWeights"></param>
         /// <returns></returns>
-        public static double[] GetFaceDistances(this HeFaceList faces, IEnumerable<HeFace> sources, IList<double> edgeLengths)
+        public double[] GetFaceDistances(IEnumerable<HeFace> sources, IList<double> edgeWeights)
         {
-            double[] result = new double[faces.Count];
-            faces.UpdateFaceDistances(sources, edgeLengths, result);
+            var result = new double[Count];
+            GetFaceDistances(sources, edgeWeights, result);
             return result;
         }
 
@@ -183,16 +222,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="sources"></param>
-        /// <param name="edgeLengths"></param>
+        /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        public static void UpdateFaceDistances(this HeFaceList faces, IEnumerable<HeFace> sources, IList<double> edgeLengths, IList<double> result)
+        public void GetFaceDistances(IEnumerable<HeFace> sources, IList<double> edgeWeights, IList<double> result)
         {
-            // TODO switch to pq implementation
-
-            faces.SizeCheck(result);
-            faces.Mesh.Halfedges.HalfSizeCheck(edgeLengths);
+            SizeCheck(result);
+            Mesh.Halfedges.HalfSizeCheck(edgeWeights);
 
             var queue = new Queue<HeFace>();
             result.Set(Double.PositiveInfinity);
@@ -200,14 +236,68 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (HeFace f in sources)
             {
-                faces.OwnsCheck(f);
+                OwnsCheck(f);
                 if (f.IsUnused) continue;
 
                 queue.Enqueue(f);
                 result[f.Index] = 0.0;
             }
 
-            // breadth first search from sources
+            GetFaceDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// Calculates the topological distance of all faces connected to a set of sources.
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="edgeWeights"></param>
+        /// <returns></returns>
+        public double[] GetFaceDistances(IEnumerable<int> sources, IList<double> edgeWeights)
+        {
+            var result = new double[Count];
+            GetFaceDistances(sources, edgeWeights, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="edgeWeights"></param>
+        /// <param name="result"></param>
+        public void GetFaceDistances(IEnumerable<int> sources, IList<double> edgeWeights, IList<double> result)
+        {
+            SizeCheck(result);
+            Mesh.Halfedges.HalfSizeCheck(edgeWeights);
+
+            var queue = new Queue<HeFace>();
+            result.Set(double.PositiveInfinity);
+
+            // enqueue sources and set to zero
+            foreach (int fi in sources)
+            {
+                var f = this[fi];
+                if (f.IsUnused) continue;
+
+                queue.Enqueue(f);
+                result[fi] = 0.0;
+            }
+
+            GetFaceDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queue"></param>
+        /// <param name="edgeWeights"></param>
+        /// <param name="result"></param>
+        private static void GetFaceDistances(Queue<HeFace> queue, IList<double> edgeWeights, IList<double> result)
+        {
+            // TODO switch to priority queue implementation
             while (queue.Count > 0)
             {
                 HeFace f0 = queue.Dequeue();
@@ -219,7 +309,7 @@ namespace SpatialSlur.SlurMesh
                     if (f1 == null) continue;
 
                     int i1 = f1.Index;
-                    double t1 = t0 + edgeLengths[he.Index >> 1];
+                    double t1 = t0 + edgeWeights[he.Index >> 1];
 
                     if (t1 < result[i1])
                     {
@@ -232,15 +322,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the average vertex position within each face.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetFaceBarycenters(this HeFaceList faces, bool parallel = false)
+        public Vec3d[] GetFaceBarycenters(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[faces.Count];
-            faces.UpdateFaceBarycenters(result, parallel);
+            var result = new Vec3d[Count];
+            GetFaceBarycenters(result, parallel);
             return result;
         }
 
@@ -248,29 +337,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceBarycenters(this HeFaceList faces, IList<Vec3d> result, bool parallel = false)
+        public void GetFaceBarycenters(IList<Vec3d> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    UpdateFaceBarycenters(faces, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceBarycenters(result, range.Item1, range.Item2));
             else
-                UpdateFaceBarycenters(faces, result, 0, faces.Count);
+                GetFaceBarycenters(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceBarycenters(this HeFaceList faces, IList<Vec3d> result, int i0, int i1)
+        private void GetFaceBarycenters(IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
                 result[i] = f.GetBarycenter();
             }
@@ -278,15 +366,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Returns the circumcenter of each face.
         /// Assumes triangular faces.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetFaceCircumcenters(this HeFaceList faces, bool parallel = false)
+        public Vec3d[] GetFaceCircumcenters(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[faces.Count];
-            faces.UpdateFaceCircumcenters(result, parallel);
+            var result = new Vec3d[Count];
+            GetFaceCircumcenters(result, parallel);
             return result;
         }
 
@@ -294,49 +382,44 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceCircumcenters(this HeFaceList faces, IList<Vec3d> result, bool parallel = false)
+        public void GetFaceCircumcenters(IList<Vec3d> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    UpdateFaceCircumcenters(faces, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceCircumcenters(result, range.Item1, range.Item2));
             else
-                UpdateFaceCircumcenters(faces, result, 0, faces.Count);
+                GetFaceCircumcenters(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceCircumcenters(this HeFaceList faces, IList<Vec3d> result, int i0, int i1)
+        private void GetFaceCircumcenters(IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
                 result[i] = f.GetCircumcenter();
             }
         }
 
 
-
-
-
-
         /// <summary>
+        /// Returns the incenter of each face.
         /// Assumes triangular faces.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetFaceIncenters(this HeFaceList faces, bool parallel = false)
+        public Vec3d[] GetFaceIncenters(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[faces.Count];
-            faces.UpdateFaceIncenters(result, parallel);
+            var result = new Vec3d[Count];
+            GetFaceIncenters(result, parallel);
             return result;
         }
 
@@ -344,79 +427,75 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceIncenters(this HeFaceList faces, IList<Vec3d> result, bool parallel = false)
+        public void GetFaceIncenters(IList<Vec3d> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    UpdateFaceIncenters(faces, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceIncenters(result, range.Item1, range.Item2));
             else
-                UpdateFaceIncenters(faces, result, 0, faces.Count);
+                GetFaceIncenters(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceIncenters(this HeFaceList faces, IList<Vec3d> result, int i0, int i1)
+        private void GetFaceIncenters(IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
                 result[i] = f.GetIncenter();
             }
         }
 
 
-
-
         /// <summary>
+        /// Returns the incenter of each face.
         /// Assumes triangular faces.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, bool parallel = false)
+        public Vec3d[] GetFaceIncenters(IList<double> edgeLengths, bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[faces.Count];
-            faces.UpdateFaceIncenters(edgeLengths, result, parallel);
+            var result = new Vec3d[Count];
+            GetFaceIncenters(edgeLengths, result, parallel);
             return result;
         }
 
 
         /// <summary>
-        /// Assumes triangular faces.
+        ///
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, IList<Vec3d> result, bool parallel = false)
+        public void GetFaceIncenters(IList<double> edgeLengths, IList<Vec3d> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    UpdateFaceIncenters(faces, edgeLengths, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceIncenters(edgeLengths, result, range.Item1, range.Item2));
             else
-                UpdateFaceIncenters(faces, edgeLengths, result, 0, faces.Count);
+                GetFaceIncenters(edgeLengths, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceIncenters(this HeFaceList faces, IList<double> edgeLengths, IList<Vec3d> result, int i0, int i1)
+        private void GetFaceIncenters(IList<double> edgeLengths, IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
 
                 var he0 = f.First;
@@ -441,13 +520,12 @@ namespace SpatialSlur.SlurMesh
         /// Calculates face normals as the area-weighted sum of halfedge normals in each face.
         /// Face normals are unitized by default.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetFaceNormals(this HeFaceList faces, bool parallel = false)
+        public Vec3d[] GetFaceNormals(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[faces.Count];
-            faces.UpdateFaceNormals(result, parallel);
+            var result = new Vec3d[Count];
+            GetFaceNormals(result, parallel);
             return result;
         }
 
@@ -455,29 +533,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceNormals(this HeFaceList faces, IList<Vec3d> result, bool parallel = false)
+        public void GetFaceNormals(IList<Vec3d> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    UpdateFaceNormals(faces, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceNormals(result, range.Item1, range.Item2));
             else
-                UpdateFaceNormals(faces, result, 0, faces.Count);
+                GetFaceNormals(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceNormals(this HeFaceList faces, IList<Vec3d> result, int i0, int i1)
+        private void GetFaceNormals(IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
                 result[i] = f.GetNormal();
             }
@@ -486,17 +563,15 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Calculates face normals as the sum of halfedge normals in each face.
-        /// Half-edge normals can be scaled in advance for custom weighting.
         /// Face normals are unitized by default.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="halfedgeNormals"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetFaceNormals(this HeFaceList faces, IList<Vec3d> halfedgeNormals, bool parallel = false)
+        public Vec3d[] GetFaceNormals2(IList<Vec3d> halfedgeNormals, bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[faces.Count];
-            faces.UpdateFaceNormals(halfedgeNormals, result, parallel);
+            var result = new Vec3d[Count];
+            GetFaceNormals2(halfedgeNormals, result, parallel);
             return result;
         }
 
@@ -504,30 +579,29 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="halfedgeNormals"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceNormals(this HeFaceList faces, IList<Vec3d> halfedgeNormals, IList<Vec3d> result, bool parallel = false)
+        public void GetFaceNormals2 (IList<Vec3d> halfedgeNormals, IList<Vec3d> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceNormals(halfedgeNormals, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceNormals2(halfedgeNormals, result, range.Item1, range.Item2));
             else
-                faces.UpdateFaceNormals(halfedgeNormals, result, 0, faces.Count);
+                GetFaceNormals2(halfedgeNormals, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceNormals(this HeFaceList faces, IList<Vec3d> halfedgeNormals, IList<Vec3d> result, int i0, int i1)
+        private void GetFaceNormals2(IList<Vec3d> halfedgeNormals, IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
 
                 if (f.IsTri)
@@ -555,15 +629,14 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Calculates face normals as the normal of the first halfedge in each face.
         /// Face normals are unitized by default.
-        /// This method assumes all faces are triangular.
+        /// Assumes triangular faces.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetFaceNormalsTri(this HeFaceList faces, bool parallel = false)
+        public Vec3d[] GetFaceNormalsTri(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[faces.Count];
-            faces.UpdateFaceNormalsTri(result, parallel);
+            var result = new Vec3d[Count];
+            GetFaceNormalsTri( result, parallel);
             return result;
         }
 
@@ -571,29 +644,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceNormalsTri(this HeFaceList faces, IList<Vec3d> result, bool parallel = false)
+        public void GetFaceNormalsTri(IList<Vec3d> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceNormalsTri(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceNormalsTri(result, range.Item1, range.Item2));
             else
-                faces.UpdateFaceNormalsTri(result, 0, faces.Count);
+                GetFaceNormalsTri(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceNormalsTri(this HeFaceList faces, IList<Vec3d> result, int i0, int i1)
+        private void GetFaceNormalsTri(IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
 
                 Vec3d v = f.First.GetNormal();
@@ -606,13 +678,12 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetFaceAreas(this HeFaceList faces, bool parallel = false)
+        public double[] GetFaceAreas(bool parallel = false)
         {
-            double[] result = new double[faces.Count];
-            faces.UpdateFaceAreas(result, parallel);
+            var result = new double[Count];
+            GetFaceAreas(result, parallel);
             return result;
         }
 
@@ -620,29 +691,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceAreas(this HeFaceList faces, IList<double> result, bool parallel = false)
+        public void GetFaceAreas(IList<double> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceAreas(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceAreas(result, range.Item1, range.Item2));
             else
-                faces.UpdateFaceAreas(result, 0, faces.Count);
+                GetFaceAreas(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceAreas(this HeFaceList faces, IList<double> result, int i0, int i1)
+        private void GetFaceAreas(IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
 
                 if (f.IsTri)
@@ -669,14 +739,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="faceCenters"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetFaceAreas(this HeFaceList faces, IList<Vec3d> faceCenters, bool parallel = false)
+        public double[] GetFaceAreas(IList<Vec3d> faceCenters, bool parallel = false)
         {
-            double[] result = new double[faces.Count];
-            faces.UpdateFaceAreas(faceCenters, result, parallel);
+            var result = new double[Count];
+            GetFaceAreas(faceCenters, result, parallel);
             return result;
         }
 
@@ -684,30 +753,29 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="faceCenters"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceAreas(this HeFaceList faces, IList<Vec3d> faceCenters, IList<double> result, bool parallel = false)
+        public void GetFaceAreas( IList<Vec3d> faceCenters, IList<double> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceAreas(faceCenters, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceAreas(faceCenters, result, range.Item1, range.Item2));
             else
-                faces.UpdateFaceAreas(faceCenters, result, 0, faces.Count);
+                GetFaceAreas(faceCenters, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceAreas(this HeFaceList faces, IList<Vec3d> faceCenters, IList<double> result, int i0, int i1)
+        private void GetFaceAreas(IList<Vec3d> faceCenters, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
 
                 if (f.IsTri)
@@ -732,16 +800,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the area of each face.
-        /// This method assumes all faces are triangular.
+        /// Calculates the area of each face.
+        /// Assumes triangular faces.
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetFaceAreasTri(this HeFaceList faces, bool parallel = false)
+        public double[] GetFaceAreasTri(bool parallel = false)
         {
-            double[] result = new double[faces.Count];
-            faces.UpdateFaceAreasTri(result, parallel);
+            var result = new double[Count];
+            GetFaceAreasTri(result, parallel);
             return result;
         }
 
@@ -749,29 +816,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceAreasTri(this HeFaceList faces, IList<double> result, bool parallel = false)
+        public void GetFaceAreasTri(IList<double> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceAreasTri(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFaceAreasTri(result, range.Item1, range.Item2));
             else
-                faces.UpdateFaceAreasTri(result, 0, faces.Count);
+                GetFaceAreasTri(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceAreasTri(this HeFaceList faces, IList<double> result, int i0, int i1)
+        private void GetFaceAreasTri(IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
                 result[i] = Vec3d.Cross(f.First.Span, f.First.Next.Span).Length * 0.5;
             }
@@ -781,13 +847,12 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetFacePlanarity(this HeFaceList faces, bool parallel = false)
+        public double[] GetFacePlanarity(bool parallel = false)
         {
-            double[] result = new double[faces.Count];
-            faces.UpdateFacePlanarity(result, parallel);
+            var result = new double[Count];
+            GetFacePlanarity(result, parallel);
             return result;
         }
 
@@ -795,29 +860,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFacePlanarity(this HeFaceList faces, IList<double> result, bool parallel = false)
+        public void GetFacePlanarity(IList<double> result, bool parallel = false)
         {
-            faces.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFacePlanarity(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetFacePlanarity(result, range.Item1, range.Item2));
             else
-                faces.UpdateFacePlanarity(result, 0, faces.Count);
+                GetFacePlanarity(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFacePlanarity(this HeFaceList faces, IList<double> result, int i0, int i1)
+        private void GetFacePlanarity(IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeFace f = faces[i];
+                HeFace f = this[i];
                 if (f.IsUnused) continue;
 
                 Halfedge he0 = f.First;

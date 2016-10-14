@@ -330,7 +330,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public List<HeMesh> SplitDisjoint()
         {
-            // TODO alt implementation which returns map to original mesh
+            // TODO alt implementation with edge map to original mesh
             List<HeMesh> result = new List<HeMesh>(); // list of connected components
 
             Vec2i[] map = new Vec2i[_verts.Count]; // map for each vertex in the parent mesh ( [x, y] => [component index, vertex index])
@@ -411,7 +411,7 @@ namespace SpatialSlur.SlurMesh
                 HeFace f = _faces[i];
                 if (f.IsUnused) continue;
 
-                int ne = f.EdgeCount;
+                int ne = f.CountEdges();
 
                 if (ne == 4)
                     _faces.SplitFace(f.First, f.First.Next.Next);
@@ -499,8 +499,7 @@ namespace SpatialSlur.SlurMesh
                 if (he.IsUnused) continue;
 
                 var v = he.Start;
-                if (v.IsUnused || he.Face == null)
-                    v.First = he;
+                if (v.IsUnused || he.Face == null) v.First = he;
             }
 
             return dual;
@@ -648,7 +647,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns the entries of the incidence matrix in column-major order.
         /// </summary>
         /// <returns></returns>
-        public static double[] GetIncidenceMatrix()
+        public void GetIncidenceMatrix(IList<double> result)
         {
             // TODO
             throw new NotImplementedException();
@@ -656,13 +655,12 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the entries of the Laplacian matrix in column-major order.
+        /// Calculates the Laplacian matrix in column-major order.
         /// </summary>
-        /// <returns></returns>
-        public double[] GetLaplacianMatrix()
+        /// <param name="result"></param>
+        public void GetLaplacianMatrix(IList<double> result)
         {
             int nv = _verts.Count;
-            double[] result = new double[nv * nv];
 
             for (int i = 0; i < nv; i++)
             {
@@ -680,22 +678,18 @@ namespace SpatialSlur.SlurMesh
 
                 result[i + i * nv] = wsum;
             }
-
-            return result;
         }
 
 
         /// <summary>
-        /// Returns the entries of the Laplacian matrix in column-major order.
+        /// Calculates the Laplacian matrix in column-major order.
         /// </summary>
         /// <param name="halfedgeWeights"></param>
-        /// <returns></returns>
-        public double[] GetLaplacianMatrix(IList<double> halfedgeWeights)
+        /// <param name="result"></param>
+        public void GetLaplacianMatrix(IList<double> halfedgeWeights, IList<double> result)
         {
             _hedges.SizeCheck(halfedgeWeights);
-
             int nv = _verts.Count;
-            double[] result = new double[nv * nv];
 
             for (int i = 0; i < nv; i++)
             {
@@ -714,8 +708,6 @@ namespace SpatialSlur.SlurMesh
 
                 result[i * nv + i] = wsum;
             }
-
-            return result;
         }
 
     }

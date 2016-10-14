@@ -15,18 +15,17 @@ namespace SpatialSlur.SlurGraph
     /// <summary>
     /// 
     /// </summary>
-    public static class DiNodeAttributes
+    public partial class DiNodeList
     {
         /// <summary>
         /// Gets the topological depth of each node from a given set of source nodes via breadth first search.
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <returns></returns>
-        public static int[] GetNodeDepths(this DiNodeList nodes, IEnumerable<DiNode> sources)
+        public int[] GetNodeDepths(IEnumerable<DiNode> sources)
         {
-            int[] result = new int[nodes.Count];
-            nodes.UpdateNodeDepths(sources, result);
+            int[] result = new int[Count];
+            GetNodeDepths(sources, result);
             return result;
         }
 
@@ -34,12 +33,11 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDepths(this DiNodeList nodes, IEnumerable<DiNode> sources, IList<int> result)
+        public void GetNodeDepths(IEnumerable<DiNode> sources, IList<int> result)
         {
-            nodes.SizeCheck(result);
+            SizeCheck(result);
 
             var queue = new Queue<DiNode>();
             result.Set(int.MaxValue);
@@ -47,13 +45,61 @@ namespace SpatialSlur.SlurGraph
             // set sources to zero and enqueue
             foreach (DiNode n in sources)
             {
-                nodes.OwnsCheck(n);
+                OwnsCheck(n);
                 if (n.IsUnused) continue;
 
                 queue.Enqueue(n);
                 result[n.Index] = 0;
             }
 
+            GetNodeDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// Gets the topological depth of each node from a given set of source nodes via breadth first search.
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <returns></returns>
+        public int[] GetNodeDepths(IEnumerable<int> sources)
+        {
+            int[] result = new int[Count];
+            GetNodeDepths(sources, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        public void GetNodeDepths(IEnumerable<int> sources, IList<int> result)
+        {
+            SizeCheck(result);
+
+            var queue = new Queue<DiNode>();
+            result.Set(int.MaxValue);
+
+            // set sources to zero and enqueue
+            foreach (int ni in sources)
+            {
+                DiNode n = this[ni];
+                if (n.IsUnused) continue;
+
+                queue.Enqueue(n);
+                result[n.Index] = 0;
+            }
+
+            GetNodeDepths(queue, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetNodeDepths(Queue<DiNode> queue, IList<int> result)
+        {
             // breadth first search from sources
             while (queue.Count > 0)
             {
@@ -77,14 +123,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Gets the topological distance of each node from a given set of source nodes via breadth first search.
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <param name="edgeWeights"></param>
         /// <returns></returns>
-        public static double[] GetNodeDistances(this DiNodeList nodes, IEnumerable<DiNode> sources, IList<double> edgeWeights)
+        public double[] GetNodeDistances(IEnumerable<DiNode> sources, IList<double> edgeWeights)
         {
-            double[] result = new double[nodes.Count];
-            nodes.UpdateNodeDistances(sources, edgeWeights, result);
+            double[] result = new double[Count];
+            GetNodeDistances(sources, edgeWeights, result);
             return result;
         }
 
@@ -92,15 +137,13 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="sources"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        public static void UpdateNodeDistances(this DiNodeList nodes, IEnumerable<DiNode> sources, IList<double> edgeWeights, IList<double> result)
+        public void GetNodeDistances(IEnumerable<DiNode> sources, IList<double> edgeWeights, IList<double> result)
         {
-            // TODO switch to pq implementation
-            nodes.SizeCheck(result);
-            nodes.Graph.Edges.SizeCheck(edgeWeights);
+            SizeCheck(result);
+            Graph.Edges.SizeCheck(edgeWeights);
 
             var queue = new Queue<DiNode>();
             result.Set(Double.PositiveInfinity);
@@ -108,13 +151,65 @@ namespace SpatialSlur.SlurGraph
             // set sources to zero and enqueue
             foreach (DiNode n in sources)
             {
-                nodes.OwnsCheck(n);
+                OwnsCheck(n);
                 if (n.IsUnused) continue;
 
                 queue.Enqueue(n);
                 result[n.Index] = 0.0;
             }
 
+            GetNodeDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// Gets the topological distance of each node from a given set of source nodes via breadth first search.
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="edgeWeights"></param>
+        /// <returns></returns>
+        public double[] GetNodeDistances(IEnumerable<int> sources, IList<double> edgeWeights)
+        {
+            double[] result = new double[Count];
+            GetNodeDistances(sources, edgeWeights, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="edgeWeights"></param>
+        /// <param name="result"></param>
+        public void GetNodeDistances(IEnumerable<int> sources, IList<double> edgeWeights, IList<double> result)
+        {
+            SizeCheck(result);
+            Graph.Edges.SizeCheck(edgeWeights);
+
+            var queue = new Queue<DiNode>();
+            result.Set(Double.PositiveInfinity);
+
+            // set sources to zero and enqueue
+            foreach (int ni in sources)
+            {
+                DiNode n = this[ni];
+                if (n.IsUnused) continue;
+
+                queue.Enqueue(n);
+                result[n.Index] = 0.0;
+            }
+
+            GetNodeDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetNodeDistances(Queue<DiNode> queue, IList<double> edgeWeights, IList<double> result)
+        {
+            // TODO switch to pq implementation
             // breadth first search from sources
             while (queue.Count > 0)
             {
@@ -141,10 +236,10 @@ namespace SpatialSlur.SlurGraph
         /// Computes the Laplacian using a normalized umbrella weighting scheme.
         /// </summary>
         /// <returns></returns>
-        public static double[] GetLaplacianOut(this DiNodeList nodes, IList<double> nodeValues, bool parallel = false)
+        public double[] GetLaplacianOut(IList<double> nodeValues, bool parallel = false)
         {
-            double[] result = new double[nodes.Count];
-            nodes.UpdateLaplacianOut(nodeValues, result, parallel);
+            double[] result = new double[Count];
+            GetLaplacianOut(nodeValues, result, parallel);
             return result;
         }
 
@@ -152,31 +247,30 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="nodeValues"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateLaplacianOut(this DiNodeList nodes, IList<double> nodeValues, IList<double> result, bool parallel = false)
+        public void GetLaplacianOut(IList<double> nodeValues, IList<double> result, bool parallel = false)
         {
-            nodes.SizeCheck(nodeValues);
-            nodes.SizeCheck(result);
+            SizeCheck(nodeValues);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, nodes.Count), range =>
-                    nodes.UpdateLaplacianOut(nodeValues, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacianOut(nodeValues, result, range.Item1, range.Item2));
             else
-                nodes.UpdateLaplacianOut(nodeValues, result, 0, nodes.Count);
+                GetLaplacianOut(nodeValues, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateLaplacianOut(this DiNodeList nodes, IList<double> nodeValues, IList<double> result, int i0, int i1)
+        private void GetLaplacianOut(IList<double> nodeValues, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                var ni = nodes[i];
+                var ni = this[i];
                 if (ni.IsUnused) continue;
 
                 double sum = 0.0;
@@ -191,15 +285,14 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// Computes the Laplacian using a given set of edge weights.
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="nodeValues"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetLaplacianOut(this DiNodeList nodes, IList<double> nodeValues, IList<double> edgeWeights, bool parallel = false)
+        public double[] GetLaplacianOut2(IList<double> nodeValues, IList<double> edgeWeights, bool parallel = false)
         {
-            double[] result = new double[nodes.Count];
-            nodes.UpdateLaplacianOut(nodeValues, edgeWeights, result, parallel);
+            double[] result = new double[Count];
+            GetLaplacianOut2(nodeValues, edgeWeights, result, parallel);
             return result;
         }
 
@@ -207,33 +300,32 @@ namespace SpatialSlur.SlurGraph
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nodes"></param>
         /// <param name="nodeValues"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateLaplacianOut(this DiNodeList nodes, IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, bool parallel = false)
+        public void GetLaplacianOut2(IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, bool parallel = false)
         {
-            nodes.SizeCheck(nodeValues);
-            nodes.SizeCheck(result);
-            nodes.Graph.Edges.SizeCheck(edgeWeights);
+            SizeCheck(nodeValues);
+            SizeCheck(result);
+            Graph.Edges.SizeCheck(edgeWeights);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, nodes.Count), range =>
-                    nodes.UpdateLaplacianOut(nodeValues, edgeWeights, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacianOut2(nodeValues, edgeWeights, result, range.Item1, range.Item2));
             else
-                nodes.UpdateLaplacianOut(nodeValues, edgeWeights, result, 0, nodes.Count);
+                GetLaplacianOut2(nodeValues, edgeWeights, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateLaplacianOut(this DiNodeList nodes, IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, int i0, int i1)
+        private void GetLaplacianOut2(IList<double> nodeValues, IList<double> edgeWeights, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                var ni = nodes[i];
+                var ni = this[i];
                 if (ni.IsUnused) continue;
 
                 double val = nodeValues[i];

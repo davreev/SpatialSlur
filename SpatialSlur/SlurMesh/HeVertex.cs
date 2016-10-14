@@ -105,7 +105,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public int Degree
         {
-            get
+            get 
             {
                 Halfedge he = _first;
                 int count = 0;

@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeFaceList:HeElementList<HeFace>
+    public partial class HeFaceList:HeElementList<HeFace>
     {
         /// <summary>
         /// 

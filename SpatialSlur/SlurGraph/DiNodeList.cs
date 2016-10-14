@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurGraph
     /// 
     /// </summary>
     [Serializable]
-    public class DiNodeList : GraphElementList<DiGraph, DiNode>
+    public partial class DiNodeList : GraphElementList<DiGraph, DiNode>
     {
         /// <summary>
         /// 

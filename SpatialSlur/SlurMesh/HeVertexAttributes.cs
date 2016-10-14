@@ -13,50 +13,47 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
-    /// Extension methods for calculating various vertex attributes.
+    /// Methods for calculating various vertex attributes.
     /// </summary>
-    public static class HeVertexAttributes
+    public partial class HeVertexList
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetVertexDegrees(this HeVertexList verts, bool parallel = false)
+        public int[] GetVertexDegrees(bool parallel = false)
         {
-            int[] result = new int[verts.Count];
-            verts.UpdateVertexDegrees(result, parallel);
+            var result = new int[Count];
+            GetVertexDegrees(result, parallel);
             return result;
         }
 
-
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexDegrees(this HeVertexList verts, IList<int> result, bool parallel = false)
+        public void GetVertexDegrees(IList<int> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateVertexDegrees(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetVertexDegrees(result, range.Item1, range.Item2));
             else
-                verts.UpdateVertexDegrees(result, 0, verts.Count);
+                GetVertexDegrees(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexDegrees(this HeVertexList verts, IList<int> result, int i0, int i1)
+        private void GetVertexDegrees(IList<int> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                var v = verts[i];
+                var v = this[i];
                 if (v.IsUnused) continue;
                 result[i] = v.Degree;
             }
@@ -64,29 +61,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the topological depth of all vertices connected to a set of sources.
+        /// Calculates the topological depth of all vertices connected to a set of sources.
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="sources"></param>
         /// <returns></returns>
-        public static int[] GetVertexDepths(this HeVertexList verts, IEnumerable<HeVertex> sources)
+        public int[] GetVertexDepths(IEnumerable<HeVertex> sources)
         {
-            int[] result = new int[verts.Count];
-            verts.UpdateVertexDepths(sources, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns the topological depth of all vertices connected to a set of sources.
-        /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="sources"></param>
-        /// <returns></returns>
-        public static int[] GetVertexDepths(this HeVertexList verts, IEnumerable<int> sources)
-        {
-            int[] result = new int[verts.Count];
-            verts.UpdateVertexDepths(sources, result);
+            var result = new int[Count];
+            GetVertexDepths(sources, result);
             return result;
         }
 
@@ -94,12 +76,11 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void UpdateVertexDepths(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<int> result)
+        public void GetVertexDepths(IEnumerable<HeVertex> sources, IList<int> result)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
 
             var queue = new Queue<HeVertex>();
             result.Set(Int32.MaxValue);
@@ -107,7 +88,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (HeVertex v in sources)
             {
-                verts.OwnsCheck(v);
+                OwnsCheck(v);
                 if (v.IsUnused) continue;
 
                 queue.Enqueue(v);
@@ -119,14 +100,26 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Calculates the topological depth of all vertices connected to a set of sources.
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <returns></returns>
+        public int[] GetVertexDepths(IEnumerable<int> sources)
+        {
+            var result = new int[Count];
+            GetVertexDepths(sources, result);
+            return result;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void UpdateVertexDepths(this HeVertexList verts, IEnumerable<int> sources, IList<int> result)
+        public void GetVertexDepths(IEnumerable<int> sources, IList<int> result)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
 
             var queue = new Queue<HeVertex>();
             result.Set(Int32.MaxValue);
@@ -134,7 +127,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (int vi in sources)
             {
-                var v = verts[vi];
+                var v = this[vi];
                 if (v.IsUnused) continue;
 
                 queue.Enqueue(v);
@@ -169,31 +162,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the topological distance of all vertices connected to a set of sources.
+        /// Calculates the topological distance of all vertices connected to a set of sources.
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="sources"></param>
         /// <param name="edgeWeights"></param>
         /// <returns></returns>
-        public static double[] GetVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeWeights)
+        public double[] GetVertexDistances(IEnumerable<HeVertex> sources, IList<double> edgeWeights)
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateVertexDistances(sources, edgeWeights, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns the topological distance of all vertices connected to a set of sources.
-        /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="sources"></param>
-        /// <param name="edgeWeights"></param>
-        /// <returns></returns>
-        public static double[] GetVertexDistances(this HeVertexList verts, IEnumerable<int> sources, IList<double> edgeWeights)
-        {
-            double[] result = new double[verts.Count];
-            verts.UpdateVertexDistances(sources, edgeWeights, result);
+            var result = new double[Count];
+            GetVertexDistances(sources, edgeWeights, result);
             return result;
         }
 
@@ -201,14 +178,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="sources"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        public static void UpdateVertexDistances(this HeVertexList verts, IEnumerable<HeVertex> sources, IList<double> edgeWeights, IList<double> result)
+        public void GetVertexDistances(IEnumerable<HeVertex> sources, IList<double> edgeWeights, IList<double> result)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Halfedges.HalfSizeCheck(edgeWeights);
+            SizeCheck(result);
+            Mesh.Halfedges.HalfSizeCheck(edgeWeights);
 
             var queue = new Queue<HeVertex>();
             result.Set(Double.PositiveInfinity);
@@ -216,28 +192,41 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (HeVertex v in sources)
             {
-                verts.OwnsCheck(v);
+                OwnsCheck(v);
                 if (v.IsUnused) continue;
 
                 queue.Enqueue(v);
                 result[v.Index] = 0.0;
             }
 
-            UpdateVertexDistances(queue, edgeWeights, result);
+            GetVertexDistances(queue, edgeWeights, result);
+        }
+
+
+        /// <summary>
+        /// Calculates the topological distance of all vertices connected to a set of sources.
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="edgeWeights"></param>
+        /// <returns></returns>
+        public double[] GetVertexDistances(IEnumerable<int> sources, IList<double> edgeWeights)
+        {
+            var result = new double[Count];
+            GetVertexDistances(sources, edgeWeights, result);
+            return result;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="sources"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        public static void UpdateVertexDistances(this HeVertexList verts, IEnumerable<int> sources, IList<double> edgeWeights, IList<double> result)
+        public void GetVertexDistances(IEnumerable<int> sources, IList<double> edgeWeights, IList<double> result)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Halfedges.HalfSizeCheck(edgeWeights);
+            SizeCheck(result);
+            Mesh.Halfedges.HalfSizeCheck(edgeWeights);
 
             var queue = new Queue<HeVertex>();
             result.Set(Double.PositiveInfinity);
@@ -245,14 +234,14 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (int vi in sources)
             {
-                var v = verts[vi];
+                var v = this[vi];
                 if (v.IsUnused) continue;
 
                 queue.Enqueue(v);
                 result[vi] = 0.0;
             }
 
-            UpdateVertexDistances(queue, edgeWeights, result);
+            GetVertexDistances(queue, edgeWeights, result);
         }
 
 
@@ -262,7 +251,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="queue"></param>
         /// <param name="edgeWeights"></param>
         /// <param name="result"></param>
-        private static void UpdateVertexDistances(Queue<HeVertex> queue, IList<double> edgeWeights, IList<double> result)
+        private static void GetVertexDistances(Queue<HeVertex> queue, IList<double> edgeWeights, IList<double> result)
         {
             // TODO switch to priority queue implementation
             while (queue.Count > 0)
@@ -287,16 +276,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the morse smale classification for each vertex (0 = normal, 1 = minima, 2 = maxima, 3 = saddle).
+        /// Calculates the morse smale classification for each vertex (0 = normal, 1 = minima, 2 = maxima, 3 = saddle).
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="values"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetMorseSmaleClassification(this HeVertexList verts, IList<double> values, bool parallel = false)
+        public int[] GetMorseSmaleClassification(IList<double> values, bool parallel = false)
         {
-            int[] result = new int[verts.Count];
-            verts.UpdateMorseSmaleClassification(values, result, parallel);
+            var result = new int[Count];
+            GetMorseSmaleClassification(values, result, parallel);
             return result;
         }
 
@@ -304,31 +292,30 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="values"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateMorseSmaleClassification(this HeVertexList verts, IList<double> values, IList<int> result, bool parallel = false)
+        public void GetMorseSmaleClassification(IList<double> values, IList<int> result, bool parallel = false)
         {
-            verts.SizeCheck(values);
-            verts.SizeCheck(result);
+            SizeCheck(values);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateMorseSmaleClassification(values, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetMorseSmaleClassification(values, result, range.Item1, range.Item2));
             else
-                verts.UpdateMorseSmaleClassification(values, result, 0, verts.Count);
+                GetMorseSmaleClassification(values, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateMorseSmaleClassification(this HeVertexList verts, IList<double> values, IList<int> result, int i0, int i1)
+        private void GetMorseSmaleClassification(IList<double> values, IList<int> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v0 = verts[i];
+                HeVertex v0 = this[i];
                 double t0 = values[i];
 
                 // check first neighbour
@@ -377,16 +364,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the area associated with each vertex.
+        /// Calculates the area associated with each vertex as the sum of halfedge areas.
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeAreas"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetVertexAreas(this HeVertexList verts, IList<double> halfedgeAreas, bool parallel = false)
+        public double[] GetVertexAreas(IList<double> halfedgeAreas, bool parallel = false)
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateVertexAreas(halfedgeAreas, result, parallel);
+            var result = new double[Count];
+            GetVertexAreas(halfedgeAreas, result, parallel);
             return result;
         }
 
@@ -394,31 +380,30 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeAreas"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexAreas(this HeVertexList verts, IList<double> halfedgeAreas, IList<double> result, bool parallel = false)
+        public void GetVertexAreas(IList<double> halfedgeAreas, IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Halfedges.SizeCheck(halfedgeAreas);
+            SizeCheck(result);
+            Mesh.Halfedges.SizeCheck(halfedgeAreas);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateVertexAreas(halfedgeAreas, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetVertexAreas(halfedgeAreas, result, range.Item1, range.Item2));
             else
-                verts.UpdateVertexAreas(halfedgeAreas, result, 0, verts.Count);
+                GetVertexAreas(halfedgeAreas, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexAreas(this HeVertexList verts, IList<double> halfedgeAreas, IList<double> result, int i0, int i1)
+        private void GetVertexAreas(IList<double> halfedgeAreas, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
                 double sum = 0.0;
@@ -436,14 +421,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="faceCenters"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetVertexAreas(this HeVertexList verts, IList<Vec3d> faceCenters, bool parallel = false)
+        public double[] GetVertexAreas(IList<Vec3d> faceCenters,  bool parallel = false)
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateVertexAreas(faceCenters, result, parallel);
+            var result = new double[Count];
+            GetVertexAreas(faceCenters, result, parallel);
             return result;
         }
 
@@ -451,31 +435,30 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="faceCenters"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexAreas(this HeVertexList verts, IList<Vec3d> faceCenters, IList<double> result, bool parallel = false)
+        public void GetVertexAreas(IList<Vec3d> faceCenters, IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Faces.SizeCheck(faceCenters);
+            SizeCheck(result);
+            Mesh.Faces.SizeCheck(faceCenters);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    UpdateVertexAreas(verts, faceCenters, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetVertexAreas(faceCenters, result, range.Item1, range.Item2));
             else
-                UpdateVertexAreas(verts, faceCenters, result, 0, verts.Count);
+                GetVertexAreas(faceCenters, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexAreas(this HeVertexList verts, IList<Vec3d> faceCenters, IList<double> result, int i0, int i1)
+        private void GetVertexAreas(IList<Vec3d> faceCenters, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
                 double sum = 0.0;
@@ -503,14 +486,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Assumes triangular faces.
+        ///  Assumes triangular faces.
         /// </summary>
-        /// <param name="verts"></param>
         /// <returns></returns>
-        public static double[] GetVertexAreasTri(this HeVertexList verts)
+        public double[] GetVertexAreasTri()
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateVertexAreasTri(result);
+            double[] result = new double[Count];
+            GetVertexAreasTriImpl(result);
             return result;
         }
 
@@ -518,21 +500,31 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="result"></param>
-        public static void UpdateVertexAreasTri(this HeVertexList verts, IList<double> result)
+        public void GetVertexAreasTri(IList<double> result)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
+            result.Set(0.0);
+            GetVertexAreasTriImpl(result);
+        }
 
-            HeFaceList faces = verts.Mesh.Faces;
-            double t = 1.0 / 6.0; // (1.0 / 3.0) * 0.5
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="result"></param>
+        private void GetVertexAreasTriImpl(IList<double> result)
+        {
+            HeFaceList faces = Mesh.Faces;
+            const double t = 1.0 / 6.0; // (1.0 / 3.0) * 0.5
+
+            // distribute face areas to vertices
             for (int i = 0; i < faces.Count; i++)
             {
                 HeFace f = faces[i];
                 if (f.IsUnused) continue;
 
-                double a = f.First.GetNormal().Length * t; // * 0.5
+                double a = f.First.GetNormal().Length * t;
                 foreach (HeVertex v in f.Vertices)
                     result[v.Index] += a;
             }
@@ -540,18 +532,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns a radii for each vertex.
-        /// If the mesh is a circle packing mesh, these will be the radii of tangent spheres centered on each vertex.
-        /// http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
+        /// Calculates the circle packing radii for each vertex.
+        /// Assumes the mesh is a circle packing mesh http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetVertexRadii(this HeVertexList verts, IList<double> edgeLengths, bool parallel = false)
+        public double[] GetVertexRadii(IList<double> edgeLengths, bool parallel = false)
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateVertexRadii(edgeLengths, result, parallel);
+            var result = new double[Count];
+            GetVertexRadii(edgeLengths, result, parallel);
             return result;
         }
 
@@ -559,31 +549,30 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="edgeLengths"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexRadii(this HeVertexList verts, IList<double> edgeLengths, IList<double> result, bool parallel = false)
+        public void GetVertexRadii(IList<double> edgeLengths, IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Halfedges.HalfSizeCheck(edgeLengths);
+            SizeCheck(result);
+            Mesh.Halfedges.HalfSizeCheck(edgeLengths);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateVertexRadii(edgeLengths, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetVertexRadii(edgeLengths, result, range.Item1, range.Item2));
             else
-                verts.UpdateVertexRadii(edgeLengths, result, 0, verts.Count);
+                GetVertexRadii(edgeLengths, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexRadii(this HeVertexList verts, IList<double> edgeLengths, IList<double> result, int i0, int i1)
+        private void GetVertexRadii(IList<double> edgeLengths, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue; // skip unused vertices
 
                 double sum = 0.0;
@@ -602,16 +591,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates mean curvature as half the length of the laplacian of vertex positions.
+        /// Calculates mean curvature as half the length of the vertex position laplacian.
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="vertexLaplacians"></param>
+        /// <param name="vertexLaplacian"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetMeanCurvature(this HeVertexList verts, IList<Vec3d> vertexLaplacians, bool parallel = false)
+        public double[] GetMeanCurvature(IList<Vec3d> vertexLaplacian, bool parallel = false)
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateMeanCurvature(vertexLaplacians, result, parallel);
+            var result = new double[Count];
+            GetMeanCurvature(vertexLaplacian, result, parallel);
             return result;
         }
 
@@ -619,47 +607,45 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="vertexLaplacians"></param>
+        /// <param name="vertexLaplacian"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateMeanCurvature(this HeVertexList verts, IList<Vec3d> vertexLaplacians, IList<double> result, bool parallel = false)
+        public void GetMeanCurvature(IList<Vec3d> vertexLaplacian, IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.SizeCheck(vertexLaplacians);
+            SizeCheck(result);
+            SizeCheck(vertexLaplacian);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                verts.UpdateMeanCurvature(vertexLaplacians, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetMeanCurvature(vertexLaplacian, result, range.Item1, range.Item2));
             else
-                verts.UpdateMeanCurvature(vertexLaplacians, result, 0, verts.Count);
+                GetMeanCurvature(vertexLaplacian, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateMeanCurvature(this HeVertexList verts, IList<Vec3d> vertexLaplacians, IList<double> result, int i0, int i1)
+        private void GetMeanCurvature(IList<Vec3d> vertexLaplacian, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused || v.IsBoundary) continue;
-                result[i] = vertexLaplacians[i].Length * 0.5;
+                result[i] = vertexLaplacian[i].Length * 0.5;
             }
         }
 
 
         /// <summary>
-        /// 
+        /// Calculates the gaussian curvature at each vertex as the angle defect.
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetGaussianCurvature(this HeVertexList verts, bool parallel = false)
+        public double[] GetGaussianCurvature( bool parallel = false)
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateGaussianCurvature(result, parallel);
+            var result = new double[Count];
+            GetGaussianCurvature(result, parallel);
             return result;
         }
 
@@ -667,29 +653,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateGaussianCurvature(this HeVertexList verts, IList<double> result, bool parallel = false)
+        public void GetGaussianCurvature(IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                verts.UpdateGaussianCurvature(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetGaussianCurvature(result, range.Item1, range.Item2));
             else
-                verts.UpdateGaussianCurvature(result, 0, verts.Count);
+                GetGaussianCurvature(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateGaussianCurvature(this HeVertexList verts, IList<double> result, int i0, int i1)
+        private void GetGaussianCurvature(IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused || v.IsBoundary) continue;
 
                 double sum = 0.0;
@@ -702,17 +687,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the gaussian curvature at each vertex.
-        /// This is calculated as the angle defect.
+        /// Calculates the Gaussian curvature at each vertex as the angle defect.
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeAngles"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetGaussianCurvature(this HeVertexList verts, IList<double> halfedgeAngles, bool parallel = false)
+        public double[] GetGaussianCurvature2(IList<double> halfedgeAngles, bool parallel = false)
         {
-            double[] result = new double[verts.Count];
-            verts.UpdateGaussianCurvature(halfedgeAngles, result, parallel);
+            var result = new double[Count];
+            GetGaussianCurvature2(halfedgeAngles, result, parallel);
             return result;
         }
 
@@ -720,31 +703,30 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeAngles"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateGaussianCurvature(this HeVertexList verts, IList<double> halfedgeAngles, IList<double> result, bool parallel = false)
+        public void GetGaussianCurvature2(IList<double> halfedgeAngles, IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Halfedges.SizeCheck(halfedgeAngles);
+            SizeCheck(result);
+            Mesh.Halfedges.SizeCheck(halfedgeAngles);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateGaussianCurvature(halfedgeAngles, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetGaussianCurvature2(halfedgeAngles, result, range.Item1, range.Item2));
             else
-                verts.UpdateGaussianCurvature(halfedgeAngles, result, 0, verts.Count);
+                GetGaussianCurvature2(halfedgeAngles, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateGaussianCurvature(this HeVertexList verts, IList<double> halfedgeAngles, IList<double> result, int i0, int i1)
+        private void GetGaussianCurvature2(IList<double> halfedgeAngles, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused || v.IsBoundary) continue;
 
                 double sum = 0.0;
@@ -759,13 +741,12 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetVertexPositions(this HeVertexList verts, bool parallel = false)
+        public Vec3d[] GetVertexPositions(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[verts.Count];
-            verts.UpdateVertexPositions(result, parallel);
+            var result = new Vec3d[Count];
+            GetVertexPositions(result, parallel);
             return result;
         }
 
@@ -773,41 +754,39 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexPositions(this HeVertexList verts, IList<Vec3d> result, bool parallel = false)
+        public void GetVertexPositions(IList<Vec3d> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
             {
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
                 {
                     for (int i = range.Item1; i < range.Item2; i++)
-                        result[i] = verts[i].Position;
+                        result[i] = this[i].Position;
                 });
             }
             else
             {
-                for (int i = 0; i < verts.Count; i++)
-                    result[i] = verts[i].Position;
+                for (int i = 0; i < Count; i++)
+                    result[i] = this[i].Position;
             }
         }
 
 
         /// <summary>
-        /// Calculates the vertex normal as the area-weighted sum of halfedge normals around each vertex.
+        /// Calculates vertex normals as the area-weighted sum of halfedge normals around each vertex.
         /// Vertex normals are unitized by default.
         /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetVertexNormals(this HeVertexList verts, bool parallel = false)
+        public Vec3d[] GetVertexNormals(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[verts.Count];
-            verts.UpdateVertexNormals(result, parallel);
+            var result = new Vec3d[Count];
+            GetVertexNormals(result, parallel);
             return result;
         }
 
@@ -815,29 +794,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexNormals(this HeVertexList verts, IList<Vec3d> result, bool parallel = false)
+        public void GetVertexNormals(IList<Vec3d> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateVertexNormals(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetVertexNormals(result, range.Item1, range.Item2));
             else
-                verts.UpdateVertexNormals(result, 0, verts.Count);
+                GetVertexNormals(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexNormals(this HeVertexList verts, IList<Vec3d> result, int i0, int i1)
+        private void GetVertexNormals(IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
                 result[i] = v.GetNormal();
             }
@@ -845,19 +823,17 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the vertex normals as the unitized sum of halfedge normals around each vertex.
-        /// Half-edge normals can be scaled in advance for custom weighting.
+        /// Calculates vertex normals as the sum of halfedge normals around each vertex.
         /// Vertex normals are unitized by default.
         /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeNormals"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetVertexNormals(this HeVertexList verts, IList<Vec3d> halfedgeNormals, bool parallel = false)
+        public Vec3d[] GetVertexNormals2(IList<Vec3d> halfedgeNormals, bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[verts.Count];
-            verts.UpdateVertexNormals(halfedgeNormals, result, parallel);
+            var result = new Vec3d[Count];
+            GetVertexNormals2(halfedgeNormals, result, parallel);
             return result;
         }
 
@@ -865,31 +841,30 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeNormals"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexNormals(this HeVertexList verts, IList<Vec3d> halfedgeNormals, IList<Vec3d> result, bool parallel = false)
+        public void GetVertexNormals2(IList<Vec3d> halfedgeNormals, IList<Vec3d> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Halfedges.SizeCheck(halfedgeNormals);
+            SizeCheck(result);
+            Mesh.Halfedges.SizeCheck(halfedgeNormals);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateVertexNormals(halfedgeNormals, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetVertexNormals2(halfedgeNormals, result, range.Item1, range.Item2));
             else
-                verts.UpdateVertexNormals(halfedgeNormals, result, 0, verts.Count);
+                GetVertexNormals2(halfedgeNormals, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexNormals(this HeVertexList verts, IList<Vec3d> halfedgeNormals, IList<Vec3d> result, int i0, int i1)
+        private void GetVertexNormals2(IList<Vec3d> halfedgeNormals, IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
                 Vec3d sum = new Vec3d();
@@ -907,16 +882,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the Laplacian using a normalized umbrella weighting scheme.
+        /// Calculates the Laplacian of vertex positions using a normalized umbrella weighting scheme.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetVertexLaplacians(this HeVertexList verts, bool parallel = false)
+        public Vec3d[] GetPositionLaplacian(bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[verts.Count];
-            verts.UpdateVertexLaplacians(result, parallel);
+            var result = new Vec3d[Count];
+            GetPositionLaplacian(result, parallel);
             return result;
         }
 
@@ -924,29 +898,28 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexLaplacians(this HeVertexList verts, IList<Vec3d> result, bool parallel = false)
+        public void GetPositionLaplacian(IList<Vec3d> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
+            SizeCheck(result);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateVertexLaplacians(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetPositionLaplacian(result, range.Item1, range.Item2));
             else
-                verts.UpdateVertexLaplacians(result, 0, verts.Count);
+                GetPositionLaplacian(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexLaplacians(this HeVertexList verts, IList<Vec3d> result, int i0, int i1)
+        private void GetPositionLaplacian(IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
                 Vec3d sum = new Vec3d();
@@ -964,17 +937,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the Laplacian using given halfedge weights.
+        /// Calculates the Laplacian of vertex positions using given halfedge weights.
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeWeights"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static Vec3d[] GetVertexLaplacians(this HeVertexList verts, IList<double> halfedgeWeights, bool parallel = false)
+        public Vec3d[] GetPositionLaplacian(IList<double> halfedgeWeights, bool parallel = false)
         {
-            Vec3d[] result = new Vec3d[verts.Count];
-            verts.UpdateVertexLaplacians(halfedgeWeights, result, parallel);
+            var result = new Vec3d[Count];
+            GetPositionLaplacian(halfedgeWeights, result, parallel);
             return result;
         }
 
@@ -982,31 +954,30 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
         /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateVertexLaplacians(this HeVertexList verts, IList<double> halfedgeWeights, IList<Vec3d> result, bool parallel)
+        public void GetPositionLaplacian(IList<double> halfedgeWeights, IList<Vec3d> result, bool parallel)
         {
-            verts.SizeCheck(result);
-            verts.Mesh.Halfedges.SizeCheck(halfedgeWeights);
+            SizeCheck(result);
+            Mesh.Halfedges.SizeCheck(halfedgeWeights);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateVertexLaplacians(halfedgeWeights, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetPositionLaplacian(halfedgeWeights, result, range.Item1, range.Item2));
             else
-                verts.UpdateVertexLaplacians(halfedgeWeights, result, 0, verts.Count);
+                GetPositionLaplacian(halfedgeWeights, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateVertexLaplacians(this HeVertexList verts, IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
+        private void GetPositionLaplacian(IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
                 Vec3d sum = new Vec3d();
@@ -1018,22 +989,18 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
-        /*
-         * TODO
-         * Can attribute laplacians be made generic?
-         */
 
         /// <summary>
-        /// 
+        /// Calculates the Laplacian of vertex attributes using a normalized umbrella weighting scheme.
+        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
+        /// <param name="vertexValues"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetAttributeLaplacians(this HeVertexList verts, IList<double> values, bool parallel = false)
+        public double[] GetLaplacian(IList<double> vertexValues, bool parallel = false)
         {
-            var result = new double[verts.Count];
-            verts.UpdateAttributeLaplacians(values, result, parallel);
+            var result = new double[Count];
+            GetLaplacian(vertexValues, result, parallel);
             return result;
         }
 
@@ -1041,75 +1008,39 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static Vec3d[] GetAttributeLaplacians(this HeVertexList verts, IList<Vec3d> values, bool parallel = false)
-        {
-            var result = new Vec3d[verts.Count];
-            verts.UpdateAttributeLaplacians(values, result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
+        /// <param name="vertexValues"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateAttributeLaplacians(this HeVertexList verts, IList<double> values, IList<double> result, bool parallel = false)
+        public void GetLaplacian(IList<double> vertexValues, IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.SizeCheck(values);
+            SizeCheck(result);
+            SizeCheck(vertexValues);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateAttributeLaplacians(values, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian(vertexValues, result, range.Item1, range.Item2));
             else
-                verts.UpdateAttributeLaplacians(values, result, 0, verts.Count);
+                GetLaplacian(vertexValues, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void UpdateAttributeLaplacians(this HeVertexList verts, IList<Vec3d> values, IList<Vec3d> result, bool parallel = false)
-        {
-            verts.SizeCheck(result);
-            verts.SizeCheck(values);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateAttributeLaplacians(values, result, range.Item1, range.Item2));
-            else
-                verts.UpdateAttributeLaplacians(values, result, 0, verts.Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void UpdateAttributeLaplacians(this HeVertexList verts, IList<double> values, IList<double> result, int i0, int i1)
+        private void GetLaplacian(IList<double> vertexValues, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
-                double t = values[i];
+                double t = vertexValues[i];
                 double sum = 0.0;
                 int n = 0;
 
                 foreach (Halfedge he in v.OutgoingHalfedges)
                 {
-                    sum += (values[he.End.Index] - t);
+                    sum += (vertexValues[he.End.Index] - t);
                     n++;
                 }
 
@@ -1119,42 +1050,17 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Calculates the Laplacian of vertex attributes using given halfedge weights.
+        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
-        private static void UpdateAttributeLaplacians(this HeVertexList verts, IList<Vec3d> values, IList<Vec3d> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                HeVertex v = verts[i];
-                if (v.IsUnused) continue;
-
-                Vec3d t = values[i];
-                Vec3d sum = new Vec3d();
-                int n = 0;
-
-                foreach (Halfedge he in v.OutgoingHalfedges)
-                {
-                    sum += (values[he.End.Index] - t);
-                    n++;
-                }
-
-                result[i] = sum / n;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
+        /// <param name="vertexValues"></param>
         /// <param name="halfedgeWeights"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static double[] GetAttributeLaplacians(this HeVertexList verts, IList<double> values, IList<double> halfedgeWeights, bool parallel = false)
+        public double[] GetLaplacian2(IList<double> vertexValues, IList<double> halfedgeWeights, bool parallel = false)
         {
-            var result = new double[verts.Count];
-            verts.UpdateAttributeLaplacians(values, halfedgeWeights, result, parallel);
+            var result = new double[Count];
+            GetLaplacian2(vertexValues, halfedgeWeights, result, parallel);
             return result;
         }
 
@@ -1162,78 +1068,39 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
-        /// <param name="halfedgeWeights"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static Vec3d[] GetAttributeLaplacians(this HeVertexList verts, IList<Vec3d> values, IList<double> halfedgeWeights, bool parallel = false)
-        {
-            var result = new Vec3d[verts.Count];
-            verts.UpdateAttributeLaplacians(values, halfedgeWeights, result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
+        /// <param name="vertexValues"></param>
         /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateAttributeLaplacians(this HeVertexList verts, IList<double> values, IList<double> halfedgeWeights, IList<double> result, bool parallel = false)
+        public void GetLaplacian2(IList<double> vertexValues, IList<double> halfedgeWeights, IList<double> result, bool parallel = false)
         {
-            verts.SizeCheck(result);
-            verts.SizeCheck(values);
-            verts.Mesh.Halfedges.SizeCheck(halfedgeWeights);
+            SizeCheck(result);
+            SizeCheck(vertexValues);
+            Mesh.Halfedges.SizeCheck(halfedgeWeights);
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateAttributeLaplacians(values, halfedgeWeights, result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian2(vertexValues, halfedgeWeights, result, range.Item1, range.Item2));
             else
-                verts.UpdateAttributeLaplacians(values, halfedgeWeights, result, 0, verts.Count);
+                GetLaplacian2(vertexValues, halfedgeWeights, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="values"></param>
-        /// <param name="halfedgeWeights"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void UpdateAttributeLaplacians(this HeVertexList verts, IList<Vec3d> values, IList<double> halfedgeWeights, IList<Vec3d> result, bool parallel = false)
-        {
-            verts.SizeCheck(result);
-            verts.SizeCheck(values);
-            verts.Mesh.Halfedges.SizeCheck(halfedgeWeights);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), range =>
-                    verts.UpdateAttributeLaplacians(values, halfedgeWeights, result, range.Item1, range.Item2));
-            else
-                verts.UpdateAttributeLaplacians(values, halfedgeWeights, result, 0, verts.Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void UpdateAttributeLaplacians(this HeVertexList verts, IList<double> values, IList<double> halfedgeWeights, IList<double> result, int i0, int i1)
+        private void GetLaplacian2(IList<double> vertexValues, IList<double> halfedgeWeights, IList<double> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
-                double t = values[i];
+                double t = vertexValues[i];
                 double sum = 0.0;
 
                 foreach (Halfedge he in v.OutgoingHalfedges)
-                    sum += (values[he.End.Index] - t) * halfedgeWeights[he.Index];
+                    sum += (vertexValues[he.End.Index] - t) * halfedgeWeights[he.Index];
 
                 result[i] = sum;
             }
@@ -1241,20 +1108,116 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Calculates the Laplacian of vertex attributes using a normalized umbrella weighting scheme.
+        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
+        /// </summary>
+        /// <param name="vertexValues"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public Vec3d[] GetLaplacian(IList<Vec3d> vertexValues, bool parallel = false)
+        {
+            var result = new Vec3d[Count];
+            GetLaplacian(vertexValues, result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
-        private static void UpdateAttributeLaplacians(this HeVertexList verts, IList<Vec3d> values, IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
+        /// <param name="vertexValues"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void GetLaplacian(IList<Vec3d> vertexValues, IList<Vec3d> result, bool parallel = false)
+        {
+            SizeCheck(result);
+            SizeCheck(vertexValues);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian(vertexValues, result, range.Item1, range.Item2));
+            else
+                GetLaplacian(vertexValues, result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetLaplacian(IList<Vec3d> vertexValues, IList<Vec3d> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
-                HeVertex v = verts[i];
+                HeVertex v = this[i];
                 if (v.IsUnused) continue;
 
-                Vec3d t = values[i];
+                Vec3d t = vertexValues[i];
+                Vec3d sum = new Vec3d();
+                int n = 0;
+
+                foreach (Halfedge he in v.OutgoingHalfedges)
+                {
+                    sum += (vertexValues[he.End.Index] - t);
+                    n++;
+                }
+
+                result[i] = sum / n;
+            }
+        }
+
+
+        /// <summary>
+        /// Calculates the Laplacian of vertex attributes using given halfedge weights.
+        /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
+        /// </summary>
+        /// <param name="vertexValues"></param>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public Vec3d[] GetLaplacian2(IList<Vec3d> vertexValues, IList<double> halfedgeWeights, bool parallel = false)
+        {
+            var result = new Vec3d[Count];
+            GetLaplacian2(vertexValues, halfedgeWeights, result, parallel);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vertexValues"></param>
+        /// <param name="halfedgeWeights"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void GetLaplacian2(IList<Vec3d> vertexValues, IList<double> halfedgeWeights, IList<Vec3d> result, bool parallel = false)
+        {
+            SizeCheck(result);
+            SizeCheck(vertexValues);
+            Mesh.Halfedges.SizeCheck(halfedgeWeights);
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range =>
+                    GetLaplacian2(vertexValues, halfedgeWeights, result, range.Item1, range.Item2));
+            else
+                GetLaplacian2(vertexValues, halfedgeWeights, result, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void GetLaplacian2(IList<Vec3d> vertexValues, IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
+        {
+            for (int i = i0; i < i1; i++)
+            {
+                HeVertex v = this[i];
+                if (v.IsUnused) continue;
+
+                Vec3d t = vertexValues[i];
                 Vec3d sum = new Vec3d();
 
                 foreach (Halfedge he in v.OutgoingHalfedges)
-                    sum += (values[he.End.Index] - t) * halfedgeWeights[he.Index];
+                    sum += (vertexValues[he.End.Index] - t) * halfedgeWeights[he.Index];
 
                 result[i] = sum;
             }
