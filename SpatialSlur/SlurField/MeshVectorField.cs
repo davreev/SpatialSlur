@@ -44,26 +44,6 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /*
-        /// <summary>
-        /// Returns the interpolated value at a given point in the field.
-        /// Assumes triangular faces in the queried mesh.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public override Vec3d Evaluate(MeshPoint point)
-        {
-            MeshFace face = point.Mesh.Faces[point.FaceIndex];
-            Vec3d result = new Vec3d();
-
-            for (int i = 0; i < 3; i++)
-                result += Values[face[i]] * point.T[i];
-
-            return result;
-        }
-        */
-    
-
         /// <summary>
         /// 
         /// </summary>
@@ -86,11 +66,10 @@ namespace SpatialSlur.SlurField
         /// <param name="indices"></param>
         /// <param name="weights"></param>
         /// <returns></returns>
-        public override Vec3d Evaluate(IList<int> indices, IList<double> weights)
+        public override Vec3d Evaluate(int[] indices, double[] weights)
         {
             Vec3d result = new Vec3d();
-
-            for (int i = 0; i < indices.Count; i++)
+            for (int i = 0; i < indices.Length; i++)
                 result += Values[indices[i]] * weights[i];
 
             return result;
@@ -105,7 +84,7 @@ namespace SpatialSlur.SlurField
         public MeshScalarField GetMagnitudes(bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField(Mesh);
-            UpdateMagnitudes(result.Values, parallel);
+            GetMagnitudes(result.Values, parallel);
             return result;
         }
 
@@ -115,9 +94,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateMagnitudes(MeshScalarField result, bool parallel = false)
+        public void GetMagnitudes(MeshScalarField result, bool parallel = false)
         {
-            UpdateMagnitudes(result.Values, parallel);
+            GetMagnitudes(result.Values, parallel);
         }
 
 
@@ -126,7 +105,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateMagnitudes(IList<double> result, bool parallel = false)
+        public void GetMagnitudes(IList<double> result, bool parallel = false)
         {
             SizeCheck(result);
 
@@ -241,7 +220,7 @@ namespace SpatialSlur.SlurField
         public MeshVectorField GetLaplacian(bool parallel = false)
         {
             var result = new MeshVectorField(Mesh);
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian(Values, result.Values, parallel);
             return result;
         }
 
@@ -256,7 +235,7 @@ namespace SpatialSlur.SlurField
         public MeshVectorField GetLaplacian(IList<double> halfedgeWeights, bool parallel = false)
         {
             var result = new MeshVectorField(Mesh);
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian2(Values, halfedgeWeights, result.Values, parallel);
             return result;
         }
 
@@ -267,9 +246,9 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public void UpdateLaplacian(MeshVectorField result, bool parallel = false)
+        public void GetLaplacian(MeshVectorField result, bool parallel = false)
         {
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian(Values, result.Values, parallel);
         }
 
 
@@ -279,11 +258,9 @@ namespace SpatialSlur.SlurField
         /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateLaplacian(IList<double> halfedgeWeights, MeshVectorField result, bool parallel = false)
+        public void GetLaplacian(IList<double> halfedgeWeights, MeshVectorField result, bool parallel = false)
         {
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian2(Values, halfedgeWeights, result.Values, parallel);
         }
-
-
     }
 }

@@ -163,7 +163,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Iterates through the coordinates of each value in the field. 
         /// Note that these are calculated on the fly and not explicitly stored in memory.
-        /// If you need to cache them, call GetCoordinates or UpdateCoordinates instead.
+        /// If you need to cache them, call GetCoordinates instead.
         /// </summary>
         public IEnumerable<Vec2d> Coordinates
         {
@@ -232,7 +232,7 @@ namespace SpatialSlur.SlurField
         public Vec2d[] GetCoordinates()
         {
             Vec2d[] result = new Vec2d[_n];
-            UpdateCoordinates(result);
+            GetCoordinates(result);
             return result;
         }
 
@@ -241,7 +241,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="coords"></param>
-        public void UpdateCoordinates(IList<Vec2d> coords)
+        public void GetCoordinates(IList<Vec2d> coords)
         {
             Parallel.ForEach(Partitioner.Create(0, _n), range =>
             {
@@ -531,7 +531,11 @@ namespace SpatialSlur.SlurField
         public void FieldPointAtUnchecked(Vec2d point, FieldPoint2d result)
         {
             int i, j;
-            SetWeights(result, point, out i, out j);
+
+            // set weights with fractional components
+            result.SetWeights(
+             SlurMath.Fract((point.x - _x0) * _dxInv, out i),
+             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
 
             // set corner indices
             int index = FlattenIndex(i, j);
@@ -549,7 +553,11 @@ namespace SpatialSlur.SlurField
         private void FieldPointAtConstant(Vec2d point, FieldPoint2d result)
         {
             int i, j;
-            SetWeights(result, point, out i, out j);
+
+            // set weights with fractional components
+            result.SetWeights(
+             SlurMath.Fract((point.x - _x0) * _dxInv, out i),
+             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
 
             // bit mask (0 = in bounds, 1 = out of bounds)
             int mask = 0;
@@ -574,7 +582,11 @@ namespace SpatialSlur.SlurField
         private void FieldPointAtEqual(Vec2d point, FieldPoint2d result)
         {
             int i, j;
-            SetWeights(result, point, out i, out j);
+
+            // set weights with fractional components
+            result.SetWeights(
+             SlurMath.Fract((point.x - _x0) * _dxInv, out i),
+             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
 
             // clamp and get offsets
             int di = 0, dj = 0;
@@ -603,7 +615,11 @@ namespace SpatialSlur.SlurField
         private void FieldPointAtPeriodic(Vec2d point, FieldPoint2d result)
         {
             int i, j;
-            SetWeights(result, point, out i, out j);
+
+            // set weights with fractional components
+            result.SetWeights(
+             SlurMath.Fract((point.x - _x0) * _dxInv, out i),
+             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
 
             // wrap whole components
             i = SlurMath.Mod2(i, _nx);
@@ -635,7 +651,7 @@ namespace SpatialSlur.SlurField
 
 
         /*
-        // Alternative implementation that is better suited to more involved types of interpolation (cubic etc.)
+        // Alternative implementation better suited to more involved types of interpolation (cubic etc.)
         // http://paulbourke.net/miscellaneous/interpolation/
         private void FieldPointAtClamped2(Vec2d point, FieldPoint2d result)
         {
@@ -653,34 +669,6 @@ namespace SpatialSlur.SlurField
                 for (int i = 0; i < 2; i++)
                 {
                     int ii = SlurMath.Clamp(i0 + i, _nx - 1);
-                    corners[index] = FlattenIndex(ii, jj);
-                    index++;
-                }
-            }
-
-            // compute weights using fractional components
-            result.SetWeights(u, v);
-        }
-
-
-        // Alternative implementation that is better suited to more involved types of interpolation (cubic etc.)
-        // http://paulbourke.net/miscellaneous/interpolation/
-        private void FieldPointAtWrapped2(Vec2d point, FieldPoint2d result)
-        {
-            // convert to grid space and separate fractional and whole components
-            int i0, j0;
-            double u = SlurMath.Fract((point.x - _x0) / _dxInv, out i0);
-            double v = SlurMath.Fract((point.y - _y0) / _dyInv, out j0);
-
-            int[] corners = result.Corners;
-            int index = 0;
-
-            for (int j = 0; j < 2; j++)
-            {
-                int jj = SlurMath.Mod2(j0 + j, _ny);
-                for (int i = 0; i < 2; i++)
-                {
-                    int ii = SlurMath.Mod2(i0 + i, _nx);
                     corners[index] = FlattenIndex(ii, jj);
                     index++;
                 }

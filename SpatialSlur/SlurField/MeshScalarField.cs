@@ -60,11 +60,11 @@ namespace SpatialSlur.SlurField
         /// <param name="indices"></param>
         /// <param name="weights"></param>
         /// <returns></returns>
-        public override double Evaluate(IList<int> indices, IList<double> weights)
+        public override double Evaluate(int[] indices, double[] weights)
         {
             double result = 0.0;
 
-            for (int i = 0; i < indices.Count; i++)
+            for (int i = 0; i < indices.Length; i++)
                 result += Values[indices[i]] * weights[i];
 
             return result;
@@ -148,7 +148,7 @@ namespace SpatialSlur.SlurField
         public MeshScalarField GetLaplacian(bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField(Mesh);
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian(Values, result.Values, parallel);
             return result;
         }
 
@@ -163,7 +163,7 @@ namespace SpatialSlur.SlurField
         public MeshScalarField GetLaplacian(IList<double> halfedgeWeights, bool parallel = false)
         {
             MeshScalarField result = new MeshScalarField(Mesh);
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian2(Values, halfedgeWeights, result.Values, parallel);
             return result;
         }
  
@@ -174,9 +174,9 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public void UpdateLaplacian(MeshScalarField result, bool parallel = false)
+        public void GetLaplacian(MeshScalarField result, bool parallel = false)
         {
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian(Values, result.Values, parallel);
         }
 
 
@@ -186,9 +186,9 @@ namespace SpatialSlur.SlurField
         /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateLaplacian(IList<double> halfedgeWeights, MeshScalarField result, bool parallel = false)
+        public void GetLaplacian(IList<double> halfedgeWeights, MeshScalarField result, bool parallel = false)
         {
-            Mesh.Vertices.UpdateAttributeLaplacians(Values, halfedgeWeights, result.Values, parallel);
+            Mesh.Vertices.GetLaplacian2(Values, halfedgeWeights, result.Values, parallel);
         }
 
 
@@ -199,11 +199,11 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public MeshVectorField GetGradient(bool parallel = false)
         {
-            // TODO conduct further research into vertex-based mesh vector fields
+            // TODO further reading on vertex-based mesh vector fields
             // http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
             
             MeshVectorField result = new MeshVectorField(Mesh);
-            UpdateGradient(result, parallel);
+            GetGradient(result, parallel);
             return result;
         }
 
@@ -217,7 +217,7 @@ namespace SpatialSlur.SlurField
         public MeshVectorField GetGradient(IList<double> halfedgeWeights, bool parallel = false)
         {
             MeshVectorField result = new MeshVectorField(Mesh);
-            UpdateGradient(halfedgeWeights, result, parallel);
+            GetGradient(halfedgeWeights, result, parallel);
             return result;
         }
 
@@ -227,9 +227,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateGradient(MeshVectorField result, bool parallel = false)
+        public void GetGradient(MeshVectorField result, bool parallel = false)
         {
-            UpdateGradient(result.Values, parallel);
+            GetGradient(result.Values, parallel);
         }
 
 
@@ -238,22 +238,22 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateGradient(IList<Vec3d> result, bool parallel = false)
+        public void GetGradient(IList<Vec3d> result, bool parallel = false)
         {
             SizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, Count), range => 
-                    UpdateGradient(result, range.Item1, range.Item2));
+                    GetGradient(result, range.Item1, range.Item2));
             else
-                UpdateGradient(result, 0, Count);
+                GetGradient(result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateGradient(IList<Vec3d> result, int i0, int i1)
+        private void GetGradient(IList<Vec3d> result, int i0, int i1)
         {
             // TODO refactor according to http://libigl.github.io/libigl/tutorial/tutorial.html
             HeVertexList verts = Mesh.Vertices;
@@ -288,9 +288,9 @@ namespace SpatialSlur.SlurField
         /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateGradient(IList<double> halfedgeWeights, MeshVectorField result, bool parallel = false)
+        public void GetGradient(IList<double> halfedgeWeights, MeshVectorField result, bool parallel = false)
         {
-            UpdateGradient(halfedgeWeights, result.Values, parallel);
+            GetGradient(halfedgeWeights, result.Values, parallel);
         }
 
 
@@ -300,23 +300,23 @@ namespace SpatialSlur.SlurField
         /// <param name="halfedgeWeights"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateGradient(IList<double> halfedgeWeights, IList<Vec3d> result, bool parallel = false)
+        public void GetGradient(IList<double> halfedgeWeights, IList<Vec3d> result, bool parallel = false)
         {
             SizeCheck(result);
             Mesh.Halfedges.SizeCheck(halfedgeWeights);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, Count), range => 
-                    UpdateGradient(halfedgeWeights, result, range.Item1, range.Item2));
+                    GetGradient(halfedgeWeights, result, range.Item1, range.Item2));
             else
-                UpdateGradient(halfedgeWeights, result, 0, Count);
+                GetGradient(halfedgeWeights, result, 0, Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateGradient(IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
+        private void GetGradient(IList<double> halfedgeWeights, IList<Vec3d> result, int i0, int i1)
         {
             // TODO refactor according to http://libigl.github.io/libigl/tutorial/tutorial.html 
             HeVertexList verts = Mesh.Vertices;
@@ -352,7 +352,7 @@ namespace SpatialSlur.SlurField
         public double[] GetFaceMeans(bool parallel = false)
         {
             double[] result = new double[Mesh.Faces.Count];
-            UpdateFaceMeans(result, parallel);
+            GetFaceMeans(result, parallel);
             return result;
         }
 
@@ -362,22 +362,22 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void UpdateFaceMeans(IList<double> result, bool parallel = false)
+        public void GetFaceMeans(IList<double> result, bool parallel = false)
         {
             Mesh.Faces.SizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, Mesh.Faces.Count), range => 
-                    UpdateFaceMeans(result, range.Item1, range.Item2));
+                    GetFaceMeans(result, range.Item1, range.Item2));
             else
-                UpdateFaceMeans(result, 0, Mesh.Faces.Count);
+                GetFaceMeans(result, 0, Mesh.Faces.Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateFaceMeans(IList<double> result, int i0, int i1)
+        private void GetFaceMeans(IList<double> result, int i0, int i1)
         {
             HeFaceList faces = Mesh.Faces;
 

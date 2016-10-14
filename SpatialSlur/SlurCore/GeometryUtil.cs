@@ -7,6 +7,9 @@ using SpatialSlur.SlurData;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurGraph;
 
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurCore
 {
@@ -223,31 +226,41 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double[] GetRotationMatrix(Vec3d axis, double angle)
         {
-            double[] m = new double[9];
+            double[] result = new double[9];
+            GetRotationMatrix(axis, angle, result);
+            return result;
+        }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <param name="angle"></param>
+        /// <param name="result"></param>
+        public static void GetRotationMatrix(Vec3d axis, double angle, double[] result)
+        {
             double c = Math.Cos(angle);
             double s = Math.Sin(angle);
             double t = 1.0 - c;
 
-            m[0] = c + axis.x * axis.x * t; // m00
-            m[4] = c + axis.y * axis.y * t; // m11
-            m[8] = c + axis.z * axis.z * t; // m22
+            result[0] = c + axis.x * axis.x * t; // m00
+            result[4] = c + axis.y * axis.y * t; // m11
+            result[8] = c + axis.z * axis.z * t; // m22
 
             double tmp1 = axis.x * axis.y * t;
             double tmp2 = axis.z * s;
-            m[1] = tmp1 + tmp2; // m01
-            m[3] = tmp1 - tmp2; // m10
+            result[1] = tmp1 + tmp2; // m01
+            result[3] = tmp1 - tmp2; // m10
 
             tmp1 = axis.x * axis.z * t;
             tmp2 = axis.y * s;
-            m[2] = tmp1 - tmp2; // m02
-            m[6] = tmp1 + tmp2; tmp1 = axis.y * axis.z * t; // m20
+            result[2] = tmp1 - tmp2; // m02
+            result[6] = tmp1 + tmp2; tmp1 = axis.y * axis.z * t; // m20
 
             tmp2 = axis.x * s;
-            m[5] = tmp1 + tmp2; // m21
-            m[7] = tmp1 - tmp2; // m12
-
-            return m;
+            result[5] = tmp1 + tmp2; // m21
+            result[7] = tmp1 - tmp2; // m12
         }
 
 
@@ -295,6 +308,20 @@ namespace SpatialSlur.SlurCore
         /// <param name="func"></param>
         /// <param name="vector"></param>
         /// <param name="delta"></param>
+        public static Vecd GetGradient(Func<Vecd, double> func, Vecd vector, double delta)
+        {
+            Vecd result = new Vecd(vector.Count);
+            GetGradient(func, vector, delta, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="vector"></param>
+        /// <param name="delta"></param>
         /// <param name="result"></param>
         public static void GetGradient(Func<Vecd, double> func, Vecd vector, double delta, Vecd result)
         {
@@ -322,6 +349,20 @@ namespace SpatialSlur.SlurCore
         /// <param name="func"></param>
         /// <param name="vector"></param>
         /// <param name="delta"></param>
+        public static double[] GetGradient(Func<double[], double> func, double[] vector, double delta)
+        {
+            double[] result = new double[vector.Length];
+            GetGradient(func, vector, delta, result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="vector"></param>
+        /// <param name="delta"></param>
         /// <param name="result"></param>
         public static void GetGradient(Func<double[], double> func, double[] vector, double delta, double[] result)
         {
@@ -344,18 +385,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns the the entries of the covariance matrix in column-major order
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovarianceMatrix(IList<Vec2d> vectors)
-        {
-            Vec2d mean;
-            return GetCovarianceMatrix(vectors, out mean);
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="vectors"></param>
@@ -363,13 +392,30 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double[] GetCovarianceMatrix(IList<Vec2d> vectors, out Vec2d mean)
         {
+            double[] result = new double[4];
+            GetCovarianceMatrix(vectors, result, out mean);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="result"></param>
+        /// <param name="mean"></param>
+        /// <returns></returns>
+        public static void GetCovarianceMatrix(IList<Vec2d> vectors, double[] result, out Vec2d mean)
+        {
             // calculate mean
             mean = new Vec2d();
             foreach (Vec2d v in vectors) mean += v;
             mean /= vectors.Count;
 
+            // set result to 0
+            Array.Clear(result, 0, 4);
+
             // calculate covariance matrix
-            double[] result = new double[4];
             for (int i = 0; i < vectors.Count; i++)
             {
                 Vec3d d = vectors[i] - mean;
@@ -380,21 +426,7 @@ namespace SpatialSlur.SlurCore
 
             // set symmetric values
             result[2] = result[1];
-            return result;
         }
-
-
-        /// <summary>
-        /// Returns the entries of the covariance matrix in column-major order.
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovarianceMatrix(IList<Vec3d> vectors)
-        {
-            Vec3d mean;
-            return GetCovarianceMatrix(vectors, out mean);
-        }
-
 
 
         /// <summary>
@@ -405,14 +437,29 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double[] GetCovarianceMatrix(IList<Vec3d> vectors, out Vec3d mean)
         {
+            double[] result = new double[9];
+            GetCovarianceMatrix(vectors, result, out mean);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="result"></param>
+        /// <param name="mean"></param>
+        public static void GetCovarianceMatrix(IList<Vec3d> vectors, double[] result, out Vec3d mean)
+        {
             // calculate mean
             mean = new Vec3d();
             foreach (Vec3d v in vectors) mean += v;
             mean /= vectors.Count;
 
-            // calculate covariance matrix
-            double[] result = new double[9];
+            // set result to 0
+            Array.Clear(result, 0, 9);
 
+            // calculate lower triangular covariance matrix
             for (int i = 0; i < vectors.Count; i++)
             {
                 Vec3d d = vectors[i] - mean;
@@ -428,24 +475,11 @@ namespace SpatialSlur.SlurCore
             result[3] = result[1];
             result[6] = result[2];
             result[7] = result[5];
-            return result;
         }
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovarianceMatrix(IList<Vecd> vectors)
-        {
-            Vecd mean;
-            return GetCovarianceMatrix(vectors, out mean);
-        }
-
-
-        /// <summary>
-        /// 
+        /// Returns the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="vectors"></param>
         /// <param name="mean"></param>
@@ -454,27 +488,37 @@ namespace SpatialSlur.SlurCore
         {
             int n = vectors[0].Count;
             double[] result = new double[n * n];
-
-            GetCovarianceMatrix(vectors, result, out mean);
-
+            mean = new Vecd(n);
+            
+            GetCovarianceMatrixImpl(vectors, result, mean);
             return result;
         }
 
 
         /// <summary>
-        /// Returns the the entries of the covariance matrix in column-major order.
+        /// 
         /// </summary>
         /// <param name="vectors"></param>
         /// <param name="result"></param>
-        /// <param name="mean"></param>
-        public static void GetCovarianceMatrix(IList<Vecd> vectors, double[] result, out Vecd mean)
+        /// <param name="meanOut"></param>
+        public static void GetCovarianceMatrix(IList<Vecd> vectors, double[] result, Vecd meanOut)
+        {
+            Array.Clear(result, 0, result.Length);
+            Array.Clear(meanOut.Values, 0, meanOut.Count);
+            GetCovarianceMatrixImpl(vectors, result, meanOut);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void GetCovarianceMatrixImpl(IList<Vecd> vectors, double[] result, Vecd meanOut)
         {
             int n = vectors[0].Count;
 
             // calculate mean
-            mean = new Vecd(n);
-            foreach (Vecd v in vectors) mean.Add(v);
-            mean.Scale(1.0 / vectors.Count);
+            for (int i = 0; i < vectors.Count; i++) meanOut.Add(vectors[i]);
+            meanOut.Scale(1.0 / vectors.Count);
 
             // calculate lower triangular covariance matrix
             for (int i = 0; i < vectors.Count; i++)
@@ -483,11 +527,11 @@ namespace SpatialSlur.SlurCore
 
                 for (int j = 0; j < n; j++)
                 {
-                    double dj = vec[j] - mean[j];
+                    double dj = vec[j] - meanOut[j];
                     result[j * n + j] += dj * dj; // diagonal entry
 
                     for (int k = j + 1; k < n; k++)
-                        result[j * n + k] += dj * (vec[k] - mean[k]);
+                        result[j * n + k] += dj * (vec[k] - meanOut[k]);
                 }
             }
 
@@ -501,19 +545,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static double[] GetCovarianceMatrix(IList<double[]> vectors)
-        {
-            double[] mean;
-            return GetCovarianceMatrix(vectors, out mean);
-        }
-
-
-        /// <summary>
-        /// 
+        /// Returns the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="vectors"></param>
         /// <param name="mean"></param>
@@ -522,27 +554,37 @@ namespace SpatialSlur.SlurCore
         {
             int n = vectors[0].Length;
             double[] result = new double[n * n];
-            
-            GetCovarianceMatrix(vectors, result, out mean);
+            mean = new double[n];
 
+            GetCovarianceMatrixImpl(vectors, result, mean);
             return result;
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="result"></param>
+        /// <param name="meanOut"></param>
+        public static void GetCovarianceMatrix(IList<double[]> vectors, double[] result, double[] meanOut)
+        {
+            Array.Clear(result, 0, result.Length);
+            Array.Clear(meanOut, 0, meanOut.Length);
+            GetCovarianceMatrixImpl(vectors, result, meanOut);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        /// <param name="mean"></param>
-        public static void GetCovarianceMatrix(IList<double[]> vectors, double[] result, out double[] mean)
+        private static void GetCovarianceMatrixImpl(IList<double[]> vectors, double[] result, double[] meanOut)
         {
             int n = vectors[0].Length;
 
             // calculate mean
-            mean = new double[n];
-            foreach (double[] v in vectors) VecMath.Add(mean,v,n,mean);
-            VecMath.Scale(mean, 1.0 / vectors.Count, n, mean);
+            for (int i = 0; i < vectors.Count; i++) VecMath.Add(meanOut, vectors[i], n, meanOut);
+            VecMath.Scale(meanOut, 1.0 / vectors.Count, n, meanOut);
 
             // calculate lower triangular covariance matrix
             for (int i = 0; i < vectors.Count; i++)
@@ -551,11 +593,11 @@ namespace SpatialSlur.SlurCore
        
                 for (int j = 0; j < n; j++)
                 {
-                    double dj = vec[j] - mean[j];
+                    double dj = vec[j] - meanOut[j];
                     result[j * n + j] += dj * dj; // diagonal entry
 
                     for (int k = j + 1; k < n; k++)
-                        result[j * n + k] += dj * (vec[k] - mean[k]);
+                        result[j * n + k] += dj * (vec[k] - meanOut[k]);
                 }
             }
 

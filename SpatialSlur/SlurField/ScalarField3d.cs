@@ -91,16 +91,14 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
         /// <returns></returns>
-        public override double Evaluate(FieldPoint3d point)
+        public override double Evaluate(int[] indices, double[] weights)
         {
-            int[] corners = point.Corners;
-            double[] weights = point.Weights;
-
             double result = 0.0;
-            for (int i = 0; i < 8; i++)
-                result += Values[corners[i]] * weights[i];
+            for (int i = 0; i < indices.Length; i++)
+                result += Values[indices[i]] * weights[i];
 
             return result;
         }
@@ -354,7 +352,7 @@ namespace SpatialSlur.SlurField
         public ScalarField3d GetLaplacian()
         {
             ScalarField3d result = new ScalarField3d((Field3d)this);
-            UpdateLaplacian(result.Values);
+            GetLaplacian(result.Values);
             return result;
         }
 
@@ -363,9 +361,9 @@ namespace SpatialSlur.SlurField
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateLaplacian(ScalarField3d result)
+        public void GetLaplacian(ScalarField3d result)
         {
-            UpdateLaplacian(result.Values);
+            _getLaplacian(result.Values);
         }
 
 
@@ -373,7 +371,7 @@ namespace SpatialSlur.SlurField
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateLaplacian(IList<double> result)
+        public void GetLaplacian(IList<double> result)
         {
             _getLaplacian(result);
         }
@@ -493,7 +491,7 @@ namespace SpatialSlur.SlurField
         public VectorField3d GetGradient()
         {
             VectorField3d result = new VectorField3d(this);
-            UpdateGradient(result.Values);
+            GetGradient(result.Values);
             return result;
         }
 
@@ -502,9 +500,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateGradient(VectorField3d result)
+        public void GetGradient(VectorField3d result)
         {
-            UpdateGradient(result.Values);
+            _getGradient(result.Values);
         }
 
 
@@ -512,7 +510,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateGradient(IList<Vec3d> result)
+        public void GetGradient(IList<Vec3d> result)
         {
             _getGradient(result);
         }

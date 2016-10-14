@@ -140,16 +140,14 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
         /// <returns></returns>
-        public override Vec3d Evaluate(FieldPoint3d point)
+        public override Vec3d Evaluate(int[] indices, double[] weights)
         {
-            int[] corners = point.Corners;
-            double[] weights = point.Weights;
-
             Vec3d result = new Vec3d();
-            for (int i = 0; i < 8; i++)
-                result += Values[corners[i]] * weights[i];
+            for (int i = 0; i < indices.Length; i++)
+                result += Values[indices[i]] * weights[i];
 
             return result;
         }
@@ -162,7 +160,7 @@ namespace SpatialSlur.SlurField
         public ScalarField3d GetMagnitudes()
         {
             ScalarField3d result = new ScalarField3d(this);
-            UpdateMagnitudes(result.Values);
+            GetMagnitudes(result.Values);
             return result;
         }
 
@@ -171,9 +169,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateMagnitudes(ScalarField3d result)
+        public void GetMagnitudes(ScalarField3d result)
         {
-            UpdateMagnitudes(result.Values);
+            GetMagnitudes(result.Values);
         }
 
 
@@ -181,7 +179,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateMagnitudes(IList<double> result)
+        public void GetMagnitudes(IList<double> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -384,7 +382,7 @@ namespace SpatialSlur.SlurField
         public VectorField3d GetLaplacian()
         {
             VectorField3d result = new VectorField3d((Field3d)this);
-            UpdateLaplacian(result.Values);
+            GetLaplacian(result.Values);
             return result;
         }
 
@@ -393,9 +391,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateLaplacian(VectorField3d result)
+        public void GetLaplacian(VectorField3d result)
         {
-            UpdateLaplacian(result.Values);
+            _getLaplacian(result.Values);
         }
 
 
@@ -403,7 +401,7 @@ namespace SpatialSlur.SlurField
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateLaplacian(IList<Vec3d> result)
+        public void GetLaplacian(IList<Vec3d> result)
         {
             _getLaplacian(result);
         }
@@ -521,7 +519,7 @@ namespace SpatialSlur.SlurField
         public ScalarField3d GetDivergence()
         {
             ScalarField3d result = new ScalarField3d(this);
-            UpdateDivergence(result.Values);
+            GetDivergence(result.Values);
             return result;
         }
 
@@ -530,9 +528,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateDivergence(ScalarField3d result)
+        public void GetDivergence(ScalarField3d result)
         {
-            UpdateDivergence(result.Values);
+            _getDivergence(result.Values);
         }
 
 
@@ -540,7 +538,7 @@ namespace SpatialSlur.SlurField
         /// http://www.math.harvard.edu/archive/21a_spring_09/PDF/13-05-curl-and-divergence.pdf
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateDivergence(IList<double> result)
+        public void GetDivergence(IList<double> result)
         {
             _getDivergence(result);
         }
@@ -655,7 +653,7 @@ namespace SpatialSlur.SlurField
         public VectorField3d GetCurl()
         {
             VectorField3d result = new VectorField3d((Field3d)this);
-            UpdateCurl(result.Values);
+            GetCurl(result.Values);
             return result;
         }
 
@@ -664,9 +662,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateCurl(VectorField3d result)
+        public void GetCurl(VectorField3d result)
         {
-            UpdateCurl(result.Values);
+            _getCurl(result.Values);
         }
 
 
@@ -674,7 +672,7 @@ namespace SpatialSlur.SlurField
         /// http://www.math.harvard.edu/archive/21a_spring_09/PDF/13-05-curl-and-divergence.pdf
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateCurl(IList<Vec3d> result)
+        public void GetCurl(IList<Vec3d> result)
         {
             _getCurl(result);
         }

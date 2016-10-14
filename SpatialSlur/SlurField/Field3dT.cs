@@ -85,7 +85,19 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public abstract T Evaluate(FieldPoint3d point);
+        public T Evaluate(FieldPoint3d point)
+        {
+            return Evaluate(point.Corners, point.Weights);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
+        /// <returns></returns>
+        public abstract T Evaluate(int[] indices, double[] weights);
 
 
         /// <summary>
@@ -519,10 +531,40 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Samples another field of a potentially different resolution.
+        /// Samples another field nearest using the nearest value.
         /// </summary>
         /// <param name="other"></param>
-        public void Sample(Field3d<T> other)
+        public void SampleNearest(Field3d<T> other)
+        {
+            if (ResolutionEquals(other))
+            {
+                Set(other);
+                return;
+            }
+
+            var otherVals = other.Values;
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j, k;
+                ExpandIndex(range.Item1, out i, out j, out k);
+       
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+                    if (j == CountY) { k++; j = 0; }
+
+                    _values[index] = otherVals[other.IndexAt(CoordinateAt(i, j, k))];
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Samples another field using bilinear interpolation of the 8 nearest values.
+        /// </summary>
+        /// <param name="other"></param>
+        public void SampleLinear(Field3d<T> other)
         {
             if (ResolutionEquals(other))
             {
@@ -535,7 +577,7 @@ namespace SpatialSlur.SlurField
                 FieldPoint3d fp = new FieldPoint3d();
                 int i, j, k;
                 ExpandIndex(range.Item1, out i, out j, out k);
-       
+
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }

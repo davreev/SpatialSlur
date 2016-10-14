@@ -74,7 +74,7 @@ namespace SpatialSlur.SlurField
         /// <param name="indices"></param>
         /// <param name="weights"></param>
         /// <returns></returns>
-        public abstract T Evaluate(IList<int> indices, IList<double> weights);
+        public abstract T Evaluate(int[] indices, double[] weights);
 
 
         /// <summary>

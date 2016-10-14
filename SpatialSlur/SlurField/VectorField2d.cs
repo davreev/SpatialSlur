@@ -93,16 +93,14 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
         /// <returns></returns>
-        public override Vec2d Evaluate(FieldPoint2d point)
+        public override Vec2d Evaluate(int[] indices, double[] weights)
         {
-            int[] corners = point.Corners;
-            double[] weights = point.Weights;
-
             Vec2d result = new Vec2d();
-            for (int i = 0; i < 4; i++)
-                result += Values[corners[i]] * weights[i];
+            for (int i = 0; i < indices.Length; i++)
+                result += Values[indices[i]] * weights[i];
 
             return result;
         }
@@ -115,7 +113,7 @@ namespace SpatialSlur.SlurField
         public ScalarField2d GetMagnitudes()
         {
             ScalarField2d result = new ScalarField2d(this);
-            UpdateMagnitudes(result.Values);
+            GetMagnitudes(result.Values);
             return result;
         }
 
@@ -124,9 +122,9 @@ namespace SpatialSlur.SlurField
         /// Gets the magnitudes of all vectors in the field
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateMagnitudes(ScalarField2d result)
+        public void GetMagnitudes(ScalarField2d result)
         {
-            UpdateMagnitudes(result.Values);
+            GetMagnitudes(result.Values);
         }
 
 
@@ -134,7 +132,7 @@ namespace SpatialSlur.SlurField
         /// Gets the magnitudes of all vectors in the field
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateMagnitudes(IList<double> result)
+        public void GetMagnitudes(IList<double> result)
         {
             Parallel.ForEach(Partitioner.Create(0, Count), range =>
             {
@@ -190,7 +188,7 @@ namespace SpatialSlur.SlurField
         public VectorField2d GetLaplacian()
         {
             VectorField2d result = new VectorField2d((Field2d)this);
-            UpdateLaplacian(result.Values);
+            GetLaplacian(result.Values);
             return result;
         }
 
@@ -199,9 +197,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateLaplacian(VectorField2d result)
+        public void GetLaplacian(VectorField2d result)
         {
-            UpdateLaplacian(result.Values);
+            _getLaplacian(result.Values);
         }
 
 
@@ -209,7 +207,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateLaplacian(IList<Vec2d> result)
+        public void GetLaplacian(IList<Vec2d> result)
         {
             _getLaplacian(result);
         }
@@ -312,7 +310,7 @@ namespace SpatialSlur.SlurField
         public ScalarField2d GetDivergence()
         {
             ScalarField2d result = new ScalarField2d(this);
-            UpdateDivergence(result.Values);
+            GetDivergence(result.Values);
             return result;
         }
 
@@ -321,9 +319,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateDivergence(ScalarField2d result)
+        public void GetDivergence(ScalarField2d result)
         {
-            UpdateDivergence(result.Values);
+            _getDivergence(result.Values);
         }
 
 
@@ -331,7 +329,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateDivergence(IList<double> result)
+        public void GetDivergence(IList<double> result)
         {
             _getDivergence(result);
         }
@@ -431,7 +429,7 @@ namespace SpatialSlur.SlurField
         public ScalarField2d GetCurl()
         {
             ScalarField2d result = new ScalarField2d((Field2d)this);
-            UpdateCurl(result.Values);
+            GetCurl(result.Values);
             return result;
         }
 
@@ -440,9 +438,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateCurl(ScalarField2d result)
+        public void GetCurl(ScalarField2d result)
         {
-            UpdateCurl(result.Values);
+            _getCurl(result.Values);
         }
 
 
@@ -450,7 +448,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void UpdateCurl(IList<double> result)
+        public void GetCurl(IList<double> result)
         {
             _getCurl(result);
         }

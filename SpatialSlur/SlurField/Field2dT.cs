@@ -84,7 +84,19 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public abstract T Evaluate(FieldPoint2d point);
+        public T Evaluate(FieldPoint2d point)
+        {
+            return Evaluate(point.Corners, point.Weights);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weights"></param>
+        /// <returns></returns>
+        public abstract T Evaluate(int[] indices, double[] weights);
 
 
         /// <summary>
@@ -458,10 +470,39 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Samples another field of a different resolution.
+        /// Samples another field nearest using the nearest value.
         /// </summary>
         /// <param name="other"></param>
-        public void Sample(Field2d<T> other)
+        public void SampleNearest(Field2d<T> other)
+        {
+            if (ResolutionEquals(other))
+            {
+                Set(other);
+                return;
+            }
+
+            var otherVals = other.Values;
+
+            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            {
+                int i, j;
+                ExpandIndex(range.Item1, out i, out j);
+
+                for (int index = range.Item1; index < range.Item2; index++, i++)
+                {
+                    if (i == CountX) { j++; i = 0; }
+         
+                    _values[index] = otherVals[other.IndexAt(CoordinateAt(i, j))];
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Samples another field using bilinear interpolation of the 4 nearest values.
+        /// </summary>
+        /// <param name="other"></param>
+        public void SampleLinear(Field2d<T> other)
         {
             if (ResolutionEquals(other))
             {
@@ -474,17 +515,16 @@ namespace SpatialSlur.SlurField
                     FieldPoint2d fp = new FieldPoint2d();
                     int i, j;
                     ExpandIndex(range.Item1, out i, out j);
-                
+
                     for (int index = range.Item1; index < range.Item2; index++, i++)
                     {
                         if (i == CountX) { j++; i = 0; }
 
-                        other.FieldPointAt(CoordinateAt(i,j), fp);
+                        other.FieldPointAt(CoordinateAt(i, j), fp);
                         _values[index] = other.Evaluate(fp);
                     }
                 });
         }
-
     }
      
 }
