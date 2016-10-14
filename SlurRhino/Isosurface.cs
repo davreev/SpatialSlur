@@ -565,12 +565,7 @@ namespace SpatialSlur.SlurRhino
         };
 
 
-       /*
-
-       Note 
-       With Bourke's approach, the same edge is often interpolated multiple times within a given voxel.
-       The modified implementation above avoids this.
-
+        /*
         // Bourke edge table
         private static readonly int[] _edgeTable =
         {
@@ -610,7 +605,7 @@ namespace SpatialSlur.SlurRhino
  
 
        // Bourke tri table
-       private static readonly int[][] _triTable = 
+       private static readonly int[][] _triTableBourke = 
        { 
            new int[]{},
            new int[]{0, 8, 3},
@@ -870,6 +865,7 @@ namespace SpatialSlur.SlurRhino
            new int[]{}
        };
        */
+    
 
         #endregion
 
@@ -983,7 +979,7 @@ namespace SpatialSlur.SlurRhino
         
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
-            Vec3d[] cornerOffsets = GetCornerOffsets(dx, dy, dz);
+            Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
 
             // resulting mesh
             Mesh result = new Mesh();
@@ -992,8 +988,8 @@ namespace SpatialSlur.SlurRhino
             // process voxels in chunks
             Parallel.ForEach(Partitioner.Create(0, n - nxy), range =>
             {
-                Vec3d[] voxelCorners = new Vec3d[8];
-                double[] voxelValues = new double[8];
+                Vec3d[] voxelVerts = new Vec3d[8];
+                double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
                 Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
@@ -1005,25 +1001,24 @@ namespace SpatialSlur.SlurRhino
                     if (i3.y == ny) { i3.y = 0; i3.z++; }
                     if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
 
-                    // get case and set voxel values
+                    // get case
                     int caseIndex = 0;
                     for (int j = 0; j < 8; j++)
-                    {
-                        double t = values[i + indexOffsets[j]];
-                        if (t < thresh) caseIndex |= (1 << j);
-                        voxelValues[j] = t;
-                    }
+                        if (values[i + indexOffsets[j]] < thresh) caseIndex |= (1 << j);
 
-                    // if current voxel isn't on thresholdold, move to the next
+                    // if voxel isn't on thresholdold, move to the next
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
-                    // set voxel corners
+                    // set voxel
                     Vec3d p0 = new Vec3d(dx * i3.x, dy * i3.y, dz * i3.z);
                     for (int j = 0; j < 8; j++)
-                        voxelCorners[j] = p0 + cornerOffsets[j];
+                    {
+                        voxelVals[j] = values[i + indexOffsets[j]];
+                        voxelVerts[j] = p0 + vertOffsets[j];
+                    }
 
-                    // mesh current voxel
-                    MeshVoxel(voxelCorners, voxelValues, caseIndex, thresh, chunk);
+                    // mesh voxel
+                    MeshVoxel(voxelVerts, voxelVals, caseIndex, thresh, chunk);
                 }
 
                 // append chunk
@@ -1057,8 +1052,8 @@ namespace SpatialSlur.SlurRhino
             int n = nxy * nz;
 
             // get offsets
+            Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
-            Vec3d[] cornerOffsets = GetCornerOffsets(dx, dy, dz);
 
             // resulting mesh
             Mesh result = new Mesh();
@@ -1067,9 +1062,9 @@ namespace SpatialSlur.SlurRhino
             // process voxels in chunks
             Parallel.ForEach(Partitioner.Create(0, n - nxy), range =>
             {
-                Vec3d[] voxelCorners = new Vec3d[8];
-                Vec3d[] voxelNormals = new Vec3d[8];
-                double[] voxelValues = new double[8];
+                Vec3d[] voxelVerts = new Vec3d[8];
+                Vec3d[] voxelNorms = new Vec3d[8];
+                double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
                 Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
@@ -1082,28 +1077,26 @@ namespace SpatialSlur.SlurRhino
                     if (i3.y == ny) { i3.y = 0; i3.z++; }
                     if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
 
-                    // get case and set voxel values
+                    // get case
                     int caseIndex = 0;
                     for (int j = 0; j < 8; j++)
-                    {
-                        double t = values[i + indexOffsets[j]];
-                        if (t < thresh) caseIndex |= (1 << j);
-                        voxelValues[j] = t;
-                    }
+                        if (values[i + indexOffsets[j]] < thresh) caseIndex |= (1 << j);
 
-                    // if current voxel isn't on thresholdold, move to the next
+                    // if voxel isn't on thresholdold, move to the next
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
-                    // set voxel corners and normals
+                    // set voxel
                     Vec3d p0 = new Vec3d(i3.x * dx, i3.y * dy, i3.z * dz);
                     for (int j = 0; j < 8; j++)
                     {
-                        voxelCorners[j] = p0 + cornerOffsets[j];
-                        voxelNormals[j] = normals[i + indexOffsets[j]];
+                        int index = i + indexOffsets[j];
+                        voxelVals[j] = values[index];
+                        voxelNorms[j] = normals[index];
+                        voxelVerts[j] = p0 + vertOffsets[j];
                     }
 
-                    // mesh current voxel
-                    MeshVoxel(voxelCorners, voxelValues, voxelNormals, caseIndex, thresh, chunk);
+                    // mesh voxel
+                    MeshVoxel(voxelVerts, voxelVals, voxelNorms, caseIndex, thresh, chunk);
                 }
 
                 // append chunk
@@ -1162,9 +1155,9 @@ namespace SpatialSlur.SlurRhino
             int nxy = nx * ny; // number of values per layer
 
             // get offsets
+            Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
-            Vec3d[] cornerOffsets = GetCornerOffsets(dx, dy, dz);
-     
+        
             // resulting mesh
             Mesh result = new Mesh();
             Object locker = new Object();
@@ -1172,8 +1165,9 @@ namespace SpatialSlur.SlurRhino
             // process voxels in layers
             Parallel.ForEach(Partitioner.Create(0, values.Count-1), range =>
             {
-                Vec3d[] voxelCorners = new Vec3d[8];
-                double[] voxelValues = new double[8];
+                Vec3d[] voxelVerts = new Vec3d[8];
+                double[] voxelVals = new double[8];
+
                 Mesh layer = new Mesh();
 
                 for (int z = range.Item1; z < range.Item2; z++)
@@ -1187,31 +1181,30 @@ namespace SpatialSlur.SlurRhino
                         {
                             int index = x + y * nx;
 
-                            // get case and set voxel values
+                            // get case
                             int caseIndex = 0;
                             for (int i = 0; i < 4; i++)
                             {
-                                int j = i + 4;
-
-                                double t0 = vals0[index + indexOffsets[i]];
-                                if (t0 < thresh) caseIndex |= (1 << i);
-                                voxelValues[i] = t0;
-
-                                double t1 = vals1[index + indexOffsets[i]];
-                                if (t1 < thresh) caseIndex |= (1 << j);
-                                voxelValues[j] = t1;
+                                if (vals0[index + indexOffsets[i]] < thresh) caseIndex |= (1 << i);                         
+                                if (vals1[index + indexOffsets[i]] < thresh) caseIndex |= (1 << (i + 4));
                             }
 
-                            // if current voxel isn't on thresholdold, move to the next
+                            // if voxel isn't on thresholdold, move to the next
                             if (caseIndex == 0 || caseIndex == 255) continue;
 
-                            // set voxel corners
+                            // set voxel
                             Vec3d p0 = new Vec3d(x * dx, y * dy, z * dz);
-                            for (int i = 0; i < 8; i++)
-                                voxelCorners[i] = p0 + cornerOffsets[i];
+                            for (int i = 0, j = 4; i < 4; i++, j++)
+                            { 
+                                voxelVals[i] = vals0[index + indexOffsets[i]];
+                                voxelVerts[i] = p0 + vertOffsets[i];
 
-                            // mesh current voxel
-                            MeshVoxel(voxelCorners, voxelValues, caseIndex, thresh, layer);
+                                voxelVals[j] = vals1[index + indexOffsets[i]];
+                                voxelVerts[j] = p0 + vertOffsets[j];
+                            }
+
+                            // mesh voxel
+                            MeshVoxel(voxelVerts, voxelVals, caseIndex, thresh, layer);
                         }
                     }
                 }
@@ -1253,8 +1246,8 @@ namespace SpatialSlur.SlurRhino
             // process voxels in chunks
             Parallel.ForEach(Partitioner.Create(0, n - nxy), range =>
             {
-                Vec3d[] voxelCorners = new Vec3d[8];
-                double[] voxelValues = new double[8];
+                Vec3d[] voxelVerts = new Vec3d[8];
+                double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
                 Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
@@ -1267,24 +1260,23 @@ namespace SpatialSlur.SlurRhino
                     if (i3.y == ny) { i3.y = 0; i3.z++; }
                     if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
 
-                    // get case and assign voxel values
+                    // get case
                     int caseIndex = 0;
                     for (int j = 0; j < 8; j++)
-                    {
-                        double t = values[i + indexOffsets[j]];
-                        if (t < thresh) caseIndex |= (1 << j);
-                        voxelValues[j] = t;
-                    }
-
-                    // if current voxel isn't on thresholdold, move to the next
+                        if (values[i + indexOffsets[j]] < thresh) caseIndex |= (1 << j);
+                  
+                    // if voxel isn't on thresholdold, move to the next
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
-                    // set voxel corners
+                    // set voxel
                     for (int j = 0; j < 8; j++)
-                        voxelCorners[j] = points[i + indexOffsets[j]];
+                    {
+                        voxelVals[j] = values[i + indexOffsets[j]];
+                        voxelVerts[j] = points[i + indexOffsets[j]];
+                    }
 
-                    // mesh current voxel
-                    MeshVoxel(voxelCorners, voxelValues, caseIndex, thresh, chunk);
+                    // mesh voxel
+                    MeshVoxel(voxelVerts, voxelVals, caseIndex, thresh, chunk);
                 }
 
                 // append chunk
@@ -1328,7 +1320,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="dy"></param>
         /// <param name="dz"></param>
         /// <returns></returns>
-        private static Vec3d[] GetCornerOffsets(double dx, double dy, double dz)
+        private static Vec3d[] GetVertexOffsets(double dx, double dy, double dz)
         {
             return new Vec3d[]
             {
@@ -1374,9 +1366,9 @@ namespace SpatialSlur.SlurRhino
             int[] edges = _edgeTable[caseIndex];
             for (int i = 0; i < edges.Length; i++)
             {
-                int e = edges[i] << 1;
-                int v0 = _edgeIndices[e];
-                int v1 = _edgeIndices[e + 1];
+                int edge = edges[i] << 1;
+                int v0 = _edgeIndices[edge];
+                int v1 = _edgeIndices[edge + 1];
 
                 // interpolate edge
                 double t = SlurMath.Normalize(thresh, values[v0], values[v1]);
@@ -1385,9 +1377,9 @@ namespace SpatialSlur.SlurRhino
             }
 
             // add faces
-            int[] faces = _triTable[caseIndex];
-            for(int i = 0; i < faces.Length; i +=3)
-                mf.AddFace(faces[i] + nv, faces[i + 1] + nv, faces[i + 2] + nv);
+            int[] tris = _triTable[caseIndex];
+            for(int i = 0; i < tris.Length; i +=3)
+                mf.AddFace(tris[i] + nv, tris[i + 1] + nv, tris[i + 2] + nv);
         }
 
 
@@ -1411,9 +1403,9 @@ namespace SpatialSlur.SlurRhino
             int[] edges = _edgeTable[caseIndex];
             for (int i = 0; i < edges.Length; i++)
             {
-                int e = edges[i] << 1;
-                int v0 = _edgeIndices[e];
-                int v1 = _edgeIndices[e + 1];
+                int edge = edges[i] << 1;
+                int v0 = _edgeIndices[edge];
+                int v1 = _edgeIndices[edge + 1];
 
                 // interpolate edge
                 double t = SlurMath.Normalize(thresh, values[v0], values[v1]);
@@ -1425,9 +1417,9 @@ namespace SpatialSlur.SlurRhino
             }
 
             // add faces
-            int[] faces = _triTable[caseIndex];
-            for (int i = 0; i < faces.Length; i += 3)
-                mf.AddFace(faces[i] + nv, faces[i + 1] + nv, faces[i + 2] + nv);
+            int[] tris = _triTable[caseIndex];
+            for (int i = 0; i < tris.Length; i += 3)
+                mf.AddFace(tris[i] + nv, tris[i + 1] + nv, tris[i + 2] + nv);
         }
 
     }

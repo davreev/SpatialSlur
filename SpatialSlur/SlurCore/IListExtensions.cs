@@ -383,8 +383,7 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Returns the nth smallest item in linear amortized time.
-        /// Partially sorts the list such that the nth item is in the correct postition. 
-        /// All items to the left are less than or equal to the nth and those to the right are greater than or equal to the nth.
+        /// Partially sorts the list such that the nth item is in the correct postition, items to the left are less than or equal to the nth, and items to the right are greater than or equal to the nth.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>

@@ -502,7 +502,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <returns></returns>
-        public static PointCloud ToPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper)
+        public static PointCloud GetPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper)
         {
             // TODO
             throw new NotImplementedException();
@@ -516,7 +516,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <param name="result"></param>
-        public static void UpdatePointCloud<T>(this Field3d<T> field, Func<T, Color> mapper, PointCloud result)
+        public static void GetPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper, PointCloud result)
         {
             // TODO
             throw new NotImplementedException();
@@ -566,7 +566,7 @@ namespace SpatialSlur.SlurRhino
         public static Line[] GetEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, bool parallel = false)
         {
             Line[] result = new Line[edges.Count >> 1];
-            edges.UpdateEdgeLines(nodePositions, result, parallel);
+            edges.GetEdgeLines(nodePositions, result, parallel);
             return result;
         }
 
@@ -578,22 +578,22 @@ namespace SpatialSlur.SlurRhino
         /// <param name="nodePositions"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, bool parallel = false)
+        public static void GetEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, bool parallel = false)
         {
             edges.SizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, edges.Count >> 1), range =>
-                    edges.UpdateEdgeLines(nodePositions, result, range.Item1, range.Item2));
+                    edges.GetEdgeLines(nodePositions, result, range.Item1, range.Item2));
             else
-                edges.UpdateEdgeLines(nodePositions, result, 0, edges.Count >> 1);
+                edges.GetEdgeLines(nodePositions, result, 0, edges.Count >> 1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, int i0, int i1)
+        private static void GetEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
@@ -617,7 +617,7 @@ namespace SpatialSlur.SlurRhino
         public static Line[] GetEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, bool parallel = false)
         {
             Line[] result = new Line[edges.Count >> 1];
-            edges.UpdateEdgeLines(nodePositions, result, parallel);
+            edges.GetEdgeLines(nodePositions, result, parallel);
             return result;
         }
 
@@ -629,22 +629,22 @@ namespace SpatialSlur.SlurRhino
         /// <param name="nodePositions"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, bool parallel = false)
+        public static void GetEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, bool parallel = false)
         {
             edges.SizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, edges.Count >> 1), range =>
-                    edges.UpdateEdgeLines(nodePositions, result, range.Item1, range.Item2));
+                    edges.GetEdgeLines(nodePositions, result, range.Item1, range.Item2));
             else
-                edges.UpdateEdgeLines(nodePositions, result, 0, edges.Count >> 1);
+                edges.GetEdgeLines(nodePositions, result, 0, edges.Count >> 1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, int i0, int i1)
+        private static void GetEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
@@ -753,7 +753,7 @@ namespace SpatialSlur.SlurRhino
         public static Line[] GetEdgeLines(this HalfedgeList hedges, bool parallel = false)
         {
             Line[] result = new Line[hedges.Count >> 1];
-            hedges.UpdateEdgeLines(result, parallel);
+            hedges.GetEdgeLines(result, parallel);
             return result;
         }
 
@@ -764,22 +764,22 @@ namespace SpatialSlur.SlurRhino
         /// <param name="hedges"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateEdgeLines(this HalfedgeList hedges, IList<Line> result, bool parallel = false)
+        public static void GetEdgeLines(this HalfedgeList hedges, IList<Line> result, bool parallel = false)
         {
             hedges.HalfSizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), range =>
-                    hedges.UpdateEdgeLines(result, range.Item1, range.Item2));
+                    hedges.GetEdgeLines(result, range.Item1, range.Item2));
             else
-                hedges.UpdateEdgeLines(result, 0, hedges.Count >> 1);
+                hedges.GetEdgeLines(result, 0, hedges.Count >> 1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateEdgeLines(this HalfedgeList hedges, IList<Line> result, int i0, int i1)
+        private static void GetEdgeLines(this HalfedgeList hedges, IList<Line> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
@@ -799,7 +799,7 @@ namespace SpatialSlur.SlurRhino
         public static Polyline[] GetFacePolylines(this HeFaceList faces, bool parallel = false)
         {
             Polyline[] result = new Polyline[faces.Count];
-            faces.UpdateFacePolylines(result, parallel);
+            faces.GetFacePolylines(result, parallel);
             return result;
         }
 
@@ -810,22 +810,22 @@ namespace SpatialSlur.SlurRhino
         /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFacePolylines(this HeFaceList faces, IList<Polyline> result, bool parallel = false)
+        public static void GetFacePolylines(this HeFaceList faces, IList<Polyline> result, bool parallel = false)
         {
             faces.SizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFacePolylines(result, range.Item1, range.Item2));
+                    faces.GetFacePolylines(result, range.Item1, range.Item2));
             else
-                faces.UpdateFacePolylines(result, 0, faces.Count);
+                faces.GetFacePolylines(result, 0, faces.Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFacePolylines(this HeFaceList faces, IList<Polyline> result, int i0, int i1)
+        private static void GetFacePolylines(this HeFaceList faces, IList<Polyline> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
@@ -845,7 +845,7 @@ namespace SpatialSlur.SlurRhino
         public static Circle[] GetFaceCircumcircles(this HeFaceList faces, bool parallel = false)
         {
             Circle[] result = new Circle[faces.Count];
-            faces.UpdateFaceCircumcircles(result, parallel);
+            faces.GetFaceCircumcircles(result, parallel);
             return result;
         }
 
@@ -856,22 +856,22 @@ namespace SpatialSlur.SlurRhino
         /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void UpdateFaceCircumcircles(this HeFaceList faces, IList<Circle> result, bool parallel = false)
+        public static void GetFaceCircumcircles(this HeFaceList faces, IList<Circle> result, bool parallel = false)
         {
             faces.SizeCheck(result);
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.UpdateFaceCircumcircles(result, range.Item1, range.Item2));
+                    faces.GetFaceCircumcircles(result, range.Item1, range.Item2));
             else
-                faces.UpdateFaceCircumcircles(result, 0, faces.Count);
+                faces.GetFaceCircumcircles(result, 0, faces.Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void UpdateFaceCircumcircles(this HeFaceList faces, IList<Circle> result, int i0, int i1)
+        private static void GetFaceCircumcircles(this HeFaceList faces, IList<Circle> result, int i0, int i1)
         {
             for (int i = i0; i < i1; i++)
             {
@@ -999,7 +999,7 @@ namespace SpatialSlur.SlurRhino
                     continue;
                 }
 
-                int ne = f.EdgeCount;
+                int ne = f.CountEdges();
 
                 if (ne == 3)
                 {

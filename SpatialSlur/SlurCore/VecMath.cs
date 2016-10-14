@@ -14,7 +14,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
-    internal static class VecMath
+    public static class VecMath
     {
         //
 
@@ -200,6 +200,48 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        public static double Mean(double[] vector, int length)
+        {
+            double sum = 0.0;
+
+            for (int i = 0; i < length; i++)
+                sum += vector[i];
+
+            return sum / length;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Mean(IList<double[]> vectors, int length, double[] result)
+        {
+            Array.Clear(result, 0, length);
+
+            for (int i = 0; i < vectors.Count; i++)
+                Add(result, vectors[i], length, result);
+
+            Scale(result, 1.0 / vectors.Count, length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MeanParallel(IList<double[]> vectors, int length, double[] result)
+        {
+            Array.Clear(result, 0, length);
+
+            for (int i = 0; i < vectors.Count; i++)
+                AddParallel(result, vectors[i], length, result);
+
+            ScaleParallel(result, 1.0 / vectors.Count, length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static void Add(double[] v0, double[] v1, int length, double[] result)
         {
             for (int i = 0; i < length; i++)
@@ -254,6 +296,19 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        public static void ScaleParallel(double[] vector, double factor, int length, double[] result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, length), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    result[i] = vector[i] * factor;
+            });
+        }
+
+
+        /// <summary>
         /// result = v0 + v1 * factor
         /// </summary>
         public static void AddScaled(double[] v0, double[] v1, double factor, int length, double[] result)
@@ -286,17 +341,6 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        /// <summary>
-        /// Component-wise multiplication
-        /// </summary>
-        public static void MultiplyParallel(double[] vector, double factor, int length, double[] result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, length), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = vector[i] * factor;
-            });
-        }
 
 
         /// <summary>
@@ -361,7 +405,7 @@ namespace SpatialSlur.SlurCore
 
             if (d > 0.0)
             {
-                MultiplyParallel(vector, 1.0 / Math.Sqrt(d), length, result);
+                ScaleParallel(vector, 1.0 / Math.Sqrt(d), length, result);
                 return true;
             }
 
@@ -382,19 +426,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(double[] v0, double[] v1, double[] factor, int length, double[] result)
+        public static void Lerp(double[] v0, double[] v1, double[] factors, int length, double[] result)
         {
             for (int i = 0; i < length; i++)
-                result[i] = SlurMath.Lerp(v0[i], v1[i], factor[i]);
+                result[i] = SlurMath.Lerp(v0[i], v1[i], factors[i]);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(double[][] vectors, double factor, int length, double[] result)
+        public static void Lerp(IList<double[]> vectors, double factor, int length, double[] result)
         {
-            int last = vectors.Length - 1;
+            int last = vectors.Count - 1;
 
             int i;
             factor = SlurMath.Fract(factor * last, out i);
@@ -411,9 +455,9 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(double[][] vectors, double[] factors, int length, double[] result)
+        public static void Lerp(IList<double[]> vectors, double[] factors, int length, double[] result)
         {
-            int last = vectors.Length - 1;
+            int last = vectors.Count - 1;
 
             for (int j = 0; j < length; j++)
             {
@@ -459,9 +503,9 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void LerpParallel(double[][] vectors, double factor, int length, double[] result)
+        public static void LerpParallel(IList<double[]> vectors, double factor, int length, double[] result)
         {
-            int last = vectors.Length - 1;
+            int last = vectors.Count - 1;
 
             int i;
             factor = SlurMath.Fract(factor * last, out i);
@@ -478,9 +522,9 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void LerpParallel(double[][] vectors, double[] factors, int length, double[] result)
+        public static void LerpParallel(IList<double[]> vectors, double[] factors, int length, double[] result)
         {
-            int last = vectors.Length - 1;
+            int last = vectors.Count - 1;
 
             Parallel.ForEach(Partitioner.Create(0, length), range =>
             {

@@ -254,6 +254,28 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec2d Lerp(IList<Vec2d> vectors, double t)
+        {
+            int last = vectors.Count - 1;
+
+            int i;
+            t = SlurMath.Fract(t * last, out i);
+
+            if (i < 0)
+                return vectors[0];
+            else if (i >= last)
+                return vectors[last];
+
+            return Vec2d.Lerp(vectors[i], vectors[i + 1], t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
         public static implicit operator Vec2d(Vec3d v)
@@ -637,6 +659,15 @@ namespace SpatialSlur.SlurCore
         public double Min
         {
             get { return Math.Min(x, y); }
+        }
+
+
+        /// <summary>
+        /// Returns the mean of components.
+        /// </summary>
+        public double Mean
+        {
+            get { return (x + y) * 0.5; }
         }
 
 

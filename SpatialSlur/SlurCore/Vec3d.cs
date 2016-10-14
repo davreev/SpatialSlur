@@ -183,6 +183,28 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec3d Lerp(IList<Vec3d> vectors, double t)
+        {
+            int last = vectors.Count - 1;
+
+            int i;
+            t = SlurMath.Fract(t * last, out i);
+
+            if (i < 0)
+                return vectors[0];
+            else if (i >= last)
+                return vectors[last];
+
+            return Vec3d.Lerp(vectors[i], vectors[i + 1], t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <param name="t"></param>
@@ -685,6 +707,19 @@ namespace SpatialSlur.SlurCore
         public double Min
         {
             get { return Math.Min(x, Math.Min(y, z)); }
+        }
+
+
+        /// <summary>
+        /// Returns the mean of components.
+        /// </summary>
+        public double Mean
+        {
+            get
+            {
+                const double inv3 = 1.0 / 3.0;
+                return (x + y + z) * inv3;
+            }
         }
 
         

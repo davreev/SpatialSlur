@@ -137,5 +137,14 @@ namespace SpatialSlur.SlurCore
             return (Math.Abs(other.x - x) < epsilon.x) && (Math.Abs(other.y - y) < epsilon.y) && (Math.Abs(other.z - z) < epsilon.z) && (Math.Abs(other.w - w) < epsilon.w);
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double[] ToArray()
+        {
+            return new double[] { x, y, z, w };
+        }
     }
 }
