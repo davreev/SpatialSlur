@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static bool Equals(double x, double y, double epsilon)
+        public static bool ApproxEquals(double x, double y, double epsilon)
         {
             return Math.Abs(x - y) < epsilon;
         }
@@ -260,18 +260,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        public static double Mod(double a, double n)
-        {
-            return a - Math.Floor(a / n) * n;
-        }
-
-
-        /// <summary>
         /// Wraps t to the domain defined by t0 and t1.
         /// </summary>
         /// <param name="t"></param>
@@ -290,6 +278,18 @@ namespace SpatialSlur.SlurCore
         /// <param name="a"></param>
         /// <param name="n"></param>
         /// <returns></returns>
+        public static double Mod(double a, double n)
+        {
+            return a - Math.Floor(a / n) * n;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public static int Mod(int a, int n)
         {
             a %= n;
@@ -298,7 +298,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes that the divisor n is positive to save a few ticks.
+        /// Assumes that n is positive to save a few ticks.
         /// </summary>
         /// <param name="a"></param>
         /// <param name="n"></param>
@@ -349,28 +349,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes 0 and 1 for t0 and t1 respectively.
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static double SmoothStep(double t)
-        {
-            return HermiteC1(Saturate(t));
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static double SmoothPulse(double t)
-        {
-            return SmoothPulse(t, 0.5, 0.5);
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="center"></param>
@@ -399,13 +377,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes 0 and 1 for t0 and t1 respectively
+        /// 
         /// </summary>
+        /// <param name="center"></param>
+        /// <param name="width"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static double SmootherStep(double t)
+        public static double SmootherPulse(double t, double center, double width)
         {
-            return HermiteC2(Saturate(t));
+            t = Math.Abs(t - center);
+            if (t > width) return 0.0;
+            return HermiteC2(1.0 - t / width);
         }
 
 
@@ -428,32 +410,6 @@ namespace SpatialSlur.SlurCore
         public static double HermiteC2(double t)
         {
             return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-        }
-
-
-        /// <summary>
-        /// Assumes t is between 0 and 1
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static double SmootherPulse(double t)
-        {
-            return SmootherPulse(t, 0.5, 0.5);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="center"></param>
-        /// <param name="width"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static double SmootherPulse(double t, double center, double width)
-        {
-            t = Math.Abs(t - center);
-            if (t > width) return 0.0;
-            return HermiteC2(1.0 - t / width);
         }
 
 
@@ -532,10 +488,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double ToDegrees(double radians)
         {
-            return radians * _toDeg;
+            const double toDeg = 180.0 / Math.PI;
+            return radians * toDeg;
         }
-        private static readonly double _toDeg = 180.0 / Math.PI;
-
+ 
 
         /// <summary>
         /// 
@@ -544,8 +500,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double ToRadians(double degrees)
         {
-            return degrees * _toRad;
+            const double toRad = Math.PI / 180.0;
+            return degrees * toRad;
         }
-        private static readonly double _toRad = Math.PI / 180.0;
     }
 }

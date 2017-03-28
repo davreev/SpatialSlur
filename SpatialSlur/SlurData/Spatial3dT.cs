@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ * 
+ * TODO
+ * Line insert/search based on https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+ */
 
 namespace SpatialSlur.SlurData
 {
@@ -17,13 +17,12 @@ namespace SpatialSlur.SlurData
     /// <typeparam name="T"></typeparam>
     public abstract class Spatial3d<T>
     {
-        private IList<List<T>> _bins;
-        private IList<int> _tags; // used to lazily clear bins
-
+        private List<T>[] _bins;
+        private int[] _tags; // used to lazily clear bins
         private int _itemCount;
         private int _currTag;
 
-
+  
         /// <summary>
         /// 
         /// </summary>
@@ -35,6 +34,7 @@ namespace SpatialSlur.SlurData
 
             _bins = new List<T>[binCount];
             _tags = new int[binCount];
+            _currTag = 1; // ensures bins are initially out of sync
 
             for (int i = 0; i < binCount; i++)
                 _bins[i] = new List<T>();
@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int BinCount
         {
-            get { return _bins.Count; }
+            get { return _bins.Length; }
         }
 
 
@@ -138,22 +138,22 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// The contents of all found bins are added to the result list.
         /// </summary>
         public void Search(Vec3d point, List<T> result)
         {
             int i, j, k;
             Discretize(point, out i, out j, out k);
-            int key = ToIndex(i, j, k);
+            int index = ToIndex(i, j, k);
 
             // only add if bin is synchronized
-            if (_tags[key] == _currTag)
-                result.AddRange(_bins[key]);
+            if (_tags[index] == _currTag)
+                result.AddRange(_bins[index]);
         }
 
 
         /// <summary>
-        /// 
+        /// The contents of all found bins are added to the result list.
         /// </summary>
         public void Search(Domain3d domain, List<T> result)
         {
@@ -167,11 +167,11 @@ namespace SpatialSlur.SlurData
                 {
                     for (int i = i0; i <= i1; i++)
                     {
-                        int key = ToIndex(i, j, k);
+                        int index = ToIndex(i, j, k);
 
                         // only add if bin is synchronized
-                        if (_tags[key] == _currTag)
-                            result.AddRange(_bins[key]);
+                        if (_tags[index] == _currTag)
+                            result.AddRange(_bins[index]);
                     }
                 }
             }
@@ -179,22 +179,24 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// The given function is called on the contents of each found bin.
+        /// Empty bins are skipped.
         /// </summary>
         public void Search(Vec3d point, Action<IEnumerable<T>> callback)
         {
             int i, j, k;
             Discretize(point, out i, out j, out k);
-            int key = ToIndex(i, j, k);
+            int index = ToIndex(i, j, k);
 
             // only callback if bin is synched
-            if (_tags[key] == _currTag)
-                callback(_bins[key]);
+            if (_tags[index] == _currTag)
+                callback(_bins[index]);
         }
 
 
         /// <summary>
-        /// 
+        /// The given function is called on the contents of each found bin.
+        /// Empty bins are skipped.
         /// </summary>
         public void Search(Domain3d domain, Action<IEnumerable<T>> callback)
         {
@@ -208,11 +210,11 @@ namespace SpatialSlur.SlurData
                 {
                     for (int i = i0; i <= i1; i++)
                     {
-                        int key = ToIndex(i, j, k);
+                        int index = ToIndex(i, j, k);
 
                         // only callback if bin is synched
-                        if (_tags[key] == _currTag)
-                            callback(_bins[key]);
+                        if (_tags[index] == _currTag)
+                            callback(_bins[index]);
                     }
                 }
             }

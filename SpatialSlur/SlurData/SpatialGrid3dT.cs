@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
+
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurData
 {
@@ -11,7 +11,7 @@ namespace SpatialSlur.SlurData
     /// Simple grid for broad phase collision detection between dynamic objects.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SpatialGrid3d<T>:Spatial3d<T>
+    public sealed class SpatialGrid3d<T>:Spatial3d<T>
     {
         private Domain3d _domain;
         private Vec3d _from;

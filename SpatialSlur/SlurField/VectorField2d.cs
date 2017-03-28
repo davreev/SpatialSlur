@@ -1,14 +1,12 @@
-﻿ using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
+using System.Drawing;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -16,11 +14,31 @@ namespace SpatialSlur.SlurField
     ///
     /// </summary>
     [Serializable]
-    public class VectorField2d:Field2d<Vec2d>
+    public sealed class VectorField2d : Field2d<Vec2d>
     {
-        private Action<IList<Vec2d>> _getLaplacian;
-        private Action<IList<double>> _getDivergence;
-        private Action<IList<double>> _getCurl;
+        #region Static
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <param name="mapper"></param>
+        /// <param name="domain"></param>
+        /// <param name="wrapX"></param>
+        /// <param name="wrapY"></param>
+        /// <returns></returns>
+        public static VectorField2d CreateFromImage(Bitmap bitmap, Func<Color, Vec2d> mapper, Domain2d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp)
+        {
+            int nx = bitmap.Width;
+            int ny = bitmap.Height;
+
+            var result = new VectorField2d(domain, nx, ny, wrapX, wrapY);
+            FieldIO.ReadFromImage(result, bitmap, mapper);
+
+            return result;
+        }
+
+        #endregion
 
 
         /// <summary>
@@ -29,9 +47,25 @@ namespace SpatialSlur.SlurField
         /// <param name="domain"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        /// <param name="boundaryType"></param>
-        public VectorField2d(Domain2d domain, int countX, int countY, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
-            : base(domain, countX, countY, boundaryType)
+        /// <param name="wrapMode"></param>
+        public VectorField2d(Domain2d domain, int countX, int countY, FieldWrapMode wrapMode)
+            : base(domain, countX, countY, wrapMode)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        public VectorField2d(Domain2d domain, int countX, int countY, 
+            FieldWrapMode wrapModeX = FieldWrapMode.Clamp, 
+            FieldWrapMode wrapModeY = FieldWrapMode.Clamp)
+            : base(domain, countX, countY, wrapModeX, wrapModeY)
         {
         }
 
@@ -59,136 +93,34 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        protected override void OnBoundaryTypeChange()
-        {
-            base.OnBoundaryTypeChange();
-
-            switch (BoundaryType)
-            {
-                case FieldBoundaryType.Constant:
-                    {
-                        _getLaplacian = GetLaplacianConstant;
-                        _getDivergence = GetDivergenceConstant;
-                        _getCurl = GetCurlConstant;
-                        break;
-                    }
-                case FieldBoundaryType.Equal:
-                    {
-                        _getLaplacian = GetLaplacianEqual;
-                        _getDivergence = GetDivergenceEqual;
-                        _getCurl = GetCurlEqual;
-                        break;
-                    }
-                case FieldBoundaryType.Periodic:
-                    {
-                        _getLaplacian = GetLaplacianPeriodic;
-                        _getDivergence = GetDivergencePeriodic;
-                        _getCurl = GetCurlPeriodic;
-                        break;
-                    }
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="weights"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
-        public override Vec2d Evaluate(int[] indices, double[] weights)
+        public override Vec2d ValueAt(FieldPoint2d point)
         {
-            Vec2d result = new Vec2d();
-            for (int i = 0; i < indices.Length; i++)
-                result += Values[indices[i]] * weights[i];
-
-            return result;
+            return Values.ValueAt(point.Corners, point.Weights);
         }
 
 
         /// <summary>
-        /// Gets the magnitudes of all vectors in the field
+        /// 
         /// </summary>
+        /// <param name="point"></param>
+        /// <param name="amount"></param>
+        public void IncrementAt(FieldPoint2d point, Vec2d amount)
+        {
+            Values.IncrementAt(point.Corners, point.Weights, amount);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public ScalarField2d GetMagnitudes()
-        {
-            ScalarField2d result = new ScalarField2d(this);
-            GetMagnitudes(result.Values);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Gets the magnitudes of all vectors in the field
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetMagnitudes(ScalarField2d result)
-        {
-            GetMagnitudes(result.Values);
-        }
-
-
-        /// <summary>
-        /// Gets the magnitudes of all vectors in the field
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetMagnitudes(IList<double> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = Values[i].Length;
-            });
-        }
-
-
-        /// <summary>
-        /// Unitizes all vectors in the field.
-        /// </summary>
-        public void Unitize()
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    Values[i].Unitize();
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Unitize(VectorField2d result)
-        {
-            Unitize(result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Unitize(IList<Vec2d> result)
-        {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    Vec2d v = Values[i];
-                    v.Unitize();
-                    result[i] = v;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public VectorField2d GetLaplacian()
+        public VectorField2d GetLaplacian(bool parallel = false)
         {
             VectorField2d result = new VectorField2d((Field2d)this);
-            GetLaplacian(result.Values);
+            GetLaplacian(result.Values, parallel);
             return result;
         }
 
@@ -197,120 +129,64 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void GetLaplacian(VectorField2d result)
+        /// <param name="parallel"></param>
+        public void GetLaplacian(VectorField2d result, bool parallel = false)
         {
-            _getLaplacian(result.Values);
+            GetLaplacian(result.Values, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(IList<Vec2d> result)
+        public void GetLaplacian(Vec2d[] result, bool parallel)
         {
-            _getLaplacian(result);
-        }
+            var vals = Values;
+            int nx = CountX;
+            int ny = CountY;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetLaplacianConstant(IList<Vec2d> result)
-        {
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            int di, dj;
+            GetBoundaryOffsets(out di, out dj);
+
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j;
-                ExpandIndex(range.Item1, out i, out j);
+                IndicesAt(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == CountX) { j++; i = 0; }
+                    if (i == nx) { j++; i = 0; }
 
-                    Vec2d tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
+                    Vec2d tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
+                    Vec2d tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
 
-                    Vec2d ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
+                    Vec2d ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
+                    Vec2d ty1 = (j == CountY - 1) ? vals[index - dj] : vals[index + nx];
 
-                    Vec2d t = Values[index] * 2.0;
+                    Vec2d t = vals[index] * 2.0;
                     result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private void GetLaplacianEqual(IList<Vec2d> result)
-        {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    Vec2d tx0 = (i == 0) ? Values[index] : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
-
-                    Vec2d ty0 = (j == 0) ? Values[index] : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
-
-                    Vec2d t = Values[index] * 2.0;
-                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetLaplacianPeriodic(IList<Vec2d> result)
-        {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    Vec2d tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
-
-                    Vec2d ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
-
-                    Vec2d t = Values[index] * 2.0;
-                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public ScalarField2d GetDivergence()
+        public ScalarField2d GetDivergence(bool parallel = false)
         {
             ScalarField2d result = new ScalarField2d(this);
-            GetDivergence(result.Values);
+            GetDivergence(result.Values, parallel);
             return result;
         }
 
@@ -319,117 +195,63 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void GetDivergence(ScalarField2d result)
+        /// <param name="parallel"></param>
+        public void GetDivergence(ScalarField2d result, bool parallel = false)
         {
-            _getDivergence(result.Values);
+            GetDivergence(result.Values, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
-        public void GetDivergence(IList<double> result)
+        public void GetDivergence(double[] result, bool parallel)
         {
-            _getDivergence(result);
-        }
+            var vals = Values;
+            int nx = CountX;
+            int ny = CountY;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetDivergenceConstant(IList<double> result)
-        {
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            int di, dj;
+            GetBoundaryOffsets(out di, out dj);
+
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j;
-                ExpandIndex(range.Item1, out i, out j);
+                IndicesAt(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == CountX) { j++; i = 0; }
+                    if (i == nx) { j++; i = 0; }
 
-                    Vec2d tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
+                    Vec2d tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
+                    Vec2d tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
 
-                    Vec2d ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
+                    Vec2d ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
+                    Vec2d ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
 
-                    result[index] = (tx1.x - tx0.x) * dx + (ty1.y - ty0.y) * dy; 
+                    result[index] = (tx1.x - tx0.x) * dx + (ty1.y - ty0.y) * dy;
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private void GetDivergenceEqual(IList<double> result)
-        {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    Vec2d tx0 = (i == 0) ? Values[index] : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
-
-                    Vec2d ty0 = (j == 0) ? Values[index] : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
-
-                    result[index] = (tx1.x - tx0.x) * dx + (ty1.y - ty0.y) * dy; 
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetDivergencePeriodic(IList<double> result)
-        {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    Vec2d tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
-
-                    Vec2d ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
-
-                    result[index] = (tx1.x - tx0.x) * dx + (ty1.y - ty0.y) * dy; 
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public ScalarField2d GetCurl()
+        public ScalarField2d GetCurl(bool parallel = false)
         {
             ScalarField2d result = new ScalarField2d((Field2d)this);
-            GetCurl(result.Values);
+            GetCurl(result.Values, parallel);
             return result;
         }
 
@@ -438,106 +260,51 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void GetCurl(ScalarField2d result)
+        /// <param name="parallel"></param>
+        public void GetCurl(ScalarField2d result, bool parallel = false)
         {
-            _getCurl(result.Values);
+           GetCurl(result.Values, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
-        public void GetCurl(IList<double> result)
+        public void GetCurl(double[] result, bool parallel)
         {
-            _getCurl(result);
-        }
+            var vals = Values;
+            int nx = CountX;
+            int ny = CountY;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetCurlConstant(IList<double> result)
-        {
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            int di, dj;
+            GetBoundaryOffsets(out di, out dj);
+
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j;
-                ExpandIndex(range.Item1, out i, out j);
+                IndicesAt(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == CountX) { j++; i = 0; }
+                    if (i == nx) { j++; i = 0; }
 
-                    Vec2d tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
+                    Vec2d tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
+                    Vec2d tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
 
-                    Vec2d ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
-
-                    result[index] = (tx1.y - tx0.y) * dx - (ty1.x - ty0.x) * dy;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetCurlEqual(IList<double> result)
-        {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    Vec2d tx0 = (i == 0) ? Values[index] : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
-
-                    Vec2d ty0 = (j == 0) ? Values[index] : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
+                    Vec2d ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
+                    Vec2d ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
 
                     result[index] = (tx1.y - tx0.y) * dx - (ty1.x - ty0.x) * dy;
                 }
-            });
-        }
+            };
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetCurlPeriodic(IList<double> result)
-        {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    Vec2d tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
-                    Vec2d tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
-
-                    Vec2d ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
-                    Vec2d ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
-
-                    result[index] = (tx1.y - tx0.y) * dx - (ty1.x - ty0.x) * dy;
-                }
-            });
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
 
 

@@ -1,17 +1,13 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ * include in classes directly
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -20,69 +16,116 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public static class FieldIO
     {
+        /*
         /// <summary>
-        /// Saves the given field as a stack of images.
+        /// 
         /// </summary>
+        /// <typeparam name="F"></typeparam>
         /// <typeparam name="T"></typeparam>
-        /// <param name="field"></param>
-        /// <param name="mapper"></param>
         /// <param name="path"></param>
-        public static void SaveAsImageStack<T>(Field3d<T> field, string path, Func<T, Color> mapper)
+        /// <param name="mapper"></param>
+        /// <param name="domain"></param>
+        /// <param name="wrapX"></param>
+        /// <param name="wrapY"></param>
+        /// <param name="wrapZ"></param>
+        /// <returns></returns>
+        public static F CreateFromImageStack<F, T>(string path, Func<Color, T> mapper, Domain3d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp, FieldWrapMode wrapZ = FieldWrapMode.Clamp)
+            where F : Field3d<T>
         {
-            string dir = Path.GetDirectoryName(path);
-            string name = Path.GetFileNameWithoutExtension(path);
-            string ext = Path.GetExtension(path);
-
-            Parallel.For(0, field.CountZ, z =>
-                {
-                    using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, PixelFormat.Format32bppArgb))
-                    {
-                        WriteToImage(field, z, bmp, mapper);
-                        bmp.Save(String.Format(@"{0}\{1}_{2}{3}", dir, name, z, ext));
-                    }
-                });
+            throw new NotImplementedException();
         }
 
 
         /// <summary>
-        /// Saves the given field as an image.
+        /// 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="field"></param>
+        /// <param name="bitmaps"></param>
         /// <param name="mapper"></param>
-        /// <param name="path"></param>
-        public static void SaveAsImage<T>(Field2d<T> field, string path, Func<T, Color> mapper)
+        /// <param name="domain"></param>
+        /// <param name="wrapX"></param>
+        /// <param name="wrapY"></param>
+        /// <param name="wrapZ"></param>
+        /// <returns></returns>
+        public static F CreateFromImageStack<F, T>(IReadOnlyList<Bitmap> bitmaps, Func<Color, T> mapper, Domain3d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp, FieldWrapMode wrapZ = FieldWrapMode.Clamp)
+            where F : Field3d<T>
         {
-            using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, PixelFormat.Format32bppArgb))
+            var bmp0 = bitmaps[0];
+            int nx = bmp0.Width;
+            int ny = bmp0.Height;
+            int nz = bitmaps.Count;
+
+            var result = (F)Activator.CreateInstance(typeof(F), new object[] { domain, nx, ny, nz, wrapX, wrapY, wrapZ });
+            FieldIO.ReadFromImageStack<T>(result, bitmaps, mapper);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="F"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="path"></param>
+        /// <param name="mapper"></param>
+        /// <param name="domain"></param>
+        /// <param name="wrapX"></param>
+        /// <param name="wrapY"></param>
+        /// <returns></returns>
+        public static F CreateFromImage<F, T>(string path, Func<Color, T> mapper, Domain2d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp)
+            where F : Field2d<T>
+        {
+            using (Bitmap bmp = new Bitmap(path))
             {
-                WriteToImage(field, bmp, mapper);
-                bmp.Save(path);
+                return CreateFromImage<F,T>(bmp, mapper, domain, wrapX, wrapX);
             }
         }
 
 
-        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="F"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="bitmap"></param>
+        /// <param name="mapper"></param>
+        /// <param name="domain"></param>
+        /// <param name="wrapX"></param>
+        /// <param name="wrapY"></param>
+        /// <returns></returns>
+        public static F CreateFromImage<F, T>(Bitmap bitmap, Func<Color, T> mapper, Domain2d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp)
+            where F : Field2d<T>
+        {
+            int nx = bitmap.Width;
+            int ny = bitmap.Height;
+     
+            var result = (F)Activator.CreateInstance(typeof(F), new object[] { domain, nx, ny, wrapX, wrapY});
+            FieldIO.ReadFromImage<T>(result, bitmap, mapper);
+
+            return result;
+        }
+        */
+
+
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
-        /// <param name="bitmap"></param>
+        /// <param name="bitmaps"></param>
         /// <param name="mapper"></param>
-        public static void ReadFromImage<T>(Field3d<T> field, Bitmap bitmap, Func<Color, T> mapper)
+        public static void ReadFromImageStack<T>(Field3d<T> field, IEnumerable<Bitmap> bitmaps, Func<Color, T> mapper)
         {
-            ReadFromImage(field.Values, 0, bitmap, mapper);
-
-            // copy values of first layer to others 
-            // Note could create undesired behaviour if T is a reference type
-            var values = field.Values;
             int nxy = field.CountXY;
+            int count = 0;
 
-            for (int i = 1; i < field.CountZ; i++)
-                Array.Copy(values, 0, values, i * nxy, nxy);
+            Parallel.ForEach(bitmaps, bitmap =>
+            {
+                ReadFromImage(field.Values, count * nxy, bitmap, mapper);
+            });
+
         }
-        */
-   
+
 
         /// <summary>
         /// 
@@ -141,7 +184,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static void ReadFromImage<T>(IList<T> values, int index, Bitmap bitmap, Func<Color, T> mapper)
+        private static void ReadFromImage<T>(T[] values, int index, Bitmap bitmap, Func<Color, T> mapper)
         {
             PixelFormat pf = bitmap.PixelFormat;
             int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
@@ -197,7 +240,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static void WriteToImage<T>(IList<T> values, int index, Bitmap bitmap, Func<T, Color> mapper)
+        private static void WriteToImage<T>(T[] values, int index, Bitmap bitmap, Func<T, Color> mapper)
         {
             PixelFormat pf = bitmap.PixelFormat;
             int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
@@ -256,17 +299,6 @@ namespace SpatialSlur.SlurField
         {
             if (bytesPerPixel < 3)
                 throw new NotSupportedException("The pixel format of the given bitmap is not supported.");
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        public static void WriteFGA(Field3d<Vec3d> field)
-        {
-            // TODO
-            throw new NotImplementedException();
         }
     }
 }

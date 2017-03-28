@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SpatialSlur.SlurCore;
+﻿
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -12,8 +10,8 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public class FieldPoint3d
     {
-        private readonly int[] _corners = new int[8]; // indices of cell corners
-        private readonly double[] _weights = new double[8]; // weights of each corner
+        private readonly double[] _weights;
+        private readonly int[] _corners;
 
 
         /// <summary>
@@ -21,6 +19,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public FieldPoint3d()
         {
+            _weights = new double[8];
+            _corners = new int[8];
             Unset();
         }
 
@@ -36,16 +36,7 @@ namespace SpatialSlur.SlurField
         {
             SetWeights(u, v, w);
         }
-    
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int[] Corners
-        {
-            get { return _corners; }
-        }
-
+ 
 
         /// <summary>
         /// 
@@ -53,6 +44,15 @@ namespace SpatialSlur.SlurField
         public double[] Weights
         {
             get { return _weights; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int[] Corners
+        {
+            get { return _corners; }
         }
 
 

@@ -9,8 +9,7 @@ using Rhino.Geometry;
 /*
     Notes
 
-    TODO
-    Remove RhinoCommon dependency
+    TODO remove RhinoCommon dependency
     Return batches of tri meshes as List<int>[] and List<Vec3d>[]
 */
 
@@ -976,7 +975,7 @@ namespace SpatialSlur.SlurRhino
         {
             int nxy = nx * ny;
             int n = nxy * nz;
-        
+       
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
             Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
@@ -992,14 +991,16 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
+     
+                int x, y, z;
+                FieldUtil.ExpandIndex(range.Item1, nx, nxy, out x, out y, out z);
            
-                // flatten loop for cleaner parallelization
-                for (int i = range.Item1; i < range.Item2; i++, i3.x++)
+                // flatten loop for parallelization
+                for (int i = range.Item1; i < range.Item2; i++, x++)
                 {
-                    if (i3.x == nx) { i3.x = 0; i3.y++; }
-                    if (i3.y == ny) { i3.y = 0; i3.z++; }
-                    if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
+                    if (x == nx) { x = 0; y++; }
+                    if (y == ny) { y = 0; z++; }
+                    if (x == nx - 1 || y == ny - 1) continue; // skip last in each dimension
 
                     // get case
                     int caseIndex = 0;
@@ -1010,7 +1011,7 @@ namespace SpatialSlur.SlurRhino
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
                     // set voxel
-                    Vec3d p0 = new Vec3d(dx * i3.x, dy * i3.y, dz * i3.z);
+                    Vec3d p0 = new Vec3d(dx * x, dy * y, dz * z);
                     for (int j = 0; j < 8; j++)
                     {
                         voxelVals[j] = values[i + indexOffsets[j]];
@@ -1067,15 +1068,17 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
 
-                // flatten loop for cleaner parallelization
-                for (int i = range.Item1; i < range.Item2; i++, i3.x++)
+                int x, y, z;
+                FieldUtil.ExpandIndex(range.Item1, nx, nxy, out x, out y, out z);
+
+                // flatten loop for parallelization
+                for (int i = range.Item1; i < range.Item2; i++, x++)
                 {
                     // increment 3d index
-                    if (i3.x == nx) { i3.x = 0; i3.y++; }
-                    if (i3.y == ny) { i3.y = 0; i3.z++; }
-                    if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
+                    if (x == nx) { x = 0; y++; }
+                    if (y == ny) { y = 0; z++; }
+                    if (x == nx - 1 || y == ny - 1) continue; // skip last in each dimension
 
                     // get case
                     int caseIndex = 0;
@@ -1086,7 +1089,7 @@ namespace SpatialSlur.SlurRhino
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
                     // set voxel
-                    Vec3d p0 = new Vec3d(i3.x * dx, i3.y * dy, i3.z * dz);
+                    Vec3d p0 = new Vec3d(x * dx, y * dy, z * dz);
                     for (int j = 0; j < 8; j++)
                     {
                         int index = i + indexOffsets[j];
@@ -1122,7 +1125,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="ny"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<double[]> values, Domain3d domain, int nx, int ny, double thresh)
+        public static Mesh Evaluate(IReadOnlyList<double[]> values, Domain3d domain, int nx, int ny, double thresh)
         {
             // get voxel dimensions
             double dx = domain.x.Span / (nx - 1);
@@ -1150,10 +1153,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="ny"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IList<double[]> values, double dx, double dy, double dz, int nx, int ny, double thresh)
+        public static Mesh Evaluate(IReadOnlyList<double[]> values, double dx, double dy, double dz, int nx, int ny, double thresh)
         {
             int nxy = nx * ny; // number of values per layer
-
+ 
             // get offsets
             Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
@@ -1172,8 +1175,8 @@ namespace SpatialSlur.SlurRhino
 
                 for (int z = range.Item1; z < range.Item2; z++)
                 {
-                    IList<double> vals0 = values[z];
-                    IList<double> vals1 = values[z + 1];
+                    var vals0 = values[z];
+                    var vals1 = values[z + 1];
                     
                     for (int y = 0; y < ny - 1; y++)
                     {
@@ -1235,7 +1238,7 @@ namespace SpatialSlur.SlurRhino
         {
             int nxy = nx * ny;
             int n = nxy * nz;
-   
+
             // get offsets
             int[] indexOffsets = GetIndexOffsets(nx, nxy);
         
@@ -1250,15 +1253,17 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                Vec3i i3 = ExpandIndex(range.Item1, nx, nxy);
-          
-                // flatten loop for cleaner parallelization
-                for (int i = range.Item1; i < range.Item2; i++, i3.x++)
+
+                int x, y, z;
+                FieldUtil.ExpandIndex(range.Item1, nx, nxy, out x, out y, out z);
+
+                // flatten loop for parallelization
+                for (int i = range.Item1; i < range.Item2; i++, x++)
                 {
                     // increment 3d index
-                    if (i3.x == nx) { i3.x = 0; i3.y++; }
-                    if (i3.y == ny) { i3.y = 0; i3.z++; }
-                    if (i3.x == nx - 1 || i3.y == ny - 1) continue; // skip last in each dimension
+                    if (x == nx) { x = 0; y++; }
+                    if (y == ny) { y = 0; z++; }
+                    if (x == nx - 1 || y == ny - 1) continue; // skip last in each dimension
 
                     // get case
                     int caseIndex = 0;
@@ -1339,18 +1344,6 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        private static Vec3i ExpandIndex(int index, int nx, int nxy)
-        {
-            int k = index / nxy;
-            int i = index - k * nxy; // store remainder in i temporarily
-            int j = i / nx;
-            return new Vec3i(i - j * nx, j, k);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="corners"></param>
         /// <param name="values"></param>
         /// <param name="caseIndex"></param>
@@ -1423,5 +1416,4 @@ namespace SpatialSlur.SlurRhino
         }
 
     }
-
 }

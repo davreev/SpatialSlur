@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Linq;
 using System.Drawing;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
-using SpatialSlur.SlurGraph;
 using SpatialSlur.SlurMesh;
 using Rhino.Geometry;
 
@@ -102,6 +102,55 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="v"></param>
+        /// <param name="xform"></param>
+        /// <returns></returns>
+        public static Vec3d TransformDirection(this Vec3d v, Transform xform)
+        {
+            return new Vec3d(
+                v.x * xform.M00 + v.y * xform.M01 + v.z * xform.M02,
+                v.x * xform.M10 + v.y * xform.M11 + v.z * xform.M12,
+                v.x * xform.M20 + v.y * xform.M21 + v.z * xform.M22
+                );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="xform"></param>
+        /// <returns></returns>
+        public static Vec3d TransformPosition(this Vec3d p, Transform xform)
+        {
+            return new Vec3d(
+               p.x * xform.M00 + p.y * xform.M01 + p.z * xform.M02 + xform.M03,
+               p.x * xform.M10 + p.y * xform.M11 + p.z * xform.M12 + xform.M13,
+               p.x * xform.M20 + p.y * xform.M21 + p.z * xform.M22 + xform.M23
+               );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="xform"></param>
+        /// <returns></returns>
+        public static Vec4d Transform(this Vec4d p, Transform xform)
+        {
+            return new Vec4d(
+              p.x * xform.M00 + p.y * xform.M01 + p.z * xform.M02 + p.w * xform.M03,
+              p.x * xform.M10 + p.y * xform.M11 + p.z * xform.M12 + p.w * xform.M13,
+              p.x * xform.M20 + p.y * xform.M21 + p.z * xform.M22 + p.w * xform.M23,
+              p.w
+              );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
         public static Point3d ToPoint3d(this Vec3d vector)
@@ -184,64 +233,6 @@ namespace SpatialSlur.SlurRhino
         public static Vec3d ToVec3d(this Vector3f vector)
         {
             return new Vec3d(vector.X, vector.Y, vector.Z);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static Vecd ToVecd(this Vector2d vector)
-        {
-            Vecd result = new Vecd(2);
-            result[0] = vector.X;
-            result[1] = vector.Y;
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static Vecd ToVecd(this Vector3d vector)
-        {
-            Vecd result = new Vecd(3);
-            result[0] = vector.X;
-            result[1] = vector.Y;
-            result[2] = vector.Z;
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static Vecd ToVecd(this Point2d point)
-        {
-            Vecd result = new Vecd(2);
-            result[0] = point.X;
-            result[1] = point.Y;
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static Vecd ToVecd(this Point3d point)
-        {
-            Vecd result = new Vecd(3);
-            result[0] = point.X;
-            result[1] = point.Y;
-            result[2] = point.Z;
-            return result;
         }
 
   
@@ -448,22 +439,102 @@ namespace SpatialSlur.SlurRhino
         /// <param name="values"></param>
         /// <param name="mapper"></param>
         /// <param name="parallel"></param>
-        public static void PaintByValue<T>(this Mesh mesh, IList<T> values, Func<T, Color> mapper, bool parallel = false)
+        public static void PaintByVertexValue<T>(this Mesh mesh, IReadOnlyList<T> values, Func<T, Color> mapper, bool parallel = false)
         {
             var vc = new Color[values.Count];
 
+            Action<Tuple<int, int>> func = range =>
+             {
+                 for (int i = range.Item1; i < range.Item2; i++)
+                     vc[i] = mapper(values[i]);
+             };
+
             if (parallel)
-            {
-                Parallel.ForEach(Partitioner.Create(0, values.Count), range =>
-                {
-                    for (int i = range.Item1; i < range.Item2; i++)
-                        vc[i] = mapper(values[i]);
-                });
-            }
+                Parallel.ForEach(Partitioner.Create(0, values.Count), func);
             else
+                func(Tuple.Create(0, values.Count));
+
+            mesh.VertexColors.SetColors(vc);
+        }
+
+
+        /// <summary>
+        /// Assumes the number of vertices in the mesh equals the number of given values.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="values"></param>
+        /// <param name="mapper"></param>
+        /// <param name="parallel"></param>
+        public static void PaintByVertexPosition(this Mesh mesh, Func<Point3f, Color> mapper, bool parallel = false)
+        {
+            var v = mesh.Vertices;
+            var vc = new Color[v.Count];
+
+            Action<Tuple<int, int>> func = range =>
             {
-                for (int i = 0; i < values.Count; i++)
-                    vc[i] = mapper(values[i]);
+                for (int i = range.Item1; i < range.Item2; i++)
+                    vc[i] = mapper(v[i]);
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, v.Count), func);
+            else
+                func(Tuple.Create(0, v.Count));
+
+            mesh.VertexColors.SetColors(vc);
+        }
+
+
+        /// <summary>
+        /// Assumes the number of vertices in the mesh equals the number of given values.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="values"></param>
+        /// <param name="mapper"></param>
+        /// <param name="parallel"></param>
+        public static void PaintByVertexNormal(this Mesh mesh, Func<Vector3f, Color> mapper, bool parallel = false)
+        {
+            var vn = mesh.Normals;
+            var vc = new Color[vn.Count];
+
+            Action<Tuple<int, int>> func = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    vc[i] = mapper(vn[i]);
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, vn.Count), func);
+            else
+                func(Tuple.Create(0, vn.Count));
+
+            mesh.VertexColors.SetColors(vc);
+        }
+
+
+        /// <summary>
+        /// Assumes the mesh is polygon soup (i.e. vertices aren't shared between faces).
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="values"></param>
+        /// <param name="mapper"></param>
+        /// <param name="parallel"></param>
+        public static void PaintByFaceValue<T>(this Mesh mesh, IReadOnlyList<T> values, Func<T, Color> mapper)
+        {
+            Color[] vc = new Color[mesh.Vertices.Count];
+            var faces = mesh.Faces;
+ 
+            for (int i = 0; i < faces.Count; i++)
+            {
+                var f = faces[i];
+                if (!f.IsValid()) continue; // skip invalid faces
+
+                Color c = mapper(values[i]);
+                int n = (f.IsQuad) ? 4 : 3;
+                for (int j = 0; j < n; j++) vc[f[j]] = c;
             }
 
             mesh.VertexColors.SetColors(vc);
@@ -502,7 +573,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <returns></returns>
-        public static PointCloud GetPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper)
+        public static PointCloud ToPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper)
         {
             // TODO
             throw new NotImplementedException();
@@ -516,10 +587,53 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <param name="result"></param>
-        public static void GetPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper, PointCloud result)
+        public static void ToPointCloud<T>(this Field3d<T> field, Func<T, Color> mapper, PointCloud result)
         {
             // TODO
             throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="mapper"></param>
+        /// <returns></returns>
+        public static Mesh ToMesh<T>(this Field2d<T> field, Func<T, Color> mapper)
+        {
+            Mesh mesh = new Mesh();
+            var verts = mesh.Vertices;
+            var colors = mesh.VertexColors;
+            var faces = mesh.Faces;
+
+            var values = field.Values;
+            int index = 0;
+
+            for(int i = 0; i < field.CountY; i++)
+            {
+                for(int j = 0; j < field.CountX; j++)
+                {
+                    Vec2d p = field.CoordinateAt(j, i);
+                    verts.Add(p.x, p.y, 0.0);
+                    colors.Add(mapper(values[index++]));
+                }
+            }
+
+            int nx = field.CountX;
+            int ny = field.CountY;
+
+            for (int j = 0; j < ny - 1; j++)
+            {
+                for (int i = 0; i < nx - 1; i++)
+                {
+                    index = field.IndexAtUnchecked(i, j);
+                    faces.AddFace(index, index + 1, index + 1 + nx, index + nx);
+                }
+            }
+
+            return mesh;
         }
 
 
@@ -531,11 +645,11 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static T Evaluate<T>(this MeshField<T> field, MeshPoint point)
+        public static T ValueAt<T>(this MeshField<T> field, MeshPoint point)
         {
             MeshFace f = point.Mesh.Faces[point.FaceIndex];
             double[] t = point.T;
-            return field.Evaluate(f[0], f[1], f[2], t[0], t[1], t[2]);
+            return field.ValueAt(f[0], f[1], f[2], t[0], t[1], t[2]);
         }
 
 
@@ -545,116 +659,25 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="point"></param>
         /// <param name="amount"></param>
-        public static void DepositAt(this DynamicMeshScalarField field, MeshPoint point, double amount)
+        public static void IncrementAt(this MeshScalarField field, MeshPoint point, double amount)
         {
             MeshFace f = point.Mesh.Faces[point.FaceIndex];
             double[] t = point.T;
-            field.DepositAt(f[0], f[1], f[2], t[0], t[1], t[2], amount);
-        }
-
-        #endregion
-
-        #region SlurGraph Extensions
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="edges"></param>
-        /// <param name="nodePositions"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static Line[] GetEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, bool parallel = false)
-        {
-            Line[] result = new Line[edges.Count >> 1];
-            edges.GetEdgeLines(nodePositions, result, parallel);
-            return result;
+            field.IncrementAt(f[0], f[1], f[2], t[0], t[1], t[2], amount);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="edges"></param>
-        /// <param name="nodePositions"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void GetEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, bool parallel = false)
+        /// <param name="field"></param>
+        /// <param name="point"></param>
+        /// <param name="amount"></param>
+        public static void IncrementAt(this MeshVectorField field, MeshPoint point, Vec3d amount)
         {
-            edges.SizeCheck(result);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, edges.Count >> 1), range =>
-                    edges.GetEdgeLines(nodePositions, result, range.Item1, range.Item2));
-            else
-                edges.GetEdgeLines(nodePositions, result, 0, edges.Count >> 1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void GetEdgeLines(this EdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                var e = edges[i << 1];
-                if (e.IsUnused) continue;
-
-                Vec3d p0 = nodePositions[e.Start.Index];
-                Vec3d p1 = nodePositions[e.End.Index];
-                result[i] = new Line(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="edges"></param>
-        /// <param name="nodePositions"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static Line[] GetEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, bool parallel = false)
-        {
-            Line[] result = new Line[edges.Count >> 1];
-            edges.GetEdgeLines(nodePositions, result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="edges"></param>
-        /// <param name="nodePositions"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void GetEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, bool parallel = false)
-        {
-            edges.SizeCheck(result);
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, edges.Count >> 1), range =>
-                    edges.GetEdgeLines(nodePositions, result, range.Item1, range.Item2));
-            else
-                edges.GetEdgeLines(nodePositions, result, 0, edges.Count >> 1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void GetEdgeLines(this DiEdgeList edges, IList<Vec3d> nodePositions, IList<Line> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                var e = edges[i << 1];
-                if (e.IsUnused) continue;
-
-                Vec3d p0 = nodePositions[e.Start.Index];
-                Vec3d p1 = nodePositions[e.End.Index];
-                result[i] = new Line(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
-            }
+            MeshFace f = point.Mesh.Faces[point.FaceIndex];
+            double[] t = point.T;
+            field.IncrementAt(f[0], f[1], f[2], t[0], t[1], t[2], amount);
         }
 
         #endregion
@@ -675,12 +698,47 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh ToHeMesh(this Mesh mesh, out Vec3d[] vertexPositions)
+        {
+            return RhinoFactory.CreateHeMesh(mesh, out vertexPositions);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh ToHeMesh(this Mesh mesh, out Vec3d[] vertexPositions, out Vec3d[] vertexNormals)
+        {
+            return RhinoFactory.CreateHeMesh(mesh, out vertexPositions, out vertexNormals);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh ToHeMesh(this Mesh mesh, out Vec3d[] vertexPositions, out Vec3d[] vertexNormals, out Vec2d[] textureCoords)
+        {
+            return RhinoFactory.CreateHeMesh(mesh, out vertexPositions, out vertexNormals, out textureCoords);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="halfedge"></param>
         /// <returns></returns>
-        public static Line ToLine(this Halfedge halfedge)
+        public static Line ToLine<E, V>(this Halfedge<E, V> halfedge, IReadOnlyList<Vec3d> vertexPositions)
+            where E : Halfedge<E, V>
+            where V : HeVertex<E, V>
         {
-            Vec3d p0 = halfedge.Start.Position;
-            Vec3d p1 = halfedge.End.Position;
+            Vec3d p0 = vertexPositions[halfedge.Start.Index];
+            Vec3d p1 = vertexPositions[halfedge.End.Index];
             return new Line(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
         }
 
@@ -690,30 +748,42 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="face"></param>
         /// <returns></returns>
-        public static Polyline ToPolyline(this HeFace face)
+        public static Polyline ToPolyline<E, V, F>(this HeFace<E, V, F> face, IReadOnlyList<Vec3d> vertexPositions)
+            where E : Halfedge<E, V, F>
+            where V : HeVertex<E, V, F>
+            where F : HeFace<E, V, F>
         {
             Polyline result = new Polyline();
 
-            foreach (HeVertex v in face.Vertices)
-                result.Add(v.Position.ToPoint3d());
+            foreach (var v in face.Vertices)
+            {
+                var p = vertexPositions[v.Index];
+                result.Add(p.x, p.y, p.z);
+            }
 
             result.Add(result.First);
             return result;
         }
 
 
-        /*
-       /// <summary>
-       /// Returns the circumcircle of a triangular face.
-       /// Assumes face is triangular.
-       /// http://mathworld.wolfram.com/Incenter.html
-       /// </summary>
-       /// <returns></returns>
-       public static Circle GetCircumcircle(this HeFace face)
-       {
-           // TODO
-       }
-       */
+        /// <summary>
+        /// Returns the circumcircle of a triangular face.
+        /// Assumes the face is triangular.
+        /// http://mathworld.wolfram.com/Incenter.html
+        /// </summary>
+        /// <returns></returns>
+        public static Circle GetCircumcircle<E,V,F>(this HeFace<E, V, F> face, IReadOnlyList<Vec3d> vertexPositions)
+             where E : Halfedge<E, V, F>
+             where V : HeVertex<E, V, F>
+             where F : HeFace<E, V, F>
+        {
+            var he = face.First;
+            var p0 = vertexPositions[he.Previous.Start.Index];
+            var p1 = vertexPositions[he.Previous.Start.Index];
+            var p2 = vertexPositions[he.Next.Start.Index];
+
+            return new Circle(p0.ToPoint3d(), p0.ToPoint3d(), p0.ToPoint3d());
+        }
 
 
         /*
@@ -747,106 +817,93 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="hedges"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static Line[] GetEdgeLines(this HalfedgeList hedges, bool parallel = false)
-        {
-            Line[] result = new Line[hedges.Count >> 1];
-            hedges.GetEdgeLines(result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="hedges"></param>
+        /// <param name="halfedges"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetEdgeLines(this HalfedgeList hedges, IList<Line> result, bool parallel = false)
+        public static void GetEdgeLines<S, EE, VV, E, V>(this HalfedgeList<S, EE, VV, E, V> halfedges, IReadOnlyList<Vec3d> vertexPositions, IList<Line> result, bool parallel = false)
+            where S : HeStructure<S, EE, VV, E, V>
+            where EE : HalfedgeList<S, EE, VV, E, V>
+            where VV : HeVertexList<S, EE, VV, E, V>
+            where E : Halfedge<E, V>
+            where V : HeVertex<E, V>
         {
-            hedges.HalfSizeCheck(result);
+            Action<Tuple<int, int>> func = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var he = halfedges[i << 1];
+                    if (he.IsUnused) continue;
+                    result[i] = he.ToLine(vertexPositions);
+                }
+            };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), range =>
-                    hedges.GetEdgeLines(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, halfedges.Count >> 1), func);
             else
-                hedges.GetEdgeLines(result, 0, hedges.Count >> 1);
+                func(Tuple.Create(0, halfedges.Count >> 1));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void GetEdgeLines(this HalfedgeList hedges, IList<Line> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                Halfedge he = hedges[i << 1];
-                if (he.IsUnused) continue;
-                result[i] = he.ToLine();
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="faces"></param>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static Polyline[] GetFacePolylines(this HeFaceList faces, bool parallel = false)
-        {
-            Polyline[] result = new Polyline[faces.Count];
-            faces.GetFacePolylines(result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="faces"></param>
+        /// <param name="halfedges"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetFacePolylines(this HeFaceList faces, IList<Polyline> result, bool parallel = false)
+        public static void GetHalfedgeLines<S, EE, VV, E, V>(this HalfedgeList<S, EE, VV, E, V> halfedges, IReadOnlyList<Vec3d> vertexPositions, IList<Line> result, bool parallel = false)
+            where S : HeStructure<S, EE, VV, E, V>
+            where EE : HalfedgeList<S, EE, VV, E, V>
+            where VV : HeVertexList<S, EE, VV, E, V>
+            where E : Halfedge<E, V>
+            where V : HeVertex<E, V>
         {
-            faces.SizeCheck(result);
+            Action<Tuple<int, int>> func = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    int j = i << 1;
+                    var he = halfedges[j];
+                    if (he.IsUnused) continue;
+
+                    var ln = he.ToLine(vertexPositions);
+                    result[j] = ln;
+
+                    ln.Flip();
+                    result[j + 1] = ln;
+                }
+            };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.GetFacePolylines(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, halfedges.Count >> 1), func);
             else
-                faces.GetFacePolylines(result, 0, faces.Count);
+                func(Tuple.Create(0, halfedges.Count >> 1));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void GetFacePolylines(this HeFaceList faces, IList<Polyline> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                HeFace f = faces[i];
-                if (f.IsUnused) continue;
-                result[i] = f.ToPolyline();
-            }
-        }
-
-
-        /// <summary>
-        /// Assumes triangular faces.
-        /// </summary>
-        /// <param name="faces"></param>
+        /// <param name="halfedges"></param>
+        /// <param name="result"></param>
         /// <param name="parallel"></param>
-        /// <returns></returns>
-        public static Circle[] GetFaceCircumcircles(this HeFaceList faces, bool parallel = false)
+        public static void GetHalfedgeLines<E, V>(this IReadOnlyList<Halfedge<E, V>> halfedges, IReadOnlyList<Vec3d> vertexPositions, IList<Line> result, bool parallel = false)
+            where E : Halfedge<E, V>
+            where V : HeVertex<E, V>
         {
-            Circle[] result = new Circle[faces.Count];
-            faces.GetFaceCircumcircles(result, parallel);
-            return result;
+            Action<Tuple<int, int>> func = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var he = halfedges[i];
+                    if (he.IsUnused) continue;
+                    result[i] = he.ToLine(vertexPositions);
+                }
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, halfedges.Count), func);
+            else
+                func(Tuple.Create(0, halfedges.Count));
         }
 
 
@@ -856,169 +913,137 @@ namespace SpatialSlur.SlurRhino
         /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetFaceCircumcircles(this HeFaceList faces, IList<Circle> result, bool parallel = false)
+        public static void GetFacePolylines<E, V, F>(this IReadOnlyList<HeFace<E, V, F>> faces, IReadOnlyList<Vec3d> vertexPositions, IList<Polyline> result, bool parallel = false)
+            where E : Halfedge<E, V, F>
+            where V : HeVertex<E, V, F>
+            where F : HeFace<E, V, F>
         {
-            faces.SizeCheck(result);
+            Action<Tuple<int, int>> func = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var f = faces[i];
+                    if (f.IsUnused) continue;
+                    result[i] = f.ToPolyline(vertexPositions);
+                }
+            };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), range =>
-                    faces.GetFaceCircumcircles(result, range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
             else
-                faces.GetFaceCircumcircles(result, 0, faces.Count);
+                func(Tuple.Create(0, faces.Count));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void GetFaceCircumcircles(this HeFaceList faces, IList<Circle> result, int i0, int i1)
-        {
-            for (int i = i0; i < i1; i++)
-            {
-                HeFace f = faces[i];
-                if (f.IsUnused) continue;
-
-                Halfedge he = f.First;
-                HeVertex v0 = he.Start;
-                he = he.Next;
-                HeVertex v1 = he.Start;
-                he = he.Next;
-                HeVertex v2 = he.Start;
-
-                result[i] = new Circle(v0.Position.ToPoint3d(), v1.Position.ToPoint3d(), v2.Position.ToPoint3d());
-            }
-        }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static Circle[] GetFaceIncircles(this HeFaceList list, IList<double> edgeLengths)
-        {
-            if (edgeLengths.Count != list.Mesh.Edges.Count)
-                throw new ArgumentException("the number of edge lengths provided must match the number of edges in the associated mesh.");
-
-            int nf = list.Count;
-            Circle[] result = new Circle[nf];
-
-            for (int i = 0; i < nf; i++)
-            {
-                HeFace f = list[i];
-                if (f.IsUnused) continue;
-
-                HeEdge e0 = f.First;
-                HeEdge e1 = e0.Next;
-                HeEdge e2 = e1.Next;
-
-                ///result[i] = Circle.TryFitCircleTTT();
-            }
-
-            throw new System.NotImplementedException();    
-            return result;
-        }
-        */
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static BoundingBox GetBoundingBox(this HeMesh mesh)
-        {
-            List<Point3d> points = new List<Point3d>();
-
-            foreach (HeVertex v in mesh.Vertices)
-            {
-                if (v.IsUnused) continue;
-                points.Add(v.Position.ToPoint3d());
-            }
-
-            return new BoundingBox(points);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="xform"></param>
+        /// <param name="faces"></param>
+        /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void Transform(this HeMesh mesh, Transform xform, bool parallel = false)
+        public static void GetFaceCircumcircles<E, V, F>(this IReadOnlyList<HeFace<E, V, F>> faces, IReadOnlyList<Vec3d> vertexPositions, IList<Circle> result, bool parallel = false)
+            where E : Halfedge<E, V, F>
+            where V : HeVertex<E, V, F>
+            where F : HeFace<E, V, F>
         {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, mesh.Vertices.Count), range =>
-                   mesh.Transform(xform, range.Item1, range.Item2));
-            else
-                mesh.Transform(xform, 0, mesh.Vertices.Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void Transform(this HeMesh mesh, Transform xform, int i0, int i1)
-        {
-            HeVertexList verts = mesh.Vertices;
-
-            for (int i = i0; i < i1; i++)
+            Action<Tuple<int, int>> func = range =>
             {
-                HeVertex v = verts[i];
-                if (v.IsUnused) continue;
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var f = faces[i];
+                    if (f.IsUnused) continue;
+                    result[i] = f.GetCircumcircle(vertexPositions);
+                }
+            };
 
-                Point3d p = xform * v.Position.ToPoint3d();
-                v.Position = p.ToVec3d();
-            }
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+            else
+                func(Tuple.Create(0, faces.Count));
         }
 
 
         /// <summary>
-        /// 
+        /// Note that unused and n-gon faces are skipped.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Mesh ToRhinoMesh(this HeMesh mesh)
+        public static Mesh ToRhinoMesh(this HeMesh mesh, IReadOnlyList<Vec3d> vertexPositions)
         {
+            var verts = mesh.Vertices;
+            var faces = mesh.Faces;
+
             Mesh result = new Mesh();
-            var verts = result.Vertices;
-            var faces = result.Faces;
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
 
             // add vertices
-            foreach (HeVertex v in mesh.Vertices)
-                verts.Add(v.Position.ToPoint3d());
+            for (int i = 0; i < verts.Count; i++)
+            {
+                var p = vertexPositions[i];
+                newVerts.Add(p.x, p.y, p.z);
+            }
 
             // add faces
-            foreach (HeFace f in mesh.Faces)
+            foreach (var f in mesh.Faces)
             {
-                if (f.IsUnused)
-                {
-                    faces.AddFace(new MeshFace()); // add placeholder for unused faces
-                    continue;
-                }
+                if (f.IsUnused) continue;
 
-                int ne = f.CountEdges();
+                var he = f.First;
+                int ne = f.Degree;
 
                 if (ne == 3)
-                {
-                    Halfedge he = f.First;
-                    faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Previous.Start.Index);
-                }
+                    newFaces.AddFace(he.Start.Index, he.Next.Start.Index, he.Previous.Start.Index);
                 else if (ne == 4)
-                {
-                    Halfedge he = f.First;
-                    faces.AddFace(he.Start.Index, he.Next.Start.Index, he.Next.Next.Start.Index, he.Previous.Start.Index);
-                }
+                    newFaces.AddFace(he.Start.Index, he.Next.Start.Index, he.Next.Next.Start.Index, he.Previous.Start.Index);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Note that unused faces are skipped.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static Mesh ToRhinoMesh(this HeMesh mesh, IReadOnlyList<Vec3d> vertexPositions, QuadrangulateMode mode = QuadrangulateMode.Strip)
+        {
+            Mesh result = new Mesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
+
+            // add vertices
+            for (int i = 0; i < newVerts.Count; i++)
+            {
+                var p = vertexPositions[i];
+                newVerts.Add(p.x, p.y, p.z);
+            }
+
+            // add faces
+            foreach (var f in mesh.Faces)
+            {
+                if (f.IsUnused) continue;
+
+                var he = f.First;
+                int ne = f.Degree;
+
+                if (ne == 3)
+                    newFaces.AddFace(he.Start.Index, he.Next.Start.Index, he.Previous.Start.Index);
+                else if (ne == 4)
+                    newFaces.AddFace(he.Start.Index, he.Next.Start.Index, he.Next.Next.Start.Index, he.Previous.Start.Index);
                 else
                 {
-                    // TODO support different triangulation schemes for n-gons
+                    // TODO support different quadrangulation schemes for n-gons
+                    throw new NotImplementedException();
+
+                    /*
                     int last = verts.Count;
                     verts.Add(f.GetBarycenter().ToPoint3d());
 
-                    foreach (Halfedge he in f.Halfedges)
+                    foreach (var he in f.Halfedges)
                         faces.AddFace(he.Start.Index, he.End.Index, last);
+                    */
                 }
             }
 
@@ -1027,48 +1052,83 @@ namespace SpatialSlur.SlurRhino
 
 
         /// <summary>
-        ///
+        /// Vertices of the resulting mesh are not shared between faces.
+        /// Note that unused and n-gon faces are skipped.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Mesh ToRhinoMeshUnwelded(this HeMesh mesh)
+        public static Mesh ToRhinoPolySoup(this HeMesh mesh, IReadOnlyList<Vec3d> vertexPositions)
         {
             Mesh result = new Mesh();
-            var verts = result.Vertices;
-            var faces = result.Faces;
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
 
             // add vertices per face
-            foreach (HeFace f in mesh.Faces)
+            foreach (var f in mesh.Faces)
             {
-                if (f.IsUnused)
-                {
-                    faces.AddFace(new MeshFace()); // add placeholder for unused faces
-                    continue;
-                }
+                if (f.IsUnused) continue;
 
-                int ne = 0;
+                int v0 = newVerts.Count;
+                int deg = 0;
 
                 // add face vertices
-                foreach (HeVertex v in f.Vertices)
+                foreach (var v in f.Vertices)
                 {
-                    verts.Add(v.Position.ToPoint3d());
-                    ne++;
+                    var p = vertexPositions[v.Index];
+                    newVerts.Add(p.x,p.y,p.z);
+                    deg++;
                 }
 
                 // add face(s)
-                if (ne == 3)
+                if (deg == 3)
+                    newFaces.AddFace(v0, v0 + 1, v0 + 2);
+                else if (deg == 4)
+                    newFaces.AddFace(v0, v0 + 1, v0 + 2, v0 + 3);
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Vertices of the resulting mesh are not shared between faces.
+        /// Note that unused faces are skipped.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static Mesh ToRhinoPolySoup(this HeMesh mesh, IReadOnlyList<Vec3d> vertexPositions, QuadrangulateMode mode)
+        {
+            Mesh result = new Mesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
+
+            // add vertices per face
+            foreach (var f in mesh.Faces)
+            {
+                if (f.IsUnused) continue;
+
+                int v0 = newVerts.Count;
+                int deg = 0;
+
+                // add face vertices
+                foreach (var v in f.Vertices)
                 {
-                    int n = result.Vertices.Count;
-                    faces.AddFace(n - 3, n - 2, n - 1);
+                    var p = vertexPositions[v.Index];
+                    newVerts.Add(p.x, p.y, p.z);
+                    deg++;
                 }
-                else if (ne == 4)
-                {
-                    int n = result.Vertices.Count;
-                    faces.AddFace(n - 4, n - 3, n - 2, n - 1);
-                }
+
+                // add face(s)
+                if (deg == 3)
+                    newFaces.AddFace(v0, v0 + 1, v0 + 2);
+                else if (deg == 4)
+                    newFaces.AddFace(v0, v0 + 1, v0 + 2, v0 + 3);
                 else
                 {
-                    // TODO support different triangulation schemes for n-gons.
+                    // TODO support different triangulation schemes for n-gons
+                    throw new NotImplementedException();
+
+                    /*
                     int last = verts.Count;
                     verts.Add(f.GetBarycenter().ToPoint3d());
 
@@ -1078,10 +1138,380 @@ namespace SpatialSlur.SlurRhino
                         int j = (i + 1) % ne;
                         faces.AddFace(offset + i, offset + j, last);
                     }
+                    */
                 }
             }
 
             return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static Mesh ToPolySoup(this Mesh mesh)
+        {
+            var verts = mesh.Vertices;
+            var faces = mesh.Faces;
+
+            Mesh newMesh = new Mesh();
+            var newVerts = newMesh.Vertices;
+            var newFaces = newMesh.Faces;
+
+            // add verts
+            for (int i = 0; i < faces.Count; i++)
+            {
+                var f = faces[i];
+                int v0 = newVerts.Count;
+
+                if (f.IsTriangle)
+                {
+                    for (int j = 0; j < 3; j++)
+                        newVerts.Add(verts[f[j]]);
+
+                    newFaces.AddFace(v0, v0 + 1, v0 + 2);
+                }
+                else
+                {
+                    for (int j = 0; j < 4; j++)
+                        newVerts.Add(verts[f[j]]);
+
+                    newFaces.AddFace(v0, v0 + 1, v0 + 2, v0 + 3);
+                }
+            }
+
+            return newMesh;
+        }
+
+
+        /// <summary>
+        /// Reverses face windings and flips normals.
+        /// </summary>
+        /// <param name="mesh"></param>
+        public static void Reverse(this Mesh mesh)
+        {
+            // reverse face windings
+            var faces = mesh.Faces;
+            for (int i = 0; i < faces.Count; i++)
+            {
+                var f = faces[i];
+
+                if (f.IsQuad)
+                    faces.SetFace(i, f.D, f.C, f.B, f.A);
+                else
+                    faces.SetFace(i, f.C, f.B, f.A);
+            }
+
+            // reverse normals
+            var normals = mesh.Normals;
+            for (int i = 0; i < normals.Count; i++)
+                normals[i] *= -1.0f;
+        }
+
+        #endregion
+
+        #region RhinoCommon Extensions
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, double tolerance)
+        {
+            int[] indexMap;
+            RTree tree;
+            return RemoveDuplicatePoints(points, tolerance, out indexMap, out tree);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="tolerance"></param>
+        /// <param name="indexMap"></param>
+        /// <returns></returns>
+        public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, double tolerance, out int[] indexMap)
+        {
+            RTree tree;
+            return RemoveDuplicatePoints(points, tolerance, out indexMap, out tree);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="tolerance"></param>
+        /// <param name="indexMap"></param>
+        /// <param name="tree"></param>
+        /// <returns></returns>
+        public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, double tolerance, out int[] indexMap, out RTree tree)
+        {
+            List<Point3d> result = new List<Point3d>();
+            indexMap = new int[points.Count];
+            tree = new RTree();
+
+            SearchHelper helper = new SearchHelper();
+            Vector3d span = new Vector3d(tolerance, tolerance, tolerance);
+
+            // for each point, search for coincident points in the tree
+            for (int i = 0; i < points.Count; i++)
+            {
+                Point3d pt = points[i];
+                helper.Reset();
+                tree.Search(new BoundingBox(pt - span, pt + span), helper.Callback);
+                int index = helper.Id;
+
+                // if no coincident point was found...
+                if (index == -1)
+                {
+                    index = result.Count; // set id of point
+                    tree.Insert(pt, index); // insert point in tree
+                    result.Add(pt); // add point to results
+                }
+
+                indexMap[i] = index;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Simple helper class for searching an RTree for duplicate points.
+        /// </summary>
+        private class SearchHelper
+        {
+            public int _id = -1;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public int Id
+            {
+                get { return _id; }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void Reset()
+            {
+                _id = -1;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            public void Callback(Object sender, RTreeEventArgs e)
+            {
+                _id = e.Id; // cache index of found object
+                e.Cancel = true; // abort search
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static Point3d Mean(this IEnumerable<Point3d> points)
+        {
+            var sum = new Point3d();
+            int count = 0;
+
+            foreach (Point3d p in points)
+            {
+                sum += p;
+                count++;
+            }
+
+            return sum / count;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        public static Vector3d Mean(this IEnumerable<Vector3d> vectors)
+        {
+            var sum = new Vector3d();
+            int count = 0;
+
+            foreach (Vector3d v in vectors)
+            {
+                sum += v;
+                count++;
+            }
+
+            return sum / count;
+        }
+
+
+        /// <summary>
+        /// Returns the the entries of the covariance matrix in column-major order.
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        public static void GetCovarianceMatrix(this IEnumerable<Vector3d> vectors, double[] result)
+        {
+            GetCovarianceMatrix(vectors, Mean(vectors), result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="mean"></param>
+        /// <returns></returns>
+        public static void GetCovarianceMatrix(this IEnumerable<Vector3d> vectors, Vector3d mean, double[] result)
+        {
+            Array.Clear(result, 0, 9);
+
+            // calculate lower triangular covariance matrix
+            foreach (Vector3d v in vectors)
+            {
+                Vector3d d = v - mean;
+                result[0] += d.X * d.X;
+                result[1] += d.X * d.Y;
+                result[2] += d.X * d.Z;
+                result[4] += d.Y * d.Y;
+                result[5] += d.Y * d.Z;
+                result[8] += d.Z * d.Z;
+            }
+
+            // set symmetric values
+            result[3] = result[1];
+            result[6] = result[2];
+            result[7] = result[5];
+        }
+
+
+        /// <summary>
+        /// Returns the the entries of the covariance matrix in column-major order.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static void GetCovarianceMatrix(this IEnumerable<Point3d> points, double[] result)
+        {
+            GetCovarianceMatrix(points, Mean(points), result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="mean"></param>
+        /// <returns></returns>
+        public static void GetCovarianceMatrix(this IEnumerable<Point3d> points, Point3d mean, double[] result)
+        {
+            Array.Clear(result, 0, 9);
+
+            // calculate lower triangular covariance matrix
+            foreach (Point3d p in points)
+            {
+                Vector3d d = p - mean;
+                result[0] += d.X * d.X;
+                result[1] += d.X * d.Y;
+                result[2] += d.X * d.Z;
+                result[4] += d.Y * d.Y;
+                result[5] += d.Y * d.Z;
+                result[8] += d.Z * d.Z;
+            }
+
+            // set symmetric values
+            result[3] = result[1];
+            result[6] = result[2];
+            result[7] = result[5];
+        }
+
+
+        /// <summary>
+        /// Returns the entries of the cotangent-weighted Laplacian matrix in column-major order.
+        /// Based on symmetric derivation of the Laplace-Beltrami operator detailed in http://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Vallet08.pdf.
+        /// Assumes triangle mesh.
+        /// </summary>
+        /// <returns></returns>
+        public static void GetLaplacianMatrix(this Mesh mesh, double[] result)
+        {
+            GetLaplacianMatrix(mesh, result, new double[mesh.Vertices.Count]);
+        }
+
+
+        /// <summary>
+        /// Returns the entries of the cotangent-weighted Laplacian matrix in column-major order.
+        /// Based on symmetric derivation of the Laplace-Beltrami operator detailed in http://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Vallet08.pdf.
+        /// Also rerturns barycentric vertex areas calculated in the process.
+        /// Assumes triangle mesh.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="entriesOut"></param>
+        /// <param name="vertexAreasOut"></param>
+        public static void GetLaplacianMatrix(this Mesh mesh, double[] entriesOut, double[] vertexAreasOut)
+        {
+            var verts = mesh.Vertices;
+            int n = verts.Count;
+            double t = 1.0 / 6.0;
+
+            Array.Clear(entriesOut, 0, n * n);
+            Array.Clear(vertexAreasOut, 0, n);
+
+            // iterate faces to collect weights and vertex areas (lower triangular only)
+            foreach (MeshFace mf in mesh.Faces)
+            {
+                // circulate verts in face
+                for (int i = 0; i < 3; i++)
+                {
+                    int i0 = mf[i];
+                    int i1 = mf[(i + 1) % 3];
+                    int i2 = mf[(i + 2) % 3];
+
+                    Vector3d v0 = verts[i0] - verts[i2];
+                    Vector3d v1 = verts[i1] - verts[i2];
+
+                    // add to vertex area
+                    double a = Vector3d.CrossProduct(v0, v1).Length;
+                    vertexAreasOut[i0] += a * t;
+
+                    // add to edge cotangent weights (assumes consistent face orientation)
+                    if (i1 > i0)
+                        entriesOut[i0 * n + i1] += 0.5 * v0 * v1 / a;
+                    else
+                        entriesOut[i1 * n + i0] += 0.5 * v0 * v1 / a;
+                }
+            }
+
+            // normalize weights with areas and sum along diagonals
+            for (int i = 0; i < n; i++)
+            {
+                int ii = i * n + i;
+
+                for (int j = i + 1; j < n; j++)
+                {
+                    double w = entriesOut[i * n + j];
+                    w /= Math.Sqrt(vertexAreasOut[i] * vertexAreasOut[j]);
+                    entriesOut[i * n + j] = w;
+                    entriesOut[j * n + i] = w;
+
+                    // sum along diagonal entries
+                    entriesOut[ii] -= w;
+                    entriesOut[j * n + j] -= w;
+                }
+            }
         }
 
         #endregion

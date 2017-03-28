@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
@@ -12,9 +10,6 @@ using SpatialSlur.SlurCore;
  * 
  * KdTree search performance degrades at higher dimensions
  * In general the number of nodes should be larger than 2^k for decent performance.
- * 
- * TODO 
- * Compare to array-based implementation
  * 
  * References
  * https://www.cs.umd.edu/class/spring2008/cmsc420/L19.kd-trees.pdf
@@ -47,17 +42,11 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Inserts point value pairs in a way that produces a balanced tree.
         /// </summary>
-        public static KdTree<T> CreateBalanced(IList<Vecd> points, IList<T> values)
-        {
-            return CreateBalanced(points.ConvertAll(p => p.Values), values);
-        }
-
-
-        /// <summary>
-        /// Inserts point value pairs in a way that produces a balanced tree.
-        /// </summary>
         public static KdTree<T> CreateBalanced(IList<double[]> points, IList<T> values)
         {
+            if (points is double[][] && values is T[])
+                return CreateBalanced((double[][])points, (T[])values);
+
             if (points.Count != values.Count)
                 throw new ArgumentException("Must provide an equal number of points and values.");
 
@@ -70,7 +59,30 @@ namespace SpatialSlur.SlurData
                 if (points[i].Length != k) throw new ArgumentException("All given points must be of the same dimension.");
 
             result._root = result.InsertBalanced(points, values, 0, points.Count - 1, 0);
-            result._n = points.Count;
+            result._count = points.Count;
+            return result;
+        }
+
+
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a balanced tree.
+        /// TODO Compare performance to IList implementation.
+        /// </summary>
+        public static KdTree<T> CreateBalanced(double[][] points, T[] values)
+        {
+            if (points.Length != values.Length)
+                throw new ArgumentException("Must provide an equal number of points and values.");
+
+            // create tree using dimension of first point
+            int k = points[0].Length;
+            KdTree<T> result = new KdTree<T>(k);
+
+            // verify dimension of remaining points
+            for (int i = 1; i < points.Length; i++)
+                if (points[i].Length != k) throw new ArgumentException("All given points must be of the same dimension.");
+
+            result._root = result.InsertBalanced(points, values, 0, points.Length - 1, 0);
+            result._count = points.Length;
             return result;
         }
 
@@ -93,7 +105,7 @@ namespace SpatialSlur.SlurData
         private KdNode _root;
         private double _epsilon = 1.0e-8;
         private readonly int _k;
-        private int _n;
+        private int _count;
 
 
         /// <summary>
@@ -123,7 +135,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int Count
         {
-            get { return _n; }
+            get { return _count; }
         }
 
 
@@ -210,9 +222,9 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="point"></param>
-        private void DimCheck(Vecd point)
+        private void DimCheck(double[] point)
         {
-            if (_k != point.Count)
+            if (_k != point.Length)
                 throw new System.ArgumentException("The given point must have the same number of dimensions as this tree.");
         }
 
@@ -222,10 +234,10 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public bool Contains(Vecd point)
+        public bool Contains(double[] point)
         {
             DimCheck(point);
-            return Find(_root, point.Values, 0) != null;
+            return Find(_root, point, 0) != null;
         }
 
 
@@ -236,10 +248,10 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool Contains(Vecd point, out T value)
+        public bool Contains(double[] point, out T value)
         {
             DimCheck(point);
-            KdNode n = Find(_root, point.Values, 0);
+            KdNode n = Find(_root, point, 0);
 
             if (n == null)
             {
@@ -266,7 +278,7 @@ namespace SpatialSlur.SlurData
             if (node == null) 
                 return null;
 
-            if (VecMath.Equals(point,node.point,_epsilon,_k))
+            if (point.ApproxEquals(node.point, _epsilon))
                 return node;
 
             // wrap dimension
@@ -284,11 +296,11 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <param name="value"></param>
-        public void Insert(Vecd point, T value)
+        public void Insert(double[] point, T value)
         {
             DimCheck(point);
-            _root = Insert(_root, point.Values, value, 0);
-            _n++;
+            _root = Insert(_root, point, value, 0);
+            _count++;
         }
       
 
@@ -340,7 +352,7 @@ namespace SpatialSlur.SlurData
             // sort the median element
             int mid = ((to - from) >> 1) + from;
             KdComparer comparer = new KdComparer(i, _epsilon);
-            double[] midPt = points.QuickSelect(mid, from, to, comparer, values);
+            double[] midPt = points.QuickSelect(values, mid, from, to, comparer.Compare);
 
             // make sure there's no duplicate elements to the left of the median
             int j = from;
@@ -360,38 +372,61 @@ namespace SpatialSlur.SlurData
         }
 
 
-        /*
-        /// <summary> 
-        /// Finds the first node in the tree which is equal to the given point and flags it for removal.
+        /// <summary>
+        /// 
         /// </summary>
-        /// <param name="point"></param>
-        public bool Remove(Vecdd point)
+        /// <param name="points"></param>
+        /// <param name="values"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        private KdNode InsertBalanced(double[][] points, T[] values, int from, int to, int i)
         {
-            // TODO implement compact method to remove flagged nodes
-            DimCheck(point);
-            KdNode n = Find(_root, point, 0);
+            // stopping conditions
+            if (from > to)
+                return null;
+            else if (from == to)
+                return new KdNode(points[from], values[from]);
 
-            if (n != null)
+            // wrap dimension
+            if (i == _k) i = 0;
+
+            // sort the median element
+            int mid = ((to - from) >> 1) + from;
+            KdComparer comparer = new KdComparer(i, _epsilon);
+            double[] midPt = points.QuickSelect(values, mid, from, to, comparer.Compare);
+
+            // make sure there's no duplicate elements to the left of the median
+            int j = from;
+            while (j < mid)
             {
-                n.isRemoved = true;
-                _n--;
+                if (comparer.Compare(points[j], midPt) == 0)
+                    points.Swap(j, --mid);
+                else
+                    j++;
             }
+
+            // create node and recurse on left and right children
+            KdNode node = new KdNode(points[mid], values[mid]);
+            node.left = InsertBalanced(points, values, from, mid - 1, i + 1);
+            node.right = InsertBalanced(points, values, mid + 1, to, i + 1);
+            return node;
         }
-        */
-    
+
 
         /// <summary> 
         /// Removes the first point in the tree which is equal to the given point.
-        /// Note that node removal can result in unbalanced trees which degrades search performance.
+        /// Note that repeated node removal can result in unbalanced trees which degrades performance.
         /// </summary>
         /// <param name="point"></param>
-        public bool Remove(Vecd point)
+        public bool Remove(double[] point)
         {
             DimCheck(point);
 
-            int n = _n;
-            _root = Remove(_root, point.Values, 0);
-            return n != _n;
+            int n = _count;
+            _root = Remove(_root, point, 0);
+            return n != _count;
         }
 
 
@@ -411,9 +446,9 @@ namespace SpatialSlur.SlurData
             // wrap dimension
             if (i == _k) i = 0;
 
-            if (VecMath.Equals(point, node.point, _epsilon, _k))
+            if (point.ApproxEquals(node.point, _epsilon))
             {
-                // found the node to delete
+                // found the node to remove
                 if (node.right != null)
                 {
                     KdNode min = FindMin(node.right, i, i + 1); // search the right sub-tree for a replacement node (min in the current dimension)
@@ -430,8 +465,8 @@ namespace SpatialSlur.SlurData
                 }
                 else
                 {
-                    node = null; // node is a leaf, can safely delete
-                    _n--; // decrement node count
+                    node = null; // node is a leaf, can safely remove
+                    _count--; // decrement node count
                 }
             }
             else if (point[i] < node.point[i])
@@ -484,73 +519,17 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Returns all values within the given Euclidean distance.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="range"></param>
-        public List<T> EuclideanSearch(Vecd point, double range)
-        {
-            DimCheck(point);
-
-            List<T> result = new List<T>();
-            EuclideanSearch(_root, point.Values, range * range, result, 0);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        /// <param name="point"></param>
-        /// <param name="range"></param>
-        /// <param name="result"></param>
-        /// <param name="i"></param>
-        private void EuclideanSearch(KdNode node, double[] point, double range, List<T> result, int i)
-        {
-            if (node == null) return;
-
-            // wrap dimension
-            if (i == _k) i = 0;
-
-            // enqueue value if node is within range
-            if (VecMath.SquareDistance(point, node.point, _k) < range)
-                result.Add(node.value);
-
-            double d = point[i] - node.point[i]; // signed distance to cut plane
-            if (d < 0.0)
-            {
-                // point is to the left so recurse in left subtree first
-                EuclideanSearch(node.left, point, range, result, i + 1);
-
-                // recurse in right subtree only if necessary
-                if (d * d < range)
-                    EuclideanSearch(node.right, point, range, result, i + 1);
-            }
-            else
-            {
-                // point is to the right so recurse in right subtree first
-                EuclideanSearch(node.right, point, range, result, i + 1);
-
-                // recurse in left subtree only if necessary
-                if (d * d < range)
-                    EuclideanSearch(node.left, point, range, result, i + 1);
-            }
-        }
-
-
-        /// <summary>
         /// Returns all values within the given box.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
-        public List<T> BoxSearch(Vecd point, Vecd range)
+        public List<T> BoxSearch(double[] point, double[] range)
         {
             DimCheck(point);
             DimCheck(range);
 
             List<T> result = new List<T>();
-            BoxSearch(_root, point.Values, range.Values, result, 0);
+            BoxSearch(_root, point, range, result, 0);
             return result;
         }
 
@@ -571,7 +550,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if within range
-            if (VecMath.Equals(point, node.point, range, _k))
+            if (point.ApproxEquals(node.point, range))
                 result.Add(node.value);
 
             // if left side of tree
@@ -592,22 +571,22 @@ namespace SpatialSlur.SlurData
 
                 // recurse in left subtree only if necessary
                 if (Math.Abs(d) < range[i])
-                    BoxSearch(node.left, point, range, result, i + 1); 
+                    BoxSearch(node.left, point, range, result, i + 1);
             }
         }
 
 
         /// <summary>
-        /// Returns all values within the given Manhattan distance.
+        /// Returns all values within the given Euclidean distance.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
-        public List<T> ManhattanSearch(Vecd point, double range)
+        public List<T> L2RangeSearch(double[] point, double range)
         {
             DimCheck(point);
 
             List<T> result = new List<T>();
-            ManhattanSearch(_root, point.Values, range, result, 0);
+            L2RangeSearch(_root, point, range * range, result, 0);
             return result;
         }
 
@@ -620,7 +599,63 @@ namespace SpatialSlur.SlurData
         /// <param name="range"></param>
         /// <param name="result"></param>
         /// <param name="i"></param>
-        private void ManhattanSearch(KdNode node, double[] point, double range, List<T> result, int i)
+        private void L2RangeSearch(KdNode node, double[] point, double range, List<T> result, int i)
+        {
+            if (node == null) return;
+
+            // wrap dimension
+            if (i == _k) i = 0;
+
+            // enqueue value if node is within range
+            if (point.L2DistanceToSqr(node.point) < range)
+                result.Add(node.value);
+
+            double d = point[i] - node.point[i]; // signed distance to cut plane
+            if (d < 0.0)
+            {
+                // point is to the left so recurse in left subtree first
+                L2RangeSearch(node.left, point, range, result, i + 1);
+
+                // recurse in right subtree only if necessary
+                if (d * d < range)
+                    L2RangeSearch(node.right, point, range, result, i + 1);
+            }
+            else
+            {
+                // point is to the right so recurse in right subtree first
+                L2RangeSearch(node.right, point, range, result, i + 1);
+
+                // recurse in left subtree only if necessary
+                if (d * d < range)
+                    L2RangeSearch(node.left, point, range, result, i + 1);
+            }
+        }
+
+
+        /// <summary>
+        /// Returns all values within the given Manhattan distance.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="range"></param>
+        public List<T> L1RangeSearch(double[] point, double range)
+        {
+            DimCheck(point);
+
+            List<T> result = new List<T>();
+            L1RangeSearch(_root, point, range, result, 0);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="point"></param>
+        /// <param name="range"></param>
+        /// <param name="result"></param>
+        /// <param name="i"></param>
+        private void L1RangeSearch(KdNode node, double[] point, double range, List<T> result, int i)
         {
             if (node == null) return;
 
@@ -628,28 +663,42 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if within range
-            if (VecMath.ManhattanDistance(point, node.point, _k) < range)
+            if (point.L1DistanceTo(node.point) < range)
                 result.Add(node.value);
 
             double d = point[i] - node.point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
                 // point is to the left so recurse in left subtree first
-                ManhattanSearch(node.left, point, range, result, i + 1);
+                L1RangeSearch(node.left, point, range, result, i + 1);
 
                 // recurse in right subtree only if necessary
                 if (Math.Abs(d) < range)
-                    ManhattanSearch(node.right, point, range, result, i + 1);
+                    L1RangeSearch(node.right, point, range, result, i + 1);
             }
             else
             {
                 // point is to the right so recurse in right subtree first
-                ManhattanSearch(node.right, point, range, result, i + 1);
+                L1RangeSearch(node.right, point, range, result, i + 1);
 
                 // recurse in left subtree only if necessary
                 if (Math.Abs(d) < range)
-                    ManhattanSearch(node.left, point, range, result, i + 1); 
+                    L1RangeSearch(node.left, point, range, result, i + 1); 
             }
+        }
+
+
+        /// <summary>
+        /// Returns the nearest value in the tree using a Euclidean distance metric.
+        /// If the tree is empty the default value of T is returned.
+        /// Also returns the square distance to the nearest value as an out parameter.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public T L2Nearest(double[] point)
+        {
+            double d;
+            return L2Nearest(point, out d);
         }
 
 
@@ -661,13 +710,13 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
-        public T EuclideanNearest(Vecd point, out double distance)
+        public T L2Nearest(double[] point, out double distance)
         {
             DimCheck(point);
 
             T nearest = default(T);
-            distance = Double.MaxValue;
-            EuclideanNearest(_root, point.Values, 0, ref nearest, ref distance);
+            distance = double.MaxValue;
+            L2Nearest(_root, point, 0, ref nearest, ref distance);
 
             return nearest;
         }
@@ -681,7 +730,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="nearest"></param>
         /// <param name="distance"></param>
-        private void EuclideanNearest(KdNode node, double[] point, int i, ref T nearest, ref double distance)
+        private void L2Nearest(KdNode node, double[] point, int i, ref T nearest, ref double distance)
         {
             if (node == null) return;
 
@@ -689,7 +738,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // update nearest if necessary
-            double d = VecMath.SquareDistance(point, node.point, _k);
+            double d = point.L2DistanceToSqr(node.point);
             if (d < distance)
             {
                 nearest = node.value;
@@ -700,21 +749,33 @@ namespace SpatialSlur.SlurData
             if (d < 0.0)
             {
                 // point is to the left so recurse in left subtree first
-                EuclideanNearest(node.left, point, i + 1, ref nearest, ref distance);
+                L2Nearest(node.left, point, i + 1, ref nearest, ref distance);
 
                 // recurse in right subtree only if necessary
                 if (d * d < distance)
-                    EuclideanNearest(node.right, point, i + 1, ref nearest, ref distance);
+                    L2Nearest(node.right, point, i + 1, ref nearest, ref distance);
             }
             else
             {
                 // point is to the right so recurse in right subtree first
-                EuclideanNearest(node.right, point, i + 1, ref nearest, ref distance);
+                L2Nearest(node.right, point, i + 1, ref nearest, ref distance);
 
                 // recurse in left subtree only if necessary
                 if (d * d < distance)
-                    EuclideanNearest(node.left, point, i + 1, ref nearest, ref distance);
+                    L2Nearest(node.left, point, i + 1, ref nearest, ref distance);
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public T L1Nearest(double[] point)
+        {
+            double d;
+            return L1Nearest(point, out d);
         }
 
 
@@ -726,13 +787,13 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
-        public T ManhattanNearest(Vecd point, out double distance)
+        public T L1Nearest(double[] point, out double distance)
         {
             DimCheck(point);
 
             T nearest = default(T);
             distance = Double.MaxValue;
-            ManhattanNearest(_root, point.Values, 0, ref nearest, ref distance);
+            L1Nearest(_root, point, 0, ref nearest, ref distance);
 
             return nearest;
         }
@@ -746,7 +807,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="nearest"></param>
         /// <param name="distance"></param>
-        private void ManhattanNearest(KdNode node, double[] point, int i, ref T nearest, ref double distance)
+        private void L1Nearest(KdNode node, double[] point, int i, ref T nearest, ref double distance)
         {
             if (node == null) return;
 
@@ -754,7 +815,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // update nearest if necessary
-            double d = VecMath.ManhattanDistance(point, node.point, _k);
+            double d = point.L1DistanceTo(node.point);
             if (d < distance)
             {
                 nearest = node.value;
@@ -765,20 +826,20 @@ namespace SpatialSlur.SlurData
             if (d < 0.0)
             {
                 // point is to the left so recurse in left subtree first
-                ManhattanNearest(node.left, point, i + 1, ref nearest, ref distance);
+                L1Nearest(node.left, point, i + 1, ref nearest, ref distance);
 
                 // recurse in right subtree only if necessary
                 if (Math.Abs(d) < distance)
-                    ManhattanNearest(node.right, point, i + 1, ref nearest, ref distance);
+                    L1Nearest(node.right, point, i + 1, ref nearest, ref distance);
             }
             else
             {
                 // point is to the right so recurse in right subtree first
-                ManhattanNearest(node.right, point, i + 1, ref nearest, ref distance);
+                L1Nearest(node.right, point, i + 1, ref nearest, ref distance);
 
                 // recurse in left subtree only if necessary
                 if (Math.Abs(d) < distance)
-                    ManhattanNearest(node.left, point, i + 1, ref nearest, ref distance); 
+                    L1Nearest(node.left, point, i + 1, ref nearest, ref distance); 
             }
         }
 
@@ -789,15 +850,14 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public KeyValuePair<double, T>[] EuclideanNearestN(Vecd point, int n)
+        public PriorityQueue<KeyValuePair<double, T>> L2NearestN(double[] point, int n)
         {
             DimCheck(point);
 
             var result = new PriorityQueue<KeyValuePair<double, T>>(ReverseCompareKeys, n);
-            EuclideanNearestN(_root, point.Values, n, 0, result);
+            L2NearestN(_root, point, n, 0, result);
 
-            // return first n values
-            return result.ToArray();
+            return result;
         }
 
 
@@ -809,7 +869,7 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void EuclideanNearestN(KdNode node, double[] point, int n, int i, PriorityQueue<KeyValuePair<double, T>> result)
+        private void L2NearestN(KdNode node, double[] point, int n, int i, PriorityQueue<KeyValuePair<double, T>> result)
         {
             if (node == null) return;
 
@@ -817,7 +877,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if closer than nth element
-            double d = VecMath.SquareDistance(point, node.point, _k);
+            double d = point.L2DistanceToSqr(node.point);
         
             if (result.Count < n)
                 result.Insert(new KeyValuePair<double, T>(d, node.value));
@@ -828,20 +888,20 @@ namespace SpatialSlur.SlurData
             if (d < 0.0)
             {
                 // point is to the left so recurse in left subtree first
-                EuclideanNearestN(node.left, point, n, i + 1, result);
+                L2NearestN(node.left, point, n, i + 1, result);
 
                 // recurse in right subtree only if necessary
                 if (result.Count < n || d * d < result.Min.Key)
-                    EuclideanNearestN(node.right, point, n, i + 1, result);
+                    L2NearestN(node.right, point, n, i + 1, result);
             }
             else
             {
                 // point is to the right so recurse in right subtree first
-                EuclideanNearestN(node.right, point, n, i + 1, result);
+                L2NearestN(node.right, point, n, i + 1, result);
 
                 // recurse in left subtree only if necessary
                 if (result.Count < n || d * d < result.Min.Key)
-                    EuclideanNearestN(node.left, point, n, i + 1, result);
+                    L2NearestN(node.left, point, n, i + 1, result);
             }
         }
 
@@ -852,15 +912,14 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public KeyValuePair<double,T>[] ManhattanNearestN(Vecd point, int n)
+        public PriorityQueue<KeyValuePair<double, T>> L1NearestN(double[] point, int n)
         {
             DimCheck(point);
 
             var result = new PriorityQueue<KeyValuePair<double, T>>(ReverseCompareKeys, n);
-            ManhattanNearestN(_root, point.Values, n, 0, result);
+            L1NearestN(_root, point, n, 0, result);
 
-            // return first n values
-            return result.ToArray();
+            return result;
         }
 
 
@@ -872,7 +931,7 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void ManhattanNearestN(KdNode node, double[] point, int n, int i, PriorityQueue<KeyValuePair<double, T>> result)
+        private void L1NearestN(KdNode node, double[] point, int n, int i, PriorityQueue<KeyValuePair<double, T>> result)
         {
             if (node == null) return;
 
@@ -880,7 +939,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if closer than nth element
-            double d = VecMath.ManhattanDistance(node.point, point, _k);
+            double d = point.L1DistanceTo(node.point);
 
             if (result.Count < n)
                 result.Insert(new KeyValuePair<double, T>(d, node.value));
@@ -891,23 +950,22 @@ namespace SpatialSlur.SlurData
             if (d < 0.0)
             {
                 // point is to the left so recurse in left subtree first
-                ManhattanNearestN(node.left, point, n, i + 1, result);
+                L1NearestN(node.left, point, n, i + 1, result);
 
                 // recurse in right subtree only if necessary
                 if (result.Count < n || Math.Abs(d) < result.Min.Key)
-                    ManhattanNearestN(node.right, point, n, i + 1, result); 
+                    L1NearestN(node.right, point, n, i + 1, result); 
             }
             else
             {
                 // point is to the right so recurse in right subtree first
-                ManhattanNearestN(node.right, point, n, i + 1, result);
+                L1NearestN(node.right, point, n, i + 1, result);
 
                 // recurse in left subtree only if necessary
                 if (result.Count < n || Math.Abs(d) < result.Min.Key)
-                    ManhattanNearestN(node.left, point, n, i + 1, result); 
+                    L1NearestN(node.left, point, n, i + 1, result); 
             }
         }
-
 
 
         /*
@@ -1092,8 +1150,7 @@ namespace SpatialSlur.SlurData
             public KdNode left, right;
             public readonly double[] point;
             public readonly T value;
-            // public bool isRemoved; // flag nodes as removed
-
+           
 
             /// <summary>
             /// 

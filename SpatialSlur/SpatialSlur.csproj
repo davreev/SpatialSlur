@@ -11,6 +11,7 @@
     <AssemblyName>SpatialSlur</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,19 +46,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SlurCore\ColorUtil.cs" />
+    <Compile Include="SlurCore\Extensions\ArrayExtensions.cs" />
+    <Compile Include="SlurCore\Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="SlurCore\Extensions\IListExtensions.cs" />
+    <Compile Include="SlurCore\Extensions\IReadOnlyListExtensions.cs" />
     <Compile Include="SlurCore\GeometryUtil.cs" />
-    <Compile Include="SlurCore\IListExtensions.cs" />
+    <Compile Include="SlurCore\Extensions\ListExtensions.cs" />
     <Compile Include="SlurCore\IOUtil.cs" />
+    <None Include="SlurCore\Mat3d.cs" />
+    <None Include="SlurCore\Mat4d.cs" />
+    <None Include="SlurCore\Quaternion.cs" />
     <Compile Include="SlurCore\Vec2i.cs" />
     <Compile Include="SlurCore\Domain.cs" />
     <Compile Include="SlurCore\Domain2d.cs" />
     <Compile Include="SlurCore\Domain3d.cs" />
-    <Compile Include="SlurCore\DotNetExtensions.cs" />
+    <Compile Include="SlurCore\Extensions\DotNetExtensions.cs" />
     <Compile Include="SlurCore\Vec2d.cs" />
     <Compile Include="SlurCore\Vec3d.cs" />
     <Compile Include="SlurCore\Vec3i.cs" />
     <Compile Include="SlurCore\Vec4d.cs" />
-    <Compile Include="SlurCore\VecMath.cs" />
+    <Compile Include="SlurData\ProbabilitySelector.cs" />
     <Compile Include="SlurData\Spatial2dT.cs" />
     <Compile Include="SlurData\Spatial3dT.cs" />
     <Compile Include="SlurData\SpatialGrid2dT.cs" />
@@ -66,56 +74,55 @@
     <Compile Include="SlurData\KdTreeT.cs" />
     <Compile Include="SlurData\SpatialHash2dT.cs" />
     <Compile Include="SlurData\SpatialHash3dT.cs" />
-    <Compile Include="SlurCore\Vecd.cs" />
-    <Compile Include="SlurField\DynamicMeshScalarField.cs" />
-    <Compile Include="SlurField\DynamicScalarField2d.cs" />
-    <Compile Include="SlurField\DynamicScalarField3d.cs" />
+    <Compile Include="SlurExperimental\ReadOnlySubArrayT.cs" />
+    <Compile Include="SlurExperimental\ReadOnlySubListT.cs" />
+    <Compile Include="SlurExperimental\SubArrayT.cs" />
+    <Compile Include="SlurExperimental\SubListT.cs" />
+    <Compile Include="SlurField\Extensions\FieldExtensions.cs" />
+    <Compile Include="SlurField\FieldUtil.cs" />
     <Compile Include="SlurField\Field2dT.cs" />
     <Compile Include="SlurField\Field3dT.cs" />
-    <Compile Include="SlurField\FieldBoundaryType.cs" />
+    <Compile Include="SlurField\FieldSim.cs" />
+    <Compile Include="SlurField\Enums\FieldWrapMode.cs" />
     <Compile Include="SlurField\FieldIO.cs" />
+    <Compile Include="SlurField\Interfaces\IFieldT.cs" />
     <Compile Include="SlurField\MeshFieldT.cs" />
     <Compile Include="SlurField\MeshVectorField.cs" />
     <Compile Include="SlurField\Field2d.cs" />
     <Compile Include="SlurField\Field3d.cs" />
     <Compile Include="SlurField\FieldPoint2d.cs" />
     <Compile Include="SlurField\FieldPoint3d.cs" />
-    <Compile Include="SlurField\MeshField.cs" />
     <Compile Include="SlurField\MeshScalarField.cs" />
     <Compile Include="SlurField\ImplicitSurfaces.cs" />
     <Compile Include="SlurField\PerlinNoise.cs" />
-    <Compile Include="SlurGraph\DiEdge.cs" />
-    <Compile Include="SlurGraph\DiEdgeAttributes.cs" />
-    <Compile Include="SlurGraph\DiEdgeList.cs" />
-    <Compile Include="SlurGraph\DiGraph.cs" />
-    <Compile Include="SlurGraph\DiNode.cs" />
-    <Compile Include="SlurGraph\DiNodeAttributes.cs" />
-    <Compile Include="SlurGraph\DiNodeList.cs" />
-    <Compile Include="SlurGraph\Edge.cs" />
-    <Compile Include="SlurGraph\EdgeAttributes.cs" />
-    <Compile Include="SlurGraph\EdgeList.cs" />
-    <Compile Include="SlurGraph\Graph.cs" />
-    <Compile Include="SlurGraph\GraphElement.cs" />
-    <Compile Include="SlurGraph\GraphElementList.cs" />
-    <Compile Include="SlurGraph\Node.cs" />
-    <Compile Include="SlurGraph\NodeAttributes.cs" />
-    <Compile Include="SlurGraph\NodeList.cs" />
-    <Compile Include="SlurMesh\Halfedge.cs" />
-    <Compile Include="SlurMesh\HalfedgeAttributes.cs" />
-    <Compile Include="SlurMesh\HalfedgeList.cs" />
-    <Compile Include="SlurMesh\EdgeAttributes.cs" />
-    <Compile Include="SlurMesh\HeElement.cs" />
-    <Compile Include="SlurMesh\HeElementList.cs" />
-    <Compile Include="SlurMesh\HeFace.cs" />
-    <Compile Include="SlurMesh\HeFaceAttributes.cs" />
-    <Compile Include="SlurMesh\HeFaceList.cs" />
-    <Compile Include="SlurMesh\HeMesh.cs" />
-    <Compile Include="SlurMesh\HePhysics.cs" />
-    <Compile Include="SlurMesh\HeSubdivide.cs" />
-    <Compile Include="SlurMesh\HeVertex.cs" />
-    <Compile Include="SlurMesh\HeVertexAttributes.cs" />
-    <Compile Include="SlurMesh\HeVertexList.cs" />
-    <Compile Include="SlurMesh\MeshIO.cs" />
+    <Compile Include="SlurMesh\Extensions\HeAttributeExtensions.cs" />
+    <Compile Include="SlurMesh\HeStructure\Halfedge.cs" />
+    <Compile Include="SlurMesh\HeStructure\HalfedgeList.cs" />
+    <Compile Include="SlurMesh\HeStructure\HeElement.cs" />
+    <Compile Include="SlurMesh\HeStructure\HeElementList.cs" />
+    <Compile Include="SlurMesh\HeStructure\HeFace.cs" />
+    <Compile Include="SlurMesh\HeStructure\HeFaceList.cs" />
+    <Compile Include="SlurMesh\HeGraph\HeGraph.cs" />
+    <Compile Include="SlurMesh\HeGraph\HeGraphHalfedge.cs" />
+    <Compile Include="SlurMesh\HeGraph\HeGraphHalfedgeList.cs" />
+    <Compile Include="SlurMesh\HeGraph\HeGraphVertex.cs" />
+    <Compile Include="SlurMesh\HeGraph\HeGraphVertexList.cs" />
+    <Compile Include="SlurMesh\HeMesh\Enums\QuadrangulateMode.cs" />
+    <Compile Include="SlurMesh\HeMesh\Enums\SmoothBoundaryType.cs" />
+    <Compile Include="SlurMesh\HeMesh\Enums\TriangulateMode.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMesh.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshFace.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshFaceList.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshHalfedge.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshHalfedgeList.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshIO.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshPhysics.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshSubdivide.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshVertex.cs" />
+    <Compile Include="SlurMesh\HeMesh\HeMeshVertexList.cs" />
+    <Compile Include="SlurMesh\HeStructure\HeStructure.cs" />
+    <Compile Include="SlurMesh\HeStructure\HeVertex.cs" />
+    <Compile Include="SlurMesh\HeStructure\HeVertexList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SlurField\ScalarField2d.cs" />
     <Compile Include="SlurField\ScalarField3d.cs" />
@@ -123,10 +130,11 @@
     <Compile Include="SlurCore\SlurMath.cs" />
     <Compile Include="SlurField\VectorField2d.cs" />
     <Compile Include="SlurField\VectorField3d.cs" />
-    <Compile Include="SlurMesh\SmoothBoundaryType.cs" />
-    <Compile Include="Test.cs" />
+    <None Include="Test.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="SpatialSlur.cd" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

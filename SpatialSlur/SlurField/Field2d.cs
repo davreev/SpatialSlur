@@ -1,17 +1,12 @@
-﻿ using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * 
- * TODO refactor as per Field3d 
  */
-  
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>
@@ -22,32 +17,25 @@ namespace SpatialSlur.SlurField
     {
         private Domain2d _domain;
         private double _x0, _y0; // cached for convenience
-
-        private FieldBoundaryType _boundaryType;
         private double _dx, _dy;
+        private double _dxInv, _dyInv; // cached to avoid unecessary divs
         private readonly int _nx, _ny, _n;
 
-        // inverse values cached to avoid unecessary divs
-        private double _dxInv, _dyInv;
-        private readonly double _nxInv;
+        private FieldWrapMode _wrapModeX, _wrapModeY;
+        private Func<int, int, int> _wrapX, _wrapY;
+  
 
-        // delegates for methods which depend on the field's boundary type
-        private delegate void ToIndex2(Vec2d point, out int i, out int j);
-        private ToIndex2 _index2At;
-        private Action<Vec2d, FieldPoint2d> _fieldPointAt;
-
-
-        //
+        /// <summary>
+        /// 
+        /// </summary>
         private Field2d(int countX, int countY)
         {
-            if (countX < 2 || countY < 2)
-                throw new System.ArgumentException("The field must have 2 or more values in each dimension.");
+            if (countX < 1 || countY < 1)
+                throw new System.ArgumentException("The field must have at least 1 value in each dimension.");
 
             _nx = countX;
             _ny = countY;
             _n = _nx * _ny;
-
-            _nxInv = 1.0 / _nx;
         }
 
 
@@ -57,12 +45,29 @@ namespace SpatialSlur.SlurField
         /// <param name="domain"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        /// <param name="boundaryType"></param>
-        protected Field2d(Domain2d domain, int countX, int countY, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
+        /// <param name="wrapMode"></param>
+        protected Field2d(Domain2d domain, int countX, int countY, FieldWrapMode wrapMode)
             : this(countX, countY)
         {
             Domain = domain;
-            BoundaryType = boundaryType;
+            WrapModeX = WrapModeY = wrapMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        protected Field2d(Domain2d domain, int countX, int countY, FieldWrapMode wrapModeX = FieldWrapMode.Clamp, FieldWrapMode wrapModeY = FieldWrapMode.Clamp)
+            : this(countX, countY)
+        {
+            Domain = domain;
+            WrapModeX = wrapModeX;
+            WrapModeY = wrapModeY;
         }
 
 
@@ -76,10 +81,9 @@ namespace SpatialSlur.SlurField
             _ny = other._ny;
             _n = other._n;
 
-            _nxInv = other._nxInv;
-
             Domain = other._domain;
-            BoundaryType = other._boundaryType;
+            WrapModeX = other._wrapModeX;
+            WrapModeY = other._wrapModeY;
         }
 
 
@@ -146,36 +150,29 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Gets/sets the boundary type for the field.
-        /// This property determines how edge cases are handled in many other methods.
+        /// 
         /// </summary>
-        public FieldBoundaryType BoundaryType
+        public FieldWrapMode WrapModeX
         {
-            get { return _boundaryType; }
-            set 
-            { 
-                _boundaryType = value;
-                OnBoundaryTypeChange();
+            get { return _wrapModeX; }
+            set
+            {
+                _wrapModeX = value;
+                _wrapX = FieldUtil.SelectWrapFunc(value);
             }
         }
 
 
         /// <summary>
-        /// Iterates through the coordinates of each value in the field. 
-        /// Note that these are calculated on the fly and not explicitly stored in memory.
-        /// If you need to cache them, call GetCoordinates instead.
+        /// 
         /// </summary>
-        public IEnumerable<Vec2d> Coordinates
+        public FieldWrapMode WrapModeY
         {
-            get
+            get { return _wrapModeY; }
+            set
             {
-                for (int j = 0; j < _ny; j++)
-                {
-                    for (int i = 0; i < _nx; i++)
-                    {
-                        yield return CoordinateAt(i,j);
-                    }
-                }
+                _wrapModeY = value;
+                _wrapY = FieldUtil.SelectWrapFunc(value);
             }
         }
 
@@ -183,7 +180,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// This is called after any changes to the field's domain.
         /// </summary>
-        protected virtual void OnDomainChange()
+        private void OnDomainChange()
         {
             _x0 = _domain.x.t0;
             _y0 = _domain.y.t0;
@@ -197,42 +194,14 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// This is called after any changes to the field's boundary type.
-        /// </summary>
-        protected virtual void OnBoundaryTypeChange()
-        {
-            switch(_boundaryType)
-            {
-                case FieldBoundaryType.Constant:
-                    {
-                        _index2At = Index2AtConstant;
-                        _fieldPointAt = FieldPointAtConstant;
-                        break;
-                    }
-                case FieldBoundaryType.Equal:
-                    {
-                        _index2At = Index2AtEqual;
-                        _fieldPointAt = FieldPointAtEqual;
-                        break;
-                    }
-                case FieldBoundaryType.Periodic:
-                    {
-                        _index2At = Index2AtPeriodic;
-                        _fieldPointAt = FieldPointAtPeriodic;
-                        break;
-                    }
-            }
-        }
-
-
-        /// <summary>
         /// Returns coordinates of all values in the field.
         /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public Vec2d[] GetCoordinates()
+        public Vec2d[] GetCoordinates(bool parallel = false)
         {
             Vec2d[] result = new Vec2d[_n];
-            GetCoordinates(result);
+            GetCoordinates(result, parallel);
             return result;
         }
 
@@ -240,31 +209,37 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="coords"></param>
-        public void GetCoordinates(IList<Vec2d> coords)
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void GetCoordinates(Vec2d[] result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, _n), range =>
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j;
-                ExpandIndex(range.Item1, out i, out j);
+                IndicesAt(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == _nx) { j++; i = 0; }
-                    coords[index] = CoordinateAt(i, j);
+                    result[index] = CoordinateAt(i, j);
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, _n), func);
+            else
+                func(Tuple.Create(0, _n));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index2"></param>
+        /// <param name="indices"></param>
         /// <returns></returns>
-        public Vec2d CoordinateAt(Vec2i index2)
+        public Vec2d CoordinateAt(Vec2i indices)
         {
-            return CoordinateAt(index2.x, index2.y);
+            return CoordinateAt(indices.x, indices.y);
         }
 
 
@@ -283,6 +258,17 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Vec2d CoordinateAt(int index)
+        {
+            return CoordinateAt(IndicesAt(index));
+        }
+
+
+        /// <summary>
         /// Returns true if the field has the same number of values in each dimension as another.
         /// </summary>
         /// <param name="other"></param>
@@ -294,87 +280,27 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Returns true if the field contains the given 2 dimensional index.
+        /// Flattens a 2 dimensional index into a 1 dimensional index.
+        /// Assumes the given indices are within valid range.
         /// </summary>
-        /// <param name="index2"></param>
+        /// <param name="indices"></param>
         /// <returns></returns>
-        public bool ContainsIndex(Vec2i index2)
+        public int IndexAtUnchecked(Vec2i indices)
         {
-            return ContainsIndex(index2.x, index2.y);
+            return FieldUtil.FlattenIndex(indices.x, indices.y, _nx);
         }
 
 
         /// <summary>
-        /// Returns true if the field contains the given 2 dimensional index.
+        /// Flattens a 2 dimensional index into a 1 dimensional index.
+        /// Assumes the given indices are within valid range.
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public bool ContainsIndex(int i, int j)
+        public int IndexAtUnchecked(int i, int j)
         {
-            return i >= 0 && j >= 0 && i < _nx && j < _ny;
-        }
-
-
-        /// <summary>
-        /// Converts a 2 dimensional index into a 1 dimensional index.
-        /// </summary>
-        /// <param name="index2"></param>
-        /// <returns></returns>
-        public int FlattenIndex(Vec2i index2)
-        {
-            return FlattenIndex(index2.x, index2.y);
-        }
-
-
-        /// <summary>
-        /// Converts a 2 dimensional index into a 1 dimensional index.
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <returns></returns>
-        public int FlattenIndex(int i, int j)
-        {
-            return i + j * _nx;
-        }
-
-
-        /// <summary>
-        /// Converts a 1 dimensional index into a 2 dimensional index.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Vec2i ExpandIndex(int index)
-        {
-            int i, j;
-            ExpandIndex(index, out i, out j);
-            return new Vec2i(i, j);
-        }
-
-
-        /// <summary>
-        /// Converts a 1 dimensional index into a 2 dimensional index.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        public void ExpandIndex(int index, out int i, out int j)
-        {
-            j = (int)(index * _nxInv);
-            i = index - j * _nx;
-        }
-      
-
-        /// <summary>
-        /// Returns the index of the value nearest to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public int IndexAt(Vec2d point)
-        {
-            int i, j;
-            _index2At(point, out i, out j);
-            return FlattenIndex(i, j);
+            return FieldUtil.FlattenIndex(i, j, _nx);
         }
 
 
@@ -387,114 +313,98 @@ namespace SpatialSlur.SlurField
         public int IndexAtUnchecked(Vec2d point)
         {
             int i, j;
-            Index2AtUnchecked(point, out i, out j);
-            return FlattenIndex(i, j);
+            IndicesAt(point, out i, out j);
+            return FieldUtil.FlattenIndex(i, j, _nx);
         }
 
 
         /// <summary>
-        /// Returns the 2 dimensional index of the value nearest to the given point.
+        /// Flattens a 2 dimensional index into a 1 dimensional index.
+        /// If the given indices are out of range, they are handled according to the current wrap mode.
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <returns></returns>
+        public int IndexAt(Vec2i indices)
+        {
+            return FieldUtil.FlattenIndex(_wrapX(indices.x, _nx), _wrapY(indices.y, _ny), _nx);
+        }
+
+
+        /// <summary>
+        /// Flattens a 2 dimensional index into a 1 dimensional index.
+        /// If the given indices are out of range, they are handled according to the current wrap mode.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
+        public int IndexAt(int i, int j)
+        {
+            return FieldUtil.FlattenIndex(_wrapX(i, _nx), _wrapY(j, _ny), _nx);
+        }
+
+
+        /// <summary>
+        /// Returns the index of the value nearest to the given point.
+        /// If the given point is outside the field domain, it is handled according to the current wrap mode.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vec2i Index2At(Vec2d point)
+        public int IndexAt(Vec2d point)
         {
             int i, j;
-            _index2At(point, out i, out j);
+            IndicesAt(point, out i, out j);
+            return FieldUtil.FlattenIndex(_wrapX(i, _nx), _wrapY(j, _ny), _nx);
+        }
+
+
+        /// <summary>
+        /// Expands 1 dimensional index into a 2 dimensional index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Vec2i IndicesAt(int index)
+        {
+            int i, j;
+            FieldUtil.ExpandIndex(index, _nx, out i, out j);
             return new Vec2i(i, j);
         }
 
 
         /// <summary>
-        /// 
+        /// Expands 1 dimensional index into a 2 dimensional index.
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="index"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        public void Index2At(Vec2d point, out int i, out int j)
+        public void IndicesAt(int index, out int i, out int j)
         {
-            _index2At(point, out i, out j);
+            FieldUtil.ExpandIndex(index, _nx, out i, out j);
         }
 
 
         /// <summary>
-        /// Returns the 2 dimensional index of the value nearest to the given point.
-        /// Assumes the given point is inside the field domain.
+        /// Returns the indices of the value nearest to the given point.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vec2i Index2AtUnchecked(Vec2d point)
+        public Vec2i IndicesAt(Vec2d point)
         {
             int i, j;
-            Index2AtUnchecked(point, out i, out j);
+            IndicesAt(point, out i, out j);
             return new Vec2i(i, j);
         }
 
 
         /// <summary>
-        /// Returns the 2 dimensional index of the value nearest to the given point.
-        /// Assumes the given point is inside the field domain.
+        /// Returns the indices of the value nearest to the given point.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        public void Index2AtUnchecked(Vec2d point, out int i, out int j)
+        public void IndicesAt(Vec2d point, out int i, out int j)
         {
             i = (int)Math.Round((point.x - _x0) * _dxInv);
             j = (int)Math.Round((point.y - _y0) * _dyInv);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void Index2AtConstant(Vec2d point, out int i, out int j)
-        {
-            Index2AtUnchecked(point, out i, out j);
-
-            // set to 2d index of boundary value if out of bounds
-            if(!ContainsIndex(i,j))
-            {
-                i = _nx;
-                j = _ny;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void Index2AtEqual(Vec2d point, out int i, out int j)
-        {
-            Index2AtUnchecked(point, out i, out j);
-
-            i = SlurMath.Clamp(i, _nx - 1);
-            j = SlurMath.Clamp(j, _ny - 1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void Index2AtPeriodic(Vec2d point, out int i, out int j)
-        {
-            Index2AtUnchecked(point, out i, out j);
-
-            i = SlurMath.Mod2(i, _nx);
-            j = SlurMath.Mod2(j, _ny);
-        }
-
-
-        /// <summary>
-        /// Returns indices and weights of the 4 values nearest to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public FieldPoint2d FieldPointAt(Vec2d point)
-        {
-            FieldPoint2d result = new FieldPoint2d();
-            _fieldPointAt(point, result);
-            return result;
         }
 
 
@@ -517,17 +427,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        public void FieldPointAt(Vec2d point, FieldPoint2d result)
-        {
-            _fieldPointAt(point, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
         public void FieldPointAtUnchecked(Vec2d point, FieldPoint2d result)
         {
             int i, j;
@@ -535,11 +434,12 @@ namespace SpatialSlur.SlurField
             // set weights with fractional components
             result.SetWeights(
              SlurMath.Fract((point.x - _x0) * _dxInv, out i),
-             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
+             SlurMath.Fract((point.y - _y0) * _dyInv, out j)
+             );
 
-            // set corner indices
-            int index = FlattenIndex(i, j);
+            // set corners
             var corners = result.Corners;
+            int index = FieldUtil.FlattenIndex(i, j, _nx);
             corners[0] = index;
             corners[1] = index + 1;
             corners[2] = index + _nx;
@@ -548,135 +448,57 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
-        /// </summary> 
-        private void FieldPointAtConstant(Vec2d point, FieldPoint2d result)
+        /// Returns indices and weights of the 4 values nearest to the given point.
+        /// If the given point is outside the field domain, it is handled according to the current wrap mode.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public FieldPoint2d FieldPointAt(Vec2d point)
         {
-            int i, j;
-
-            // set weights with fractional components
-            result.SetWeights(
-             SlurMath.Fract((point.x - _x0) * _dxInv, out i),
-             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
-
-            // bit mask (0 = in bounds, 1 = out of bounds)
-            int mask = 0;
-            if (!SlurMath.Contains(i, 0, _nx)) mask |= 1;
-            if (!SlurMath.Contains(j, 0, _ny)) mask |= 2;
-            if (!SlurMath.Contains(i + 1, 0, _nx)) mask |= 4;
-            if (!SlurMath.Contains(j + 1, 0, _ny)) mask |= 8;
-
-            // set corner indices
-            int index = FlattenIndex(i, j);
-            var corners = result.Corners;
-            corners[0] = ((mask & 3) == 0) ? index : _n; // 00 11
-            corners[1] = ((mask & 6) == 0) ? index + 1 : _n; // 01 10
-            corners[2] = ((mask & 9) == 0) ? index + _nx : _n; // 10 01
-            corners[3] = ((mask & 12) == 0) ? index + 1 + _nx : _n; // 11 00
+            FieldPoint2d result = new FieldPoint2d();
+            FieldPointAt(point, result);
+            return result;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private void FieldPointAtEqual(Vec2d point, FieldPoint2d result)
+        /// <param name="point"></param>
+        /// <param name="result"></param>
+        public void FieldPointAt(Vec2d point, FieldPoint2d result)
         {
-            int i, j;
-
-            // set weights with fractional components
-            result.SetWeights(
-             SlurMath.Fract((point.x - _x0) * _dxInv, out i),
-             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
-
-            // clamp and get offsets
-            int di = 0, dj = 0;
-
-            if (i < 0) i = 0;
-            else if (i > _nx - 1) i = _nx - 1;
-            else if (i < _nx - 1) di = 1;
-
-            if (j < 0) j = 0;
-            else if (j > _ny - 1) j = _ny - 1;
-            else if (j < _ny - 1) dj = _nx;
-
-            // set corner indices
-            int index = FlattenIndex(i, j);
-            var corners = result.Corners;
-            corners[0] = index;
-            corners[1] = index + di;
-            corners[2] = index + dj;
-            corners[3] = index + di + dj;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void FieldPointAtPeriodic(Vec2d point, FieldPoint2d result)
-        {
-            int i, j;
-
-            // set weights with fractional components
-            result.SetWeights(
-             SlurMath.Fract((point.x - _x0) * _dxInv, out i),
-             SlurMath.Fract((point.y - _y0) * _dyInv, out j));
-
-            // wrap whole components
-            i = SlurMath.Mod2(i, _nx);
-            j = SlurMath.Mod2(j, _ny);
-
-            // get offsets
-            int di = (i == _nx - 1) ? 1 - _nx : 1;
-            int dj = (j == _ny - 1) ? _nx - _n : _nx;
-
-            // set corner indices
-            int index = FlattenIndex(i, j);
-            var corners = result.Corners;
-            corners[0] = index;
-            corners[1] = index + di;
-            corners[2] = index + dj;
-            corners[3] = index + di + dj;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void SetWeights(FieldPoint2d fieldPoint, Vec2d point, out int i, out int j)
-        {
-            fieldPoint.SetWeights(
-                SlurMath.Fract((point.x - _x0) * _dxInv, out i),
-                SlurMath.Fract((point.y - _y0) * _dyInv, out j));
-        }
-
-
-        /*
-        // Alternative implementation better suited to more involved types of interpolation (cubic etc.)
-        // http://paulbourke.net/miscellaneous/interpolation/
-        private void FieldPointAtClamped2(Vec2d point, FieldPoint2d result)
-        {
-            // convert to grid space and separate fractional and whole components
             int i0, j0;
-            double u = SlurMath.Fract((point.x - _x0) * _dxInv, out i0);
-            double v = SlurMath.Fract((point.y - _y0) * _dyInv, out j0);
 
-            int[] corners = result.Corners;
-            int index = 0;
+            // set weights with fractional components
+            result.SetWeights(
+             SlurMath.Fract((point.x - _x0) * _dxInv, out i0),
+             SlurMath.Fract((point.y - _y0) * _dyInv, out j0)
+             );
 
-            for (int j = 0; j < 2; j++)
-            {
-                int jj = SlurMath.Clamp(j0 + j, _ny - 1);
-                for (int i = 0; i < 2; i++)
-                {
-                    int ii = SlurMath.Clamp(i0 + i, _nx - 1);
-                    corners[index] = FlattenIndex(ii, jj);
-                    index++;
-                }
-            }
+            // wrap indices
+            int i1 = _wrapX(i0 + 1, _nx);
+            int j1 = _wrapY(j0 + 1, _ny);
 
-            // compute weights using fractional components
-            result.SetWeights(u, v);
+            i0 = _wrapX(i0, _nx);
+            j0 = _wrapY(j0, _ny);
+
+            // set corners
+            var corners = result.Corners;
+            corners[0] = FieldUtil.FlattenIndex(i0, j0, _nx);
+            corners[1] = FieldUtil.FlattenIndex(i1, j0, _nx);
+            corners[2] = FieldUtil.FlattenIndex(i0, j1, _nx);
+            corners[3] = FieldUtil.FlattenIndex(i1, j1, _nx);
         }
-        */
+
+
+        /// <summary>
+        /// Used by various operators in derived classes.
+        /// </summary>
+        internal void GetBoundaryOffsets(out int di, out int dj)
+        {
+            di = (_wrapModeX == FieldWrapMode.Repeat) ? _nx - 1 : 0;
+            dj = (_wrapModeY == FieldWrapMode.Repeat) ? _n - _nx : 0;
+        }
     }
 }

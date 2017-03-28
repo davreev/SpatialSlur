@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ * 
+ * TODO
+ * Line insert/search based on https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+ */
 
 namespace SpatialSlur.SlurData
 {
@@ -17,9 +17,8 @@ namespace SpatialSlur.SlurData
     /// <typeparam name="T"></typeparam>
     public abstract class Spatial2d<T>
     {
-        private IList<List<T>> _bins;
-        private IList<int> _tags; // used to lazily clear bins
-
+        private List<T>[] _bins;
+        private int[] _tags; // used to lazily clear bins
         private int _itemCount;
         private int _currTag;
 
@@ -35,6 +34,7 @@ namespace SpatialSlur.SlurData
 
             _bins = new List<T>[binCount];
             _tags = new int[binCount];
+            _currTag = 1; // ensures bins are initially out of sync
 
             for (int i = 0; i < binCount; i++)
                 _bins[i] = new List<T>();
@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int BinCount
         {
-            get { return _bins.Count; }
+            get { return _bins.Length; }
         }
 
 
@@ -133,7 +133,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// The contents of all found bins are added to the result list.
         /// </summary>
         public void Search(Vec2d point, List<T> result)
         {
@@ -148,7 +148,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// The contents of all found bins are added to the result list.
         /// </summary>
         public void Search(Domain2d domain, List<T> result)
         {
@@ -171,7 +171,8 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// The given function is called on the contents of each found bin.
+        /// Empty bins are skipped.
         /// </summary>
         public void Search(Vec2d point, Action<IEnumerable<T>> callback)
         {
@@ -186,7 +187,8 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        ///
+        /// The given function is called on the contents of each found bin.
+        /// Empty bins are skipped.
         /// </summary>
         public void Search(Domain2d domain, Action<IEnumerable<T>> callback)
         {
@@ -206,7 +208,7 @@ namespace SpatialSlur.SlurData
                 }
             }
         }
-
+        
 
         /// <summary>
         /// 

@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
+using System.Drawing;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -16,11 +14,31 @@ namespace SpatialSlur.SlurField
     /// 
     /// </summary>
     [Serializable]
-    public class ScalarField2d:Field2d<double>
+    public sealed class ScalarField2d : Field2d<double>
     {
-        // delegates for boundary dependant methods
-        private Action<IList<double>> _getLaplacian;
-        private Action<IList<Vec2d>> _getGradient;
+        #region Static
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <param name="mapper"></param>
+        /// <param name="domain"></param>
+        /// <param name="wrapX"></param>
+        /// <param name="wrapY"></param>
+        /// <returns></returns>
+        public static ScalarField2d CreateFromImage(Bitmap bitmap, Func<Color, double> mapper, Domain2d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp)
+        {
+            int nx = bitmap.Width;
+            int ny = bitmap.Height;
+    
+            var result = new ScalarField2d(domain, nx, ny, wrapX, wrapY);
+            FieldIO.ReadFromImage(result, bitmap, mapper);
+
+            return result;
+        }
+
+        #endregion
 
 
         /// <summary>
@@ -29,9 +47,25 @@ namespace SpatialSlur.SlurField
         /// <param name="domain"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        /// <param name="boundaryType"></param>
-        public ScalarField2d(Domain2d domain, int countX, int countY, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
-            : base(domain, countX, countY, boundaryType)
+        /// <param name="wrapMode"></param>
+        public ScalarField2d(Domain2d domain, int countX, int countY, FieldWrapMode wrapMode)
+            : base(domain, countX, countY, wrapMode)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        public ScalarField2d(Domain2d domain, int countX, int countY, 
+            FieldWrapMode wrapModeX = FieldWrapMode.Clamp, 
+            FieldWrapMode wrapModeY = FieldWrapMode.Clamp)
+            : base(domain, countX, countY, wrapModeX, wrapModeY)
         {
         }
 
@@ -59,354 +93,34 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        protected override void OnBoundaryTypeChange()
-        {
-            base.OnBoundaryTypeChange();
-
-            switch(BoundaryType)
-            {
-                case FieldBoundaryType.Constant:
-                    {
-                        _getLaplacian = GetLaplacianConstant;
-                        _getGradient = GetGradientConstant;
-                        break;
-                    }
-                case FieldBoundaryType.Equal:
-                    {
-                        _getLaplacian = GetLaplacianEqual;
-                        _getGradient = GetGradientEqual;
-                        break;
-                    }
-                case FieldBoundaryType.Periodic:
-                    {
-                        _getLaplacian = GetLaplacianPeriodic;
-                        _getGradient = GetGradientPeriodic;
-                        break;
-                    }
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="weights"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
-        public override double Evaluate(int[] indices, double[] weights)
+        public override double ValueAt(FieldPoint2d point)
         {
-            double result = 0.0;
-            for (int i = 0; i < indices.Length; i++)
-                result += Values[indices[i]] * weights[i];
-
-            return result;
+            return Values.ValueAt(point.Corners, point.Weights);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
-        public void Add(ScalarField2d other)
+        /// <param name="point"></param>
+        /// <param name="amount"></param>
+        public void IncrementAt(FieldPoint2d point, double amount)
         {
-            VecMath.AddParallel(Values, other.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="result"></param>
-        public void Add(ScalarField2d other, ScalarField2d result)
-        {
-            VecMath.AddParallel(Values, other.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        public void Multiply(ScalarField2d other)
-        {
-            VecMath.MultiplyParallel(Values, other.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="result"></param>
-        public void Multiply(ScalarField2d other, ScalarField2d result)
-        {
-            VecMath.MultiplyParallel(Values, other.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        public void Divide(ScalarField2d other)
-        {
-            VecMath.DivideParallel(Values, other.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="result"></param>
-        public void Divide(ScalarField2d other, ScalarField2d result)
-        {
-            VecMath.DivideParallel(Values, other.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// Linerly interpolates values in this field towards corresponding values in another.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
-        public void LerpTo(ScalarField2d other, double factor)
-        {
-            VecMath.LerpParallel(Values, other.Values, factor, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
-        /// <param name="result"></param>
-        public void LerpTo(ScalarField2d other, double factor, ScalarField2d result)
-        {
-            VecMath.LerpParallel(Values, other.Values, factor, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factors"></param>
-        public void LerpTo(ScalarField2d other, ScalarField2d factors)
-        {
-            VecMath.LerpParallel(Values, other.Values, factors.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factors"></param>
-        /// <param name="result"></param>
-        public void LerpTo(ScalarField2d other, ScalarField2d factors, ScalarField2d result)
-        {
-            VecMath.LerpParallel(Values, other.Values, factors.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Normalize()
-        {
-            VecMath.NormalizeParallel(Values, new Domain(Values), Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Normalize(ScalarField2d result)
-        {
-            VecMath.NormalizeParallel(Values, new Domain(Values), Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="to"></param>
-        public void Remap(Domain to)
-        {
-            VecMath.RemapParallel(Values, new Domain(Values), to, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="to"></param>
-        /// <param name="result"></param>
-        public void Remap(Domain to, ScalarField2d result)
-        {
-            VecMath.RemapParallel(Values, new Domain(Values), to, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        public void Remap(Domain from, Domain to)
-        {
-            VecMath.RemapParallel(Values, from, to, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="result"></param>
-        public void Remap(Domain from, Domain to, ScalarField2d result)
-        {
-            VecMath.RemapParallel(Values, from, to, Count, result.Values);
-        }
-
-   
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public ScalarField2d GetLaplacian()
-        {
-            ScalarField2d result = new ScalarField2d((Field2d)this);
-            GetLaplacian(result.Values);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(ScalarField2d result)
-        {
-            _getLaplacian(result.Values);
+            Values.IncrementAt(point.Corners, point.Weights, amount);
         }
 
 
         /// <summary>
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(IList<double> result)
-        {
-            _getLaplacian(result);
-        }
-      
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void GetLaplacianConstant(IList<double> result)
-        {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    double tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
-           
-                    double ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
-
-                    double t = Values[index] * 2.0;
-                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void GetLaplacianEqual(IList<double> result)
-        {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    double tx0 = (i == 0) ? Values[index] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
-
-                    double ty0 = (j == 0) ? Values[index] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
-
-                    double t = Values[index] * 2.0;
-                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void GetLaplacianPeriodic(IList<double> result)
-        {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    double tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
-
-                    double ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
-
-                    double t = Values[index] * 2.0;
-                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public VectorField2d GetGradient()
+        public ScalarField2d GetLaplacian(bool parallel = false)
         {
-            VectorField2d result = new VectorField2d(this);
-            GetGradient(result.Values);
+            ScalarField2d result = new ScalarField2d((Field2d)this);
+            GetLaplacian(result.Values, parallel);
             return result;
         }
 
@@ -415,9 +129,10 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void GetGradient(VectorField2d result)
+        /// <param name="parallel"></param>
+        public void GetLaplacian(ScalarField2d result, bool parallel = false)
         {
-            _getGradient(result.Values);
+            GetLaplacian(result.Values, parallel);
         }
 
 
@@ -425,39 +140,56 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void GetGradient(IList<Vec2d> result)
+        /// <param name="parallel"></param>
+        public void GetLaplacian(double[] result, bool parallel)
         {
-            _getGradient(result);
-        }
+            var vals = Values;
+            int nx = CountX;
+            int ny = CountY;
 
+            double dx = 1.0 / (ScaleX * ScaleX);
+            double dy = 1.0 / (ScaleY * ScaleY);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        private void GetGradientConstant(IList<Vec2d> result)
-        {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
+            int di, dj;
+            GetBoundaryOffsets(out di, out dj);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j;
-                ExpandIndex(range.Item1, out i, out j);
+                IndicesAt(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == CountX) { j++; i = 0; }
+                    if (i == nx) { j++; i = 0; }
 
-                    double tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
+                    double tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
+                    double tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
 
-                    double ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
+                    double ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
+                    double ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
 
-                    result[index] = new Vec2d((tx1 - tx0) * dx, (ty1 - ty0) * dy);
+                    double t = vals[index] * 2.0;
+                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public VectorField2d GetGradient(bool parallel = false)
+        {
+            VectorField2d result = new VectorField2d(this);
+            GetGradient(result.Values, parallel);
+            return result;
         }
 
 
@@ -465,29 +197,10 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        private void GetGradientEqual(IList<Vec2d> result)
+        /// <param name="parallel"></param>
+        public void GetGradient(VectorField2d result, bool parallel = false)
         {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j;
-                ExpandIndex(range.Item1, out i, out j);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-
-                    double tx0 = (i == 0) ? Values[index] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
-
-                    double ty0 = (j == 0) ? Values[index] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
-
-                    result[index] = new Vec2d((tx1 - tx0) * dx, (ty1 - ty0) * dy);
-                }
-            });
+            GetGradient(result.Values, parallel);
         }
 
 
@@ -495,29 +208,42 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        private void GetGradientPeriodic(IList<Vec2d> result)
+        /// <param name="parallel"></param>
+        public void GetGradient(Vec2d[] result, bool parallel)
         {
+            var vals = Values;
+            int nx = CountX;
+            int ny = CountY;
+
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            int di, dj;
+            GetBoundaryOffsets(out di, out dj);
+
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j;
-                ExpandIndex(range.Item1, out i, out j);
+                IndicesAt(range.Item1, out i, out j);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == CountX) { j++; i = 0; }
+                    if (i == nx) { j++; i = 0; }
 
-                    double tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
+                    double tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
+                    double tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
 
-                    double ty0 = (j == 0) ? Values[index - CountX + Count] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index + CountX - Count] : Values[index + CountX];
+                    double ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
+                    double ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
 
                     result[index] = new Vec2d((tx1 - tx0) * dx, (ty1 - ty0) * dy);
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
 
 
@@ -529,6 +255,5 @@ namespace SpatialSlur.SlurField
         {
             return String.Format("ScalarField2d ({0} x {1})", CountX, CountY);
         }
-
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -238,9 +240,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool Equals(Domain2d other, double epsilon)
+        public bool ApproxEquals(Domain2d other, double epsilon)
         {
-            return x.Equals(other.x, epsilon) && y.Equals(other.y, epsilon);
+            return x.ApproxEquals(other.x, epsilon) && y.ApproxEquals(other.y, epsilon);
         }
 
 

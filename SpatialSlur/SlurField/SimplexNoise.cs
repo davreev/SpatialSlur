@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
-
 
 /*
  * Notes
@@ -29,6 +24,7 @@ namespace SpatialSlur.SlurField
          // permutation table
         private static readonly int[] _perm = new int[256];
 
+        /*
         // 2d gradient table
         private static readonly double[][] _grad2 = 
         {
@@ -58,8 +54,41 @@ namespace SpatialSlur.SlurField
           new double[]{0, 1, -1},
           new double[]{0, -1, -1}
         };
+        */
 
-     
+
+        // 2d gradient table
+        private static readonly double[] _grad2 =
+        {
+          1, 1,
+          -1, 1,
+          1, -1,
+          -1, -1,
+          1, 0,
+          -1, 0,
+          0, 1,
+          0, -1,
+        };
+
+
+        // 3d gradient table
+        private static readonly double[] _grad3 =
+        {
+          1, 1, 0,
+          -1, 1, 0,
+          1, -1, 0,
+          -1, -1, 0,
+          1, 0, 1,
+          -1, 0, 1,
+          1, 0, -1,
+          -1, 0, -1,
+          0, 1, 1,
+          0, -1, 1,
+          0, 1, -1,
+          0, -1, -1
+        };
+
+
         /// <summary>
         ///
         /// </summary>
@@ -115,7 +144,7 @@ namespace SpatialSlur.SlurField
             // get offset and gradient index for the second corner (depends on which simplex the point lies in)
             double x1, y1;
             int g1;
-            if(y0 < x0)
+            if (y0 < x0)
             {
                 // point is in the 1st simplex
                 x1 = x0 - 1.0 + Unskew2;
@@ -136,36 +165,16 @@ namespace SpatialSlur.SlurField
             double y2 = y0 + t;
             int g2 = ToIndex(i + 1, j + 1);
 
-            double n0, n1, n2;
-
             // calculate noise contributions from each corner
             t = 0.5 - x0 * x0 - y0 * y0;
-            if (t < 0.0) 
-                n0 = 0.0;
-            else
-            {
-                t *= t;
-                n0 = t * t * Dot(_grad2[g0], x0, y0);
-            }
-
+            double n0 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g0, x0, y0);
+      
             t = 0.5 - x1 * x1 - y1 * y1;
-            if (t < 0.0) 
-                n1 = 0.0;
-            else
-            {
-                t *= t;
-                n1 = t * t * Dot(_grad2[g1], x1, y1);
-            }
+            double n1 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g1, x1, y1);
 
             t = 0.5 - x2 * x2 - y2 * y2;
-            if (t < 0.0) 
-                n2 = 0.0;
-            else
-            {
-                t *= t;
-                n2 = t * t * Dot(_grad2[g2], x2, y2);
-            }
-         
+            double n2 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g2, x2, y2);
+
             // add contributions from each corner to get final value between -1 and 1
             return 70.0 * (n0 + n1 + n2);
         }
@@ -302,43 +311,17 @@ namespace SpatialSlur.SlurField
             int g3 = ToIndex(i + 1, j + 1, k + 1);
 
             // calculate noise contributions from each corner
-            double n0, n1, n2, n3;
-
             t = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-            if (t < 0) 
-                n0 = 0.0;
-            else
-            {
-                t *= t;
-                n0 = t * t * Dot(_grad3[g0], x0, y0, z0);
-            }
+            double n0 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g0, x0, y0, z0);
 
             t = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-            if (t < 0) 
-                n1 = 0.0;
-            else
-            {
-                t *= t;
-                n1 = t * t * Dot(_grad3[g1], x1, y1, z1);
-            }
-
+            double n1 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g1, x1, y1, z1);
+         
             t = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-            if (t < 0) 
-                n2 = 0.0;
-            else
-            {
-                t *= t;
-                n2 = t * t * Dot(_grad3[g2], x2, y2, z2);
-            }
-
+            double n2 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g2, x2, y2, z2);
+         
             t = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-            if (t < 0) 
-                n3 = 0.0;
-            else
-            {
-                t *= t;
-                n3 = t * t * Dot(_grad3[g3], x3, y3, z3);
-            }
+            double n3 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g3, x3, y3, z3);
 
             // add contributions from each corner to get final value between -1 and 1
             return 32.0 * (n0 + n1 + n2 + n3);
@@ -350,7 +333,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static int ToIndex(int i, int j)
         {
-            return _perm[(i + _perm[j & 255]) & 255] & 7;
+            return (_perm[(i + _perm[j & 255]) & 255] & 7) << 1;
         }
 
 
@@ -359,25 +342,25 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static int ToIndex(int i, int j, int k)
         {
-            return _perm[(i + _perm[(j + _perm[k & 255]) & 255]) & 255] % 12;
+            return _perm[(i + _perm[(j + _perm[k & 255]) & 255]) & 255] % 12 * 3;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static double Dot(double[] vec, double x, double y)
+        private static double GradDot(int index, double x, double y)
         {
-            return vec[0] * x + vec[1] * y;
+            return _grad2[index] * x + _grad2[index + 1] * y;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static double Dot(double[] vec, double x, double y, double z)
+        private static double GradDot(int index, double x, double y, double z)
         {
-            return vec[0] * x + vec[1] * y + vec[2] * z;
+            return _grad3[index] * x + _grad3[index + 1] * y + _grad3[index + 2] * z;
         }
     }
 }

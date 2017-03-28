@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -154,6 +154,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        public static Vec3i Abs(Vec3i v)
+        {
+            return new Vec3i(Math.Abs(v.x), Math.Abs(v.y), Math.Abs(v.z));
+        }
+
+ 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec3i Max(Vec3i v0, Vec3i v1)
+        {
+            return new Vec3i(Math.Max(v0.x, v1.x), Math.Max(v0.y, v1.y), Math.Max(v0.z, v1.z));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec3i Min(Vec3i v0, Vec3i v1)
+        {
+            return new Vec3i(Math.Min(v0.x, v1.x), Math.Min(v0.y, v1.y), Math.Min(v0.z, v1.z));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
@@ -241,7 +275,7 @@ namespace SpatialSlur.SlurCore
         /// Returns the largest component in the vector.
         /// </summary>
         /// <returns></returns>
-        public int Max
+        public int ComponentMax
         {
             get { return Math.Max(x, Math.Max(y, z)); }
         }
@@ -251,7 +285,7 @@ namespace SpatialSlur.SlurCore
         /// Returns the smallest component in the vector.
         /// </summary>
         /// <returns></returns>
-        public int Min
+        public int ComponentMin
         {
             get { return Math.Min(x, Math.Min(y, z)); }
         }
@@ -261,9 +295,9 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <returns></returns>
-        public Vec3i Abs
+        public int ComponentSum
         {
-            get { return new Vec3i(Math.Abs(x), Math.Abs(y), Math.Abs(z)); }
+            get { return x + y + z; }
         }
 
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
@@ -19,13 +15,11 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// Spatial hash for broad phase collision detection between dynamic objects.
     /// </summary>
-    public class SpatialHash3d<T>:Spatial3d<T>
+    public sealed class SpatialHash3d<T>:Spatial3d<T>
     {
-        // prime numbers used in hash function
-        private const int P1 = 73856093;
-        private const int P2 = 19349663;
-        private const int P3 = 83492791;
-
+        private const int P1 = 73856093; // used in hash function
+        private const int P2 = 19349663; // used in hash function
+        private const int P3 = 83492791; // used in hash function
         private double _scale, _scaleInv; // scale of implicit grid
 
       
@@ -74,7 +68,6 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// TODO Test performance of different hash functions.
         /// http://cybertron.cg.tu-berlin.de/eitz/pdf/2007_hsh.pdf
         /// </summary>
         /// <param name="i"></param>

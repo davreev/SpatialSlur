@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -140,6 +140,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        public static Vec2i Abs(Vec2i v)
+        {
+            return new Vec2i(Math.Abs(v.x), Math.Abs(v.y));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2i Max(Vec2i v0, Vec2i v1)
+        {
+            return new Vec2i(Math.Max(v0.x, v1.x), Math.Max(v0.y, v1.y));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2i Min(Vec2i v0, Vec2i v1)
+        {
+            return new Vec2i(Math.Min(v0.x, v1.x), Math.Min(v0.y, v1.y));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
@@ -178,6 +212,24 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns the perpendicular vector rotated a quarter turn clockwise.
+        /// </summary>
+        public Vec2i PerpCW
+        {
+            get { return new Vec2i(y, -x); }
+        }
+
+
+        /// <summary>
+        /// Returns the perpendicular vector rotated a quarter turn counter clockwise.
+        /// </summary>
+        public Vec2i PerpCCW
+        {
+            get { return new Vec2i(-y, x); }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
@@ -210,7 +262,7 @@ namespace SpatialSlur.SlurCore
         /// Returns the largest component in the vector.
         /// </summary>
         /// <returns></returns>
-        public int Max
+        public int ComponentMax
         {
             get { return Math.Max(x, y); }
         }
@@ -220,7 +272,7 @@ namespace SpatialSlur.SlurCore
         /// Returns the smallest component in the vector.
         /// </summary>
         /// <returns></returns>
-        public int Min
+        public int ComponentMin
         {
             get { return Math.Min(x, y); }
         }
@@ -230,9 +282,9 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <returns></returns>
-        public Vec2i Abs
+        public int ComponentSum
         {
-            get { return new Vec2i(Math.Abs(x), Math.Abs(y)); }
+            get { return x + y; }
         }
 
 

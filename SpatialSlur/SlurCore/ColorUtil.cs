@@ -16,50 +16,6 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="colors"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static Color Lerp(IList<Color> colors, double t)
-        {
-            int last = colors.Count - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
-
-            if (i < 0)
-                return colors[0];
-            else if (i >= last)
-                return colors[last];
-
-            return colors[i].LerpTo(colors[i + 1], t);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="colors"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static Vec3d Lerp(IList<Vec3d> colors, double t)
-        {
-            int last = colors.Count - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
-
-            if (i < 0)
-                return colors[0];
-            else if (i >= last)
-                return colors[last];
-
-            return Vec3d.Lerp(colors[i], colors[i + 1], t);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="color"></param>
         public static Vec3d ToVec3d(this Color color)
         {
@@ -68,11 +24,22 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Components of the returned vector are between 0 and 1.
+        /// </summary>
+        /// <param name="color"></param>
+        public static Vec3d ToVec3dNorm(this Color color)
+        {
+            const double t = 1.0 / 255.0;
+            return new Vec3d(color.R * t, color.G * t, color.B * t);
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Color ToColor(Vec3d vector)
+        public static Color ToColor(this Vec3d vector)
         {
             int r = SlurMath.Clamp((int)vector.x, 255);
             int g = SlurMath.Clamp((int)vector.y, 255);
@@ -82,16 +49,13 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Assumes components of the given vector are between 0 and 1.
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Color NormToColor(Vec3d vector)
+        public static Color ToColorNorm(Vec3d vector)
         {
-            int r = (int)(SlurMath.Saturate(vector.x) * 255.0);
-            int g = (int)(SlurMath.Saturate(vector.y) * 255.0);
-            int b = (int)(SlurMath.Saturate(vector.z) * 255.0);
-            return Color.FromArgb(r, g, b);
+            return ToColor(vector * 256.0);
         }
 
 

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
+using System.Drawing;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -16,13 +15,36 @@ namespace SpatialSlur.SlurField
     /// 
     /// </summary>
     [Serializable]
-    public class ScalarField3d : Field3d<double>
+    public sealed class ScalarField3d : Field3d<double>
     {
-        // delegates for boundary dependant functions
-        private Action<IList<double>> _getLaplacian;
-        private Action<IList<Vec3d>> _getGradient;
+        #region Static
 
-     
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bitmaps"></param>
+        /// <param name="mapper"></param>
+        /// <param name="domain"></param>
+        /// <param name="wrapX"></param>
+        /// <param name="wrapY"></param>
+        /// <param name="wrapZ"></param>
+        /// <returns></returns>
+        public static ScalarField3d CreateFromImageStack(IList<Bitmap> bitmaps, Func<Color, double> mapper, Domain3d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp, FieldWrapMode wrapZ = FieldWrapMode.Clamp)
+        {
+            var bmp0 = bitmaps[0];
+            int nx = bmp0.Width;
+            int ny = bmp0.Height;
+            int nz = bitmaps.Count;
+
+            var result = new ScalarField3d(domain, nx, ny, nz, wrapX, wrapY, wrapZ);
+            FieldIO.ReadFromImageStack(result, bitmaps, mapper);
+
+            return result;
+        }
+
+        #endregion
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -30,9 +52,28 @@ namespace SpatialSlur.SlurField
         /// <param name="countX"></param>
         /// <param name="countY"></param>
         /// <param name="countZ"></param>
-        /// <param name="boundaryType"></param>
-        public ScalarField3d(Domain3d domain, int countX, int countY, int countZ, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
-            : base(domain, countX, countY, countZ, boundaryType)
+        /// <param name="wrapMode"></param>
+        public ScalarField3d(Domain3d domain, int countX, int countY, int countZ, FieldWrapMode wrapMode)
+            : base(domain, countX, countY, countZ, wrapMode)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        /// <param name="wrapModeZ"></param>
+        public ScalarField3d(Domain3d domain, int countX, int countY, int countZ, 
+            FieldWrapMode wrapModeX = FieldWrapMode.Clamp, 
+            FieldWrapMode wrapModeY = FieldWrapMode.Clamp, 
+            FieldWrapMode wrapModeZ = FieldWrapMode.Clamp)
+            : base(domain, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ)
         {
         }
 
@@ -60,299 +101,34 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        protected override void OnBoundaryTypeChange()
-        {
-            base.OnBoundaryTypeChange();
-
-            switch (BoundaryType)
-            {
-                case FieldBoundaryType.Constant:
-                    {
-                        _getLaplacian = GetLaplacianConstant;
-                        _getGradient = GetGradientConstant;
-                        break;
-                    }
-                case FieldBoundaryType.Equal:
-                    {
-                        _getLaplacian = GetLaplacianEqual;
-                        _getGradient = GetGradientEqual;
-                        break;
-                    }
-                case FieldBoundaryType.Periodic:
-                    {
-                        _getLaplacian = GetLaplacianPeriodic;
-                        _getGradient = GetGradientPeriodic;
-                        break;
-                    }
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="weights"></param>
+        /// <param name="point"></param>
         /// <returns></returns>
-        public override double Evaluate(int[] indices, double[] weights)
+        public override double ValueAt(FieldPoint3d point)
         {
-            double result = 0.0;
-            for (int i = 0; i < indices.Length; i++)
-                result += Values[indices[i]] * weights[i];
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Sets this field to the sum of itself and another.
-        /// </summary>
-        /// <param name="other"></param>
-        public void Add(ScalarField3d other)
-        {
-            VecMath.AddParallel(Values, other.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// Sets the result field to the sum of this field and another.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="result"></param>
-        public void Add(ScalarField3d other, ScalarField3d result)
-        {
-            VecMath.AddParallel(Values, other.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// Sets this field to the difference between itself and another.
-        /// </summary>
-        /// <param name="other"></param>
-        public void Subtract(ScalarField3d other)
-        {
-            VecMath.SubtractParallel(Values, other.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// Sets the result field to the difference between this field and another.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="result"></param>
-        public void Subtract(ScalarField3d other, ScalarField3d result)
-        {
-            VecMath.SubtractParallel(Values, other.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// Sets this field to the sum of itself and another scaled by a given factor.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
-        public void AddScaled(ScalarField3d other, double factor)
-        {
-            VecMath.AddScaledParallel(Values, other.Values, factor, Count, Values);
-        }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factors"></param>
-        public void AddScaled(ScalarField3d other, ScalarField3d factors)
-        {
-            VecMath.AddScaledParallel(Values, other.Values, factors.Values, Count, Values);
-        }
-        */
-
-
-        /// <summary>
-        /// Sets this field to the sum of itself and another scaled by a given factor.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
-        /// <param name="result"></param>
-        public void AddScaled(ScalarField3d other, double factor, ScalarField3d result)
-        {
-            VecMath.AddScaledParallel(Values, other.Values, factor, Count, result.Values);
-        }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factors"></param>
-        public void AddScaled(ScalarField3d other, ScalarField3d factors, ScalarField3d result)
-        {
-            VecMath.AddScaledParallel(Values, other.Values, factors.Values, Count, result.Values);
-        }
-        */
-
-
-        /// <summary>
-        /// Sets this field to the product of itself and another.
-        /// </summary>
-        /// <param name="other"></param>
-        public void Multiply(ScalarField3d other)
-        {
-            VecMath.MultiplyParallel(Values, other.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// Sets the result field to the product of this field and another.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="result"></param>
-        public void Multiply(ScalarField3d other, ScalarField3d result)
-        {
-            VecMath.MultiplyParallel(Values, other.Values, Count, result.Values);
+            return Values.ValueAt(point.Corners, point.Weights);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
-        public void Divide(ScalarField3d other)
+        /// <param name="point"></param>
+        /// <param name="amount"></param>
+        public void IncrementAt(FieldPoint3d point, double amount)
         {
-            VecMath.DivideParallel(Values, other.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="result"></param>
-        public void Divide(ScalarField3d other, ScalarField3d result)
-        {
-            VecMath.DivideParallel(Values, other.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// Linerly interpolates values in this field towards corresponding values in another.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
-        public void LerpTo(ScalarField3d other, double factor)
-        {
-            VecMath.LerpParallel(Values, other.Values, factor, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factor"></param>
-        /// <param name="result"></param>
-        public void LerpTo(ScalarField3d other, double factor, ScalarField3d result)
-        {
-            VecMath.LerpParallel(Values, other.Values, factor, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factors"></param>
-        public void LerpTo(ScalarField3d other, ScalarField3d factors)
-        {
-            VecMath.LerpParallel(Values, other.Values, factors.Values, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="factors"></param>
-        /// <param name="result"></param>
-        public void LerpTo(ScalarField3d other, ScalarField3d factors, ScalarField3d result)
-        {
-            VecMath.LerpParallel(Values, other.Values, factors.Values, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Normalize()
-        {
-            VecMath.NormalizeParallel(Values, new Domain(Values), Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Normalize(ScalarField3d result)
-        {
-            VecMath.NormalizeParallel(Values, new Domain(Values), Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="to"></param>
-        public void Remap(Domain to)
-        {
-            VecMath.RemapParallel(Values, new Domain(Values), to, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="to"></param>
-        /// <param name="result"></param>
-        public void Remap(Domain to, ScalarField3d result)
-        {
-            VecMath.RemapParallel(Values, new Domain(Values), to, Count, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        public void Remap(Domain from, Domain to)
-        {
-            VecMath.RemapParallel(Values, from, to, Count, Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="result"></param>
-        public void Remap(Domain from, Domain to, ScalarField3d result)
-        {
-            VecMath.RemapParallel(Values, from, to, Count, result.Values);
+            Values.IncrementAt(point.Corners, point.Weights, amount);
         }
 
 
         /// <summary>
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public ScalarField3d GetLaplacian()
+        public ScalarField3d GetLaplacian(bool parallel = false)
         {
             ScalarField3d result = new ScalarField3d((Field3d)this);
-            GetLaplacian(result.Values);
+            GetLaplacian(result.Values, parallel);
             return result;
         }
 
@@ -361,54 +137,10 @@ namespace SpatialSlur.SlurField
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="result"></param>
-        public void GetLaplacian(ScalarField3d result)
+        /// <param name="parallel"></param>
+        public void GetLaplacian(ScalarField3d result, bool parallel = false)
         {
-            _getLaplacian(result.Values);
-        }
-
-
-        /// <summary>
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="result"></param>
-        public void GetLaplacian(IList<double> result)
-        {
-            _getLaplacian(result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetLaplacianConstant(IList<double> result)
-        {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-            double dz = 1.0 / (ScaleZ * ScaleZ);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
-
-                    double tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
-                    
-                    double ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
-
-                    double tz0 = (k == 0) ? BoundaryValue : Values[index - CountXY];
-                    double tz1 = (k == CountZ - 1) ? BoundaryValue : Values[index + CountXY];
-                  
-                    double t = Values[index] * 2.0;
-                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
-                }
-            });
+            GetLaplacian(result.Values, parallel);
         }
 
 
@@ -416,82 +148,62 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        private void GetLaplacianEqual(IList<double> result)
+        /// <param name="parallel"></param>
+        public void GetLaplacian(double[] result, bool parallel)
         {
+            var vals = Values;
+            int nx = CountX;
+            int ny = CountY;
+            int nz = CountZ;
+            int nxy = CountXY;
+
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            int di, dj, dk;
+            GetR1BoundaryOffsets(out di, out dj, out dk);
+
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
+                    if (i == nx) { j++; i = 0; }
+                    if (j == ny) { k++; j = 0; }
 
-                    double tx0 = (i == 0) ? Values[index] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
+                    double tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
+                    double tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
 
-                    double ty0 = (j == 0) ? Values[index] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
+                    double ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
+                    double ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
 
-                    double tz0 = (k == 0) ? Values[index] : Values[index - CountXY];
-                    double tz1 = (k == CountZ - 1) ? Values[index] : Values[index + CountXY];
-         
-                    double t = Values[index] * 2.0;
+                    double tz0 = (k == 0) ? vals[index + dk] : vals[index - nxy];
+                    double tz1 = (k == nz - 1) ? vals[index - dk] : vals[index + nxy];
+
+                    double t = vals[index] * 2.0;
                     result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
-        private void GetLaplacianPeriodic(IList<double> result)
-        {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-            double dz = 1.0 / (ScaleZ * ScaleZ);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
-
-                    double tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
-
-                    double ty0 = (j == 0) ? Values[index - CountX + CountXY] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index + CountX - CountXY] : Values[index + CountX];
-
-                    double tz0 = (k == 0) ? Values[index - CountXY + Count] : Values[index - CountXY];
-                    double tz1 = (k == CountZ - 1) ? Values[index + CountXY - Count] : Values[index + CountXY];
-
-                    double t = Values[index] * 2.0;
-                    result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <param name="parallel"></param>
         /// <returns></returns>
-        public VectorField3d GetGradient()
+        public VectorField3d GetGradient(bool parallel = false)
         {
             VectorField3d result = new VectorField3d(this);
-            GetGradient(result.Values);
+            GetGradient(result.Values, parallel);
             return result;
         }
 
@@ -500,9 +212,10 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void GetGradient(VectorField3d result)
+        /// <param name="parallel"></param>
+        public void GetGradient(VectorField3d result, bool parallel = false)
         {
-            _getGradient(result.Values);
+            GetGradient(result.Values, parallel);
         }
 
 
@@ -510,111 +223,49 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void GetGradient(IList<Vec3d> result)
+        /// <param name="parallel"></param>
+        public void GetGradient(Vec3d[] result, bool parallel)
         {
-            _getGradient(result);
-        }
-    
+            var vals = Values;
+            int nx = CountX;
+            int ny = CountY;
+            int nz = CountZ;
+            int nxy = CountXY;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetGradientConstant(IList<Vec3d> result)
-        {
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
             double dz = 1.0 / (2.0 * ScaleZ);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            int di, dj, dk;
+            GetR1BoundaryOffsets(out di, out dj, out dk);
+
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
+                    if (i == nx) { j++; i = 0; }
+                    if (j == ny) { k++; j = 0; }
 
-                    double tx0 = (i == 0) ? BoundaryValue : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? BoundaryValue : Values[index + 1];
+                    double tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
+                    double tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
 
-                    double ty0 = (j == 0) ? BoundaryValue : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? BoundaryValue : Values[index + CountX];
+                    double ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
+                    double ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
 
-                    double tz0 = (k == 0) ? BoundaryValue : Values[index - CountXY];
-                    double tz1 = (k == CountZ - 1) ? BoundaryValue : Values[index + CountXY];
-
-                    result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetGradientEqual(IList<Vec3d> result)
-        {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
-            double dz = 1.0 / (2.0 * ScaleZ);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
-
-                    double tx0 = (i == 0) ? Values[index] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index] : Values[index + 1];
-
-                    double ty0 = (j == 0) ? Values[index] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index] : Values[index + CountX];
-
-                    double tz0 = (k == 0) ? Values[index] : Values[index - CountXY];
-                    double tz1 = (k == CountZ - 1) ? Values[index] : Values[index + CountXY];
+                    double tz0 = (k == 0) ? vals[index + dk] : vals[index - nxy];
+                    double tz1 = (k == nz - 1) ? vals[index - dk] : vals[index + nxy];
 
                     result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
                 }
-            });
-        }
+            };
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetGradientPeriodic(IList<Vec3d> result)
-        {
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
-            double dz = 1.0 / (2.0 * ScaleZ);
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
-
-                    double tx0 = (i == 0) ? Values[index - 1 + CountX] : Values[index - 1];
-                    double tx1 = (i == CountX - 1) ? Values[index + 1 - CountX] : Values[index + 1];
-
-                    double ty0 = (j == 0) ? Values[index - CountX + CountXY] : Values[index - CountX];
-                    double ty1 = (j == CountY - 1) ? Values[index + CountX - CountXY] : Values[index + CountX];
-
-                    double tz0 = (k == 0) ? Values[index - CountXY + Count] : Values[index - CountXY];
-                    double tz1 = (k == CountZ - 1) ? Values[index + CountXY - Count] : Values[index + CountXY];
-
-                    result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
-                }
-            });
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
 
 

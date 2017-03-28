@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
@@ -17,8 +17,35 @@ namespace SpatialSlur.SlurField
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class Field3d<T> : Field3d
+    public abstract class Field3d<T> : Field3d, IField<T>
     {
+        #region Static
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="path"></param>
+        /// <param name="mapper"></param>
+        public static void SaveAsImageStack(Field3d<T> field, string path, Func<T, Color> mapper)
+        {
+            string dir = Path.GetDirectoryName(path);
+            string name = Path.GetFileNameWithoutExtension(path);
+            string ext = Path.GetExtension(path);
+
+            Parallel.For(0, field.CountZ, z =>
+            {
+                using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, PixelFormat.Format32bppArgb))
+                {
+                    FieldIO.WriteToImage(field, z, bmp, mapper);
+                    bmp.Save(String.Format(@"{0}\{1}_{2}{3}", dir, name, z, ext));
+                }
+            });
+        }
+
+        #endregion
+
+
         private readonly T[] _values;
 
 
@@ -29,11 +56,31 @@ namespace SpatialSlur.SlurField
         /// <param name="nx"></param>
         /// <param name="ny"></param>
         /// <param name="nz"></param>
-        /// <param name="boundaryType"></param>
-        protected Field3d(Domain3d domain, int nx, int ny, int nz, FieldBoundaryType boundaryType = FieldBoundaryType.Equal)
-            : base(domain, nx, ny, nz, boundaryType)
+        /// <param name="wrapMode"></param>
+        protected Field3d(Domain3d domain, int nx, int ny, int nz, FieldWrapMode wrapMode)
+            : base(domain, nx, ny, nz, wrapMode)
         {
-            _values = new T[Count + 1];
+            _values = new T[Count];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="nx"></param>
+        /// <param name="ny"></param>
+        /// <param name="nz"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        /// <param name="wrapModeZ"></param>
+        protected Field3d(Domain3d domain, int nx, int ny, int nz, 
+            FieldWrapMode wrapModeX = FieldWrapMode.Clamp, 
+            FieldWrapMode wrapModeY = FieldWrapMode.Clamp, 
+            FieldWrapMode wrapModeZ = FieldWrapMode.Clamp)
+            : base(domain, nx, ny, nz, wrapModeX, wrapModeY, wrapModeZ)
+        {
+            _values = new T[Count];
         }
 
 
@@ -44,7 +91,7 @@ namespace SpatialSlur.SlurField
         protected Field3d(Field3d other)
             : base(other)
         {
-            _values = new T[Count + 1];
+            _values = new T[Count];
         }
 
 
@@ -55,8 +102,8 @@ namespace SpatialSlur.SlurField
         protected Field3d(Field3d<T> other)
             : base(other)
         {
-            _values = new T[Count + 1];
-            Set(other);
+            _values = new T[Count];
+            _values.Set(other._values);
         }
 
 
@@ -70,13 +117,50 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Gets or sets the value used outside the domain of the field.
-        /// This only applies when BoundaryType is set to Constant.
+        /// 
         /// </summary>
-        public T BoundaryValue
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        public T ValueAtUnchecked(int i, int j, int k)
         {
-            get { return _values[Count]; }
-            set { _values[Count] = value; }
+            return _values[IndexAtUnchecked(i, j, k)];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <returns></returns>
+        public T ValueAtUnchecked(Vec3i indices)
+        {
+            return _values[IndexAtUnchecked(indices.x, indices.y, indices.z)];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        public T ValueAt(int i, int j, int k)
+        {
+            return _values[IndexAt(i, j, k)];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <returns></returns>
+        public T ValueAt(Vec3i indices)
+        {
+            return _values[IndexAt(indices.x, indices.y, indices.z)];
         }
 
 
@@ -85,57 +169,30 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public T Evaluate(FieldPoint3d point)
-        {
-            return Evaluate(point.Corners, point.Weights);
-        }
+        public abstract T ValueAt(FieldPoint3d point);
 
 
+        /*
         /// <summary>
         /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="weights"></param>
-        /// <returns></returns>
-        public abstract T Evaluate(int[] indices, double[] weights);
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        public void Set(Field3d<T> other)
-        {
-            other._values.CopyTo(_values, 0);
-        }
-
-
-        /// <summary>
-        /// Sets a subset of this field to a given value.
         /// </summary>
         /// <param name="value"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="parallel"></param>
-        public void Set(T value, Vec3i from, Vec3i to, bool parallel = false)
+        /// <param name="bitMask"></param>
+        public void SetDirichletBoundary(T value, int direction)
         {
             // TODO
             throw new NotImplementedException();
-        }
 
+            if ((bitMask & 1) != 0) ; // -x
+            if ((bitMask & 2) != 0) ; // +x
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="parallel"></param>
-        public void Set(Field3d<T> other, Vec3i from, Vec3i to, bool parallel = false)
-        {
-            // TODO
-            throw new NotImplementedException();
+            if ((bitMask & 4) != 0) ; // -y
+            if ((bitMask & 8) != 0) ; // +y
+
+            if ((bitMask & 16) != 0) ; // -z
+            if ((bitMask & 32) != 0) ; // +z
         }
+        */
 
 
         /// <summary>
@@ -144,7 +201,6 @@ namespace SpatialSlur.SlurField
         /// <param name="value"></param>
         public void SetBoundary(T value)
         {
-            // TODO consider parallel implementation
             int i0, i1;
 
             // top/bottom
@@ -188,91 +244,33 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// Sets this field to some function of itself.
-        /// </summary>
-        /// <param name="func"></param>
-        public void Function(Func<T, T> func)
-        {
-            VecMath.FunctionParallel(func, _values, Count, _values);
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of another field.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="func"></param>
-        /// <param name="other"></param>
-        public void Function<U>(Func<U, T> func, Field3d<U> other)
-        {
-            VecMath.FunctionParallel(func, other._values, Count, _values);
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of itself and another field.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="func"></param>
-        /// <param name="other"></param>
-        public void Function<U>(Func<T, U, T> func, Field3d<U> other)
-        {
-            VecMath.FunctionParallel(func, _values, other._values, Count, _values);
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of two other fields.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <typeparam name="V"></typeparam>
-        /// <param name="func"></param>
-        /// <param name="f0"></param>
-        /// <param name="f1"></param>
-        public void Function<U, V>(Func<U, V, T> func, Field3d<U> f0, Field3d<V> f1)
-        {
-            VecMath.FunctionParallel(func, f0._values, f1._values, Count, _values);
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of itself and two other fields.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <typeparam name="V"></typeparam>
-        /// <param name="func"></param>
-        /// <param name="f0"></param>
-        /// <param name="f1"></param>
-        public void Function<U, V>(Func<T, U, V, T> func, Field3d<U> f0, Field3d<V> f1)
-        {
-            VecMath.FunctionParallel(func, _values, f0._values, f1._values, Count, _values);
-        }
-
-
+        /*
         /// <summary>
         /// Sets a subset of this field to some function of itself.
         /// </summary>
         /// <param name="func"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public void Function(Func<T, T> func, Vec3i from, Vec3i to)
+        /// <param name="parallel"></param>
+        public void Function(Func<T, T> func, Vec3i from, Vec3i to, bool parallel = false)
         {
             // TODO
             throw new NotImplementedException();
         }
+        */
 
 
         /// <summary>
         /// Sets this field to some function of its coordinates.
         /// </summary>
         /// <param name="func"></param>
-        public void SpatialFunction(Func<Vec3d, T> func)
+        /// <param name="parallel"></param>
+        public void SpatialFunction(Func<Vec3d, T> func, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func2 = range =>
             {
                 int i, j, k;
-                this.ExpandIndex(range.Item1, out i, out j, out k);
+                this.IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -280,7 +278,12 @@ namespace SpatialSlur.SlurField
                     if (j == CountY) { k++; j = 0; }
                     _values[index] = func(CoordinateAt(i, j, k));
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+            else
+                func2(Tuple.Create(0, Count));
         }
 
 
@@ -288,16 +291,17 @@ namespace SpatialSlur.SlurField
         /// Sets this field to some function of its coordinates.
         /// </summary>
         /// <param name="func"></param>
-        public void SpatialFunction(Func<double, double, double, T> func)
+        /// <param name="parallel"></param>
+        public void SpatialFunction(Func<double, double, double, T> func, bool parallel = false)
         {
             double x0 = Domain.x.t0;
             double y0 = Domain.y.t0;
             double z0 = Domain.z.t0;
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func2 = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -305,90 +309,12 @@ namespace SpatialSlur.SlurField
                     if (j == CountY) { k++; j = 0; }
                     _values[index] = func(i * ScaleX + x0, j * ScaleY + y0, k * ScaleZ + z0);
                 }
-            });
-        }
+            };
 
-
-        /// <summary>
-        /// Sets this field to some function of its coordinates and another field.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="func"></param>
-        /// <param name="other"></param>
-        public void SpatialFunction<U>(Func<Vec3d, U, T> func, Field3d<U> other)
-        {
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
-
-                    _values[index] = func(CoordinateAt(i, j, k), u[index]);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of its coordinates and another field.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="func"></param>
-        /// <param name="other"></param>
-        public void SpatialFunction<U>(Func<double, double, double, U, T> func, Field3d<U> other)
-        {
-            double x0 = Domain.x.t0;
-            double y0 = Domain.y.t0;
-            double z0 = Domain.z.t0;
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
-            {
-                int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    if (j == CountY) { k++; j = 0; }
-
-                    _values[index] = func(i * ScaleX + x0, j * ScaleY + y0, k * ScaleZ + z0, u[index]);
-                }
-            });
-        }
-
-
-        /// <summary>
-        /// Sets a subset of this field to some function of its coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunction(Func<Vec3d, T> func, Vec3i from, Vec3i to, bool parallel = false)
-        {
-            // TODO
-            throw new NotImplementedException();
-        }
-
-        
-        /// <summary>
-        /// Sets a subset of this field to some function of its coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunction(Func<double, double, double, T> func, Vec3i from, Vec3i to, bool parallel = false)
-        {
-            // TODO
-            throw new NotImplementedException();
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+            else
+                func2(Tuple.Create(0, Count));
         }
 
 
@@ -396,16 +322,17 @@ namespace SpatialSlur.SlurField
         /// Sets this field to some function of its normalized coordinates.
         /// </summary>
         /// <param name="func"></param>
-        public void NormSpatialFunction(Func<Vec3d, T> func)
+        /// <param name="parallel"></param>
+        public void SpatialFunctionNorm(Func<Vec3d, T> func, bool parallel = false)
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
             double tk = 1.0 / (CountZ - 1);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func2 = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -414,7 +341,12 @@ namespace SpatialSlur.SlurField
 
                     _values[index] = func(new Vec3d(i * ti, j * tj, k * tk));
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+            else
+                func2(Tuple.Create(0, Count));
         }
 
 
@@ -422,16 +354,17 @@ namespace SpatialSlur.SlurField
         /// Sets this field to some function of its normalized coordinates.
         /// </summary>
         /// <param name="func"></param>
-        public void NormSpatialFunction(Func<double, double, double, T> func)
+        /// <param name="parallel"></param>
+        public void SpatialFunctionNorm(Func<double, double, double, T> func, bool parallel = false)
         {
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
             double tk = 1.0 / (CountZ - 1);
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func2 = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -440,93 +373,66 @@ namespace SpatialSlur.SlurField
 
                     _values[index] = func(i * ti, j * tj, k * tk);
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+            else
+                func2(Tuple.Create(0, Count));
         }
 
 
         /// <summary>
-        /// Sets this field to some function of its normalized coordinates and another field.
+        /// Sets this field to some function of its indices.
         /// </summary>
-        /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
-        /// <param name="other"></param>
-        public void NormSpatialFunction<U>(Func<Vec3d, U, T> func, Field3d<U> other)
+        /// <param name="parallel"></param>
+        public void IndexedFunction(Func<Vec3i, T> func, bool parallel = false)
         {
-            double ti = 1.0 / (CountX - 1);
-            double tj = 1.0 / (CountY - 1);
-            double tk = 1.0 / (CountZ - 1);
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func2 = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                this.IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
-
-                    _values[index] = func(new Vec3d(i * ti, j * tj, k * tk), u[index]);
+                    _values[index] = func(new Vec3i(i, j, k));
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+            else
+                func2(Tuple.Create(0, Count));
         }
 
 
         /// <summary>
-        /// Sets this field to some function of its normalized coordinates and another field.
+        /// Sets this field to some function of its indices.
         /// </summary>
-        /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
-        /// <param name="other"></param>
-        public void NormSpatialFunction<U>(Func<double, double, double, U, T> func, Field3d<U> other)
+        /// <param name="parallel"></param>
+        public void IndexedFunction(Func<int, int, int, T> func, bool parallel = false)
         {
-            double ti = 1.0 / (CountX - 1);
-            double tj = 1.0 / (CountY - 1);
-            double tk = 1.0 / (CountZ - 1);
-            var u = other.Values;
-
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func2 = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                this.IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
-
-                    _values[index] = func(i * ti, j * tj, k * tk, u[index]);
+                    _values[index] = func(i, j, k);
                 }
-            });
-        }
+            };
 
-
-        /// <summary>
-        /// Sets a subset of this field to some function of its normalized coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="parallel"></param>
-        public void NormSpatialFunction(Func<Vec3d, T> func, Vec3i from, Vec3i to, bool parallel = false)
-        {
-            // TODO
-            throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// Sets a subset of this field to some function of its normalized coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="parallel"></param>
-        public void NormSpatialFunction(Func<double, double, double, T> func, Vec3i from, Vec3i to, bool parallel = false)
-        {
-            // TODO
-            throw new NotImplementedException();
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+            else
+                func2(Tuple.Create(0, Count));
         }
 
 
@@ -534,21 +440,22 @@ namespace SpatialSlur.SlurField
         /// Samples another field nearest using the nearest value.
         /// </summary>
         /// <param name="other"></param>
-        public void SampleNearest(Field3d<T> other)
+        /// <param name="parallel"></param>
+        public void ResampleNearest(Field3d<T> other, bool parallel = false)
         {
             if (ResolutionEquals(other))
             {
-                Set(other);
+                _values.Set(other._values);
                 return;
             }
 
             var otherVals = other.Values;
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func = range =>
             {
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
-       
+                IndicesAt(range.Item1, out i, out j, out k);
+
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
@@ -556,7 +463,12 @@ namespace SpatialSlur.SlurField
 
                     _values[index] = otherVals[other.IndexAt(CoordinateAt(i, j, k))];
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
 
 
@@ -564,19 +476,20 @@ namespace SpatialSlur.SlurField
         /// Samples another field using bilinear interpolation of the 8 nearest values.
         /// </summary>
         /// <param name="other"></param>
-        public void SampleLinear(Field3d<T> other)
+        /// <param name="parallel"></param>
+        public void ResampleLinear(Field3d<T> other, bool parallel = false)
         {
             if (ResolutionEquals(other))
             {
-                Set(other);
+                _values.Set(other._values);
                 return;
             }
 
-            Parallel.ForEach(Partitioner.Create(0, Count), range =>
+            Action<Tuple<int, int>> func = range =>
             {
                 FieldPoint3d fp = new FieldPoint3d();
                 int i, j, k;
-                ExpandIndex(range.Item1, out i, out j, out k);
+                IndicesAt(range.Item1, out i, out j, out k);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -584,9 +497,14 @@ namespace SpatialSlur.SlurField
                     if (j == CountY) { k++; j = 0; }
 
                     other.FieldPointAt(CoordinateAt(i, j, k), fp);
-                    _values[index] = other.Evaluate(fp);
+                    _values[index] = other.ValueAt(fp);
                 }
-            });
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), func);
+            else
+                func(Tuple.Create(0, Count));
         }
     }
 }

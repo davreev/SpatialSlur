@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurCore
 {
@@ -182,7 +182,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool Equals(Domain other, double epsilon)
+        public bool ApproxEquals(Domain other, double epsilon)
         {
             return Math.Abs(other.t0 - t0) < epsilon && Math.Abs(other.t1 - t1) < epsilon;
         }
@@ -362,7 +362,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="values"></param>
-        public void Include(IList<double> values)
+        public void Include(IEnumerable<double> values)
         {
             if (IsIncreasing)
                 Include(values, ref t0, ref t1);

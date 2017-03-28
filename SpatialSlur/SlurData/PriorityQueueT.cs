@@ -12,14 +12,14 @@ namespace SpatialSlur.SlurData
 {
     /// <summary>
     /// Simple heap-based implementation of a min priority queue.
-    /// Can be used as a max priority queue by inverting the comparer function.
+    /// Can be used as a max priority queue by inverting the given comparison delegate.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class PriorityQueue<T>
     {
-        private T[] _heap;
-        private int _n;
         private readonly Comparison<T> _compare;
+        private T[] _heap;
+        private int _count;
 
 
         /// <summary>
@@ -41,11 +41,11 @@ namespace SpatialSlur.SlurData
         public PriorityQueue(Comparison<T> compare, int capacity = 2)
         {
             if (capacity < 0)
-                throw new ArgumentException("The capacity can not be negative.");
+                throw new ArgumentException("The capacity cannot be less than 0.");
 
-            _heap = new T[capacity + 1];
-            _n = 0;
             _compare = compare;
+            _heap = new T[capacity];
+            _count = 0;
         }
 
 
@@ -54,11 +54,10 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int Count
         {
-            get { return _n; }
+            get { return _count; }
         }
 
 
-        /*
         /// <summary>
         /// 
         /// </summary>
@@ -66,7 +65,6 @@ namespace SpatialSlur.SlurData
         {
             get { return _heap.Length; }
         }
-        */
 
 
         /// <summary>
@@ -74,7 +72,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public bool IsEmpty
         {
-            get { return _n == 0; }
+            get { return _count == 0; }
         }
 
 
@@ -88,7 +86,7 @@ namespace SpatialSlur.SlurData
                 if (IsEmpty)
                     throw new InvalidOperationException("The queue is empty.");
 
-                return _heap[1];
+                return _heap[0];
             }
         }
 
@@ -102,13 +100,9 @@ namespace SpatialSlur.SlurData
             T min = Min;
 
             // place the last item on top and sink to maintain heap invariant
-            _heap[1] = _heap[_n];
-            _heap[_n--] = default(T); // avoids object loitering when T is a reference type
-            Sink(1);
-
-            // shrink array capacity if appropriate
-            if (_n < _heap.Length >> 2)
-                Array.Resize(ref _heap, _heap.Length >> 1);
+            _heap[0] = _heap[--_count];
+            _heap[_count] = default(T); // avoids object loitering when T is a reference type
+            Sink(0);
 
             return min;
         }
@@ -120,8 +114,33 @@ namespace SpatialSlur.SlurData
         /// <param name="item"></param>
         public void ReplaceMin(T item)
         {
-            _heap[1] = item;
-            Sink(1); // sink to maintain heap invariant
+            _heap[0] = item;
+            Sink(0); // sink to maintain heap invariant
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        private void Sink(int i)
+        {
+            int j0 = (i << 1) + 1; // left child
+            int j1 = j0 + 1; // right child
+
+            while (j0 < _count)
+            {
+                int j = (j1 < _count && HasPriority(j1, j0)) ? j1 : j0; // higher priority child
+
+                // break if heap invariant is satisfied
+                if (!HasPriority(j, i)) break;
+
+                // otherwise, swap and continue
+                _heap.Swap(i, j);
+                i = j;
+                j0 = (i << 1) + 1;
+                j1 = j0 + 1;
+            }
         }
 
 
@@ -132,11 +151,11 @@ namespace SpatialSlur.SlurData
         public void Insert(T item)
         {
             // increment and increase array capacity if necessary
-            if (++_n == _heap.Length)
-                Array.Resize(ref _heap, _heap.Length << 1);
+            if (_count == Capacity)
+                Array.Resize(ref _heap, Capacity << 1);
 
-            _heap[_n] = item;
-            Swim(_n); // swim last element to maintain heap invariant
+            _heap[_count] = item;
+            Swim(_count++); // swim last element to maintain heap invariant
         }
 
 
@@ -146,37 +165,13 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         private void Swim(int i)
         {
-            int j = i >> 1;
+            int j = (i - 1) >> 1; // parent
 
-            while (i > 1 && HasPriority(i, j))
+            while (i > 0 && HasPriority(i, j))
             {
                 _heap.Swap(i, j);
                 i = j;
-                j >>= 1;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="i"></param>
-        private void Sink(int i)
-        {
-            int j = i << 1;
-
-            while (j <= _n)
-            {
-                // pick the higher priority of i's children (j or j+1)
-                if (j < _n && HasPriority(j + 1, j)) j++;
-
-                // break if heap invariant is satisfied
-                if (!HasPriority(j, i)) break;
-
-                // otherwise, swap and continue
-                _heap.Swap(i, j);
-                i = j;
-                j <<= 1;
+                j = (i - 1) >> 1;
             }
         }
 
@@ -199,9 +194,19 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public T[] ToArray()
         {
-            T[] result = new T[_n];
-            Array.Copy(_heap, 1, result, 0, _n);
-            return result;
+            return _heap.GetRange(0, _count);
+        }
+
+
+        /// <summary>
+        /// Trims the array if capacity is greater than twice the count.
+        /// </summary>
+        public void TrimExcess()
+        {
+            int maxCapacity = Math.Max(_count << 1, 2);
+
+            if (Capacity > maxCapacity)
+                Array.Resize(ref _heap, maxCapacity);
         }
     }
 }

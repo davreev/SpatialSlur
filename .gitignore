@@ -187,3 +187,11 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+/SpatialSlur/Test.cs
+/SpatialSlur/SlurCore/Vec4d.cs
+/SpatialSlur/SlurCore/Mat3d.cs
+/SpatialSlur/SlurCore/Mat4d.cs
+/SpatialSlur/SlurCore/Quaternion.cs
+
+/SlurRhino/Test.cs

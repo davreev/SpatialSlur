@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+
+/*
+ * Notes
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -37,15 +36,28 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static T DeserializeBinary<T>(string path)
         {
-            T result = default(T);
-
             using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 var formatter = new BinaryFormatter();
-                result = (T) formatter.Deserialize(stream);
+                return (T) formatter.Deserialize(stream);
             }
+        }
 
-            return result;
+
+
+        /// <summary>
+        /// Simple binary deserialization
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static object DeserializeBinary(string path)
+        {
+            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                var formatter = new BinaryFormatter();
+                return formatter.Deserialize(stream);
+            }
         }
     }
 }

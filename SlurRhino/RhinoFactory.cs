@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
-using SpatialSlur.SlurGraph;
 using Rhino.Geometry;
 
 /*
@@ -23,14 +23,12 @@ namespace SpatialSlur.SlurRhino
         /// <returns></returns>
         public static HeMesh CreateHeMesh(Mesh mesh)
         {
-            HeMesh result = new HeMesh();
-            var vertList = result.Vertices;
-            var faceList = result.Faces;
+            var result = new HeMesh();
+            var newVerts = result.Vertices;
+            var newFaces = result.Faces;
 
             // add vertices
-            var verts = mesh.Vertices;
-            for (int i = 0; i < verts.Count; i++)
-                vertList.Add(verts[i].ToVec3d());
+            newVerts.Add(mesh.Vertices.Count);
 
             // add faces
             var faces = mesh.Faces;
@@ -38,12 +36,51 @@ namespace SpatialSlur.SlurRhino
             {
                 MeshFace f = faces[i];
                 if (f.IsQuad)
-                    faceList.Add(f.A, f.B, f.C, f.D);
+                    newFaces.Add(f.A, f.B, f.C, f.D);
                 else
-                    faceList.Add(f.A, f.B, f.C);
+                    newFaces.Add(f.A, f.B, f.C);
             }
 
             return result;
+        }
+
+
+        /// <summary>
+        /// Creates a HeMesh instance from a Rhino Mesh.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh CreateHeMesh(Mesh mesh, out Vec3d[] vertexPositions)
+        {
+            vertexPositions = mesh.Vertices.Select(p => p.ToVec3d()).ToArray();
+            return CreateHeMesh(mesh);
+        }
+
+
+        /// <summary>
+        /// Creates a HeMesh instance from a Rhino Mesh.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh CreateHeMesh(Mesh mesh, out Vec3d[] vertexPositions, out Vec3d[] vertexNormals)
+        {
+            vertexPositions = mesh.Vertices.Select(p => p.ToVec3d()).ToArray();
+            vertexNormals = mesh.Normals.Select(n => n.ToVec3d()).ToArray();
+            return CreateHeMesh(mesh);
+        }
+
+
+        /// <summary>
+        /// Creates a HeMesh instance from a Rhino Mesh.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh CreateHeMesh(Mesh mesh, out Vec3d[] vertexPositions, out Vec3d[] vertexNormals, out Vec2d[] textureCoords)
+        {
+            vertexPositions = mesh.Vertices.Select(p => p.ToVec3d()).ToArray();
+            vertexNormals = mesh.Normals.Select(n => n.ToVec3d()).ToArray();
+            textureCoords = mesh.TextureCoordinates.Select(uv => uv.ToVec2d()).ToArray();
+            return CreateHeMesh(mesh);
         }
 
 
@@ -53,7 +90,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="polylines"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static HeMesh CreateHeMesh(IEnumerable<Polyline> polylines, double tolerance)
+        public static HeMesh CreateHeMesh(IEnumerable<Polyline> polylines, double tolerance, out List<Vec3d> vertexPositions)
         {
             List<Vec3d> points = new List<Vec3d>();
             List<int> sides = new List<int>();
@@ -71,7 +108,7 @@ namespace SpatialSlur.SlurRhino
                 sides.Add(n);
             }
 
-            return HeMesh.CreateFromPolygons(points, sides, tolerance);
+            return HeMesh.CreateFromPolygons(points, sides, tolerance, out vertexPositions);
         }
 
 
@@ -84,7 +121,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="allowLoops"></param>
         /// <param name="nodePositions"></param>
         /// <returns></returns>
-        public static Graph CreateGraph(IList<Line> lines, double epsilon, bool allowMultiEdges, bool allowLoops, out List<Vec3d> nodePositions)
+        public static HeGraph CreateHeGraph(IReadOnlyList<Line> lines, double epsilon, bool allowMultiEdges, bool allowLoops, out List<Vec3d> vertexPositions)
         {
             Vec3d[] endPts = new Vec3d[lines.Count << 1];
 
@@ -95,31 +132,7 @@ namespace SpatialSlur.SlurRhino
                 endPts[i + 1] = ln.To.ToVec3d();
             }
 
-            return Graph.CreateFromLineSegments(endPts, epsilon, allowMultiEdges, allowLoops, out nodePositions);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lines"></param>
-        /// <param name="epsilon"></param>
-        /// <param name="allowMultiEdges"></param>
-        /// <param name="allowLoops"></param>
-        /// <param name="nodePositions"></param>
-        /// <returns></returns>
-        public static DiGraph CreateDiGraph(IList<Line> lines, double epsilon, bool allowMultiEdges, bool allowLoops, out List<Vec3d> nodePositions)
-        {
-            Vec3d[] endPts = new Vec3d[lines.Count << 1];
-
-            for (int i = 0; i < endPts.Length; i += 2)
-            {
-                Line ln = lines[i >> 1];
-                endPts[i] = ln.From.ToVec3d();
-                endPts[i + 1] = ln.To.ToVec3d();
-            }
-
-            return DiGraph.CreateFromLineSegments(endPts, epsilon, allowMultiEdges, allowLoops, out nodePositions);
+            return HeGraph.CreateFromLineSegments(endPts, epsilon, allowMultiEdges, allowLoops, out vertexPositions);
         }
     }
 }
