@@ -100,7 +100,7 @@ namespace SlurSketchGH.OccupancySim
         /// <returns></returns>
         public int Next()
         {
-            return BinarySearch(_weights, _random.Next(_weights.Length));
+            return BinarySearch(_weights, _random.NextDouble());
         }
 
 

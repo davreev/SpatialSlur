@@ -598,6 +598,8 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public static void L1GeodesicDistance(ScalarField2d cost, IEnumerable<int> sources, double[] result)
         {
+            // TODO consider wrap modes
+
             var costVals = cost.Values;
             int nx = cost.CountX;
             int ny = cost.CountY;
@@ -730,6 +732,8 @@ namespace SpatialSlur.SlurField
        /// <param name="result"></param>
         private static void L2GeodesicDistanceImpl(ScalarField2d cost, IEnumerable<int> sources, bool[] states, double[] result)
         {
+            // TODO consider wrap modes
+
             var costVals = cost.Values;
             var nx = cost.CountX;
             var ny = cost.CountY;
