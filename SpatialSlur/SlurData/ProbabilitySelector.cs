@@ -10,7 +10,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */ 
 
-namespace SlurSketchGH.OccupancySim
+namespace SpatialSlur.SlurData
 {
     /// <summary>
     /// 
