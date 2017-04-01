@@ -8,15 +8,12 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * 
- * Any attribute getters that don't require access to the parent mesh and don't make any assumptions about the order of elements (i.e. twin halfedges are consecutive)
- * TODO migrate appropriate methods from HeElement lists
  */ 
 
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
-    /// 
+    /// Collection of attribute getters that don't require access to the parent mesh and don't make assumptions about the order of elements.
     /// </summary>
     public static class HeAttributeExtensions
     {

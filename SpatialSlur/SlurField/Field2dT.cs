@@ -7,7 +7,8 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * TODO add set methods for different boundary conditions (VonNeumann, Dirichlet, etc.)
+ * 
+ * TODO add setters for different boundary conditions (VonNeumann, Dirichlet, etc.)
  */
 
 namespace SpatialSlur.SlurField
@@ -312,8 +313,7 @@ namespace SpatialSlur.SlurField
         {
             Action<Tuple<int, int>> func2 = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -341,8 +341,7 @@ namespace SpatialSlur.SlurField
 
             Action<Tuple<int, int>> func2 = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -370,8 +369,7 @@ namespace SpatialSlur.SlurField
 
             Action<Tuple<int, int>> func2 = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -399,8 +397,7 @@ namespace SpatialSlur.SlurField
 
             Action<Tuple<int, int>> func2 = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -426,8 +423,7 @@ namespace SpatialSlur.SlurField
         {
             Action<Tuple<int, int>> func2 = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -452,8 +448,7 @@ namespace SpatialSlur.SlurField
         {
             Action<Tuple<int, int>> func2 = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -486,8 +481,7 @@ namespace SpatialSlur.SlurField
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -520,8 +514,7 @@ namespace SpatialSlur.SlurField
             Action<Tuple<int, int>> func = range =>
             {
                 FieldPoint2d fp = new FieldPoint2d();
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {

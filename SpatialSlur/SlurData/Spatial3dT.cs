@@ -63,11 +63,20 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="point"></param>
+        protected abstract (int, int, int) Discretize(Vec3d point);
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <param name="k"></param>
         internal abstract void Discretize(Vec3d point, out int i, out int j, out int k);
-   
+        */
+
 
         /// <summary>
         /// 
@@ -76,7 +85,7 @@ namespace SpatialSlur.SlurData
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        internal abstract int ToIndex(int i, int j, int k);
+        protected abstract int ToIndex(int i, int j, int k);
 
 
         /// <summary>
@@ -107,8 +116,7 @@ namespace SpatialSlur.SlurData
         /// <param name="item"></param>
         public void Insert(Vec3d point, T item)
         {
-            int i, j, k;
-            Discretize(point, out i, out j, out k);
+            (int i ,int j, int k) = Discretize(point);
             Insert(ToIndex(i, j, k), item);
         }
 
@@ -120,9 +128,8 @@ namespace SpatialSlur.SlurData
         /// <param name="item"></param>
         public void Insert(Domain3d domain, T item)
         {
-            int i0, j0, k0, i1, j1, k1;
-            Discretize(domain.From, out i0, out j0, out k0);
-            Discretize(domain.To, out i1, out j1, out k1);
+            (int i0, int j0, int k0) = Discretize(domain.From);
+            (int i1, int j1, int k1) = Discretize(domain.To);
 
             for (int k = k0; k <= k1; k++)
             {
@@ -142,8 +149,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Vec3d point, List<T> result)
         {
-            int i, j, k;
-            Discretize(point, out i, out j, out k);
+            (int i, int j, int k) = Discretize(point);
             int index = ToIndex(i, j, k);
 
             // only add if bin is synchronized
@@ -157,9 +163,8 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Domain3d domain, List<T> result)
         {
-            int i0, j0, k0, i1, j1, k1;
-            Discretize(domain.From, out i0, out j0, out k0);
-            Discretize(domain.To, out i1, out j1, out k1);
+            (int i0, int j0, int k0) = Discretize(domain.From);
+            (int i1, int j1, int k1) = Discretize(domain.To);
 
             for (int k = k0; k <= k1; k++)
             {
@@ -184,8 +189,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Vec3d point, Action<IEnumerable<T>> callback)
         {
-            int i, j, k;
-            Discretize(point, out i, out j, out k);
+            (int i, int j, int k) = Discretize(point);
             int index = ToIndex(i, j, k);
 
             // only callback if bin is synched
@@ -200,9 +204,8 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Domain3d domain, Action<IEnumerable<T>> callback)
         {
-            int i0, j0, k0, i1, j1, k1;
-            Discretize(domain.From, out i0, out j0, out k0);
-            Discretize(domain.To, out i1, out j1, out k1);
+            (int i0, int j0, int k0) = Discretize(domain.From);
+            (int i1, int j1, int k1) = Discretize(domain.To);
 
             for (int k = k0; k <= k1; k++)
             {

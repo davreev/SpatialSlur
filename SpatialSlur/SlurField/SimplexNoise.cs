@@ -18,44 +18,11 @@ namespace SpatialSlur.SlurField
         // Skew and unskew constants for 2 and 3 dimensions
         private static readonly double Skew2 = (Math.Sqrt(3.0) - 1.0) / 2.0;
         private static readonly double Unskew2 = (3.0 - Math.Sqrt(3.0)) / 6.0;
-        private static readonly double Skew3 = 1.0 / 3.0;
-        private static readonly double Unskew3 = 1.0 / 6.0;
+        private const double Skew3 = 1.0 / 3.0;
+        private const double Unskew3 = 1.0 / 6.0;
 
          // permutation table
         private static readonly int[] _perm = new int[256];
-
-        /*
-        // 2d gradient table
-        private static readonly double[][] _grad2 = 
-        {
-          new double[]{1, 1},
-          new double[]{-1, 1},
-          new double[]{1, -1},
-          new double[]{-1, -1},
-          new double[]{1, 0},
-          new double[]{-1, 0},
-          new double[]{0, 1},
-          new double[]{0, -1},
-        };
-
-        // 3d gradient table
-        private static readonly double[][] _grad3 = 
-        {
-          new double[]{1, 1, 0},
-          new double[]{-1, 1, 0},
-          new double[]{1, -1, 0},
-          new double[]{-1, -1, 0},
-          new double[]{1, 0, 1},
-          new double[]{-1, 0, 1},
-          new double[]{1, 0, -1},
-          new double[]{-1, 0, -1},
-          new double[]{0, 1, 1},
-          new double[]{0, -1, 1},
-          new double[]{0, 1, -1},
-          new double[]{0, -1, -1}
-        };
-        */
-
 
         // 2d gradient table
         private static readonly double[] _grad2 =
@@ -69,7 +36,6 @@ namespace SpatialSlur.SlurField
           0, 1,
           0, -1,
         };
-
 
         // 3d gradient table
         private static readonly double[] _grad3 =

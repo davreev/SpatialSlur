@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 /*
  * Notes
+ * 
+ * Inheritance follows the curiously recurring template pattern
+ * https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
+ * https://blogs.msdn.microsoft.com/ericlippert/2011/02/03/curiouser-and-curiouser/
+ * http://eli.thegreenplace.net/2013/12/05/the-cost-of-dynamic-virtual-calls-vs-static-crtp-dispatch-in-c
  */
 
 namespace SpatialSlur.SlurMesh

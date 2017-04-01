@@ -104,6 +104,7 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -116,8 +117,23 @@ namespace SpatialSlur.SlurField
             y = index / nx;
             x = index - y * nx;
         }
+        */
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="nx"></param>
+        /// <returns></returns>
+        public static (int, int) ExpandIndex(int index, int nx)
+        {
+            int y = index / nx;
+            return (index - y * nx, y);
+        }
+
+
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -133,6 +149,48 @@ namespace SpatialSlur.SlurField
             x = index - z * nxy; // store remainder in x temporarily
             y = x / nx;
             x -= y * nx;
+        }
+        */
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="nx"></param>
+        /// <param name="nxy"></param>
+        /// <returns></returns>
+        public static (int, int, int) ExpandIndex(int index, int nx, int nxy)
+        {
+            int z = index / nxy;
+            index -= z * nxy;
+            int y = index / nx;
+            return (index - y * nx, y, z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal static (int, int) GetBoundaryOffsets(this Field2d field)
+        {
+            return (
+                field.WrapModeX == FieldWrapMode.Repeat ? field.CountX - 1 : 0,
+                field.WrapModeY == FieldWrapMode.Repeat ? field.Count - field.CountX : 0
+                );
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        internal static (int, int, int) GetBoundaryOffsets(this Field3d field)
+        {
+            return (
+                field.WrapModeX == FieldWrapMode.Repeat ? field.CountX - 1 : 0, 
+                field.WrapModeY == FieldWrapMode.Repeat ? field.CountXY - field.CountX : 0, 
+                field.WrapModeZ == FieldWrapMode.Repeat ? field.Count - field.CountXY : 0
+                );
         }
     }
 }

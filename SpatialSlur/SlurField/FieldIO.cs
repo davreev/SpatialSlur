@@ -6,7 +6,6 @@ using System.Drawing.Imaging;
 
 /*
  * Notes
- * include in classes directly
  */
 
 namespace SpatialSlur.SlurField

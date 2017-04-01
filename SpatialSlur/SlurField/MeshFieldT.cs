@@ -80,22 +80,10 @@ namespace SpatialSlur.SlurField
         {
             get { return _values.Length; }
         }
-
-
-        /// <summary>
-        /// Syncs the size of the field with the current number of vertices in the mesh.
-        /// </summary>
-        public void Sync()
-        {
-            _count = _mesh.Vertices.Count;
-
-            if (_count > Capacity)
-                Array.Resize(ref _values, _count << 1);
-        }
-
+       
 
         /// <summary>
-        /// Compacts the field according to used vertices in the mesh.
+        /// Compacts the field's array according to used vertices in the mesh.
         /// Should be called before compacting the mesh vertex list.
         /// </summary>
         public void Compact()
@@ -106,7 +94,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Trims the array if capacity is greater than twice the count.
+        /// Trims the field's array if capacity is greater than twice the count.
         /// </summary>
         public void TrimExcess()
         {
@@ -117,6 +105,18 @@ namespace SpatialSlur.SlurField
 
             // prevent object loitering
             Array.Clear(_values, _count, Capacity - _count);
+        }
+
+
+        /// <summary>
+        /// Ensures the capacity of the field's array is greater than or equal to the number of vertices in the mesh.
+        /// </summary>
+        public void EnsureCapacity()
+        {
+            _count = _mesh.Vertices.Count;
+
+            if (_count > Capacity)
+                Array.Resize(ref _values, _count << 1);
         }
 
 

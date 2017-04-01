@@ -5,6 +5,7 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
+ * 
  * Left subtree is strictly less than
  * Right subtree is equal or greater than
  * 
@@ -66,10 +67,11 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Inserts point value pairs in a way that produces a balanced tree.
-        /// TODO Compare performance to IList implementation.
         /// </summary>
         public static KdTree<T> CreateBalanced(double[][] points, T[] values)
         {
+            // TODO compare performance to IList implementation
+
             if (points.Length != values.Length)
                 throw new ArgumentException("Must provide an equal number of points and values.");
 
@@ -90,13 +92,12 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="item1"></param>
-        /// <param name="item2"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         /// <returns></returns>
-        private static int ReverseCompareKeys<K>(KeyValuePair<K, T> item1, KeyValuePair<K, T> item2)
-            where K : IComparable<K>
+        private static int ReverseCompareDistance((double, T) a, (double, T) b)
         {
-            return item2.Key.CompareTo(item1.Key);
+            return b.Item1.CompareTo(a.Item1);
         }
 
         #endregion
@@ -850,11 +851,11 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public PriorityQueue<KeyValuePair<double, T>> L2NearestN(double[] point, int n)
+        public PriorityQueue<(double, T)> L2NearestN(double[] point, int n)
         {
             DimCheck(point);
 
-            var result = new PriorityQueue<KeyValuePair<double, T>>(ReverseCompareKeys, n);
+            var result = new PriorityQueue<(double, T)>(ReverseCompareDistance, n);
             L2NearestN(_root, point, n, 0, result);
 
             return result;
@@ -869,7 +870,7 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void L2NearestN(KdNode node, double[] point, int n, int i, PriorityQueue<KeyValuePair<double, T>> result)
+        private void L2NearestN(KdNode node, double[] point, int n, int i, PriorityQueue<(double, T)> result)
         {
             if (node == null) return;
 
@@ -878,11 +879,11 @@ namespace SpatialSlur.SlurData
 
             // add node if closer than nth element
             double d = point.L2DistanceToSqr(node.point);
-        
+
             if (result.Count < n)
-                result.Insert(new KeyValuePair<double, T>(d, node.value));
-            else if (d < result.Min.Key)
-                result.ReplaceMin(new KeyValuePair<double, T>(d, node.value));
+                result.Insert((d, node.value));
+            else if (d < result.Min.Item1)
+                result.ReplaceMin((d, node.value));
 
             d = point[i] - node.point[i]; // signed distance to cut plane
             if (d < 0.0)
@@ -891,7 +892,7 @@ namespace SpatialSlur.SlurData
                 L2NearestN(node.left, point, n, i + 1, result);
 
                 // recurse in right subtree only if necessary
-                if (result.Count < n || d * d < result.Min.Key)
+                if (result.Count < n || d * d < result.Min.Item1)
                     L2NearestN(node.right, point, n, i + 1, result);
             }
             else
@@ -900,7 +901,7 @@ namespace SpatialSlur.SlurData
                 L2NearestN(node.right, point, n, i + 1, result);
 
                 // recurse in left subtree only if necessary
-                if (result.Count < n || d * d < result.Min.Key)
+                if (result.Count < n || d * d < result.Min.Item1)
                     L2NearestN(node.left, point, n, i + 1, result);
             }
         }
@@ -912,11 +913,11 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public PriorityQueue<KeyValuePair<double, T>> L1NearestN(double[] point, int n)
+        public PriorityQueue<(double, T)> L1NearestN(double[] point, int n)
         {
             DimCheck(point);
 
-            var result = new PriorityQueue<KeyValuePair<double, T>>(ReverseCompareKeys, n);
+            var result = new PriorityQueue<(double, T)>(ReverseCompareDistance, n);
             L1NearestN(_root, point, n, 0, result);
 
             return result;
@@ -931,7 +932,7 @@ namespace SpatialSlur.SlurData
         /// <param name="n"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void L1NearestN(KdNode node, double[] point, int n, int i, PriorityQueue<KeyValuePair<double, T>> result)
+        private void L1NearestN(KdNode node, double[] point, int n, int i, PriorityQueue<(double, T)> result)
         {
             if (node == null) return;
 
@@ -942,9 +943,9 @@ namespace SpatialSlur.SlurData
             double d = point.L1DistanceTo(node.point);
 
             if (result.Count < n)
-                result.Insert(new KeyValuePair<double, T>(d, node.value));
-            else if (d < result.Min.Key)
-                result.ReplaceMin(new KeyValuePair<double, T>(d, node.value));
+                result.Insert((d, node.value));
+            else if (d < result.Min.Item1)
+                result.ReplaceMin((d, node.value));
 
             d = point[i] - node.point[i]; // signed distance to cut plane
             if (d < 0.0)
@@ -953,7 +954,7 @@ namespace SpatialSlur.SlurData
                 L1NearestN(node.left, point, n, i + 1, result);
 
                 // recurse in right subtree only if necessary
-                if (result.Count < n || Math.Abs(d) < result.Min.Key)
+                if (result.Count < n || Math.Abs(d) < result.Min.Item1)
                     L1NearestN(node.right, point, n, i + 1, result); 
             }
             else
@@ -962,7 +963,7 @@ namespace SpatialSlur.SlurData
                 L1NearestN(node.right, point, n, i + 1, result);
 
                 // recurse in left subtree only if necessary
-                if (result.Count < n || Math.Abs(d) < result.Min.Key)
+                if (result.Count < n || Math.Abs(d) < result.Min.Item1)
                     L1NearestN(node.left, point, n, i + 1, result); 
             }
         }

@@ -4,13 +4,10 @@ using SpatialSlur.SlurMesh;
 
 /*
  * Notes
- * 
- * TODO 
- * Further research into vertex-based mesh vector fields
+ *
+ * References
  * http://libigl.github.io/libigl/tutorial/tutorial.html
  * http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
- * 
- * References
  * http://graphics.pixar.com/library/VectorFieldCourse/paper.pdf
  */
 

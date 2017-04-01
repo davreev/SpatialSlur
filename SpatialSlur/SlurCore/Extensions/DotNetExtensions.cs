@@ -8,8 +8,6 @@ using SpatialSlur.SlurData;
 
 /*
  * Notes
- * 
- * All IList extension methods redirect to array extension methods where possible for better performance.
  */ 
 
 namespace SpatialSlur.SlurCore

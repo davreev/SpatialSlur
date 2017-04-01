@@ -366,7 +366,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
-        public static Transform LocalToWorld(this Plane plane)
+        public static Transform ToWorld(this Plane plane)
         {
             Point3d o = plane.Origin;
             Vector3d x = plane.XAxis;
@@ -401,7 +401,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
-        public static Transform WorldToLocal(this Plane plane)
+        public static Transform ToLocal(this Plane plane)
         {
             Vector3d d = new Vector3d(plane.Origin);
             Vector3d x = plane.XAxis;
@@ -714,17 +714,6 @@ namespace SpatialSlur.SlurRhino
         public static HeMesh ToHeMesh(this Mesh mesh, out Vec3d[] vertexPositions, out Vec3d[] vertexNormals)
         {
             return RhinoFactory.CreateHeMesh(mesh, out vertexPositions, out vertexNormals);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static HeMesh ToHeMesh(this Mesh mesh, out Vec3d[] vertexPositions, out Vec3d[] vertexNormals, out Vec2d[] textureCoords)
-        {
-            return RhinoFactory.CreateHeMesh(mesh, out vertexPositions, out vertexNormals, out textureCoords);
         }
 
 

@@ -3,7 +3,8 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * Region search methods may return the contents of the same bin multiple times since different points (i,j,k) may hash to the same index.
+ * 
+ * Region search methods may return the contents of the same bin multiple times since different indices (i, j) may hash to the same index.
  * Similarly, region insertion methods may add the given item to the same bin multiple times.
  * 
  * References
@@ -57,11 +58,27 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
+        protected override (int, int) Discretize(Vec2d point)
+        {
+            return(
+                (int)Math.Floor(point.x * _scaleInv),
+                (int)Math.Floor(point.y * _scaleInv));
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
         internal override void Discretize(Vec2d point, out int i, out int j)
         {
             i = (int)Math.Floor(point.x * _scaleInv);
             j = (int)Math.Floor(point.y * _scaleInv);
         }
+        */
 
 
         /// <summary>
@@ -70,7 +87,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        internal override int ToIndex(int i, int j)
+        protected override int ToIndex(int i, int j)
         {
             return SlurMath.Mod2(i * P1 ^ j * P2, BinCount);
         }

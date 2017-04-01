@@ -8,7 +8,6 @@ using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurData;
 
-
 /*
  * Notes
  */ 
@@ -167,7 +166,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array.
+        /// Adds the Laplacian of the field to the delta field.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="field"></param>
@@ -181,7 +180,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array.
+        /// Adds the Laplacian of the field to the deltas array.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="field"></param>
@@ -196,14 +195,12 @@ namespace SpatialSlur.SlurField
 
             double dx = 1.0 / (field.ScaleX * field.ScaleX);
             double dy = 1.0 / (field.ScaleY * field.ScaleY);
-
-            int di, dj;
-            field.GetBoundaryOffsets(out di, out dj);
+            
+            (int di, int dj) = field.GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j;
-                field.IndicesAt(range.Item1, out i, out j);
+                (int i , int j) = field.IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -228,7 +225,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array.
+        /// Adds the Laplacian of the field to the delta field.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="field"></param>
@@ -242,7 +239,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array.
+        /// Adds the Laplacian of the field to the deltas array.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="field"></param>
@@ -261,13 +258,11 @@ namespace SpatialSlur.SlurField
             double dy = 1.0 / (field.ScaleY * field.ScaleY);
             double dz = 1.0 / (field.ScaleZ * field.ScaleZ);
 
-            int di, dj, dk;
-            field.GetR1BoundaryOffsets(out di, out dj, out dk);
+            (int di, int dj, int dk) = field.GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j, k;
-                field.IndicesAt(range.Item1, out i, out j, out k);
+                (int i, int j, int k) = field.IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -296,7 +291,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array.
+        /// Adds the Laplacian of the field to the delta field.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="field"></param>
@@ -310,7 +305,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array.
+        /// Adds the Laplacian of the field to the deltas array.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="field"></param>
@@ -347,7 +342,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array.
+        /// Adds the Laplacian of the field to the delta field.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
         /// <param name="field"></param>
@@ -362,7 +357,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Adds the Laplacian of the field to the delta array. 
+        /// Adds the Laplacian of the field to the deltas array. 
         /// The Laplacian is calculated with a user-defined weighting scheme.
         /// http://www.cs.princeton.edu/courses/archive/fall10/cos526/papers/sorkine05.pdf
         /// http://www.igl.ethz.ch/projects/Laplacian-mesh-processing/Laplacian-mesh-optimization/lmo.pdf
@@ -399,7 +394,6 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Simulates thermal erosion
         /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
         /// </summary>
         /// <param name="field"></param>
@@ -414,7 +408,6 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Simulates thermal erosion
         /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
         /// </summary>
         /// <param name="field"></param>
@@ -431,13 +424,11 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / Math.Abs(field.ScaleX);
             double dy = 1.0 / Math.Abs(field.ScaleY);
 
-            int di, dj;
-            field.GetBoundaryOffsets(out di, out dj);
+            (int di, int dj) = field.GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j;
-                field.IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = field.IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -483,7 +474,6 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Simulates thermal erosion
         /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
         /// </summary>
         /// <param name="field"></param>
@@ -498,7 +488,6 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Simulates thermal erosion
         /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
         /// </summary>
         /// <param name="field"></param>
@@ -518,13 +507,11 @@ namespace SpatialSlur.SlurField
             double dy = 1.0 / Math.Abs(field.ScaleY);
             double dz = 1.0 / Math.Abs(field.ScaleZ);
 
-            int di, dj, dk;
-            field.GetR1BoundaryOffsets(out di, out dj, out dk);
+            (int di, int dj, int dk) = field.GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j, k;
-                field.IndicesAt(range.Item1, out i, out j, out k);
+                (int i, int j, int k) = field.IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -606,30 +593,23 @@ namespace SpatialSlur.SlurField
             double dx = Math.Abs(cost.ScaleX);
             double dy = Math.Abs(cost.ScaleY);
 
-            var pq = new PriorityQueue<KeyValuePair<double, int>>((a, b) => a.Key.CompareTo(b.Key));
+            var pq = new PriorityQueue<(double, int)>((a, b) => a.Item1.CompareTo(b.Item1));
             result.SetRange(double.PositiveInfinity, 0, cost.Count);
 
             // enqueue sources
             foreach (int i in sources)
             {
                 result[i] = 0.0;
-                pq.Insert(new KeyValuePair<double, int>(0.0, i));
+                pq.Insert((0.0, i));
             }
 
             // breadth first search from sources
             while (pq.Count > 0)
             {
-                // get current min
-                var curr = pq.RemoveMin();
-                double t0 = curr.Key;
-                int i0 = curr.Value;
+                (double t0, int i0) = pq.RemoveMin();
+                if (t0 > result[i0]) continue; // skip if node has already been processed
 
-                // skip if node has already been processed
-                if (t0 > result[i0]) continue;
-
-                // for each neighbour...
-                int x0, y0;
-                cost.IndicesAt(i0, out x0, out y0);
+                (int x0, int y0) = cost.IndicesAt(i0);
 
                 // x neighbours
                 for (int j = -1; j < 2; j += 2)
@@ -642,7 +622,7 @@ namespace SpatialSlur.SlurField
                     if (t1 < result[i1])
                     {
                         result[i1] = t1;
-                        pq.Insert(new KeyValuePair<double, int>(t1, i1));
+                        pq.Insert((t1, i1));
                     }
                 }
 
@@ -657,7 +637,7 @@ namespace SpatialSlur.SlurField
                     if (t1 < result[i1])
                     {
                         result[i1] = t1;
-                        pq.Insert(new KeyValuePair<double, int>(t1, i1));
+                        pq.Insert((t1, i1));
                     }
                 }
             }
@@ -740,7 +720,7 @@ namespace SpatialSlur.SlurField
             var dx = Math.Abs(cost.ScaleX);
             var dy = Math.Abs(cost.ScaleY);
 
-            var pq = new PriorityQueue<KeyValuePair<double, int>>((item0, item1) => item0.Key.CompareTo(item1.Key));
+            var pq = new PriorityQueue<(double, int)>((a, b) => a.Item1.CompareTo(b.Item1));
             var eikonal = new Eikonal2d(dx, dy);
 
             result.SetRange(double.PositiveInfinity, 0, cost.Count);
@@ -749,21 +729,17 @@ namespace SpatialSlur.SlurField
             foreach (int i in sources)
             {
                 result[i] = 0.0;
-                pq.Insert(new KeyValuePair<double, int>(0.0, i));
+                pq.Insert((0.0, i));
             }
 
             // breadth first search from sources
             while (pq.Count > 0)
             {
-                var min = pq.RemoveMin();
-                int i0 = min.Value;
+                (double t0, int i0) = pq.RemoveMin();
                 if (states[i0]) continue; // skip if already accepted
-
-                double t0 = min.Key;
                 states[i0] = true;
 
-                int x0, y0;
-                cost.IndicesAt(i0, out x0, out y0);
+                (int x0, int y0) = cost.IndicesAt(i0);
 
                 // x neigbours
                 for (int j = -1; j < 2; j += 2)
@@ -777,13 +753,13 @@ namespace SpatialSlur.SlurField
                           : (y0 == ny - 1) ? result[i1 - nx]
                           : Math.Min(result[i1 - nx], result[i1 + nx]);
 
-                        double t1 = (double.IsInfinity(y)) ? t0 + dx * costVals[i1] 
+                        double t1 = (y > double.MaxValue) ? t0 + dx * costVals[i1] 
                             : eikonal.Evaluate(t0, y, costVals[i1]);
 
                         if (t1 < result[i1])
                         {
                             result[i1] = t1;
-                            pq.Insert(new KeyValuePair<double, int>(t1, i1));
+                            pq.Insert((t1, i1));
                         }
                     }
                 }
@@ -800,13 +776,13 @@ namespace SpatialSlur.SlurField
                           : (x0 == nx - 1) ? result[i1 - 1]
                           : Math.Min(result[i1 - 1], result[i1 + 1]);
 
-                        double t1 = (double.IsInfinity(x)) ? t0 + dy * costVals[i1] 
+                        double t1 = (x > double.MaxValue) ? t0 + dy * costVals[i1] 
                             : eikonal.Evaluate(x, t0, costVals[i1]);
 
                         if (t1 < result[i1])
                         {
                             result[i1] = t1;
-                            pq.Insert(new KeyValuePair<double, int>(t1, i1));
+                            pq.Insert((t1, i1));
                         }
                     }
                 }

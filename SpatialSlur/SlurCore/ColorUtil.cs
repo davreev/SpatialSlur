@@ -9,7 +9,7 @@ using System.Drawing;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Static methods for color conversion and interpolation.
+    /// Static methods for color conversion.
     /// </summary>
     public static class ColorUtil
     {

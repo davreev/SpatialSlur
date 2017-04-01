@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Drawing;
+
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 using Rhino.Geometry;
@@ -66,20 +68,6 @@ namespace SpatialSlur.SlurRhino
         {
             vertexPositions = mesh.Vertices.Select(p => p.ToVec3d()).ToArray();
             vertexNormals = mesh.Normals.Select(n => n.ToVec3d()).ToArray();
-            return CreateHeMesh(mesh);
-        }
-
-
-        /// <summary>
-        /// Creates a HeMesh instance from a Rhino Mesh.
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static HeMesh CreateHeMesh(Mesh mesh, out Vec3d[] vertexPositions, out Vec3d[] vertexNormals, out Vec2d[] textureCoords)
-        {
-            vertexPositions = mesh.Vertices.Select(p => p.ToVec3d()).ToArray();
-            vertexNormals = mesh.Normals.Select(n => n.ToVec3d()).ToArray();
-            textureCoords = mesh.TextureCoordinates.Select(uv => uv.ToVec2d()).ToArray();
             return CreateHeMesh(mesh);
         }
 

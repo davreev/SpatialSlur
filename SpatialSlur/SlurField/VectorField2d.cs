@@ -148,13 +148,11 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
-            int di, dj;
-            GetBoundaryOffsets(out di, out dj);
+            (int di, int dj) = this.GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -214,13 +212,11 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            int di, dj;
-            GetBoundaryOffsets(out di, out dj);
+            (int di, int dj) = this.GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -279,13 +275,11 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            int di, dj;
-            GetBoundaryOffsets(out di, out dj);
+            (int di, int dj) = this.GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {

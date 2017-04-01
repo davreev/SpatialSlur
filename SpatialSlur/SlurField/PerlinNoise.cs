@@ -17,7 +17,6 @@ namespace SpatialSlur.SlurField
         // permutation table
         private static readonly int[] _perm = new int[256];
 
-
         // 2d gradient table
         private static readonly double[] _grad2 =
         {
@@ -30,7 +29,6 @@ namespace SpatialSlur.SlurField
           0, 1,
           0, -1,
         };
-
 
         // 3d gradient table
         private static readonly double[] _grad3 =

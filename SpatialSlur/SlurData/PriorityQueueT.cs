@@ -4,8 +4,6 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * 
- * For a max priority queue, invert the comparer delegate.
  */
 
 namespace SpatialSlur.SlurData

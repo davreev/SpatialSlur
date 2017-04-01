@@ -7,11 +7,8 @@ using SpatialSlur.SlurField;
 using Rhino.Geometry;
 
 /*
-    Notes
-
-    TODO remove RhinoCommon dependency
-    Return batches of tri meshes as List<int>[] and List<Vec3d>[]
-*/
+ * Notes
+ */
 
 namespace SpatialSlur.SlurRhino
 {
@@ -865,7 +862,6 @@ namespace SpatialSlur.SlurRhino
        };
        */
     
-
         #endregion
 
 
@@ -991,9 +987,7 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-     
-                int x, y, z;
-                FieldUtil.ExpandIndex(range.Item1, nx, nxy, out x, out y, out z);
+                (int x, int y, int z) = FieldUtil.ExpandIndex(range.Item1, nx, nxy);
            
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)
@@ -1068,9 +1062,7 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-
-                int x, y, z;
-                FieldUtil.ExpandIndex(range.Item1, nx, nxy, out x, out y, out z);
+                (int x, int y, int z) = FieldUtil.ExpandIndex(range.Item1, nx, nxy);
 
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)
@@ -1253,9 +1245,7 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-
-                int x, y, z;
-                FieldUtil.ExpandIndex(range.Item1, nx, nxy, out x, out y, out z);
+                (int x, int y, int z) = FieldUtil.ExpandIndex(range.Item1, nx, nxy);
 
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)

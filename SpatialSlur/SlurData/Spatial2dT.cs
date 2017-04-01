@@ -63,10 +63,19 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="point"></param>
+        protected abstract (int, int) Discretize(Vec2d point);
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
         internal abstract void Discretize(Vec2d point, out int i, out int j);
-   
+        */
+
 
         /// <summary>
         /// 
@@ -74,7 +83,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        internal abstract int ToIndex(int i, int j);
+        protected abstract int ToIndex(int i, int j);
 
 
         /// <summary>
@@ -105,8 +114,7 @@ namespace SpatialSlur.SlurData
         /// <param name="item"></param>
         public void Insert(Vec2d point, T item)
         {
-            int i, j;
-            Discretize(point, out i, out j);
+            (int i, int j) = Discretize(point);
             Insert(ToIndex(i, j), item);
         }
 
@@ -118,9 +126,8 @@ namespace SpatialSlur.SlurData
         /// <param name="item"></param>
         public void Insert(Domain2d domain, T item)
         {
-            int i0, j0, i1, j1;
-            Discretize(domain.From, out i0, out j0);
-            Discretize(domain.To, out i1, out j1);
+            (int i0, int j0) = Discretize(domain.From);
+            (int i1, int j1) = Discretize(domain.To);
 
             for (int j = j0; j <= j1; j++)
             {
@@ -137,8 +144,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Vec2d point, List<T> result)
         {
-            int i, j;
-            Discretize(point, out i, out j);
+            (int i, int j) = Discretize(point);
             int index = ToIndex(i, j);
 
             // only add to result if bin is synchronized
@@ -152,9 +158,8 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Domain2d domain, List<T> result)
         {
-            int i0, j0, i1, j1;
-            Discretize(domain.From, out i0, out j0);
-            Discretize(domain.To, out i1, out j1);
+            (int i0, int j0) = Discretize(domain.From);
+            (int i1, int j1) = Discretize(domain.To);
 
             for (int j = j0; j <= j1; j++)
             {
@@ -176,8 +181,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Vec2d point, Action<IEnumerable<T>> callback)
         {
-            int i, j;
-            Discretize(point, out i, out j);
+            (int i, int j) = Discretize(point);
             int index = ToIndex(i, j);
 
             // only callback if bin is synchronized
@@ -192,9 +196,8 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void Search(Domain2d domain, Action<IEnumerable<T>> callback)
         {
-            int i0, j0, i1, j1;
-            Discretize(domain.From, out i0, out j0);
-            Discretize(domain.To, out i1, out j1);
+            (int i0, int j0) = Discretize(domain.From);
+            (int i1, int j1) = Discretize(domain.To);
 
             for (int j = j0; j <= j1; j++)
             {

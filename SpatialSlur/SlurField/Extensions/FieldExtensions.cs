@@ -867,10 +867,6 @@ namespace SpatialSlur.SlurField
         #endregion
 
 
-
-
-
-
         #region double[]
 
         /// <summary>

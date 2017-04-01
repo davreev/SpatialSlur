@@ -55,26 +55,6 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
-        /// <summary>
-        /// Returns true if the vertex has 2 outgoing halfedges.
-        /// </summary>
-        public bool IsDegree2
-        {
-            get { return _first.IsAtDegree2; }
-        }
-
-
-        /// <summary>
-        /// Returns true if the vertex has 3 outgoing halfedges.
-        /// </summary>
-        public bool IsDegree3
-        {
-            get { return _first.IsAtDegree3; }
-        }
-        */
-
-
         /// <summary>
         /// Iterates over all outgoing halfedges.
         /// </summary>

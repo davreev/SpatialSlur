@@ -5,8 +5,6 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * Distinguish between boundary types (Von Neumann, Dirichlet etc.) and the wrap mode (repeat, clamp etc.)
- * http://www.flipcode.com/archives/Advanced_OpenGL_Texture_Mapping.shtml
  */
 
 namespace SpatialSlur.SlurField
@@ -25,7 +23,7 @@ namespace SpatialSlur.SlurField
 
         private FieldWrapMode _wrapModeX, _wrapModeY, _wrapModeZ;
         private Func<int, int, int> _wrapX, _wrapY, _wrapZ;
-  
+
 
         /// <summary>
         /// 
@@ -73,9 +71,9 @@ namespace SpatialSlur.SlurField
         /// <param name="wrapModeX"></param>
         /// <param name="wrapModeY"></param>
         /// <param name="wrapModeZ"></param>
-        protected Field3d(Domain3d domain, int countX, int countY, int countZ, 
-            FieldWrapMode wrapModeX = FieldWrapMode.Clamp, 
-            FieldWrapMode wrapModeY = FieldWrapMode.Clamp, 
+        protected Field3d(Domain3d domain, int countX, int countY, int countZ,
+            FieldWrapMode wrapModeX = FieldWrapMode.Clamp,
+            FieldWrapMode wrapModeY = FieldWrapMode.Clamp,
             FieldWrapMode wrapModeZ = FieldWrapMode.Clamp)
             : this(countX, countY, countZ)
         {
@@ -275,34 +273,22 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetCoordinates(Vec3d[] result, bool parallel = false)
         {
-            Action<Tuple<int,int>> func = range =>
-            {
-                int i, j, k;
-                IndicesAt(range.Item1, out i, out j, out k);
+            Action<Tuple<int, int>> func = range =>
+             {
+                 (int i, int j, int k) = IndicesAt(range.Item1);
 
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == _nx) { j++; i = 0; }
-                    if (j == _ny) { k++; j = 0; }
-                    result[index] = CoordinateAt(i, j, k);
-                }
-            };
+                 for (int index = range.Item1; index < range.Item2; index++, i++)
+                 {
+                     if (i == _nx) { j++; i = 0; }
+                     if (j == _ny) { k++; j = 0; }
+                     result[index] = CoordinateAt(i, j, k);
+                 }
+             };
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, _n), func);
             else
                 func(Tuple.Create(0, _n));
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <returns></returns>
-        public Vec3d CoordinateAt(Vec3i indices)
-        {
-            return CoordinateAt(indices.x, indices.y, indices.z);
         }
 
 
@@ -329,7 +315,8 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public Vec3d CoordinateAt(int index)
         {
-            return CoordinateAt(IndicesAt(index));
+            (int i, int j, int k) = IndicesAt(index);
+            return CoordinateAt(i, j, k);
         }
 
 
@@ -341,18 +328,6 @@ namespace SpatialSlur.SlurField
         public bool ResolutionEquals(Field3d other)
         {
             return (_nx == other._nx && _ny == other._ny && _nz == other._nz);
-        }
-
-
-        /// <summary>
-        /// Flattens a 3 dimensional index into a 1 dimensional index.
-        /// Assumes the given indices are within valid range.
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <returns></returns>
-        public int IndexAtUnchecked(Vec3i indices)
-        {
-            return FieldUtil.FlattenIndex(indices.x, indices.y, indices.z, _nx, _nxy);
         }
 
 
@@ -378,8 +353,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int IndexAtUnchecked(Vec3d point)
         {
-            int i, j, k;
-            IndicesAt(point, out i, out j, out k);
+            (int i, int j, int k) = IndicesAt(point);
             return FieldUtil.FlattenIndex(i, j, k, _nx, _nxy);
         }
 
@@ -406,8 +380,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int IndexAt(Vec3d point)
         {
-            int i, j, k;
-            IndicesAt(point, out i, out j, out k);
+            (int i, int j, int k) = IndicesAt(point);
             return FieldUtil.FlattenIndex(_wrapX(i, _nx), _wrapY(j, _ny), _wrapZ(k, _nz), _nx, _nxy);
         }
 
@@ -417,11 +390,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Vec3i IndicesAt(int index)
+        public (int, int, int) IndicesAt(int index)
         {
-            int i, j, k;
-            FieldUtil.ExpandIndex(index, _nx, _nxy, out i, out j, out k);
-            return new Vec3i(i, j, k);
+            return FieldUtil.ExpandIndex(index, _nx, _nxy);
         }
 
 
@@ -432,9 +403,10 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <param name="k"></param>
+        [Obsolete]
         public void IndicesAt(int index, out int i, out int j, out int k)
         {
-            FieldUtil.ExpandIndex(index, _nx, _nxy, out i, out j, out k);
+            (i, j, k) = FieldUtil.ExpandIndex(index, _nx, _nxy);
         }
 
 
@@ -442,12 +414,12 @@ namespace SpatialSlur.SlurField
         /// Returns the indices of the value nearest to the given point.
         /// </summary>
         /// <param name="point"></param>
-        /// <returns></returns>
-        public Vec3i IndicesAt(Vec3d point)
+        public (int, int, int) IndicesAt(Vec3d point)
         {
-            int i, j, k;
-            IndicesAt(point, out i, out j, out k);
-            return new Vec3i(i, j, k);
+            return (
+                (int)Math.Round((point.x - _x0) * _dxInv),
+                (int)Math.Round((point.y - _y0) * _dyInv),
+                (int)Math.Round((point.z - _z0) * _dzInv));
         }
 
 
@@ -458,11 +430,10 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <param name="k"></param>
+        [Obsolete]
         public void IndicesAt(Vec3d point, out int i, out int j, out int k)
         {
-            i = (int)Math.Round((point.x - _x0) * _dxInv);
-            j = (int)Math.Round((point.y - _y0) * _dyInv);
-            k = (int)Math.Round((point.z - _z0) * _dzInv);
+            (i, j, k) = IndicesAt(point);
         }
 
 
@@ -558,17 +529,6 @@ namespace SpatialSlur.SlurField
             corners[5] = FieldUtil.FlattenIndex(i1, j0, k1, _nx, _nxy);
             corners[6] = FieldUtil.FlattenIndex(i0, j1, k1, _nx, _nxy);
             corners[7] = FieldUtil.FlattenIndex(i1, j1, k1, _nx, _nxy);
-        }
-
-
-        /// <summary>
-        /// Used by various operators in derived classes
-        /// </summary>
-        internal void GetR1BoundaryOffsets(out int di, out int dj, out int dk)
-        {
-            di = (_wrapModeX == FieldWrapMode.Repeat) ? _nx - 1 : 0;
-            dj = (_wrapModeY == FieldWrapMode.Repeat) ? _nxy - _nx : 0;
-            dk = (_wrapModeZ == FieldWrapMode.Repeat) ? _n - _nxy : 0;
         }
     }
 }

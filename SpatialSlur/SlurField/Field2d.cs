@@ -215,8 +215,7 @@ namespace SpatialSlur.SlurField
         {
             Action<Tuple<int, int>> func = range =>
             {
-                int i, j;
-                IndicesAt(range.Item1, out i, out j);
+                (int i, int j) = IndicesAt(range.Item1);
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
@@ -229,17 +228,6 @@ namespace SpatialSlur.SlurField
                 Parallel.ForEach(Partitioner.Create(0, _n), func);
             else
                 func(Tuple.Create(0, _n));
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <returns></returns>
-        public Vec2d CoordinateAt(Vec2i indices)
-        {
-            return CoordinateAt(indices.x, indices.y);
         }
 
 
@@ -264,7 +252,8 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public Vec2d CoordinateAt(int index)
         {
-            return CoordinateAt(IndicesAt(index));
+            (int i, int j) = IndicesAt(index);
+            return CoordinateAt(i, j);
         }
 
 
@@ -276,18 +265,6 @@ namespace SpatialSlur.SlurField
         public bool ResolutionEquals(Field2d other)
         {
             return (_nx == other._nx && _ny == other._ny);
-        }
-
-
-        /// <summary>
-        /// Flattens a 2 dimensional index into a 1 dimensional index.
-        /// Assumes the given indices are within valid range.
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <returns></returns>
-        public int IndexAtUnchecked(Vec2i indices)
-        {
-            return FieldUtil.FlattenIndex(indices.x, indices.y, _nx);
         }
 
 
@@ -312,21 +289,8 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int IndexAtUnchecked(Vec2d point)
         {
-            int i, j;
-            IndicesAt(point, out i, out j);
+            (int i, int j) = IndicesAt(point);
             return FieldUtil.FlattenIndex(i, j, _nx);
-        }
-
-
-        /// <summary>
-        /// Flattens a 2 dimensional index into a 1 dimensional index.
-        /// If the given indices are out of range, they are handled according to the current wrap mode.
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <returns></returns>
-        public int IndexAt(Vec2i indices)
-        {
-            return FieldUtil.FlattenIndex(_wrapX(indices.x, _nx), _wrapY(indices.y, _ny), _nx);
         }
 
 
@@ -351,22 +315,19 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int IndexAt(Vec2d point)
         {
-            int i, j;
-            IndicesAt(point, out i, out j);
+            (int i, int j) = IndicesAt(point);
             return FieldUtil.FlattenIndex(_wrapX(i, _nx), _wrapY(j, _ny), _nx);
         }
 
 
         /// <summary>
-        /// Expands 1 dimensional index into a 2 dimensional index.
+        /// 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Vec2i IndicesAt(int index)
+        public (int, int) IndicesAt(int index)
         {
-            int i, j;
-            FieldUtil.ExpandIndex(index, _nx, out i, out j);
-            return new Vec2i(i, j);
+            return FieldUtil.ExpandIndex(index, _nx);
         }
 
 
@@ -376,9 +337,10 @@ namespace SpatialSlur.SlurField
         /// <param name="index"></param>
         /// <param name="i"></param>
         /// <param name="j"></param>
+        [Obsolete]
         public void IndicesAt(int index, out int i, out int j)
         {
-            FieldUtil.ExpandIndex(index, _nx, out i, out j);
+            (i, j) = FieldUtil.ExpandIndex(index, _nx);
         }
 
 
@@ -386,12 +348,11 @@ namespace SpatialSlur.SlurField
         /// Returns the indices of the value nearest to the given point.
         /// </summary>
         /// <param name="point"></param>
-        /// <returns></returns>
-        public Vec2i IndicesAt(Vec2d point)
+        public (int, int) IndicesAt(Vec2d point)
         {
-            int i, j;
-            IndicesAt(point, out i, out j);
-            return new Vec2i(i, j);
+            return (
+                (int)Math.Round((point.x - _x0) * _dxInv),
+                (int)Math.Round((point.y - _y0) * _dyInv));
         }
 
 
@@ -403,8 +364,7 @@ namespace SpatialSlur.SlurField
         /// <param name="j"></param>
         public void IndicesAt(Vec2d point, out int i, out int j)
         {
-            i = (int)Math.Round((point.x - _x0) * _dxInv);
-            j = (int)Math.Round((point.y - _y0) * _dyInv);
+            (i, j) = IndicesAt(point);
         }
 
 
@@ -489,16 +449,6 @@ namespace SpatialSlur.SlurField
             corners[1] = FieldUtil.FlattenIndex(i1, j0, _nx);
             corners[2] = FieldUtil.FlattenIndex(i0, j1, _nx);
             corners[3] = FieldUtil.FlattenIndex(i1, j1, _nx);
-        }
-
-
-        /// <summary>
-        /// Used by various operators in derived classes.
-        /// </summary>
-        internal void GetBoundaryOffsets(out int di, out int dj)
-        {
-            di = (_wrapModeX == FieldWrapMode.Repeat) ? _nx - 1 : 0;
-            dj = (_wrapModeY == FieldWrapMode.Repeat) ? _n - _nx : 0;
         }
     }
 }

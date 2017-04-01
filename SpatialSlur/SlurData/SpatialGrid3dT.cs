@@ -135,12 +135,30 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <param name="k"></param>
+        protected override (int,int,int) Discretize(Vec3d point)
+        {
+            return (
+                SlurMath.Clamp((int)Math.Floor((point.x - _from.x) * _dxInv), _nx - 1),
+                SlurMath.Clamp((int)Math.Floor((point.y - _from.y) * _dyInv), _ny - 1),
+                SlurMath.Clamp((int)Math.Floor((point.z - _from.z) * _dzInv), _nz - 1));
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
         internal override void Discretize(Vec3d point, out int i, out int j, out int k)
         {
             i = SlurMath.Clamp((int)Math.Floor((point.x - _from.x) * _dxInv), _nx - 1);
             j = SlurMath.Clamp((int)Math.Floor((point.y - _from.y) * _dyInv), _ny - 1);
             k = SlurMath.Clamp((int)Math.Floor((point.z - _from.z) * _dzInv), _nz - 1);
         }
+        */
 
 
         /// <summary>
@@ -150,7 +168,7 @@ namespace SpatialSlur.SlurData
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        internal override int ToIndex(int i, int j, int k)
+        protected override int ToIndex(int i, int j, int k)
         {
             return i + j * _nx + k * _nxy;
         }
