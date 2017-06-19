@@ -173,7 +173,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(ScalarField2d field, ScalarField2d delta, double rate, bool parallel = false)
+        public static void Diffuse(GridScalarField2d field, GridScalarField2d delta, double rate, bool parallel = false)
         {
             Diffuse(field, delta.Values, rate, parallel);
         }
@@ -187,7 +187,7 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(ScalarField2d field, double[] deltas, double rate, bool parallel = false)
+        public static void Diffuse(GridScalarField2d field, double[] deltas, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -196,7 +196,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (field.ScaleX * field.ScaleX);
             double dy = 1.0 / (field.ScaleY * field.ScaleY);
             
-            (int di, int dj) = field.GetBoundaryOffsets();
+            (int di, int dj) = FieldUtil.GetBoundaryOffsets(field);
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -232,7 +232,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(ScalarField3d field, ScalarField3d delta, double rate, bool parallel = false)
+        public static void Diffuse(GridScalarField3d field, GridScalarField3d delta, double rate, bool parallel = false)
         {
             Diffuse(field, delta.Values, rate, parallel);
         }
@@ -246,7 +246,7 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(ScalarField3d field, double[] deltas, double rate, bool parallel = false)
+        public static void Diffuse(GridScalarField3d field, double[] deltas, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -258,7 +258,7 @@ namespace SpatialSlur.SlurField
             double dy = 1.0 / (field.ScaleY * field.ScaleY);
             double dz = 1.0 / (field.ScaleZ * field.ScaleZ);
 
-            (int di, int dj, int dk) = field.GetBoundaryOffsets();
+            (int di, int dj, int dk) = FieldUtil.GetBoundaryOffsets(field);
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -290,6 +290,7 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
         /// Adds the Laplacian of the field to the delta field.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
@@ -298,7 +299,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(MeshScalarField field, MeshScalarField delta, double rate, bool parallel = false)
+        public static void Diffuse(HeVertexScalarField field, HeVertexScalarField delta, double rate, bool parallel = false)
         {
             Diffuse(field, delta.Values, rate, parallel);
         }
@@ -312,10 +313,10 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(MeshScalarField field, double[] deltas, double rate, bool parallel = false)
+        public static void Diffuse(HeVertexScalarField field, double[] deltas, double rate, bool parallel = false)
         {
             var vals = field.Values;
-            var verts = field.Mesh.Vertices;
+            var verts = field.Vertices;
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -348,11 +349,11 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="delta"></param>
         /// <param name="rate"></param>
-        /// <param name="halfedgeWeights"></param>
+        /// <param name="hedgeWeights"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(MeshScalarField field, MeshScalarField delta, double rate, IReadOnlyList<double> halfedgeWeights, bool parallel = false)
+        public static void Diffuse(HeVertexScalarField field, HeVertexScalarField delta, double rate, IReadOnlyList<double> hedgeWeights, bool parallel = false)
         {
-            Diffuse(field, delta.Values, rate, halfedgeWeights, parallel);
+            Diffuse(field, delta.Values, rate, hedgeWeights, parallel);
         }
 
 
@@ -365,12 +366,12 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="deltas"></param>
         /// <param name="rate"></param>
-        /// <param name="halfedgeWeights"></param>
+        /// <param name="hedgeWeights"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(MeshScalarField field, double[] deltas, double rate, IReadOnlyList<double> halfedgeWeights, bool parallel = false)
+        public static void Diffuse(HeVertexScalarField field, double[] deltas, double rate, IReadOnlyList<double> hedgeWeights, bool parallel = false)
         {
             var vals = field.Values;
-            var verts = field.Mesh.Vertices;
+            var verts = field.Vertices;
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -380,7 +381,7 @@ namespace SpatialSlur.SlurField
                     double sum = 0.0;
 
                     foreach (var he in verts[i].OutgoingHalfedges)
-                        sum += (vals[he.End.Index] - value) * halfedgeWeights[he.Index];
+                        sum += (vals[he.End.Index] - value) * hedgeWeights[he.Index];
 
                     deltas[i] += sum * rate;
                 }
@@ -391,6 +392,7 @@ namespace SpatialSlur.SlurField
             else
                 func(Tuple.Create(0, field.Count));
         }
+        */
 
 
         /// <summary>
@@ -401,7 +403,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(ScalarField2d field, ScalarField2d delta, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridScalarField2d field, GridScalarField2d delta, double slope, double rate, bool parallel = false)
         {
             ErodeThermal(field, delta.Values, slope, rate, parallel);
         }
@@ -415,7 +417,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(ScalarField2d field, double[] deltas, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridScalarField2d field, double[] deltas, double slope, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -424,7 +426,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / Math.Abs(field.ScaleX);
             double dy = 1.0 / Math.Abs(field.ScaleY);
 
-            (int di, int dj) = field.GetBoundaryOffsets();
+            (int di, int dj) = FieldUtil.GetBoundaryOffsets(field);
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -481,7 +483,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(ScalarField3d field, ScalarField3d delta, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridScalarField3d field, GridScalarField3d delta, double slope, double rate, bool parallel = false)
         {
             ErodeThermal(field, delta.Values, slope, rate, parallel);
         }
@@ -495,7 +497,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(ScalarField3d field, double[] deltas, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridScalarField3d field, double[] deltas, double slope, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -507,7 +509,7 @@ namespace SpatialSlur.SlurField
             double dy = 1.0 / Math.Abs(field.ScaleY);
             double dz = 1.0 / Math.Abs(field.ScaleZ);
 
-            (int di, int dj, int dk) = field.GetBoundaryOffsets();
+            (int di, int dj, int dk) = FieldUtil.GetBoundaryOffsets(field);
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -570,9 +572,9 @@ namespace SpatialSlur.SlurField
         /// <param name="cost"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void L1GeodesicDistance(ScalarField2d cost, IEnumerable<int> sources, ScalarField2d result)
+        public static void GeodesicDistanceL1(GridScalarField2d cost, IEnumerable<int> sources, GridScalarField2d result)
         {
-            L1GeodesicDistance(cost, sources, result.Values);
+            GeodesicDistanceL1(cost, sources, result.Values);
         }
 
 
@@ -583,7 +585,7 @@ namespace SpatialSlur.SlurField
         /// <param name="cost"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void L1GeodesicDistance(ScalarField2d cost, IEnumerable<int> sources, double[] result)
+        public static void GeodesicDistanceL1(GridScalarField2d cost, IEnumerable<int> sources, double[] result)
         {
             // TODO consider wrap modes
 
@@ -651,10 +653,10 @@ namespace SpatialSlur.SlurField
         /// <param name="cost"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void L2GeodesicDistance(ScalarField2d cost, IEnumerable<int> sources, ScalarField2d result)
+        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, GridScalarField2d result)
         {
             var states = new bool[cost.Count];
-            L2GeodesicDistanceImpl(cost, sources, states, result.Values);
+            GeodesicDistanceL2Impl(cost, sources, states, result.Values);
         }
 
 
@@ -666,10 +668,10 @@ namespace SpatialSlur.SlurField
         /// <param name="sources"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static void L2GeodesicDistance(ScalarField2d cost, IEnumerable<int> sources, double[] result)
+        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, double[] result)
         {
-            var states = new bool[cost.Count];
-            L2GeodesicDistanceImpl(cost, sources, states, result);
+            var tags = new bool[cost.Count];
+            GeodesicDistanceL2Impl(cost, sources, tags, result);
         }
 
 
@@ -679,12 +681,12 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="cost"></param>
         /// <param name="sources"></param>
-        /// <param name="states"></param>
+        /// <param name="tags"></param>
         /// <param name="result"></param>
-        public static void L2GeodesicDistance(ScalarField2d cost, IEnumerable<int> sources, bool[] states, ScalarField2d result)
+        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, bool[] tags, GridScalarField2d result)
         {
-            states.Clear();
-            L2GeodesicDistanceImpl(cost, sources, states, result.Values);
+            tags.Clear();
+            GeodesicDistanceL2Impl(cost, sources, tags, result.Values);
         }
 
 
@@ -694,12 +696,12 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="cost"></param>
         /// <param name="sources"></param>
-        /// <param name="states"></param>
+        /// <param name="tags"></param>
         /// <param name="result"></param>
-        public static void L2GeodesicDistance(ScalarField2d cost, IEnumerable<int> sources, bool[] states, double[] result)
+        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, bool[] tags, double[] result)
         {
-            states.Clear();
-            L2GeodesicDistanceImpl(cost, sources, states, result);
+            tags.Clear();
+            GeodesicDistanceL2Impl(cost, sources, tags, result);
         }
 
 
@@ -708,9 +710,9 @@ namespace SpatialSlur.SlurField
        /// </summary>
        /// <param name="cost"></param>
        /// <param name="sources"></param>
-       /// <param name="states"></param>
+       /// <param name="tags"></param>
        /// <param name="result"></param>
-        private static void L2GeodesicDistanceImpl(ScalarField2d cost, IEnumerable<int> sources, bool[] states, double[] result)
+        private static void GeodesicDistanceL2Impl(GridScalarField2d cost, IEnumerable<int> sources, bool[] tags, double[] result)
         {
             // TODO consider wrap modes
 
@@ -736,8 +738,8 @@ namespace SpatialSlur.SlurField
             while (pq.Count > 0)
             {
                 (double t0, int i0) = pq.RemoveMin();
-                if (states[i0]) continue; // skip if already accepted
-                states[i0] = true;
+                if (tags[i0]) continue; // skip if already accepted
+                tags[i0] = true;
 
                 (int x0, int y0) = cost.IndicesAt(i0);
 
@@ -747,7 +749,7 @@ namespace SpatialSlur.SlurField
                     if (!SlurMath.Contains(x0 + j, 0, nx)) continue;
 
                     int i1 = i0 + j;
-                    if (!states[i1])
+                    if (!tags[i1])
                     {
                         double y = (y0 == 0) ? result[i1 + nx]
                           : (y0 == ny - 1) ? result[i1 - nx]
@@ -770,7 +772,7 @@ namespace SpatialSlur.SlurField
                     if (!SlurMath.Contains(y0 + j, 0, ny)) continue;
 
                     int i1 = i0 + j * nx;
-                    if (!states[i1])
+                    if (!tags[i1])
                     {
                         double x = (x0 == 0) ? result[i1 + 1]
                           : (x0 == nx - 1) ? result[i1 - 1]

@@ -59,9 +59,7 @@ namespace SpatialSlur.SlurCore
             Vec3d v = endB - startB;
             Vec3d w = startA - startB;
 
-            double tu, tv;
-            LineLineClosestPoints(u, v, w, out tu, out tv);
-
+            LineLineClosestPoints(u, v, w, out double tu, out double tv);
             return v * tv - u * tu - w;
         }
 
@@ -78,9 +76,7 @@ namespace SpatialSlur.SlurCore
         {
             Vec3d w = startA - startB;
 
-            double tu, tv;
-            LineLineClosestPoints(deltaA, deltaB, w, out tu, out tv);
-
+            LineLineClosestPoints(deltaA, deltaB, w, out double tu, out double tv);
             return deltaB * tv - deltaA * tu - w;
         }
 
@@ -111,8 +107,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d ReflectInPlane(Vec3d point, Vec3d origin, Vec3d normal)
         {
-            // return point + Vec3d.Project(origin - point, normal) * 2.0;
-            return point + normal * (((origin - point) * normal) / normal.SquareLength * 2.0);
+            return point + Vec3d.Project(origin - point, normal) * 2.0;
         }
 
 
@@ -255,6 +250,50 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns the area gradient of the given trianglue with respect to p0.
+        /// https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf p 64
+        /// </summary>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <returns></returns>
+        public static Vec3d GetTriAreaGrad(Vec3d p0, Vec3d p1, Vec3d p2)
+        {
+            var d = p2 - p1;
+            var n = d ^ (p0 - p1);
+
+            n.Unitize();
+            return (n ^ d) * 0.5;
+        }
+
+
+        /// <summary>
+        /// Returns the area gradient of the given trianglue with respect to each vertex
+        /// https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf p 64
+        /// </summary>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <param name="g0"></param>
+        /// <param name="g1"></param>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public static void GetTriAreaGrads(Vec3d p0, Vec3d p1, Vec3d p2, out Vec3d g0, out Vec3d g1, out Vec3d g2)
+        {
+            var d0 = p1 - p0;
+            var d1 = p2 - p1;
+            var d2 = p0 - p2;
+
+            var n = d0 ^ d1;
+            n.Unitize();
+
+            g0 = n ^ d1 * 0.5;
+            g1 = n ^ d2 * 0.5;
+            g2 = g0 + g1;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="p0"></param>
@@ -311,23 +350,27 @@ namespace SpatialSlur.SlurCore
             double s = Math.Sin(angle);
             double t = 1.0 - c;
 
-            result[0] = c + axis.x * axis.x * t; // m00
-            result[4] = c + axis.y * axis.y * t; // m11
-            result[8] = c + axis.z * axis.z * t; // m22
+            result[0] = c + axis.X * axis.X * t; // m00
+            result[4] = c + axis.Y * axis.Y * t; // m11
+            result[8] = c + axis.Z * axis.Z * t; // m22
 
-            double tmp1 = axis.x * axis.y * t;
-            double tmp2 = axis.z * s;
-            result[1] = tmp1 + tmp2; // m01
-            result[3] = tmp1 - tmp2; // m10
+            double p0 = axis.X * axis.Y * t;
+            double p1 = axis.Z * s;
 
-            tmp1 = axis.x * axis.z * t;
-            tmp2 = axis.y * s;
-            result[2] = tmp1 - tmp2; // m02
-            result[6] = tmp1 + tmp2; tmp1 = axis.y * axis.z * t; // m20
+            result[1] = p0 + p1; // m01
+            result[3] = p0 - p1; // m10
 
-            tmp2 = axis.x * s;
-            result[5] = tmp1 + tmp2; // m21
-            result[7] = tmp1 - tmp2; // m12
+            p0 = axis.X * axis.Z * t;
+            p1 = axis.Y * s;
+
+            result[2] = p0 - p1; // m02
+            result[6] = p0 + p1; // m20
+
+            p0 = axis.Y * axis.Z * t; 
+            p1 = axis.X * s;
+
+            result[5] = p0 + p1; // m21
+            result[7] = p0 - p1; // m12
         }
 
 
@@ -340,8 +383,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec2d GetGradient(Func<Vec2d, double> func, Vec2d vector, double delta)
         {
-            double x = vector.x;
-            double y = vector.y;
+            double x = vector.X;
+            double y = vector.Y;
        
             double gx = func(new Vec2d(x + delta, y)) - func(new Vec2d(x - delta, y));
             double gy = func(new Vec2d(x, y + delta)) - func(new Vec2d(x, y - delta));
@@ -358,9 +401,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d GetGradient(Func<Vec3d, double> func, Vec3d vector, double delta)
         {
-            double x = vector.x;
-            double y = vector.y;
-            double z = vector.z;
+            double x = vector.X;
+            double y = vector.Y;
+            double z = vector.Z;
 
             double gx = func(new Vec3d(x + delta, y, z)) - func(new Vec3d(x - delta, y, z));
             double gy = func(new Vec3d(x, y + delta, z)) - func(new Vec3d(x, y - delta, z));

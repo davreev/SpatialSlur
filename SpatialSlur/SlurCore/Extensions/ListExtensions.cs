@@ -20,20 +20,12 @@ namespace SpatialSlur.SlurCore
         #region List<T>
 
         /// <summary>
-        /// Removes elements from the list for which the given predicate returns false.
+        /// Moves true elements to the front of the list and removes remaining elements from the list.
         /// </summary>
-        public static void Compact<T>(this List<T> list, Predicate<T> include)
+        public static void Compact<T>(this List<T> list, Predicate<T> match)
         {
-            int marker = 0;
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                T t = list[i];
-                if (include(t))
-                    list[marker++] = t;
-            }
-
-            list.RemoveRange(marker, list.Count - marker); // trim list to include only used elements
+            int marker = list.Swim(match);
+            list.RemoveRange(marker, list.Count - marker);
         }
 
 
@@ -42,8 +34,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Fill<T>(this List<T> list)
         {
-            while (list.Count < list.Capacity)
-                list.Add(default(T));
+            list.FillTo(list.Capacity);
         }
 
 
@@ -52,7 +43,26 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Fill<T>(this List<T> list, T value)
         {
-            while (list.Count < list.Capacity)
+            list.FillTo(list.Capacity, value);
+        }
+
+
+        /// <summary>
+        /// Fills list to the specified count with the default value of T.
+        /// </summary>
+        public static void FillTo<T>(this List<T> list, int count)
+        {
+            while (list.Count < count)
+                list.Add(default(T));
+        }
+
+
+        /// <summary>
+        /// Fills list to the specified count with the given value of T.
+        /// </summary>
+        public static void FillTo<T>(this List<T> list, int count, T value)
+        {
+            while (list.Count < count)
                 list.Add(value);
         }
 

@@ -18,22 +18,21 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static readonly Func<int, int, int>[] _wrapFuncs =
-        {
-            Clamp,
-            Repeat,
-            MirrorRepeat
-        };
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="wrapMode"></param>
         /// <returns></returns>
-        public static Func<int, int, int> SelectWrapFunc(FieldWrapMode wrapMode)
+        public static Func<int, int, int> SelectWrapFunction(WrapMode wrapMode)
         {
-            return _wrapFuncs[(int)wrapMode];
+            switch(wrapMode)
+            {
+                case WrapMode.Clamp:
+                    return Clamp;
+                case WrapMode.Repeat:
+                    return Repeat;
+                case WrapMode.MirrorRepeat:
+                    return MirrorRepeat;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
 
@@ -83,7 +82,7 @@ namespace SpatialSlur.SlurField
         /// <param name="y"></param>
         /// <param name="nx"></param>
         /// <returns></returns>
-        public static int FlattenIndex(int x, int y, int nx)
+        public static int FlattenIndices(int x, int y, int nx)
         {
             return x + y * nx;
         }
@@ -98,26 +97,10 @@ namespace SpatialSlur.SlurField
         /// <param name="nx"></param>
         /// <param name="nxy"></param>
         /// <returns></returns>
-        public static int FlattenIndex(int x, int y, int z, int nx, int nxy)
+        public static int FlattenIndices(int x, int y, int z, int nx, int nxy)
         {
             return x + y * nx + z * nxy;
         }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="nx"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public static void ExpandIndex(int index, int nx, out int x, out int y)
-        {
-            y = index / nx;
-            x = index - y * nx;
-        }
-        */
 
 
         /// <summary>
@@ -131,26 +114,6 @@ namespace SpatialSlur.SlurField
             int y = index / nx;
             return (index - y * nx, y);
         }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="nx"></param>
-        /// <param name="nxy"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        public static void ExpandIndex(int index, int nx, int nxy, out int x, out int y, out int z)
-        {
-            z = index / nxy;
-            x = index - z * nxy; // store remainder in x temporarily
-            y = x / nx;
-            x -= y * nx;
-        }
-        */
 
 
         /// <summary>
@@ -172,24 +135,28 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        internal static (int, int) GetBoundaryOffsets(this Field2d field)
+        /// <param name="field"></param>
+        /// <returns></returns>
+        internal static (int, int) GetBoundaryOffsets(GridField2d field)
         {
             return (
-                field.WrapModeX == FieldWrapMode.Repeat ? field.CountX - 1 : 0,
-                field.WrapModeY == FieldWrapMode.Repeat ? field.Count - field.CountX : 0
+                field.WrapModeX == WrapMode.Repeat ? field.CountX - 1 : 0,
+                field.WrapModeY == WrapMode.Repeat ? field.Count - field.CountX : 0
                 );
         }
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
-        internal static (int, int, int) GetBoundaryOffsets(this Field3d field)
+        /// <param name="field"></param>
+        /// <returns></returns>
+        internal static (int, int, int) GetBoundaryOffsets(GridField3d field)
         {
             return (
-                field.WrapModeX == FieldWrapMode.Repeat ? field.CountX - 1 : 0, 
-                field.WrapModeY == FieldWrapMode.Repeat ? field.CountXY - field.CountX : 0, 
-                field.WrapModeZ == FieldWrapMode.Repeat ? field.Count - field.CountXY : 0
+                field.WrapModeX == WrapMode.Repeat ? field.CountX - 1 : 0, 
+                field.WrapModeY == WrapMode.Repeat ? field.CountXY - field.CountX : 0, 
+                field.WrapModeZ == WrapMode.Repeat ? field.Count - field.CountXY : 0
                 );
         }
     }

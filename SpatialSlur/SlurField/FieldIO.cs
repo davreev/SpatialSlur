@@ -113,7 +113,8 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="bitmaps"></param>
         /// <param name="mapper"></param>
-        public static void ReadFromImageStack<T>(Field3d<T> field, IEnumerable<Bitmap> bitmaps, Func<Color, T> mapper)
+        public static void ReadFromImageStack<T>(GridField3d<T> field, IEnumerable<Bitmap> bitmaps, Func<Color, T> mapper)
+            where T : struct
         {
             int nxy = field.CountXY;
             int count = 0;
@@ -122,7 +123,6 @@ namespace SpatialSlur.SlurField
             {
                 ReadFromImage(field.Values, count * nxy, bitmap, mapper);
             });
-
         }
 
 
@@ -134,7 +134,8 @@ namespace SpatialSlur.SlurField
         /// <param name="layer"></param>
         /// <param name="mapper"></param>
         /// <param name="bitmap"></param>
-        public static void ReadFromImage<T>(Field3d<T> field, int layer, Bitmap bitmap, Func<Color, T> mapper)
+        public static void ReadFromImage<T>(GridField3d<T> field, int layer, Bitmap bitmap, Func<Color, T> mapper)
+            where T : struct
         {
             ReadFromImage(field.Values, layer * field.CountXY, bitmap, mapper);
         }
@@ -147,7 +148,8 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <param name="bitmap"></param>
-        public static void ReadFromImage<T>(Field2d<T> field, Bitmap bitmap, Func<Color, T> mapper)
+        public static void ReadFromImage<T>(GridField2d<T> field, Bitmap bitmap, Func<Color, T> mapper)
+            where T : struct
         {
             ReadFromImage(field.Values, 0, bitmap, mapper);
         }
@@ -161,7 +163,8 @@ namespace SpatialSlur.SlurField
         /// <param name="layer"></param>
         /// <param name="mapper"></param>
         /// <param name="bitmap"></param>
-        public static void WriteToImage<T>(Field3d<T> field, int layer, Bitmap bitmap, Func<T, Color> mapper)
+        public static void WriteToImage<T>(GridField3d<T> field, int layer, Bitmap bitmap, Func<T, Color> mapper)
+            where T : struct
         {
             WriteToImage(field.Values, layer * field.CountXY, bitmap, mapper);
         }
@@ -174,7 +177,8 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <param name="bitmap"></param>
-        public static void WriteToImage<T>(Field2d<T> field, Bitmap bitmap, Func<T, Color> mapper)
+        public static void WriteToImage<T>(GridField2d<T> field, Bitmap bitmap, Func<T, Color> mapper)
+            where T : struct
         {
             WriteToImage(field.Values, 0, bitmap, mapper);
         }
@@ -186,7 +190,7 @@ namespace SpatialSlur.SlurField
         private static void ReadFromImage<T>(T[] values, int index, Bitmap bitmap, Func<Color, T> mapper)
         {
             PixelFormat pf = bitmap.PixelFormat;
-            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
+            int bpp = Image.GetPixelFormatSize(pf) >> 3; // bytes per pixel
             PixelFormatCheck(bpp); // ensure 4 bytes per pixel
 
             unsafe
@@ -242,7 +246,7 @@ namespace SpatialSlur.SlurField
         private static void WriteToImage<T>(T[] values, int index, Bitmap bitmap, Func<T, Color> mapper)
         {
             PixelFormat pf = bitmap.PixelFormat;
-            int bpp = Bitmap.GetPixelFormatSize(pf) >> 3; // bytes per pixel
+            int bpp = Image.GetPixelFormatSize(pf) >> 3; // bytes per pixel
             PixelFormatCheck(bpp);
 
             unsafe

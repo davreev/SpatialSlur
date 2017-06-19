@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static bool operator ==(Vec3i v0, Vec3i v1)
         {
-            return (v0.x == v1.x) && (v0.y == v1.y) && (v0.z == v1.z);
+            return (v0.X == v1.X) && (v0.Y == v1.Y) && (v0.Z == v1.Z);
         }
 
 
@@ -61,7 +61,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static bool operator !=(Vec3i v0, Vec3i v1)
         {
-            return (v0.x != v1.x) || (v0.y != v1.y) || (v0.z != v1.z);
+            return (v0.X != v1.X) || (v0.Y != v1.Y) || (v0.Z != v1.Z);
         }
 
 
@@ -73,9 +73,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i operator +(Vec3i v0, Vec3i v1)
         {
-            v0.x += v1.x;
-            v0.y += v1.y;
-            v0.z += v1.z;
+            v0.X += v1.X;
+            v0.Y += v1.Y;
+            v0.Z += v1.Z;
             return v0;
         }
 
@@ -88,9 +88,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i operator -(Vec3i v0, Vec3i v1)
         {
-            v0.x -= v1.x;
-            v0.y -= v1.y;
-            v0.z -= v1.z;
+            v0.X -= v1.X;
+            v0.Y -= v1.Y;
+            v0.Z -= v1.Z;
             return v0;
         }
 
@@ -102,9 +102,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i operator -(Vec3i v)
         {
-            v.x = -v.x;
-            v.y = -v.y;
-            v.z = -v.z;
+            v.X = -v.X;
+            v.Y = -v.Y;
+            v.Z = -v.Z;
             return v;
         }
 
@@ -117,9 +117,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i operator *(Vec3i v, int t)
         {
-            v.x *= t;
-            v.y *= t;
-            v.z *= t;
+            v.X *= t;
+            v.Y *= t;
+            v.Z *= t;
             return v;
         }
 
@@ -132,9 +132,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i operator *(int t, Vec3i v)
         {
-            v.x *= t;
-            v.y *= t;
-            v.z *= t;
+            v.X *= t;
+            v.Y *= t;
+            v.Z *= t;
             return v;
         }
 
@@ -147,7 +147,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int operator *(Vec3i v0, Vec3i v1)
         {
-            return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
+            return v0.X * v1.X + v0.Y * v1.Y + v0.Z * v1.Z;
         }
 
 
@@ -157,7 +157,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i Abs(Vec3i v)
         {
-            return new Vec3i(Math.Abs(v.x), Math.Abs(v.y), Math.Abs(v.z));
+            return new Vec3i(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z));
         }
 
  
@@ -169,7 +169,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i Max(Vec3i v0, Vec3i v1)
         {
-            return new Vec3i(Math.Max(v0.x, v1.x), Math.Max(v0.y, v1.y), Math.Max(v0.z, v1.z));
+            return new Vec3i(Math.Max(v0.X, v1.X), Math.Max(v0.Y, v1.Y), Math.Max(v0.Z, v1.Z));
         }
 
 
@@ -181,7 +181,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3i Min(Vec3i v0, Vec3i v1)
         {
-            return new Vec3i(Math.Min(v0.x, v1.x), Math.Min(v0.y, v1.y), Math.Min(v0.z, v1.z));
+            return new Vec3i(Math.Min(v0.X, v1.X), Math.Min(v0.Y, v1.Y), Math.Min(v0.Z, v1.Z));
         }
 
 
@@ -193,7 +193,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Dot(Vec3i v0, Vec3i v1)
         {
-            return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
+            return v0.X * v1.X + v0.Y * v1.Y + v0.Z * v1.Z;
         }
 
 
@@ -206,9 +206,9 @@ namespace SpatialSlur.SlurCore
         public static Vec3i Cross(Vec3i v0, Vec3i v1)
         {
             return new Vec3i(
-                v0.y * v1.z - v0.z * v1.y, 
-                v0.z * v1.x - v0.x * v1.z, 
-                v0.x * v1.y - v0.y * v1.x);
+                v0.Y * v1.Z - v0.Z * v1.Y, 
+                v0.Z * v1.X - v0.X * v1.Z, 
+                v0.X * v1.Y - v0.Y * v1.X);
         }
 
 
@@ -219,13 +219,28 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static implicit operator Vec3i(Vec2i v)
         {
-            return new Vec3i(v.x, v.y, 0);
+            return new Vec3i(v.X, v.Y, 0);
         }
 
         #endregion
 
 
-        public int x, y, z;
+        /// <summary></summary>
+        public int X;
+        /// <summary></summary>
+        public int Y;
+        /// <summary></summary>
+        public int Z;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xyz"></param>
+        public Vec3i(int xyz)
+        {
+            X = Y = Z = xyz;
+        }
 
 
         /// <summary>
@@ -236,9 +251,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="z"></param>
         public Vec3i(int x, int y, int z)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
         }
 
 
@@ -257,7 +272,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public int SquareLength
         {
-            get { return x * x + y * y + z * z; }
+            get { return X * X + Y * Y + Z * Z; }
         }
 
 
@@ -267,7 +282,16 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public int ManhattanLength
         {
-            get { return Math.Abs(x) + Math.Abs(y) + Math.Abs(z); }
+            get { return Math.Abs(X) + Math.Abs(Y) + Math.Abs(Z); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public (int, int, int) Components
+        {
+            get { return (X, Y, Z); }
         }
 
 
@@ -277,7 +301,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public int ComponentMax
         {
-            get { return Math.Max(x, Math.Max(y, z)); }
+            get { return Math.Max(X, Math.Max(Y, Z)); }
         }
 
 
@@ -287,7 +311,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public int ComponentMin
         {
-            get { return Math.Min(x, Math.Min(y, z)); }
+            get { return Math.Min(X, Math.Min(Y, Z)); }
         }
 
 
@@ -297,7 +321,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public int ComponentSum
         {
-            get { return x + y + z; }
+            get { return X + Y + Z; }
         }
 
 
@@ -306,7 +330,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsZero
         {
-            get { return x == 0 && y == 0 && z == 0; }
+            get { return X == 0 && Y == 0 && Z == 0; }
         }
 
 
@@ -325,7 +349,17 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("({0},{1},{2})", x, y, z);
+            return String.Format("({0},{1},{2})", X, Y, Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xyz"></param>
+        public void Set(int xyz)
+        {
+            X = Y = Z = xyz;
         }
 
 
@@ -337,9 +371,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="z"></param>
         public void Set(int x, int y, int z)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
         }
 
 
@@ -350,9 +384,9 @@ namespace SpatialSlur.SlurCore
         public override int GetHashCode()
         {
             int hash = 17;
-            hash = hash * 23 + x.GetHashCode();
-            hash = hash * 23 + y.GetHashCode();
-            hash = hash * 23 + z.GetHashCode();
+            hash = hash * 23 + X.GetHashCode();
+            hash = hash * 23 + Y.GetHashCode();
+            hash = hash * 23 + Z.GetHashCode();
             return hash;
         }
      
@@ -410,7 +444,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public int[] ToArray()
         {
-            return new int[] { x, y, z };
+            return new int[] { X, Y, Z };
         }
     }
 }

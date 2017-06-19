@@ -62,10 +62,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d operator +(Vec4d v0, Vec4d v1)
         {
-            v0.x += v1.x;
-            v0.y += v1.y;
-            v0.z += v1.z;
-            v0.w += v1.w;
+            v0.X += v1.X;
+            v0.Y += v1.Y;
+            v0.Z += v1.Z;
+            v0.W += v1.W;
             return v0;
         }
 
@@ -78,10 +78,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d operator -(Vec4d v0, Vec4d v1)
         {
-            v0.x -= v1.x;
-            v0.y -= v1.y;
-            v0.z -= v1.z;
-            v0.w -= v1.w;
+            v0.X -= v1.X;
+            v0.Y -= v1.Y;
+            v0.Z -= v1.Z;
+            v0.W -= v1.W;
             return v0;
         }
 
@@ -93,10 +93,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d operator -(Vec4d v)
         {
-            v.x = -v.x;
-            v.y = -v.y;
-            v.z = -v.z;
-            v.w = -v.w;
+            v.X = -v.X;
+            v.Y = -v.Y;
+            v.Z = -v.Z;
+            v.W = -v.W;
             return v;
         }
 
@@ -109,10 +109,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d operator *(Vec4d v, double t)
         {
-            v.x *= t;
-            v.y *= t;
-            v.z *= t;
-            v.w *= t;
+            v.X *= t;
+            v.Y *= t;
+            v.Z *= t;
+            v.W *= t;
             return v;
         }
 
@@ -125,10 +125,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d operator *(double t, Vec4d v)
         {
-            v.x *= t;
-            v.y *= t;
-            v.z *= t;
-            v.w *= t;
+            v.X *= t;
+            v.Y *= t;
+            v.Z *= t;
+            v.W *= t;
             return v;
         }
 
@@ -141,7 +141,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double operator *(Vec4d v0, Vec4d v1)
         {
-            return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z + v0.w * v1.w;
+            return v0.X * v1.X + v0.Y * v1.Y + v0.Z * v1.Z + v0.W * v1.W;
         }
 
 
@@ -154,10 +154,10 @@ namespace SpatialSlur.SlurCore
         public static Vec4d operator /(Vec4d v, double t)
         {
             t = 1.0 / t;
-            v.x *= t;
-            v.y *= t;
-            v.z *= t;
-            v.w *= t;
+            v.X *= t;
+            v.Y *= t;
+            v.Z *= t;
+            v.W *= t;
             return v;
         }
 
@@ -170,7 +170,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d Max(Vec4d v0, Vec4d v1)
         {
-            return new Vec4d(Math.Max(v0.x, v1.x), Math.Max(v0.y, v1.y), Math.Max(v0.z, v1.z), Math.Max(v0.w, v1.w));
+            return new Vec4d(Math.Max(v0.X, v1.X), Math.Max(v0.Y, v1.Y), Math.Max(v0.Z, v1.Z), Math.Max(v0.W, v1.W));
         }
 
 
@@ -182,7 +182,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d Min(Vec4d v0, Vec4d v1)
         {
-            return new Vec4d(Math.Min(v0.x, v1.x), Math.Min(v0.y, v1.y), Math.Min(v0.z, v1.z), Math.Min(v0.w, v1.w));
+            return new Vec4d(Math.Min(v0.X, v1.X), Math.Min(v0.Y, v1.Y), Math.Min(v0.Z, v1.Z), Math.Min(v0.W, v1.W));
         }
 
 
@@ -193,7 +193,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d Abs(Vec4d v)
         {
-            return new Vec4d(Math.Abs(v.x), Math.Abs(v.y), Math.Abs(v.z), Math.Abs(v.w));
+            return new Vec4d(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z), Math.Abs(v.W));
         }
 
 
@@ -205,7 +205,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Dot(Vec4d v0, Vec4d v1)
         {
-            return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z + v0.w * v1.w;
+            return v0.X * v1.X + v0.Y * v1.Y + v0.Z * v1.Z + v0.W * v1.W;
         }
 
 
@@ -217,7 +217,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double AbsDot(Vec4d v0, Vec4d v1)
         {
-            return Math.Abs(v0.x * v1.x) + Math.Abs(v0.y * v1.y) + Math.Abs(v0.z * v1.z) + Math.Abs(v0.w * v1.w);
+            return Math.Abs(v0.X * v1.X) + Math.Abs(v0.Y * v1.Y) + Math.Abs(v0.Z * v1.Z) + Math.Abs(v0.W * v1.W);
         }
 
 
@@ -312,10 +312,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d Lerp(Vec4d v0, Vec4d v1, double t)
         {
-            v0.x += (v1.x - v0.x) * t;
-            v0.y += (v1.y - v0.y) * t;
-            v0.z += (v1.z - v0.z) * t;
-            v0.w += (v1.w - v0.w) * t;
+            v0.X += (v1.X - v0.X) * t;
+            v0.Y += (v1.Y - v0.Y) * t;
+            v0.Z += (v1.Z - v0.Z) * t;
+            v0.W += (v1.W - v0.W) * t;
             return v0;
         }
 
@@ -355,7 +355,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static implicit operator Vec4d(Vec2d v)
         {
-            return new Vec4d(v.x, v.y, 0.0, 0.0);
+            return new Vec4d(v.X, v.Y, 0.0, 0.0);
         }
         
 
@@ -366,13 +366,31 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static implicit operator Vec4d(Vec3d v)
         {
-            return new Vec4d(v.x, v.y, v.z, 0.0);
+            return new Vec4d(v.X, v.Y, v.Z, 0.0);
         }
 
 
         #endregion
 
-        public double x, y, z, w;
+
+        /// <summary></summary>
+        public double X;
+        /// <summary></summary>
+        public double Y;
+        /// <summary></summary>
+        public double Z;
+        /// <summary></summary>
+        public double W;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xyzw"></param>
+        public Vec4d(double xyzw)
+        {
+            X = Y = Z = W = xyzw;
+        }
 
 
         /// <summary>
@@ -384,10 +402,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="w"></param>
         public Vec4d(double x, double y, double z, double w)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
+            this.W = w;
         }
 
 
@@ -399,10 +417,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="w"></param>
         public Vec4d(Vec2d other, double z, double w)
         {
-            x = other.x;
-            y = other.y;
-            this.z = z;
-            this.w = w;
+            X = other.X;
+            Y = other.Y;
+            this.Z = z;
+            this.W = w;
         }
 
 
@@ -413,10 +431,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="w"></param>
         public Vec4d(Vec3d other, double w)
         {
-            x = other.x;
-            y = other.y;
-            z = other.z;
-            this.w = w;
+            X = other.X;
+            Y = other.Y;
+            Z = other.Z;
+            this.W = w;
         }
 
 
@@ -434,7 +452,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public double SquareLength
         {
-            get { return x * x + y * y + z * z + w * w; }
+            get { return X * X + Y * Y + Z * Z + W * W; }
         }
 
 
@@ -444,7 +462,16 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double ManhattanLength
         {
-            get { return Math.Abs(x) + Math.Abs(y) + Math.Abs(z) + Math.Abs(w); }
+            get { return Math.Abs(X) + Math.Abs(Y) + Math.Abs(Z) + Math.Abs(W); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public (double, double, double, double) Components
+        {
+            get { return (X, Y, Z, W); }
         }
 
 
@@ -453,7 +480,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public double ComponentSum
         {
-            get { return x + y + z + w; }
+            get { return X + Y + Z + W; }
         }
 
 
@@ -462,7 +489,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public double ComponentMean
         {
-            get { return (x + y + z + w) * 0.25; }
+            get { return (X + Y + Z + W) * 0.25; }
         }
 
 
@@ -472,7 +499,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double ComponentMax
         {
-            get { return Math.Max(x, Math.Max(y, Math.Max(z, w))); }
+            get { return Math.Max(X, Math.Max(Y, Math.Max(Z, W))); }
         }
 
 
@@ -482,7 +509,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double ComponentMin
         {
-            get { return Math.Min(x, Math.Min(y, Math.Min(z, w))); }
+            get { return Math.Min(X, Math.Min(Y, Math.Min(Z, W))); }
         }
 
 
@@ -492,7 +519,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsZero(double epsilon)
         {
-            return (Math.Abs(x) < epsilon) && (Math.Abs(y) < epsilon) && (Math.Abs(z) < epsilon) && (Math.Abs(w) < epsilon);
+            return (Math.Abs(X) < epsilon) && (Math.Abs(Y) < epsilon) && (Math.Abs(Z) < epsilon) && (Math.Abs(W) < epsilon);
         }
 
 
@@ -511,7 +538,17 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("({0},{1},{2},{3})", x, y, z, w);
+            return String.Format("({0},{1},{2},{3})", X, Y, Z, W);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xyzw"></param>
+        public void Set(double xyzw)
+        {
+            X = Y = Z = W = xyzw;
         }
 
 
@@ -524,10 +561,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="w"></param>
         public void Set(double x, double y, double z, double w)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
+            this.W = w;
         }
 
 
@@ -539,7 +576,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec4d other, double epsilon)
         {
-            return (Math.Abs(other.x - x) < epsilon) && (Math.Abs(other.y - y) < epsilon) && (Math.Abs(other.z - z) < epsilon) && (Math.Abs(other.w - w) < epsilon);
+            return (Math.Abs(other.X - X) < epsilon) && (Math.Abs(other.Y - Y) < epsilon) && (Math.Abs(other.Z - Z) < epsilon) && (Math.Abs(other.W - W) < epsilon);
         }
 
 
@@ -551,7 +588,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec4d other, Vec4d epsilon)
         {
-            return (Math.Abs(other.x - x) < epsilon.x) && (Math.Abs(other.y - y) < epsilon.y) && (Math.Abs(other.z - z) < epsilon.z) && (Math.Abs(other.w - w) < epsilon.w);
+            return (Math.Abs(other.X - X) < epsilon.X) && (Math.Abs(other.Y - Y) < epsilon.Y) && (Math.Abs(other.Z - Z) < epsilon.Z) && (Math.Abs(other.W - W) < epsilon.W);
         }
 
 
@@ -562,10 +599,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double DistanceTo(Vec4d other)
         {
-            other.x -= x;
-            other.y -= y;
-            other.z -= z;
-            other.w -= w;
+            other.X -= X;
+            other.Y -= Y;
+            other.Z -= Z;
+            other.W -= W;
             return other.Length;
         }
 
@@ -577,10 +614,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double SquareDistanceTo(Vec4d other)
         {
-            other.x -= x;
-            other.y -= y;
-            other.z -= z;
-            other.w -= w;
+            other.X -= X;
+            other.Y -= Y;
+            other.Z -= Z;
+            other.W -= W;
             return other.SquareLength;
         }
 
@@ -592,10 +629,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double ManhattanDistanceTo(Vec4d other)
         {
-            other.x -= x;
-            other.y -= y;
-            other.z -= z;
-            other.w -= w;
+            other.X -= X;
+            other.Y -= Y;
+            other.Z -= Z;
+            other.W -= W;
             return other.ManhattanLength;
         }
 
@@ -611,10 +648,10 @@ namespace SpatialSlur.SlurCore
             if (d > 0.0)
             {
                 d = 1.0 / Math.Sqrt(d);
-                x *= d;
-                y *= d;
-                z *= d;
-                w *= d;
+                X *= d;
+                Y *= d;
+                Z *= d;
+                W *= d;
                 return true;
             }
 
@@ -631,10 +668,10 @@ namespace SpatialSlur.SlurCore
         public Vec4d LerpTo(Vec4d other, double factor)
         {
             return new Vec4d(
-                x + (other.x - x) * factor,
-                y + (other.y - y) * factor,
-                z + (other.z - z) * factor,
-                w + (other.w - w) * factor);
+                X + (other.X - X) * factor,
+                Y + (other.Y - Y) * factor,
+                Z + (other.Z - Z) * factor,
+                W + (other.W - W) * factor);
         }
 
 
@@ -644,7 +681,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double[] ToArray()
         {
-            return new double[] { x, y, z, w };
+            return new double[] { X, Y, Z, W };
         }
     }
 }

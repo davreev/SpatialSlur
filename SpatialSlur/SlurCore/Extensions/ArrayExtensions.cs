@@ -59,9 +59,37 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Set<T>(this T[] array, T[] other)
         {
-            other.CopyTo(array, 0);
+            Array.Copy(other, array, array.Length);
         }
 
+
+        /// <summary>
+        /// Assumes the length of the array is less than or equal to the number of elements in the given sequence.
+        /// </summary>
+        public static void Set<T>(this T[] array, IEnumerable<T> sequence)
+        {
+            var itr = sequence.GetEnumerator();
+
+            for(int i = 0; i < array.Length; i++)
+            {
+                array[i] = itr.Current;
+                itr.MoveNext();
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        public static void ClearRange<T>(this T[] array, int index, int count)
+        {
+            Array.Clear(array, index, count);
+        }
+        
 
         /// <summary>
         /// 
@@ -76,9 +104,33 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        public static void SetRange<T>(this T[] array, T[] other, int count)
+        {
+            Array.Copy(other, 0, array, 0, count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static void SetRange<T>(this T[] array, T[] other, int thisIndex, int otherIndex, int count)
         {
             Array.Copy(other, otherIndex, array, thisIndex, count);
+        }
+
+
+        /// <summary>
+        /// Assumes the specified range is less than or equal to the number of elements in the given sequence.
+        /// </summary>
+        public static void SetRange<T>(this T[] array, IEnumerable<T> sequence, int index, int count)
+        {
+            var itr = sequence.GetEnumerator();
+
+            for (int i = 0; i < count; i++)
+            {
+                array[index + i] = itr.Current;
+                itr.MoveNext();
+            }
         }
 
 
@@ -89,6 +141,16 @@ namespace SpatialSlur.SlurCore
         {
             for (int i = 0; i < indices.Length; i++)
                 array[indices[i]] = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void SetSelection<T>(this T[] array, T value, IEnumerable<int> indices)
+        {
+            foreach(int i in indices)
+                array[i] = value;
         }
 
 
@@ -146,6 +208,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="action"></param>
+        public static void Action<T>(this T[] source, Action<T> action)
+        {
+            ActionRange(source, 0, source.Length, action);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static U[] Convert<T, U>(this T[] source, Func<T, U> converter)
         {
             return ConvertRange(source, 0, source.Length, converter);
@@ -182,6 +256,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="action"></param>
+        public static void ActionParallel<T>(this T[] source, Action<T> action)
+        {
+            ActionRangeParallel(source, 0, source.Length, action);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static U[] ConvertParallel<T, U>(this T[] source, Func<T, U> converter)
         {
             return ConvertRangeParallel(source, 0, source.Length, converter);
@@ -212,6 +298,21 @@ namespace SpatialSlur.SlurCore
         public static void ConvertParallel<T, U>(this T[] source, Func<T, int, U> converter, U[] result)
         {
             ConvertRangeParallel(source, 0, source.Length, converter, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="action"></param>
+        public static void ActionRange<T>(this T[] source, int index, int count, Action<T> action)
+        {
+            for (int i = 0; i < count; i++)
+                action(source[i + index]);
         }
 
 
@@ -257,6 +358,24 @@ namespace SpatialSlur.SlurCore
                 int j = i + index;
                 result[i] = converter(source[j], j);
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="action"></param>
+        public static void ActionRangeParallel<T>(this T[] source, int index, int count, Action<T> action)
+        {
+            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    action(source[i + index]);
+            });
         }
 
 
@@ -314,6 +433,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        public static void ActionSelection<T>(this T[] source, int[] indices, Action<T> action)
+        {
+            for (int i = 0; i < indices.Length; i++)
+                action(source[indices[i]]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static U[] ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, U> converter)
         {
             U[] result = new U[indices.Length];
@@ -353,6 +482,19 @@ namespace SpatialSlur.SlurCore
                 int j = indices[i];
                 result[i] = converter(source[j], j);
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void ActionSelectionParallel<T>(this T[] source, int[] indices, Action<T> action)
+        {
+            Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    action(source[indices[i]]);
+            });
         }
 
 
@@ -410,7 +552,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static IEnumerable<T> Range<T>(this T[] source, int index, int count)
+        public static IEnumerable<T> TakeRange<T>(this T[] source, int index, int count)
         {
             for (int i = 0; i < count; i++)
                 yield return source[i + index];
@@ -420,16 +562,26 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static IEnumerable<T> EveryNth<T>(this T[] source, int n)
+        public static IEnumerable<T> TakeSelection<T>(this T[] source, IEnumerable<int> indices)
         {
-            return EveryNth(source, n, 0, source.Length);
+            foreach (int i in indices)
+                yield return source[i];
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static IEnumerable<T> EveryNth<T>(this T[] source, int n, int index, int count)
+        public static IEnumerable<T> TakeEveryNth<T>(this T[] source, int n)
+        {
+            return TakeEveryNth(source, n, 0, source.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static IEnumerable<T> TakeEveryNth<T>(this T[] source, int n, int index, int count)
         {
             for (int i = 0; i < count; i += n)
                 yield return source[i + index];
@@ -854,7 +1006,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void FunctionParallel<T0, T1, U>(this T0[] v0, T1[] v1, int count, Func<T0, T1, U> func, U[] result)
         {
-            Parallel.ForEach(Partitioner.Create(0, v0.Length), range =>
+            Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                     result[i] = func(v0[i], v1[i]);
@@ -894,9 +1046,7 @@ namespace SpatialSlur.SlurCore
         public static Color Lerp(this Color[] colors, double t)
         {
             int last = colors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 return colors[0];
@@ -1280,7 +1430,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static double Angle(this double[] v0, double[] v1, int count)
         {
-            double d = L2Norm(v0, count) * L2Norm(v1, count);
+            double d = NormL2(v0, count) * NormL2(v1, count);
 
             if (d > 0.0)
                 return Math.Acos(SlurMath.Clamp(Dot(v0, v1, count) / d, -1.0, 1.0)); // clamp dot product to remove noise
@@ -1528,16 +1678,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns Manhattan length
         /// </summary>
-        public static double L1Norm(this double[] vector)
+        public static double NormL1(this double[] vector)
         {
-            return L1Norm(vector, vector.Length);
+            return NormL1(vector, vector.Length);
         }
 
 
         /// <summary>
         /// Returns Manhattan length
         /// </summary>
-        public static double L1Norm(this double[] vector, int count)
+        public static double NormL1(this double[] vector, int count)
         {
             double result = 0.0;
 
@@ -1551,16 +1701,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns Euclidean length
         /// </summary>
-        public static double L2Norm(this double[] vector)
+        public static double NormL2(this double[] vector)
         {
-            return L2Norm(vector, vector.Length);
+            return NormL2(vector, vector.Length);
         }
 
 
         /// <summary>
         /// Returns Euclidean length
         /// </summary>
-        public static double L2Norm(this double[] vector, int count)
+        public static double NormL2(this double[] vector, int count)
         {
             return Math.Sqrt(Dot(vector, vector, count));
         }
@@ -1569,34 +1719,34 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static double L2DistanceTo(this double[] v0, double[] v1)
+        public static double DistanceToL2(this double[] v0, double[] v1)
         {
-            return L2DistanceTo(v0, v1, v0.Length);
+            return DistanceToL2(v0, v1, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static double L2DistanceTo(this double[] v0, double[] v1, int count)
+        public static double DistanceToL2(this double[] v0, double[] v1, int count)
         {
-            return Math.Sqrt(L2DistanceToSqr(v0, v1, count));
+            return Math.Sqrt(SquareDistanceToL2(v0, v1, count));
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static double L2DistanceToSqr(this double[] v0, double[] v1)
+        public static double SquareDistanceToL2(this double[] v0, double[] v1)
         {
-            return L2DistanceToSqr(v0, v1, v0.Length);
+            return SquareDistanceToL2(v0, v1, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static double L2DistanceToSqr(this double[] v0, double[] v1, int count)
+        public static double SquareDistanceToL2(this double[] v0, double[] v1, int count)
         {
             double result = 0.0;
 
@@ -1613,16 +1763,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static double L1DistanceTo(this double[] v0, double[] v1)
+        public static double DistanceToL1(this double[] v0, double[] v1)
         {
-            return L1DistanceTo(v0, v1, v0.Length);
+            return DistanceToL1(v0, v1, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static double L1DistanceTo(this double[] v0, double[] v1, int count)
+        public static double DistanceToL1(this double[] v0, double[] v1, int count)
         {
             double result = 0.0;
 
@@ -2172,9 +2322,7 @@ namespace SpatialSlur.SlurCore
         public static double Lerp(this double[] vector, double t)
         {
             int last = vector.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 return vector[0];
@@ -3190,16 +3338,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2Norm(this Vec2d[] vectors, double[] result)
+        public static void NormL2(this Vec2d[] vectors, double[] result)
         {
-            L2Norm(vectors, vectors.Length, result);
+            NormL2(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2Norm(this Vec2d[] vectors, int count, double[] result)
+        public static void NormL2(this Vec2d[] vectors, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = vectors[i].Length;
@@ -3209,16 +3357,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2NormParallel(this Vec2d[] vectors, double[] result)
+        public static void NormL2Parallel(this Vec2d[] vectors, double[] result)
         {
-            L2NormParallel(vectors, vectors.Length, result);
+            NormL2Parallel(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2NormParallel(this Vec2d[] vectors, int count, double[] result)
+        public static void NormL2Parallel(this Vec2d[] vectors, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -3231,16 +3379,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1Norm(this Vec2d[] vectors, double[] result)
+        public static void NormL1(this Vec2d[] vectors, double[] result)
         {
-            L1Norm(vectors, vectors.Length, result);
+            NormL1(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1Norm(this Vec2d[] vectors, int count, double[] result)
+        public static void NormL1(this Vec2d[] vectors, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = vectors[i].ManhattanLength;
@@ -3250,16 +3398,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1NormParallel(this Vec2d[] vectors, double[] result)
+        public static void NormL1Parallel(this Vec2d[] vectors, double[] result)
         {
-            L1NormParallel(vectors, vectors.Length, result);
+            NormL1Parallel(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1NormParallel(this Vec2d[] vectors, int count, double[] result)
+        public static void NormL1Parallel(this Vec2d[] vectors, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -3272,16 +3420,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceTo(this Vec2d[] v0, Vec2d[] v1, double[] result)
+        public static void DistanceToL2(this Vec2d[] v0, Vec2d[] v1, double[] result)
         {
-            L2DistanceTo(v0, v1, v0.Length, result);
+            DistanceToL2(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceTo(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
+        public static void DistanceToL2(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = v0[i].DistanceTo(v1[i]);
@@ -3291,16 +3439,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToParallel(this Vec2d[] v0, Vec2d[] v1, double[] result)
+        public static void DistanceToL2Parallel(this Vec2d[] v0, Vec2d[] v1, double[] result)
         {
-            L2DistanceToParallel(v0, v1, v0.Length, result);
+            DistanceToL2Parallel(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToParallel(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
+        public static void DistanceToL2Parallel(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -3313,16 +3461,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqr(this Vec2d[] v0, Vec2d[] v1, double[] result)
+        public static void SquareDistanceToL2(this Vec2d[] v0, Vec2d[] v1, double[] result)
         {
-            L2DistanceToSqr(v0, v1, v0.Length, result);
+            SquareDistanceToL2(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqr(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
+        public static void SquareDistanceToL2(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = v0[i].SquareDistanceTo(v1[i]);
@@ -3332,16 +3480,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqrParallel(this Vec2d[] v0, Vec2d[] v1, double[] result)
+        public static void SquareDistanceToL2Parallel(this Vec2d[] v0, Vec2d[] v1, double[] result)
         {
-            L2DistanceToSqrParallel(v0, v1, v0.Length, result);
+            SquareDistanceToL2Parallel(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqrParallel(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
+        public static void SquareDistanceToL2Parallel(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -3354,16 +3502,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceTo(this Vec2d[] v0, Vec2d[] v1, double[] result)
+        public static void DistanceToL1(this Vec2d[] v0, Vec2d[] v1, double[] result)
         {
-            L1DistanceTo(v0, v1, v0.Length, result);
+            DistanceToL1(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceTo(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
+        public static void DistanceToL1(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = v0[i].ManhattanDistanceTo(v1[i]);
@@ -3373,16 +3521,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceToParallel(this Vec2d[] v0, Vec2d[] v1, double[] result)
+        public static void DistanceToL1Parallel(this Vec2d[] v0, Vec2d[] v1, double[] result)
         {
-            L1DistanceToParallel(v0, v1, v0.Length, result);
+            DistanceToL1Parallel(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceToParallel(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
+        public static void DistanceToL1Parallel(this Vec2d[] v0, Vec2d[] v1, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -3890,9 +4038,7 @@ namespace SpatialSlur.SlurCore
         public static Vec2d Lerp(this Vec2d[] vectors, double t)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 return vectors[0];
@@ -4976,16 +5122,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2Norm(this Vec3d[] vectors, double[] result)
+        public static void NormL2(this Vec3d[] vectors, double[] result)
         {
-            L2Norm(vectors, vectors.Length, result);
+            NormL2(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2Norm(this Vec3d[] vectors, int count, double[] result)
+        public static void NormL2(this Vec3d[] vectors, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = vectors[i].Length;
@@ -4995,16 +5141,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2NormParallel(this Vec3d[] vectors, double[] result)
+        public static void NormL2Parallel(this Vec3d[] vectors, double[] result)
         {
-            L2NormParallel(vectors, vectors.Length, result);
+            NormL2Parallel(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2NormParallel(this Vec3d[] vectors, int count, double[] result)
+        public static void NormL2Parallel(this Vec3d[] vectors, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -5017,16 +5163,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1Norm(this Vec3d[] vectors, double[] result)
+        public static void NormL1(this Vec3d[] vectors, double[] result)
         {
-            L1Norm(vectors, vectors.Length, result);
+            NormL1(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1Norm(this Vec3d[] vectors, int count, double[] result)
+        public static void NormL1(this Vec3d[] vectors, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = vectors[i].ManhattanLength;
@@ -5036,16 +5182,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1NormParallel(this Vec3d[] vectors, double[] result)
+        public static void NormL1Parallel(this Vec3d[] vectors, double[] result)
         {
-            L1NormParallel(vectors, vectors.Length, result);
+            NormL1Parallel(vectors, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1NormParallel(this Vec3d[] vectors, int count, double[] result)
+        public static void NormL1Parallel(this Vec3d[] vectors, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -5058,16 +5204,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceTo(this Vec3d[] v0, Vec3d[] v1, double[] result)
+        public static void DistanceToL2(this Vec3d[] v0, Vec3d[] v1, double[] result)
         {
-            L2DistanceTo(v0, v1, v0.Length, result);
+            DistanceToL2(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceTo(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
+        public static void DistanceToL2(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = v0[i].DistanceTo(v1[i]);
@@ -5077,16 +5223,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToParallel(this Vec3d[] v0, Vec3d[] v1, double[] result)
+        public static void DistanceToL2Parallel(this Vec3d[] v0, Vec3d[] v1, double[] result)
         {
-            L2DistanceToParallel(v0, v1, v0.Length, result);
+            DistanceToL2Parallel(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToParallel(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
+        public static void DistanceToL2Parallel(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -5099,16 +5245,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqr(this Vec3d[] v0, Vec3d[] v1, double[] result)
+        public static void SquareDistanceToL2(this Vec3d[] v0, Vec3d[] v1, double[] result)
         {
-            L2DistanceToSqr(v0, v1, v0.Length, result);
+            SquareDistanceToL2(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqr(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
+        public static void SquareDistanceToL2(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = v0[i].SquareDistanceTo(v1[i]);
@@ -5118,16 +5264,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqrParallel(this Vec3d[] v0, Vec3d[] v1, double[] result)
+        public static void SquareDistanceToL2Parallel(this Vec3d[] v0, Vec3d[] v1, double[] result)
         {
-            L2DistanceToSqrParallel(v0, v1, v0.Length, result);
+            SquareDistanceToL2Parallel(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L2DistanceToSqrParallel(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
+        public static void SquareDistanceToL2Parallel(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -5140,16 +5286,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceTo(this Vec3d[] v0, Vec3d[] v1, double[] result)
+        public static void DistanceToL1(this Vec3d[] v0, Vec3d[] v1, double[] result)
         {
-            L1DistanceTo(v0, v1, v0.Length, result);
+            DistanceToL1(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceTo(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
+        public static void DistanceToL1(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
                 result[i] = v0[i].ManhattanDistanceTo(v1[i]);
@@ -5159,16 +5305,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceToParallel(this Vec3d[] v0, Vec3d[] v1, double[] result)
+        public static void DistanceToL1Parallel(this Vec3d[] v0, Vec3d[] v1, double[] result)
         {
-            L1DistanceToParallel(v0, v1, v0.Length, result);
+            DistanceToL1Parallel(v0, v1, v0.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void L1DistanceToParallel(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
+        public static void DistanceToL1Parallel(this Vec3d[] v0, Vec3d[] v1, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -5676,9 +5822,7 @@ namespace SpatialSlur.SlurCore
         public static Vec3d Lerp(this Vec3d[] vectors, double t)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 return vectors[0];
@@ -6228,9 +6372,7 @@ namespace SpatialSlur.SlurCore
         public static void Lerp(this double[][] vectors, double t, int size, double[] result)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 result.Set(vectors[0]);
@@ -6259,8 +6401,7 @@ namespace SpatialSlur.SlurCore
       
             for (int j = 0; j < size; j++)
             {
-                int i;
-                double tj = SlurMath.Fract(t[j] * last, out i);
+                double tj = SlurMath.Fract(t[j] * last, out int i);
 
                 if (i < 0)
                     result[j] = vectors[0][j];
@@ -6287,9 +6428,7 @@ namespace SpatialSlur.SlurCore
         public static void LerpParallel(this double[][] vectors, double t, int size, double[] result)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 result.Set(vectors[0]);
@@ -6320,8 +6459,7 @@ namespace SpatialSlur.SlurCore
             {
                 for (int j = range.Item1; j < range.Item2; j++)
                 {
-                    int i;
-                    double tj = SlurMath.Fract((double)(t[j] * last), out i);
+                    double tj = SlurMath.Fract((double)(t[j] * last), out int i);
 
                     if (i < 0)
                         result[j] = vectors[0][j];
@@ -6353,9 +6491,7 @@ namespace SpatialSlur.SlurCore
         public static void Lerp(this Vec2d[][] vectors, double t, int size, Vec2d[] result)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 result.Set(vectors[0]);
@@ -6384,8 +6520,7 @@ namespace SpatialSlur.SlurCore
      
             for (int j = 0; j < size; j++)
             {
-                int i;
-                double tj = SlurMath.Fract(t[j] * last, out i);
+                double tj = SlurMath.Fract(t[j] * last, out int i);
 
                 if (i < 0)
                     result[j] = vectors[0][j];
@@ -6412,9 +6547,7 @@ namespace SpatialSlur.SlurCore
         public static void LerpParallel(this Vec2d[][] vectors, double t, int size, Vec2d[] result)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 result.Set(vectors[0]);
@@ -6445,8 +6578,7 @@ namespace SpatialSlur.SlurCore
             {
                 for (int j = range.Item1; j < range.Item2; j++)
                 {
-                    int i;
-                    double tj = SlurMath.Fract(t[j] * last, out i);
+                    double tj = SlurMath.Fract(t[j] * last, out int i);
 
                     if (i < 0)
                         result[j] = vectors[0][j];
@@ -6478,9 +6610,7 @@ namespace SpatialSlur.SlurCore
         public static void Lerp(this Vec3d[][] vectors, double t, int size, Vec3d[] result)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 result.Set(vectors[0]);
@@ -6509,8 +6639,7 @@ namespace SpatialSlur.SlurCore
 
             for (int j = 0; j < size; j++)
             {
-                int i;
-                double tj = SlurMath.Fract(t[j] * last, out i);
+                double tj = SlurMath.Fract(t[j] * last, out int i);
 
                 if (i < 0)
                     result[j] = vectors[0][j];
@@ -6537,9 +6666,7 @@ namespace SpatialSlur.SlurCore
         public static void LerpParallel(this Vec3d[][] vectors, double t, int size, Vec3d[] result)
         {
             int last = vectors.Length - 1;
-
-            int i;
-            t = SlurMath.Fract(t * last, out i);
+            t = SlurMath.Fract(t * last, out int i);
 
             if (i < 0)
                 result.Set(vectors[0]);
@@ -6570,8 +6697,7 @@ namespace SpatialSlur.SlurCore
             {
                 for (int j = range.Item1; j < range.Item2; j++)
                 {
-                    int i;
-                    double tj = SlurMath.Fract(t[j] * last, out i);
+                    double tj = SlurMath.Fract(t[j] * last, out int i);
 
                     if (i < 0)
                         result[j] = vectors[0][j];

@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurData
     public class ProbabilitySelector
     {
         private double[] _weights;
-        Random _random;
+        private Random _random;
 
 
         /// <summary>
@@ -52,24 +52,6 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="newWeights"></param>
         public void SetWeights(IEnumerable<double> newWeights)
-        {
-            var itr = newWeights.GetEnumerator();
-
-            for(int i = 0; i < _weights.Length; i++)
-            {
-                _weights[i] = itr.Current;
-                itr.MoveNext();
-            }
-
-            NormalizeWeights();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="newWeights"></param>
-        public void SetWeights(double[] newWeights)
         {
             _weights.Set(newWeights);
             NormalizeWeights();

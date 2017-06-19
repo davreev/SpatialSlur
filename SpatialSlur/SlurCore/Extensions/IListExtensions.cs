@@ -39,6 +39,27 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Assumes the length of the array is less than or equal to the number of elements in the given sequence.
+        /// </summary>
+        public static void Set<T>(this IList<T> list, IEnumerable<T> sequence)
+        {
+            if (list is T[])
+            {
+                ArrayExtensions.Set((T[])list, sequence);
+                return;
+            }
+
+            var itr = sequence.GetEnumerator();
+
+            for(int i = 0; i < list.Count; i++)
+            {
+                list[i] = itr.Current;
+                itr.MoveNext();
+            }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         public static void SetRange<T>(this IList<T> list, T value, int index, int count)
@@ -57,6 +78,15 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        public static void SetRange<T>(this IList<T> list, IReadOnlyList<T> other, int count)
+        {
+            SetRange(list, other, 0, 0, count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static void SetRange<T>(this IList<T> list, IReadOnlyList<T> other, int thisIndex, int otherIndex, int count)
         {
             if (list is T[] && other is T[])
@@ -68,6 +98,55 @@ namespace SpatialSlur.SlurCore
             for (int i = 0; i < count; i++)
                 list[thisIndex + i] = other[otherIndex + i];
         }
+
+
+        /// <summary>
+        /// Assumes the specified range is less than or equal to the number of elements in the given sequence.
+        /// </summary>
+        public static void SetRange<T>(this IList<T> list, IEnumerable<T> sequence, int index, int count)
+        {
+            if(list is T[])
+            {
+                ArrayExtensions.SetRange((T[])list, sequence, index, count);
+                return;
+            }
+
+            var itr = sequence.GetEnumerator();
+
+            for (int i = 0; i < count; i++)
+            {
+                list[index + i] = itr.Current;
+                itr.MoveNext();
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void SetSelection<T>(this IList<T> list, T value, IEnumerable<int> indices)
+        {
+            if (list is T[])
+                ArrayExtensions.SetSelection((T[])list, value, indices);
+
+            foreach (int i in indices)
+                list[i] = value;
+        }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void SetSelection<T>(this IList<T> list, IList<T> other, IList<int> indices)
+        {
+            if (list is T[] && other is T[] && indices is int[])
+                ArrayExtensions.SetSelection((T[])list, (T[])other, (int[])indices);
+
+            for (int i = 0; i < indices.Count; i++)
+                list[indices[i]] = other[i];
+        }
+
 
 
         /// <summary>
@@ -198,20 +277,20 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Moves elements for which the given predicate returns true to the front of the list.
-        /// Returns the index after the last used element.
+        /// Moves true elements to the front of the list.
+        /// Returns the index after the last true element.
         /// </summary>
-        public static int Compact<T>(this IList<T> list, Predicate<T> include)
+        public static int Swim<T>(this IList<T> list, Predicate<T> match)
         {
             if (list is T[])
-                return ArrayExtensions.Compact((T[])list, include);
+                return ArrayExtensions.Compact((T[])list, match);
 
             int marker = 0;
 
             for (int i = 0; i < list.Count; i++)
             {
                 T t = list[i];
-                if (include(t))
+                if (match(t))
                     list[marker++] = t;
             }
 

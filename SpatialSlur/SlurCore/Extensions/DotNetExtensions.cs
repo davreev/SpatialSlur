@@ -115,8 +115,8 @@ namespace SpatialSlur.SlurCore
         public static Vec2d NextVec2d(this Random random, Domain2d domain)
         {
             return new Vec2d(
-                domain.x.Evaluate(random.NextDouble()), 
-                domain.y.Evaluate(random.NextDouble()));
+                domain.X.Evaluate(random.NextDouble()), 
+                domain.Y.Evaluate(random.NextDouble()));
         }
 
 
@@ -170,9 +170,9 @@ namespace SpatialSlur.SlurCore
         public static Vec3d NextVec3d(this Random random, Domain3d domain)
         {
             return new Vec3d(
-                domain.x.Evaluate(random.NextDouble()), 
-                domain.y.Evaluate(random.NextDouble()), 
-                domain.z.Evaluate(random.NextDouble()));
+                domain.X.Evaluate(random.NextDouble()), 
+                domain.Y.Evaluate(random.NextDouble()), 
+                domain.Z.Evaluate(random.NextDouble()));
         }
 
 

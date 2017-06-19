@@ -19,21 +19,22 @@ namespace SpatialSlur.SlurCore
     {
         #region IEnumerable<T>
 
+
         /// <summary>
-        /// 
+        /// Assumes the number of elements in this sequence doesn't exceed the length of the given array.
+        /// Returns the number of items in this sequence.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="sequence"></param>
-        /// <param name="compare"></param>
-        /// <returns></returns>
-        public static T SelectMin<T>(this IEnumerable<T> sequence, Comparison<T> compare)
+        /// <param name="seqeunce"></param>
+        /// <param name="array"></param>
+        public static int ToArray<T>(this IEnumerable<T> seqeunce, T[] array)
         {
-            T tMin = sequence.ElementAt(0);
+            int index = 0;
 
-            foreach (T t in sequence.Skip(1))
-                if (compare(t, tMin) < 0) tMin = t;
+            foreach (var item in seqeunce)
+                array[index++] = item;
 
-            return tMin;
+            return index;
         }
 
 
@@ -41,70 +42,270 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
         /// <param name="sequence"></param>
         /// <param name="selector"></param>
         /// <returns></returns>
-        public static T SelectMin<T>(this IEnumerable<T> sequence, Func<T, double> selector)
+        public static T SelectMin<T, U>(this IEnumerable<T> sequence, Func<T, U> selector)
+            where U : IComparable<U>
         {
             T tMin = sequence.ElementAt(0);
-            double dMin = selector(tMin);
+            U uMin = selector(tMin);
 
             foreach (T t in sequence.Skip(1))
             {
-                double d = selector(t);
-                if (d < dMin)
+                var u = selector(t);
+
+                if (u.CompareTo(uMin) < 0)
                 {
                     tMin = t;
-                    dMin = d;
+                    uMin = u;
                 }
             }
 
             return tMin;
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="sequence"></param>
-        /// <param name="compare"></param>
-        /// <returns></returns>
-        public static T SelectMax<T>(this IEnumerable<T> sequence, Comparison<T> compare)
-        {
-            T tMax = sequence.ElementAt(0);
-
-            foreach (T t in sequence.Skip(1))
-                if (compare(t, tMax) > 0) tMax = t;
-
-            return tMax;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
         /// <param name="sequence"></param>
         /// <param name="selector"></param>
         /// <returns></returns>
-        public static T SelectMax<T>(this IEnumerable<T> sequence, Func<T, double> selector)
+        public static T SelectMax<T, U>(this IEnumerable<T> sequence, Func<T, U> selector)
+            where U : IComparable<U>
         {
             T tMax = sequence.ElementAt(0);
-            double dMax = selector(tMax);
+            U uMax = selector(tMax);
 
             foreach (T t in sequence.Skip(1))
             {
-                double d = selector(t);
-                if (d > dMax)
+                var u = selector(t);
+                if (u.CompareTo(uMax) > 0)
                 {
                     tMax = t;
-                    dMax = d;
+                    uMax = u;
                 }
             }
 
             return tMax;
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec2d Sum<T>(this IEnumerable<T> items, Func<T, Vec2d> getValue)
+        {
+            var result = new Vec2d();
+
+            foreach (var t in items)
+                result += getValue(t);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec3d Sum<T>(this IEnumerable<T> items, Func<T, Vec3d> getValue)
+        {
+            var result = new Vec3d();
+
+            foreach (var t in items)
+                result += getValue(t);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static double WeightedSum<T>(this IEnumerable<T> items, Func<T, double> getValue, Func<T, double> getWeight)
+        {
+            var result = 0.0;
+
+            foreach (var t in items)
+                result += getValue(t) * getWeight(t);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec2d WeightedSum<T>(this IEnumerable<T> items, Func<T, Vec2d> getValue, Func<T, double> getWeight)
+        {
+            var result = new Vec2d();
+
+            foreach (var t in items)
+                result += getValue(t) * getWeight(t);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec3d WeightedSum<T>(this IEnumerable<T> items, Func<T, Vec3d> getValue, Func<T, double> getWeight)
+        {
+            var result = new Vec3d();
+
+            foreach (var t in items)
+                result += getValue(t) * getWeight(t);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static double Mean<T>(this IEnumerable<T> items, Func<T, double> getValue)
+        {
+            var result = 0.0;
+            int n = 0;
+
+            foreach (var t in items)
+            {
+                result += getValue(t);
+                n++;
+            }
+
+            return result / n;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec2d Mean<T>(this IEnumerable<T> items, Func<T, Vec2d> getValue)
+        {
+            var result = new Vec2d();
+            int n = 0;
+
+            foreach (var t in items)
+            {
+                result += getValue(t);
+                n++;
+            }
+
+            return result / n;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec3d Mean<T>(this IEnumerable<T> items, Func<T, Vec3d> getValue)
+        {
+            var result = new Vec3d();
+            int n = 0;
+
+            foreach (var t in items)
+            {
+                result += getValue(t);
+                n++;
+            }
+
+            return result / n;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static double WeightedMean<T>(this IEnumerable<T> items, Func<T, double> getValue, Func<T, double> getWeight)
+        {
+            var result = 0.0;
+            var wsum = 0.0;
+
+            foreach (var t in items)
+            {
+                var w = getWeight(t);
+                result += getValue(t) * w;
+                wsum += w;
+            }
+
+            return result / wsum;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec2d WeightedMean<T>(this IEnumerable<T> items, Func<T, Vec2d> getValue, Func<T, double> getWeight)
+        {
+            var result = new Vec2d();
+            var wsum = 0.0;
+
+            foreach (var t in items)
+            {
+                var w = getWeight(t);
+                result += getValue(t) * w;
+                wsum += w;
+            }
+
+            return result / wsum;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec3d WeightedMean<T>(this IEnumerable<T> items, Func<T, Vec3d> getValue, Func<T, double> getWeight)
+        {
+            var result = new Vec3d();
+            var wsum = 0.0;
+
+            foreach (var t in items)
+            {
+                var w = getWeight(t);
+                result += getValue(t) * w;
+                wsum += w;
+            }
+
+            return result / wsum;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Normalize<T>(this IEnumerable<T> items, Func<T, double> getValue, Action<T, double> setValue)
+        {
+            double sum = 0.0;
+
+            foreach (var t in items)
+                sum += getValue(t);
+
+            if (sum > 0.0)
+            {
+                double inv = 1.0 / sum;
+
+                foreach (var t in items)
+                    setValue(t, getValue(t) * inv);
+            }
+        }
+
 
         #endregion
 
@@ -211,9 +412,9 @@ namespace SpatialSlur.SlurCore
             foreach (Vec2d v in vectors)
             {
                 Vec3d d = v - mean;
-                result[0] += d.x * d.x;
-                result[1] += d.x * d.y;
-                result[3] += d.y * d.y;
+                result[0] += d.X * d.X;
+                result[1] += d.X * d.Y;
+                result[3] += d.Y * d.Y;
             }
 
             // set symmetric values
@@ -285,12 +486,12 @@ namespace SpatialSlur.SlurCore
             foreach (Vec3d v in vectors)
             {
                 Vec3d d = v - mean;
-                result[0] += d.x * d.x;
-                result[1] += d.x * d.y;
-                result[2] += d.x * d.z;
-                result[4] += d.y * d.y;
-                result[5] += d.y * d.z;
-                result[8] += d.z * d.z;
+                result[0] += d.X * d.X;
+                result[1] += d.X * d.Y;
+                result[2] += d.X * d.Z;
+                result[4] += d.Y * d.Y;
+                result[5] += d.Y * d.Z;
+                result[8] += d.Z * d.Z;
             }
 
             // set symmetric values

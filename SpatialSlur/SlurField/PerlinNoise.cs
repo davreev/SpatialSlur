@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double Evaluate(Vec2d point)
         {
-            return Evaluate(point.x, point.y);
+            return Evaluate(point.X, point.Y);
         }
 
 
@@ -91,9 +91,8 @@ namespace SpatialSlur.SlurField
         public static double Evaluate(double x, double y)
         {
             // get whole and franctional componenets
-            int i, j;
-            x = SlurMath.Fract(x, out i);
-            y = SlurMath.Fract(y, out j);
+            x = SlurMath.Fract(x, out int i);
+            y = SlurMath.Fract(y, out int j);
 
             // calculate noise contributions from each corner
             double n00 = GradDot(ToIndex(i, j), x, y);
@@ -120,7 +119,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double Evaluate(Vec3d point)
         {
-            return Evaluate(point.x, point.y, point.z);
+            return Evaluate(point.X, point.Y, point.Z);
         }
 
 
@@ -134,10 +133,9 @@ namespace SpatialSlur.SlurField
         public static double Evaluate(double x, double y, double z)
         {
             // get whole and franctional componenets
-            int i, j, k;
-            x = SlurMath.Fract(x, out i);
-            y = SlurMath.Fract(y, out j);
-            z = SlurMath.Fract(z, out k);
+            x = SlurMath.Fract(x, out int i);
+            y = SlurMath.Fract(y, out int j);
+            z = SlurMath.Fract(z, out int k);
 
             // calculate noise contributions from each corner
             double n000 = GradDot(ToIndex(i, j, k), x, y, z);

@@ -84,7 +84,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double Evaluate(Vec2d point)
         {
-            return Evaluate(point.x, point.y);
+            return Evaluate(point.X, point.Y);
         }
 
 
@@ -153,7 +153,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double Evaluate(Vec3d point)
         {
-            return Evaluate(point.x, point.y, point.z);
+            return Evaluate(point.X, point.Y, point.Z);
         }
 
 
