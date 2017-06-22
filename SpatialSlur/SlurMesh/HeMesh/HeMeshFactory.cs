@@ -60,7 +60,7 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
     /// <typeparam name="TF"></typeparam>
-    public class HeMeshFactory<TV, TE, TF> : IFactory<HeMesh<TV, TE, TF>>
+    public class HeMeshFactory<TV, TE, TF> : IHeStructureFactory<HeMesh<TV, TE, TF>, TV, TE, TF>
         where TV : HeVertex<TV, TE, TF>
         where TE : Halfedge<TV, TE, TF>
         where TF : HeFace<TV, TE, TF>
@@ -164,12 +164,12 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setHedge"></param>
         /// <param name="setFace"></param>
         /// <returns></returns>
-        public HeMesh<TV, TE, TF>[] CreateConnectedComponents<UV, UE, UF>(HeMesh<UV, UE, UF> mesh, Func<UE, SplitDisjointHandle> getHandle, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Action<TF, UF> setFace)
+        public HeMesh<TV, TE, TF>[] CreateConnectedComponents<UV, UE, UF>(HeMesh<UV, UE, UF> mesh, Func<UE, ElementHandle> getHandle, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Action<TF, UF> setFace)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            return mesh.SplitDisjoint(this, getHandle, setVertex, setHedge, setFace);
+           return mesh.SplitDisjoint(this, getHandle, setVertex, setHedge, setFace);
         }
 
 
@@ -183,7 +183,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="tolerance"></param>
         /// <returns></returns>
         public HeMesh<TV, TE, TF> CreateFromPolygons<T>(IEnumerable<T> polygons, Action<TV, Vec3d> setPosition, double tolerance = 1.0e-8)
-            where T : IEnumerable<Vec3d>
+        where T : IEnumerable<Vec3d>
         {
             List<Vec3d> points = new List<Vec3d>();
             List<int> sizes = new List<int>();
@@ -241,6 +241,19 @@ namespace SpatialSlur.SlurMesh
             var result = Create();
             HeMeshIO.ReadOBJ(path, result, setPosition);
             return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="primitive"></param>
+        /// <param name="setPosition"></param>
+        /// <param name="setNormal"></param>
+        /// <returns></returns>
+        public HeMesh<TV,TE,TF> CreatePrimitive(PrimitiveType primitive, Action<TV, Vec3d> setPosition, Action<TV, Vec3d> setNormal)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -145,7 +145,7 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each value within the intersecting bin.
-        /// Returns false if the search was aborted which occurs if the delegate return false.
+        /// Returns false if the search is aborted midway through. This can be triggered by returning false from the given callback.
         /// Note the delegate may be called on the same value mutliple times.
         /// </summary>
         public bool Search(Vec2d point, Func<T, bool> callback)
@@ -165,7 +165,7 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each value within each intersecting bin.
-        /// Returns false if the search was aborted which occurs if the delegate return false.
+        /// Returns false if the search is aborted midway through. This can be triggered by returning false from the given callback.
         /// Note the delegate may be called on the same value mutliple times.
         /// </summary>
         public bool Search(Domain2d domain, Func<T, bool> callback)

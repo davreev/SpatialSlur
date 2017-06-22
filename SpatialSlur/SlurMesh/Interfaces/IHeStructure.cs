@@ -850,6 +850,33 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="getPosition"></param>
+        /// <returns></returns>
+        public static double GetEdgeLengthSum<V,E>(this IHeStructure<V, E> graph, Func<V, Vec3d> getPosition)
+            where V : HeElement, IHeVertex<V, E>
+            where E : HeElement, IHalfedge<V, E>
+        {
+            var hedges = graph.Halfedges;
+            var sum = 0.0;
+
+            for(int i = 0; i < hedges.Count; i+=2)
+            {
+                var he = hedges[i];
+                if (he.IsRemoved) continue;
+
+                sum += he.GetLength(getPosition);
+            }
+
+            return sum;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static void GetEdgeLengths<V, E>(this IHeStructure<V, E> graph, Func<V, Vec3d> getPosition, Action<E, double> setLength, bool parallel = false)
             where V : HeElement, IHeVertex<V, E>
             where E : HeElement, IHalfedge<V, E>
@@ -1125,13 +1152,13 @@ namespace SpatialSlur.SlurMesh
                     var v0 = verts[i];
                     if (v0.IsRemoved) continue;
 
-                    var t = getValue(v0);
+                    var t0 = getValue(v0);
                     var sum = new Vec3d();
                     int n = 0;
 
                     foreach (var v1 in v0.ConnectedVertices)
                     {
-                        sum += getValue(v1) - t;
+                        sum += getValue(v1) - t0;
                         n++;
                     }
 
@@ -2182,7 +2209,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the cotangent weight for each edge.
+        /// Calculates the cotangent weight for each edge (symmetric).
         /// Based on Pinkall and Polthier's derivation of the Laplace-Beltrami operator discussed in http://reuter.mit.edu/papers/reuter-smi09.pdf.
         /// Assumes triangular faces.
         /// </summary>
@@ -2219,7 +2246,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the area-dependant cotangent weight for each edge.
+        /// Calculates the area-dependant cotangent weight for each edge (symmetric).
         /// Based on Levy and Vallet's derivation of the symmetric Laplace-Beltrami operator discussed in http://reuter.mit.edu/papers/reuter-smi09.pdf.
         /// Assumes triangular faces.
         /// </summary>
@@ -2257,7 +2284,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calculates the area-dependant cotangent weight for each edge along with the barycentric dual area of each vertex.
+        /// Calculates the area-dependant cotangent weight for each edge (symmetric) along with the barycentric dual area of each vertex.
         /// Based on Levy and Vallet's derivation of the Laplace-Beltrami operator discussed in http://reuter.mit.edu/papers/reuter-smi09.pdf.
         /// Note that corresponding get/set delegates should read/write to the same location.
         /// Assumes triangular faces.

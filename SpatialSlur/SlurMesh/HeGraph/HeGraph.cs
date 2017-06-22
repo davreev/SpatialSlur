@@ -19,8 +19,8 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="TE"></typeparam>
     [Serializable]
     public class HeGraph<TV, TE> : IHeStructure<TV, TE>
-        where TV : HeVertex<TV,TE>
-        where TE : Halfedge<TV,TE>
+        where TV : HeVertex<TV, TE>
+        where TE : Halfedge<TV, TE>
     {
         private HeElementList<TV> _vertices;
         private HeElementList<TE> _hedges;
@@ -137,15 +137,12 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Appends a deep copy of the given graph to this graph.
-        /// Element data is initialized by the corresponding factory delegate.
+        /// Returns a deep copy of this graph.
         /// </summary>
-        /// <param name="other"></param>
-        public void Append<UV, UE>(HeGraph<UV, UE> other)
-            where UV : HeVertex<UV, UE>
-            where UE : Halfedge<UV, UE>
+        public HeGraph<TV, TE> Duplicate(Action<TV, TV> setVertex, Action<TE, TE> setHedge)
         {
-            Append(other, delegate { }, delegate { });
+            var factory = HeGraphFactory.Create(this);
+            return factory.CreateCopy(this, setVertex, setHedge);
         }
 
 
@@ -206,11 +203,12 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns an array of connected components.
-        /// Calculates additional split data for each edge in the mesh.
+        /// For each edge in this graph, returns a handle to the corresponding element within the connected component.
         /// </summary>
-        public HeGraph<TV, TE>[] SplitDisjoint(Func<TE, SplitDisjointHandle> getSplitData)
+        public HeGraph<TV, TE>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge)
         {
-            return SplitDisjoint(getSplitData, delegate { }, delegate { });
+            var factory = HeGraphFactory.Create(this);
+            return factory.CreateConnectedComponents(this, getHandle, setVertex, setHedge);
         }
 
 
@@ -218,17 +216,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns an array of connected components.
         /// For each edge in this graph, returns a handle to the corresponding element within the connected component.
         /// </summary>
-        public HeGraph<TV, TE>[] SplitDisjoint(Func<TE, SplitDisjointHandle> getHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge)
-        {
-            return SplitDisjoint(HeGraphFactory.Create(this), getHandle, setVertex, setHedge);
-        }
-
-
-        /// <summary>
-        /// Returns an array of connected components.
-        /// For each edge in this graph, returns a handle to the corresponding element within the connected component.
-        /// </summary>
-        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(HeGraphFactory<UV, UE> graphFactory, Func<TE, SplitDisjointHandle> getHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge)
+        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(IFactory<HeGraph<UV, UE>> factory, Func<TE, ElementHandle> getHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
@@ -237,7 +225,7 @@ namespace SpatialSlur.SlurMesh
 
             // initialize components
             for (int i = 0; i < comps.Length; i++)
-                comps[i] = graphFactory.Create();
+                comps[i] = factory.Create();
 
             // create component halfedges
             for (int i = 0; i < _hedges.Count; i += 2)
@@ -300,19 +288,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        public void AppendVertexTopology<UV, UE, UF>(HeMesh<UV, UE, UF> mesh)
-            where UV : HeVertex<UV, UE, UF>
-            where UE : Halfedge<UV, UE, UF>
-            where UF : HeFace<UV, UE, UF>
-        {
-            AppendVertexTopology(mesh, delegate { }, delegate { });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <typeparam name="UV"></typeparam>
         /// <typeparam name="UE"></typeparam>
         /// <typeparam name="UF"></typeparam>
@@ -330,48 +305,36 @@ namespace SpatialSlur.SlurMesh
             var meshHedges = mesh.Halfedges;
             var meshVerts = mesh.Vertices;
 
-            // add new halfedge pairs
+            // append new elements
+            for (int i = 0; i < meshVerts.Count; i++)
+                AddVertex();
+
             for (int i = 0; i < meshHedges.Count; i += 2)
                 AddEdge();
 
-            // link new halfedges to eachother
-            for (int i = 0; i < meshHedges.Count; i++)
-            {
-                var heB = meshHedges[i];
-                var heA = _hedges[i + nhe];
-                setHedge(heA, heB);
-
-                if (heB.IsRemoved) continue;
-                heA.MakeConsecutive(_hedges[heB.Twin.NextInFace.Index + nhe]);
-            }
-
-            // add new vertices and link to new halfedges
+            // link new vertices to new halfedges
             for (int i = 0; i < meshVerts.Count; i++)
             {
-                var vB = meshVerts[i];
-                var vA = AddVertex();
-                setVertex(vA, vB);
+                var v0 = meshVerts[i];
+                var v1 = _vertices[i + nv];
+                setVertex(v1, v0);
 
-                if (vB.IsRemoved) continue;
-                var heA = _hedges[vB.FirstOut.Index + nhe];
-                vA.FirstOut = heA;
-
-                foreach (var he in heA.CirculateStart)
-                    he.Start = vA;
+                if (v0.IsRemoved) continue;
+                v1.FirstOut = _hedges[v0.FirstOut.Index + nhe];
             }
-        }
 
+            // link new halfedges to eachother and new vertices
+            for (int i = 0; i < meshHedges.Count; i++)
+            {
+                var he0 = meshHedges[i];
+                var he1 = _hedges[i + nhe];
+                setHedge(he1, he0);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        public void AppendFaceTopology<UV, UE, UF>(HeMesh<UV, UE, UF> mesh)
-            where UV : HeVertex<UV, UE, UF>
-            where UE : Halfedge<UV, UE, UF>
-            where UF : HeFace<UV, UE, UF>
-        {
-            AppendFaceTopology(mesh, delegate { }, delegate { });
+                if (he0.IsRemoved) continue;
+                he1.PrevAtStart = _hedges[he0.PrevAtStart.Index + nhe];
+                he1.NextAtStart = _hedges[he0.NextAtStart.Index + nhe];
+                he1.Start = _vertices[he0.Start.Index + nv];
+            }
         }
 
 
@@ -392,39 +355,20 @@ namespace SpatialSlur.SlurMesh
             int nhe = _hedges.Count;
             int nv = _vertices.Count;
 
-            var otherHedges = mesh.Halfedges;
-            var otherFaces = mesh.Faces;
+            var meshHedges = mesh.Halfedges;
+            var meshFaces = mesh.Faces;
 
-            // add new halfedge pairs
-            for (int i = 0; i < otherHedges.Count; i += 2)
-                AddEdge();
-
-            // add new vertices
-            for (int i = 0; i < otherFaces.Count; i++)
+            // append new elements
+            for (int i = 0; i < meshFaces.Count; i++)
                 AddVertex();
 
-            // link new halfedges to eachother
-            for (int i = 0; i < otherHedges.Count; i++)
+            for (int i = 0; i < meshHedges.Count; i += 2)
+                AddEdge();
+
+            // link new vertices to new halfedges
+            for (int i = 0; i < meshFaces.Count; i++)
             {
-                var heB0 = otherHedges[i];
-                var heA0 = _hedges[i + nhe];
-                setHedge(heA0, heB0);
-                
-                if (heB0.IsRemoved || heB0.IsBoundary) continue;
-                var heB1 = heB0;
-
-                // find next interior halfedge in the face
-                do heB1 = heB1.NextInFace;
-                while (heB1.Twin.Face == null && heB1 != heB0);
-
-                heA0.Start = _vertices[heB0.Face.Index + nv];
-                heA0.MakeConsecutive(_hedges[heB1.Index + nhe]);
-            }
-
-            // set vertex->halfedge refs
-            for (int i = 0; i < otherFaces.Count; i++)
-            {
-                var fB = otherFaces[i];
+                var fB = meshFaces[i];
                 var vA = _vertices[i + nv];
                 setVertex(vA, fB);
 
@@ -441,6 +385,24 @@ namespace SpatialSlur.SlurMesh
                 vA.FirstOut = _hedges[heB.Index + nhe];
                 EndFor:;
             }
+
+            // link new halfedges to eachother and new vertices
+            for (int i = 0; i < meshHedges.Count; i++)
+            {
+                var heB0 = meshHedges[i];
+                var heA0 = _hedges[i + nhe];
+                setHedge(heA0, heB0);
+
+                if (heB0.IsRemoved || heB0.IsBoundary) continue;
+                var heB1 = heB0;
+
+                // find next interior halfedge in the face
+                do heB1 = heB1.NextInFace;
+                while (heB1.Twin.Face == null && heB1 != heB0);
+
+                heA0.Start = _vertices[heB0.Face.Index + nv];
+                heA0.MakeConsecutive(_hedges[heB1.Index + nhe]);
+            }
         }
 
 
@@ -455,7 +417,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns the first halfedge in the pair.
         /// </summary>
         /// <returns></returns>
-        private TE AddEdge()
+        internal TE AddEdge()
         {
             var he0 = _newTE();
             var he1 = _newTE();
@@ -992,6 +954,38 @@ namespace SpatialSlur.SlurMesh
 
 
         #endregion
+
+
+
+        #region Element Attributes
+
+
+        /// <summary>
+        /// Returns the first halfedge from each loop in the graph.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<TE> GetEdgeLoops()
+        {
+            int currTag = _hedges.NextTag;
+
+            for (int i = 0; i < _hedges.Count; i++)
+            {
+                var he = _hedges[i];
+                if (he.IsRemoved || he.Tag == currTag) continue;
+
+                do
+                {
+                    he.Tag = currTag;
+                    he = he.Twin.NextAtStart;
+                } while (he.Tag != currTag);
+
+                yield return he;
+            }
+        }
+
+
+        #endregion
+
     }
 
 
@@ -1035,24 +1029,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="graph"></param>
-        public static HeGraph<V, E> Duplicate(this HeGraph<V, E> graph)
-        {
-            return Factory.CreateFromOther(graph, delegate { }, delegate { });
-        }
-
-
-        /// <summary>
         /// Default empty vertex
         /// </summary>
+        [Serializable]
         public class V : HeVertex<V, E> { }
 
 
         /// <summary>
         /// Default empty halfedge
         /// </summary>
+        [Serializable]
         public class E : Halfedge<V, E> { }
     }
 }

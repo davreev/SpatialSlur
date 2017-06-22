@@ -4,12 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ * 
+ * Collection of small POD types used in specific algorithms.
+ */ 
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
     /// 
     /// </summary>
-    public class SplitDisjointHandle
+    public class ElementHandle
     {
         /// <summary>
         /// The index of the component to which the corresponding element belongs.

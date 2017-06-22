@@ -38,23 +38,6 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
-        /// <typeparam name="TF"></typeparam>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static HeMesh<V, E, F> CreateFromOther<TV, TE, TF>(this HeMesh<TV, TE, TF> mesh)
-            where TV : HeVertex<TV, TE, TF>, IVertex3d
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
-        {
-            return Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         public class V : HeVertex<V, E, F>, IVertex3d
         {
             /// <summary></summary>
@@ -82,7 +65,7 @@ namespace SpatialSlur.SlurRhino.Remesher
             Vec2d IVertex3d.TexCoord
             {
                 get { return new Vec2d(); }
-                set { }
+                set { throw new NotImplementedException(); }
             }
 
 
@@ -96,20 +79,12 @@ namespace SpatialSlur.SlurRhino.Remesher
         public class E : Halfedge<V, E, F>
         {
             private double _targetLength;
-            private double _length;
 
             /// <summary></summary>
             public double TargetLength
             {
                 get { return _targetLength; }
                 set { _targetLength = Twin._targetLength = value; }
-            }
-
-            /// <summary></summary>
-            public double Length
-            {
-                get { return _length; }
-                set { _length = Twin._length = value; }
             }
 
             /// <summary></summary>

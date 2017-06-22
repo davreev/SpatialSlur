@@ -58,8 +58,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="handles"></param>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
+        /// <param name="target"></param>
+        /// <param name="closestPoint"></param>
         /// <param name="weight"></param>
         public OnTarget(IEnumerable<H> handles, T target, Func<T, Vec3d, Vec3d> closestPoint, double weight = 1.0)
             : base(handles, weight)

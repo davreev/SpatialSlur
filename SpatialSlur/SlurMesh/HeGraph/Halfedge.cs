@@ -90,7 +90,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public bool IsRemoved
+        public sealed override bool IsRemoved
         {
             get { return _start == null; }
         }

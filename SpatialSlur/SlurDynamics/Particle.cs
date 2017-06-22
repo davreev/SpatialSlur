@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurDynamics
             set
             {
                 if (value <= 0.0)
-                    throw new ArgumentException("Mass must be greater than zero.");
+                    throw new ArgumentException("The value must be greater than zero.");
 
                 _mass = value;
             }

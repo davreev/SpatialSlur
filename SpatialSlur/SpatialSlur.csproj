@@ -17,11 +17,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\..\..\AppData\Roaming\Grasshopper\Libraries\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -45,6 +46,38 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Release\SpatialSlur.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Documentation|x64'">
+    <OutputPath>bin\x64\Release_Documentation\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Release\SpatialSlur.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -62,6 +95,7 @@
     <Compile Include="SlurCore\CoreUtil.cs" />
     <Compile Include="SlurCore\Extensions\IDictionaryExtensions.cs" />
     <Compile Include="SlurCore\Interfaces\IProperty.cs" />
+    <Compile Include="SlurData\DataUtil.cs" />
     <Compile Include="SlurDynamics\ConstraintSolver.cs" />
     <Compile Include="SlurDynamics\Constraints\AbovePlane.cs" />
     <Compile Include="SlurDynamics\Constraints\AlignPairs.cs" />
@@ -94,6 +128,7 @@
     <Compile Include="SlurDynamics\Constraints\VariableSphereCollide.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialSmooth.cs" />
+    <Compile Include="SlurDynamics\DynamicsUtil.cs" />
     <Compile Include="SlurDynamics\HeGraphDynamic.cs" />
     <Compile Include="SlurDynamics\HeMeshDynamic.cs" />
     <Compile Include="SlurDynamics\Interfaces\IConstraint.cs" />
@@ -112,8 +147,8 @@
     <Compile Include="SlurField\IDWPoint3d.cs" />
     <Compile Include="SlurField\IDWScalarField3d.cs" />
     <Compile Include="SlurField\IDWVectorField3d.cs" />
-    <Compile Include="SlurField\Interfaces\IField2dT.cs" />
-    <Compile Include="SlurField\Interfaces\IField3dT.cs" />
+    <Compile Include="SlurField\Interfaces\IField2d.cs" />
+    <Compile Include="SlurField\Interfaces\IField3d.cs" />
     <Compile Include="SlurCore\ColorUtil.cs" />
     <Compile Include="SlurCore\Extensions\ArrayExtensions.cs" />
     <Compile Include="SlurCore\Extensions\IEnumerableExtensions.cs" />
@@ -122,6 +157,13 @@
     <Compile Include="SlurCore\GeometryUtil.cs" />
     <Compile Include="SlurCore\Extensions\ListExtensions.cs" />
     <Compile Include="SlurCore\IOUtil.cs" />
+    <Compile Include="SlurMesh\HeGraph\Extensions\HeGraph3dExtensions.cs" />
+    <Compile Include="SlurMesh\HeGraph\Extensions\HeGraphExtensions.cs" />
+    <Compile Include="SlurMesh\HelperTypes.cs" />
+    <Compile Include="SlurMesh\HeMesh\Enums\PrimitiveType.cs" />
+    <Compile Include="SlurMesh\HeMesh\Extensions\HeMesh3dExtensions.cs" />
+    <Compile Include="SlurMesh\HeMesh\Extensions\HeMeshExtensions.cs" />
+    <Compile Include="SlurMesh\Interfaces\IHeStructureFactory.cs" />
     <Compile Include="Test.cs" />
     <None Include="packages.config" />
     <Compile Include="SlurCore\Vec2i.cs" />
@@ -150,7 +192,7 @@
     <Compile Include="SlurField\FieldSim.cs" />
     <Compile Include="SlurField\Enums\WrapMode.cs" />
     <Compile Include="SlurField\FieldIO.cs" />
-    <Compile Include="SlurField\Interfaces\IFieldT.cs" />
+    <Compile Include="SlurField\Interfaces\IDiscreteField.cs" />
     <Compile Include="SlurField\GridField2d.cs" />
     <Compile Include="SlurField\GridField3d.cs" />
     <Compile Include="SlurField\GridPoint2d.cs" />
@@ -193,10 +235,14 @@
     <Compile Include="SlurMesh\Interfaces\IHeStructure.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeVertex.cs" />
     <Compile Include="SlurMesh\Interfaces\IVertex3d.cs" />
-    <Compile Include="SlurMesh\SplitDisjointHandle.cs" />
+    <Compile Include="SlurMesh\MeshUtil.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -36,19 +36,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="graph"></param>
-        public static HeGraph<V, E> Duplicate(this HeGraph<V, E> graph)
-        {
-            return Factory.CreateFromOther(graph,
-                (v0, v1) => v0.Data.Set(v1.Data),
-                (he0, he1) => he0.Data.Set(he1.Data)
-                );
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
+        [Serializable]
         public class V : HeVertex<V, E>
         {
             /// <summary></summary>
@@ -64,6 +52,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class E : Halfedge<V, E>
         {
             /// <summary></summary>

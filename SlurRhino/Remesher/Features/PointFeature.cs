@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     /// <summary>
     /// 
     /// </summary>
-    public class PointFeature :IFeature
+    public class PointFeature : IFeature
     {
         private Vec3d _point;
 

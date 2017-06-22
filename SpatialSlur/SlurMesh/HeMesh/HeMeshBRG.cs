@@ -32,21 +32,12 @@ namespace SpatialSlur.SlurMesh
         {
             return Factory.Create(vertexCapacity, hedgeCapacity, faceCapacity);
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        public static HeMesh<V, E, F> Duplicate(this HeMesh<V, E, F> mesh)
-        {
-            return Factory.CreateCopy(mesh, (v0, v1) => v0.Data.Set(v1.Data), (he0, he1) => he0.Data.Set(he1.Data), (f0, f1) => f0.Data.Set(f1.Data));
-        }
-
+        
 
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class V : HeVertex<V, E, F>
         {
             /// <summary></summary>
@@ -62,6 +53,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class E : Halfedge<V, E, F>
         {
             /// <summary></summary>
@@ -72,6 +64,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         ///
         /// </summary>
+        [Serializable]
         public class F : HeFace<V, E, F>
         {
             /// <summary></summary>

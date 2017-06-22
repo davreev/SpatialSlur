@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
-    public class HeGraphFactory<TV, TE> : IFactory<HeGraph<TV,TE>>
+    public class HeGraphFactory<TV, TE> : IHeStructureFactory<HeGraph<TV, TE>, TV, TE>
         where TV : HeVertex<TV, TE>
         where TE : Halfedge<TV, TE>
     {
@@ -67,7 +67,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="vertexProvider"></param>
         /// <param name="hedgeProvider"></param>
-        internal HeGraphFactory(Func<TV> vertexProvider, Func<TE> hedgeProvider)
+        public HeGraphFactory(Func<TV> vertexProvider, Func<TE> hedgeProvider)
         {
             _newTV = vertexProvider ?? throw new ArgumentNullException();
             _newTE = hedgeProvider ?? throw new ArgumentNullException();
@@ -105,7 +105,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE> CreateFromOther<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
+        public HeGraph<TV, TE> CreateCopy<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
                where UV : HeVertex<UV, UE>
                where UE : Halfedge<UV, UE>
         {
@@ -121,15 +121,15 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="UV"></typeparam>
         /// <typeparam name="UE"></typeparam>
         /// <param name="graph"></param>
-        /// <param name="getSplitData"></param>
+        /// <param name="getHandle"></param>
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Func<UE, SplitDisjointHandle> getSplitData, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
+        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Func<UE, ElementHandle> getHandle, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            return graph.SplitDisjoint(this, getSplitData, setVertex, setHedge);
+            return graph.SplitDisjoint(this, getHandle, setVertex, setHedge);
         }
 
 

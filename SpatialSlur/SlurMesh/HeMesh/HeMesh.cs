@@ -319,6 +319,17 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF> Duplicate(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
+        {
+            var factory = HeMeshFactory.Create(this);
+            return factory.CreateCopy(this, setVertex, setHedge, setFace);
+        }
+
+
+        /// <summary>
         /// Appends a deep copy of the given mesh to this mesh.
         /// </summary>
         /// <typeparam name="UV"></typeparam>
@@ -336,21 +347,21 @@ namespace SpatialSlur.SlurMesh
             if (ReferenceEquals(this, other))
                 throw new ArgumentException("The mesh can not be appended to itself.");
 
-            int nhe = _hedges.Count;
             int nv = _vertices.Count;
+            int nhe = _hedges.Count;
             int nf = _faces.Count;
 
-            var otherHedges = other._hedges;
             var otherVerts = other._vertices;
+            var otherHedges = other._hedges;
             var otherFaces = other._faces;
 
             // append new elements
-            for (int i = 0; i < otherHedges.Count; i += 2)
-                AddEdge();
-
             for (int i = 0; i < otherVerts.Count; i++)
                 AddVertex();
 
+            for (int i = 0; i < otherHedges.Count; i += 2)
+                AddEdge();
+            
             for (int i = 0; i < otherFaces.Count; i++)
                 AddFace();
 
@@ -376,7 +387,7 @@ namespace SpatialSlur.SlurMesh
                 f1.First = _hedges[f0.First.Index + nhe];
             }
 
-            // link new halfedges to new vertices and other new halfedges
+            // link new halfedges to eachother, new vertices, and new faces
             for (int i = 0; i < otherHedges.Count; i++)
             {
                 var he0 = otherHedges[i];
@@ -391,6 +402,17 @@ namespace SpatialSlur.SlurMesh
                 if (he0.Face != null)
                     he1.Face = _faces[he0.Face.Index + nf];
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF> GetDual(Action<TV, TF> setVertex, Action<TE, TE> setHedge, Action<TF, TV> setFace)
+        {
+            var factory = HeMeshFactory.Create(this);
+            return factory.CreateDual(this, setVertex, setHedge, setFace);
         }
 
 
@@ -413,19 +435,18 @@ namespace SpatialSlur.SlurMesh
             if (ReferenceEquals(this, other))
                 throw new ArgumentException("Cannot append the dual of an HeMesh to itself.");
 
-            int nhe = _hedges.Count;
             int nv = _vertices.Count;
+            int nhe = _hedges.Count;
             int nf = _faces.Count;
 
-            var otherHedges = other._hedges;
             var otherVerts = other._vertices;
+            var otherHedges = other._hedges;
             var otherFaces = other._faces;
 
-            // add new vertices (1 per face in primal mesh)
+            // add new elements
             for (int i = 0; i < otherFaces.Count; i++)
                 AddVertex();
-
-            // add new faces (1 per vertex in primal mesh)
+            
             for (int i = 0; i < otherVerts.Count; i++)
                 AddFace();
 
@@ -454,7 +475,7 @@ namespace SpatialSlur.SlurMesh
                 if ((mask & 2) == 0) heA0.Face = _faces[vB1.Index + nf]; // vB1 is interior
             }
 
-            // set halfedge->halfedge refs
+            // set halfedge -> halfedge refs
             for (int i = 0; i < otherHedges.Count; i++)
             {
                 var heA0 = _hedges[i + nhe];
@@ -475,7 +496,7 @@ namespace SpatialSlur.SlurMesh
                 heA1.Twin.MakeConsecutive(heA0);
             }
 
-            // set dual face->halfegde refs 
+            // set dual face -> halfedge refs 
             // must be set before vertex refs to check for boundary invariant
             for (int i = 0; i < otherVerts.Count; i++)
             {
@@ -487,7 +508,7 @@ namespace SpatialSlur.SlurMesh
                 fA.First = _hedges[vB.FirstOut.Twin.Index + nhe]; // can assume dual edge around interior vertex is valid
             }
 
-            // set dual vertex->halfedge refs
+            // set dual vertex -> halfedge refs
             for (int i = 0; i < otherFaces.Count; i++)
             {
                 var vA = _vertices[i + nv];
@@ -523,10 +544,24 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="getHandle"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
+        {
+            return SplitDisjoint(HeMeshFactory.Create(this), getHandle, setVertex, setHedge, setFace);
+        }
+
+
+        /// <summary>
         /// Returns an array of connected components.
         /// For each edge in this mesh, returns a handle to the corresponding element within the connected component.
         /// </summary>
-        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV,UE,UF> meshFactory, Func<TE, SplitDisjointHandle> getHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace)
+        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(IFactory<HeMesh<UV,UE,UF>> factory, Func<TE, ElementHandle> getHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
@@ -536,7 +571,7 @@ namespace SpatialSlur.SlurMesh
 
             // initialize components
             for (int i = 0; i < comps.Length; i++)
-                comps[i] = meshFactory.Create();
+                comps[i] = factory.Create();
 
             // create component halfedges
             for (int i = 0; i < _hedges.Count; i += 2)
@@ -588,7 +623,7 @@ namespace SpatialSlur.SlurMesh
 
                 foreach (var he in heB.CirculateStart)
                     he.Start = vB;
-                
+
                 setVertex(vB, vA);
             }
 
@@ -607,10 +642,10 @@ namespace SpatialSlur.SlurMesh
                 // set face refs
                 var heB = comp._hedges[(sd.ElementIndex << 1) + (heA.Index & 1)];
                 fB.First = heB;
-                
+
                 foreach (var he in heB.CirculateFace)
                     he.Face = fB;
-                
+
                 setFace(fB, fA);
             }
 
@@ -628,7 +663,7 @@ namespace SpatialSlur.SlurMesh
         /// Creates a new pair of halfedges and adds them to the list.
         /// </summary>
         /// <returns></returns>
-        private TE AddEdge()
+        internal TE AddEdge()
         {
             var he0 = _newTE();
             var he1 = _newTE();
@@ -837,7 +872,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         private bool CollapseEdgeImpl(TE hedge)
         {
-            if (!CanCollapseEdge(hedge))
+            if (!CanCollapse(hedge))
                 return false;
 
             var he0 = hedge; // to be removed
@@ -908,7 +943,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="hedge"></param>
         /// <returns></returns>
-        private bool CanCollapseEdge(TE hedge)
+        private bool CanCollapse(TE hedge)
         {
             // avoids creation of non-manifold vertices
             // if (hedge.IsBridge) return false;
@@ -2850,7 +2885,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedgeCapacity"></param>
         /// <param name="faceCapacity"></param>
         /// <returns></returns>
-        public static HeMesh<TV,TE,TF> Create<TV,TE,TF>(Func<TV> vertexProvider, Func<TE> hedgeProvider, Func<TF> faceProvider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
+        public static HeMesh<TV,TE,TF> Create<TV, TE, TF>(Func<TV> vertexProvider, Func<TE> hedgeProvider, Func<TF> faceProvider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
             where TV : HeVertex<TV, TE, TF>
             where TE : Halfedge<TV, TE, TF>
             where TF : HeFace<TV, TE, TF>
@@ -2870,70 +2905,26 @@ namespace SpatialSlur.SlurMesh
         {
             return Factory.Create(vertexCapacity, hedgeCapacity, faceCapacity);
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        public static HeMesh<V, E, F> Duplicate(this HeMesh<V, E, F> mesh)
-        {
-            var copy = Create(mesh.Vertices.Capacity, mesh.Halfedges.Capacity, mesh.Faces.Capacity);
-            copy.Append(mesh);
-            return copy;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="other"></param>
-        public static void Append(this HeMesh<V, E, F> mesh, HeMesh<V, E, F> other)
-        {
-            mesh.Append(other, delegate { }, delegate { }, delegate { });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static HeMesh<V, E, F> GetDual(this HeMesh<V, E, F> mesh)
-        {
-            var dual = Create(mesh.Faces.Capacity, mesh.Halfedges.Capacity, mesh.Vertices.Capacity);
-            dual.AppendDual(mesh);
-            return dual;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="other"></param>
-        public static void AppendDual(this HeMesh<V, E, F> mesh, HeMesh<V, E, F> other)
-        {
-            mesh.AppendDual(other, delegate { }, delegate { }, delegate { });
-        }
-
+       
 
         /// <summary>
         /// Default empty vertex
         /// </summary>
+        [Serializable]
         public class V : HeVertex<V, E, F> { }
 
 
         /// <summary>
         /// Default empty halfedge
         /// </summary>
+        [Serializable]
         public class E : Halfedge<V, E, F> { }
 
 
         /// <summary>
         /// Default empty face
         /// </summary>
+        [Serializable]
         public class F : HeFace<V, E, F> { }
     }
 }

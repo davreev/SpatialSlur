@@ -26,7 +26,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="timeStep"></param>
         /// <param name="parallel"></param>
-        public static void Update(IField<double> field, IField<double> delta, double timeStep, bool parallel = false)
+        public static void Update(IDiscreteField<double> field, IDiscreteField<double> delta, double timeStep, bool parallel = false)
         {
             Update(field, delta.Values, timeStep, parallel);
         }
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="timeStep"></param>
         /// <param name="parallel"></param>
-        public static void Update(IField<double> field, double[] deltas, double timeStep, bool parallel = false)
+        public static void Update(IDiscreteField<double> field, double[] deltas, double timeStep, bool parallel = false)
         {
             var vals = field.Values;
             int n = field.Count;
@@ -60,7 +60,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="timeStep"></param>
         /// <param name="parallel"></param>
-        public static void Update(IField<Vec2d> field, IField<Vec2d> delta, double timeStep, bool parallel = false)
+        public static void Update(IDiscreteField<Vec2d> field, IDiscreteField<Vec2d> delta, double timeStep, bool parallel = false)
         {
             Update(field, delta.Values, timeStep, parallel);
         }
@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="timeStep"></param>
         /// <param name="parallel"></param>
-        public static void Update(IField<Vec2d> field, Vec2d[] deltas, double timeStep, bool parallel = false)
+        public static void Update(IDiscreteField<Vec2d> field, Vec2d[] deltas, double timeStep, bool parallel = false)
         {
             var vals = field.Values;
             int n = field.Count;
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="timeStep"></param>
         /// <param name="parallel"></param>
-        public static void Update(IField<Vec3d> field, IField<Vec3d> delta, double timeStep, bool parallel = false)
+        public static void Update(IDiscreteField<Vec3d> field, IDiscreteField<Vec3d> delta, double timeStep, bool parallel = false)
         {
             Update(field, delta.Values, timeStep, parallel);
         }
@@ -107,7 +107,7 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="timeStep"></param>
         /// <param name="parallel"></param>
-        public static void Update(IField<Vec3d> field, Vec3d[] deltas, double timeStep, bool parallel = false)
+        public static void Update(IDiscreteField<Vec3d> field, Vec3d[] deltas, double timeStep, bool parallel = false)
         {
             var vals = field.Values;
             int n = field.Count;
@@ -129,7 +129,7 @@ namespace SpatialSlur.SlurField
         /// <param name="thresh"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Bifurcate(IField<double> field, IField<double> delta, double thresh, double rate, bool parallel = false)
+        public static void Bifurcate(IDiscreteField<double> field, IDiscreteField<double> delta, double thresh, double rate, bool parallel = false)
         {
             Bifurcate(field, delta.Values, thresh, rate, parallel);
         }
@@ -143,7 +143,7 @@ namespace SpatialSlur.SlurField
         /// <param name="thresh"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Bifurcate(IField<double> field, double[] deltas, double thresh, double rate, bool parallel = false)
+        public static void Bifurcate(IDiscreteField<double> field, double[] deltas, double thresh, double rate, bool parallel = false)
         {
             var vals = field.Values;
 

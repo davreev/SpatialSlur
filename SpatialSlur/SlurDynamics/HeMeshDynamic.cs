@@ -39,6 +39,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class V : HeVertex<V, E, F>
         {
             /// <summary></summary>
@@ -49,12 +50,14 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class E : Halfedge<V, E, F> { }
 
 
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class F : HeFace<V, E, F> { }
     }
 }

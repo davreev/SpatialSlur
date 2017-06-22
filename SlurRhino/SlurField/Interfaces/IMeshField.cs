@@ -33,7 +33,7 @@ namespace SpatialSlur.SlurRhino
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IMeshField<T> : IMeshField, IField3d<T>, IField<T>
+    public interface IMeshField<T> : IMeshField, IField3d<T>, IDiscreteField<T>
     {
         /// <summary>
         /// Returns the interpolated value at the given <see cref="MeshPoint"/>.

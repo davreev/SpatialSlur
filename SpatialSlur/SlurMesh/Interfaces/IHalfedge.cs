@@ -210,8 +210,8 @@ namespace SpatialSlur.SlurMesh
         /// Returns the difference in value between the end vertex and the start vertex.
         /// </summary>
         public static double GetDelta<V, E>(this IHalfedge<V, E> hedge, Func<V, double> getValue)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return getValue(hedge.End) - getValue(hedge.Start);
         }
@@ -221,8 +221,8 @@ namespace SpatialSlur.SlurMesh
         /// Returns the difference in value between the end vertex and the start vertex.
         /// </summary>
         public static Vec2d GetDelta<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec2d> getValue)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return getValue(hedge.End) - getValue(hedge.Start);
         }
@@ -232,8 +232,8 @@ namespace SpatialSlur.SlurMesh
         /// Returns the difference in value between the end vertex and the start vertex.
         /// </summary>
         public static Vec3d GetDelta<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec3d> getValue)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return getValue(hedge.End) - getValue(hedge.Start);
         }
@@ -243,8 +243,8 @@ namespace SpatialSlur.SlurMesh
         /// Returns a linearly interpolated value at the given parameter along the halfedge.
         /// </summary>
         public static double Lerp<V, E>(this IHalfedge<V, E> hedge, Func<V, double> getValue, double t)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return SlurMath.Lerp(getValue(hedge.Start), getValue(hedge.End), t);
         }
@@ -254,8 +254,8 @@ namespace SpatialSlur.SlurMesh
         /// Returns a linearly interpolated value at the given parameter along the halfedge.
         /// </summary>
         public static Vec2d Lerp<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec2d> getValue, double t)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return getValue(hedge.Start).LerpTo(getValue(hedge.End), t);
         }
@@ -265,8 +265,8 @@ namespace SpatialSlur.SlurMesh
         /// Returns a linearly interpolated value at the given parameter along the halfedge.
         /// </summary>
         public static Vec3d Lerp<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec3d> getValue, double t)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return getValue(hedge.Start).LerpTo(getValue(hedge.End), t);
         }
@@ -276,8 +276,8 @@ namespace SpatialSlur.SlurMesh
         /// Returns the Euclidean length of the halfedge.
         /// </summary>
         public static double GetLength<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec2d> getPosition)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return getPosition(hedge.Start).DistanceTo(getPosition(hedge.End));
         }
@@ -288,8 +288,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static double GetLength<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return getPosition(hedge.Start).DistanceTo(getPosition(hedge.End));
         }
@@ -301,8 +301,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static double GetAngle<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec2d> getPosition)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return Vec2d.Angle(hedge.GetDelta(getPosition), hedge.PrevAtStart.GetDelta(getPosition));
         }
@@ -314,8 +314,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static double GetAngle<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E>
             where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             return Vec3d.Angle(hedge.GetDelta(getPosition), hedge.PrevAtStart.GetDelta(getPosition));
         }
@@ -327,8 +327,8 @@ namespace SpatialSlur.SlurMesh
         /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
         /// </summary>
         public static double GetCotangent<V, E, F>(this IHalfedge<V, E, F> hedge, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d p = getPosition(hedge.PrevInFace.Start);
@@ -344,8 +344,8 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the halfedge normal as the cross product of the previous halfedge and this one.
         /// </summary>
         public static Vec3d GetNormal<V, E, F>(this IHalfedge<V, E, F> hedge, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d p = getPosition(hedge.Start);
@@ -362,8 +362,8 @@ namespace SpatialSlur.SlurMesh
         /// See W in http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf.
         /// </summary>
         public static double GetArea<V, E, F>(this IHalfedge<V, E, F> hedge, Func<V, Vec3d> getPosition, Func<F, Vec3d> getCenter)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             return hedge.GetArea(getPosition, getCenter(hedge.Face));
@@ -375,8 +375,8 @@ namespace SpatialSlur.SlurMesh
         /// See W in http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf.
         /// </summary>
         public static double GetArea<V, E, F>(this IHalfedge<V, E, F> hedge, Func<V, Vec3d> getPosition, Vec3d faceCenter)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d p0 = getPosition(hedge.PrevInFace.Start);
@@ -394,8 +394,8 @@ namespace SpatialSlur.SlurMesh
         /// Assumes the given face normals are unitized.
         /// </summary>>
         public static double GetDihedralAngle<V, E, F>(this IHalfedge<V, E, F> hedge, Func<V, Vec3d> getPosition, Func<F, Vec3d> getNormal)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d tangent = getPosition(hedge.End) - getPosition(hedge.Start);

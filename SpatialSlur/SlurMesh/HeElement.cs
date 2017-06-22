@@ -11,7 +11,7 @@ namespace SpatialSlur.SlurMesh
     /// Should be inherited alongside IHeElement.
     /// </summary>
     [Serializable]
-    public abstract class HeElement
+    public abstract class HeElement : IHeElement
     {
         #region Static
 
@@ -48,6 +48,23 @@ namespace SpatialSlur.SlurMesh
         {
             get { return _tag; }
             set { _tag = value; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        public abstract bool IsRemoved { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal void RemovedCheck()
+        {
+            if (IsRemoved)
+                throw new ArgumentException("The given element has been flagged for removal. The operation cannot be performed.");
         }
     }
 }

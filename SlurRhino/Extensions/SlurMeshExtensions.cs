@@ -79,11 +79,14 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
         /// <param name="hedge"></param>
+        /// <param name="getPosition"></param>
         /// <returns></returns>
-        public static Line ToLine<V, E>(this E hedge, Func<V, Vec3d> getPosition) 
-            where V : IHeVertex<V, E>
-            where E : IHalfedge<V, E>
+        public static Line ToLine<TV, TE>(this IHalfedge<TV, TE> hedge, Func<TV, Vec3d> getPosition)
+            where TV : IHeVertex<TV, TE>
+            where TE : IHalfedge<TV, TE>
         {
             Vec3d p0 = getPosition(hedge.Start);
             Vec3d p1 = getPosition(hedge.End);
@@ -94,12 +97,16 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
+        /// <typeparam name="TF"></typeparam>
         /// <param name="face"></param>
+        /// <param name="getPosition"></param>
         /// <returns></returns>
-        public static Polyline ToPolyline<V, E, F>(this F face, Func<V, Vec3d> getPosition)
-            where V : IHeVertex<V, E, F>
-            where E : IHalfedge<V, E, F>
-            where F : IHeFace<V, E, F>
+        public static Polyline ToPolyline<TV, TE, TF>(this IHeFace<TV, TE, TF> face, Func<TV, Vec3d> getPosition)
+            where TV : IHeVertex<TV, TE, TF>
+            where TE : IHalfedge<TV, TE, TF>
+            where TF : IHeFace<TV, TE, TF>
         {
             Polyline result = new Polyline();
 
@@ -119,11 +126,16 @@ namespace SpatialSlur.SlurRhino
         /// Assumes the face is triangular.
         /// http://mathworld.wolfram.com/Incenter.html
         /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
+        /// <typeparam name="TF"></typeparam>
+        /// <param name="face"></param>
+        /// <param name="getPosition"></param>
         /// <returns></returns>
-        public static Circle GetCircumcircle<V, E, F>(this F face, Func<V, Vec3d> getPosition)
-            where V : IHeVertex<V, E, F>
-            where E : IHalfedge<V, E, F>
-            where F : IHeFace<V, E, F>
+        public static Circle GetCircumcircle<TV, TE, TF>(this IHeFace<TV, TE, TF> face, Func<TV, Vec3d> getPosition)
+            where TV : IHeVertex<TV, TE, TF>
+            where TE : IHalfedge<TV, TE, TF>
+            where TF : IHeFace<TV, TE, TF>
         {
             var he = face.First;
             var p0 = getPosition(he.PrevInFace.Start);
@@ -173,9 +185,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="hedges"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetEdgeLines<V, E>(this IHeStructure<V, E> structure, Func<V, Vec3d> getPosition, Action<E, Line> setResult, bool parallel = false)
-            where V : HeElement, IHeVertex<V, E>
-            where E : HeElement, IHalfedge<V, E>
+        public static void GetEdgeLines<TV, TE>(this IHeStructure<TV, TE> structure, Func<TV, Vec3d> getPosition, Action<TE, Line> setResult, bool parallel = false)
+            where TV : HeElement, IHeVertex<TV, TE>
+            where TE : HeElement, IHalfedge<TV, TE>
         {
             var hedges = structure.Halfedges;
 
@@ -202,10 +214,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetFacePolylines<V, E, F>(this IHeStructure<V, E, F> structure, Func<V, Vec3d> getPosition, Action<F, Polyline> setResult, bool parallel = false)
-            where V : HeElement, IHeVertex<V, E, F>
-            where E : HeElement, IHalfedge<V, E, F>
-            where F : HeElement, IHeFace<V, E, F>
+        public static void GetFacePolylines<TV, TE, TF>(this IHeStructure<TV, TE, TF> structure, Func<TV, Vec3d> getPosition, Action<TF, Polyline> setResult, bool parallel = false)
+            where TV : HeElement, IHeVertex<TV, TE, TF>
+            where TE : HeElement, IHalfedge<TV, TE, TF>
+            where TF : HeElement, IHeFace<TV, TE, TF>
         {
             var faces = structure.Faces;
 
@@ -216,7 +228,7 @@ namespace SpatialSlur.SlurRhino
                     var f = faces[i];
                     if (f.IsRemoved) continue;
 
-                    setResult(f, f.ToPolyline<V, E, F>(getPosition));
+                    setResult(f, f.ToPolyline<TV, TE, TF>(getPosition));
                 }
             };
 
@@ -233,10 +245,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetFaceCircumcircles<V, E, F>(this IHeStructure<V, E, F> structure, Func<V, Vec3d> getPosition, Action<F, Circle> setResult, bool parallel = false)
-            where V : HeElement, IHeVertex<V, E, F>
-            where E : HeElement, IHalfedge<V, E, F>
-            where F : HeElement, IHeFace<V, E, F>
+        public static void GetFaceCircumcircles<TV, TE, TF>(this IHeStructure<TV, TE, TF> structure, Func<TV, Vec3d> getPosition, Action<TF, Circle> setResult, bool parallel = false)
+            where TV : HeElement, IHeVertex<TV, TE, TF>
+            where TE : HeElement, IHalfedge<TV, TE, TF>
+            where TF : HeElement, IHeFace<TV, TE, TF>
         {
             var faces = structure.Faces;
 
@@ -246,7 +258,7 @@ namespace SpatialSlur.SlurRhino
                 {
                     var f = faces[i];
                     if (f.IsRemoved) continue;
-                    setResult(f, f.GetCircumcircle<V, E, F>(getPosition));
+                    setResult(f, f.GetCircumcircle<TV, TE, TF>(getPosition));
                 }
             };
 
@@ -267,9 +279,9 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <param name="xform"></param>
-        public static void Transform<V, E>(this IHeStructure<V, E> structure, Transform xform, bool parallel = false)
-            where V : HeElement, IHeVertex<V, E>, IVertex3d
-            where E : HeElement, IHalfedge<V, E>
+        public static void Transform<TV, TE>(this IHeStructure<TV, TE> structure, Transform xform, bool parallel = false)
+            where TV : HeElement, IHeVertex<TV, TE>, IVertex3d
+            where TE : HeElement, IHalfedge<TV, TE>
         {
             var verts = structure.Vertices;
 
@@ -293,9 +305,9 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <param name="xform"></param>
-        public static void SpaceMorph<V, E>(this IHeStructure<V, E> structure, SpaceMorph xmorph, bool parallel = false)
-            where V : HeElement, IHeVertex<V, E>, IVertex3d
-            where E : HeElement, IHalfedge<V, E>
+        public static void SpaceMorph<TV, TE>(this IHeStructure<TV, TE> structure, SpaceMorph xmorph, bool parallel = false)
+            where TV : HeElement, IHeVertex<TV, TE>, IVertex3d
+            where TE : HeElement, IHalfedge<TV, TE>
         {
             var verts = structure.Vertices;
 

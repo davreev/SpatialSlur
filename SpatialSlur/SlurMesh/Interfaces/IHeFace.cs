@@ -124,8 +124,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetBarycenter<V, E, F>(this IHeFace<V, E, F> face, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             return face.Vertices.Mean(getPosition);
@@ -137,8 +137,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetNormal<V, E, F>(this IHeFace<V, E, F> face, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d result;
@@ -166,8 +166,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetNormal<V, E, F>(this IHeFace<V, E, F> face, Func<E, Vec3d> getNormal)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d result;
@@ -188,8 +188,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetCircumcenter<V, E, F>(this IHeFace<V, E, F> face, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             var he = face.First;
@@ -210,8 +210,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetIncenter<V, E, F>(this IHeFace<V, E, F> face, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             var he = face.First;
@@ -235,8 +235,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetIncenter<V, E, F>(this IHeFace<V, E, F> face, Func<V, Vec3d> getPosition, Func<E, double> getLength)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             var he0 = face.First;

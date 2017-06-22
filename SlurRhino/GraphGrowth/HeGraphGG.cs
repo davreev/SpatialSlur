@@ -4,21 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurMesh
+namespace SpatialSlur.SlurRhino.GraphGrowth
 {
     /// <summary>
-    /// Static constructors and extension methods for an HeGraph with commonly used geometric properites.
+    /// Contains HeMesh element classes used in dynamic remeshing
     /// </summary>
-    public static class HeGraph3d
+    public static class HeGraphGG
     {
         /// <summary></summary>
-        public static readonly HeGraphFactory<V,E> Factory = HeGraphFactory.Create(() => new V(), () => new E());
+        public static readonly HeGraphFactory<V, E> Factory = HeGraphFactory.Create(() => new V(), () => new E());
 
 
         /// <summary>
@@ -26,6 +27,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="vertexCapacity"></param>
         /// <param name="hedgeCapacity"></param>
+        /// <param name="faceCapacity"></param>
         /// <returns></returns>
         public static HeGraph<V, E> Create(int vertexCapacity = 4, int hedgeCapacity = 4)
         {
@@ -36,22 +38,29 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        [Serializable]
         public class V : HeVertex<V, E>, IVertex3d
         {
             /// <summary></summary>
             public Vec3d Position { get; set; }
-
             /// <summary></summary>
             public Vec3d Normal { get; set; }
 
+            /// <summary></summary>
+            public Vec3d Velocity;
+            /// <summary></summary>
+            public Vec3d MoveSum;
+            /// <summary></summary>
+            public double WeightSum;
+
+            /// <summary></summary>
+            public int FeatureIndex = -1;
+            /// <summary></summary>
+            public int Tag = int.MinValue;
+
 
             #region Explicit interface implementations
-            
 
-            /// <summary>
-            /// 
-            /// </summary>
+            
             Vec2d IVertex3d.TexCoord
             {
                 get { return new Vec2d(); }
@@ -66,11 +75,21 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        [Serializable]
         public class E : Halfedge<V, E>
         {
+            private double _maxLength;
+
+
             /// <summary></summary>
-            public double Weight;
+            public double MaxLength
+            {
+                get { return _maxLength; }
+                set { _maxLength = Twin._maxLength = value; }
+            }
+            
+
+            /// <summary></summary>
+            public int Tag = int.MinValue;
         }
     }
 }

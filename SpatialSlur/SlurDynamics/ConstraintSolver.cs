@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// https://www.cs.utah.edu/~ladislav/bouaziz14projective/bouaziz14projective.pdf
     /// http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="P"></typeparam>
     public class ConstraintSolver<P>
         where P : IParticle
     {

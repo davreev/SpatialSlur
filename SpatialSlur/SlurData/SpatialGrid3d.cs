@@ -11,7 +11,7 @@ namespace SpatialSlur.SlurData
     /// Simple grid for broad phase collision detection between dynamic objects.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public sealed class SpatialGrid3d<T>:SpatialMap3d<T>
+    public class SpatialGrid3d<T>:SpatialMap3d<T>
     {
         private Domain3d _domain;
         private Vec3d _from;
@@ -133,7 +133,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        protected override (int,int,int) Discretize(Vec3d point)
+        protected sealed override (int,int,int) Discretize(Vec3d point)
         {
             return (
                 SlurMath.Clamp((int)Math.Floor((point.X - _from.X) * _dxInv), _nx - 1),
@@ -149,7 +149,7 @@ namespace SpatialSlur.SlurData
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        protected override int ToIndex(int i, int j, int k)
+        protected sealed override int ToIndex(int i, int j, int k)
         {
             return i + j * _nx + k * _nxy;
         }

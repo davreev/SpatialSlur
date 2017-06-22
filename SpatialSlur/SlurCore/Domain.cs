@@ -109,16 +109,26 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns true if t1 is greater than or equal to t0.
+        /// Returns true if t1 is greater than t0.
         /// </summary>
         public bool IsIncreasing
         {
-            get { return T1 >= T0; }
+            get { return T1 > T0; }
+        }
+
+
+
+        /// <summary>
+        /// Returns true if t1 is less than t0
+        /// </summary>
+        public bool IsDecreasing
+        {
+            get { return T1 < T0; }
         }
 
 
         /// <summary>
-        /// Returns true if t0 != t1.
+        /// Returns true if t0 equals t1.
         /// </summary>
         public bool IsValid
         {
@@ -235,10 +245,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double Clamp(double t)
         {
-            if (IsIncreasing)
-                return SlurMath.Clamp(t, T0, T1);
-            else
+            if (IsDecreasing)
                 return SlurMath.Clamp(t, T1, T0);
+            else
+                return SlurMath.Clamp(t, T0, T1);
         }
 
 
@@ -304,10 +314,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool Contains(double t)
         {
-            if (IsIncreasing)
-                return SlurMath.Contains(t, T0, T1);
-            else
+            if (IsDecreasing)
                 return SlurMath.Contains(t, T1, T0);
+            else
+                return SlurMath.Contains(t, T0, T1);
         }
 
 
@@ -318,10 +328,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ContainsIncl(double t)
         {
-            if (IsIncreasing)
-                return SlurMath.ContainsIncl(t, T0, T1);
-            else
+            if (IsDecreasing)
                 return SlurMath.ContainsIncl(t, T1, T0);
+            else
+                return SlurMath.ContainsIncl(t, T0, T1);
         }
 
 
@@ -342,15 +352,15 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         public void Expand(double t)
         {
-            if (IsIncreasing)
-            {
-                T0 -= t;
-                T1 += t;
-            }
-            else
+            if (IsDecreasing)
             {
                 T0 += t;
                 T1 -= t;
+            }
+            else
+            {
+                T0 -= t;
+                T1 += t;
             }
         }
 
@@ -361,15 +371,15 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         public void Include(double t)
         {
-            if (IsIncreasing)
-            {
-                if (t > T1) T1 = t;
-                else if (t < T0) T0 = t;
-            }
-            else
+            if (IsDecreasing)
             {
                 if (t > T0) T0 = t;
                 else if (t < T1) T1 = t;
+            }
+            else
+            {
+                if (t > T1) T1 = t;
+                else if (t < T0) T0 = t;
             }
         }
 
@@ -380,10 +390,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="values"></param>
         public void Include(IEnumerable<double> values)
         {
-            if (IsIncreasing)
-                Include(values, ref T0, ref T1);
-            else
+            if (IsDecreasing)
                 Include(values, ref T1, ref T0);
+            else
+                Include(values, ref T0, ref T1);
         }
 
 
@@ -416,7 +426,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public void MakeIncreasing()
         {
-            if (!IsIncreasing)
+            if (IsDecreasing)
                 Reverse();
         }
     }

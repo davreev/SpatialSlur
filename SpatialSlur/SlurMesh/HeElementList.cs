@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public class HeElementList<T> : IReadOnlyList<T>
-        where T : HeElement, IHeElement
+        where T : HeElement
     {
         private const int MinCapacity = 4;
 

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// 
+    /// Utility class for stray methods.
     /// </summary>
     public static class FieldUtil
     {
@@ -137,7 +137,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
-        internal static (int, int) GetBoundaryOffsets(GridField2d field)
+        internal static (int, int) GetBoundaryOffsets(Grid2d field)
         {
             return (
                 field.WrapModeX == WrapMode.Repeat ? field.CountX - 1 : 0,
@@ -151,7 +151,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
-        internal static (int, int, int) GetBoundaryOffsets(GridField3d field)
+        internal static (int, int, int) GetBoundaryOffsets(Grid3d field)
         {
             return (
                 field.WrapModeX == WrapMode.Repeat ? field.CountX - 1 : 0, 

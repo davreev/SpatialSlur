@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// 
+    /// Utility class for stray methods.
     /// </summary>
     public static class CoreUtil
     {

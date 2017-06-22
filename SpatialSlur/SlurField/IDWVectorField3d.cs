@@ -38,7 +38,7 @@ namespace SpatialSlur.SlurField
 
             foreach (var dp in Points)
             {
-                double w = 1.0 / Math.Pow(point.DistanceTo(dp.Point) + Epsilon, Power);
+                double w = 1.0 / Math.Pow(point.DistanceTo(dp.Point) * dp.Scale + Epsilon, Power);
                 sum += dp.Value * w;
                 wsum += w;
             }

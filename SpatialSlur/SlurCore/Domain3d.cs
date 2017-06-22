@@ -136,6 +136,17 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="center"></param>
+        /// <param name="offset"></param>
+        public Domain3d(Vec3d center, double offset)
+           : this(center, offset, offset, offset)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="center"></param>
         /// <param name="offsetX"></param>
         /// <param name="offsetY"></param>
         /// <param name="offsetZ"></param>
@@ -186,6 +197,15 @@ namespace SpatialSlur.SlurCore
         public bool IsIncreasing
         {
             get { return X.IsIncreasing && Y.IsIncreasing && Z.IsIncreasing; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsDecreasing
+        {
+            get { return X.IsDecreasing && Y.IsDecreasing && Z.IsDecreasing; }
         }
 
 

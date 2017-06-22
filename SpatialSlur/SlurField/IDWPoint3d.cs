@@ -32,6 +32,14 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public static class IDWPoint3d
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="point"></param>
+        /// <param name="scale"></param>
+        /// <returns></returns>
         public static IDWPoint3d<T> Create<T>(T data, Vec3d point, double scale = 1.0)
         {
             return new IDWPoint3d<T>() { Value = data, Point = point, Scale = scale };

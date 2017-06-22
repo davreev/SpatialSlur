@@ -127,8 +127,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetNormal<V, E, F>(this IHeVertex<V, E, F> vertex, Func<V, Vec3d> getPosition)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d result = new Vec3d();
@@ -149,8 +149,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static Vec3d GetNormal<V, E, F>(this IHeVertex<V, E, F> vertex, Func<E, Vec3d> getNormal)
-            where E : IHalfedge<V, E, F>
             where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
             Vec3d result = vertex.OutgoingHalfedges.Sum(getNormal);

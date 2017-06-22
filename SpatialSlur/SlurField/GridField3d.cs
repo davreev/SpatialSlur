@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Drawing;
@@ -19,7 +21,7 @@ namespace SpatialSlur.SlurField
     /// 
     /// </summary>
     [Serializable]
-    public abstract class GridField3d
+    public abstract class Grid3d
     {
         private Domain3d _domain;
         private double _x0, _y0, _z0; // cached for convenience
@@ -37,7 +39,7 @@ namespace SpatialSlur.SlurField
         /// <param name="countX"></param>
         /// <param name="countY"></param>
         /// <param name="countZ"></param>
-        private GridField3d(int countX, int countY, int countZ)
+        private Grid3d(int countX, int countY, int countZ)
         {
             if (countX < 1 || countY < 1 || countZ < 1)
                 throw new System.ArgumentException("The field must have at least 1 value in each dimension.");
@@ -57,7 +59,7 @@ namespace SpatialSlur.SlurField
         /// <param name="countX"></param>
         /// <param name="countY"></param>
         /// <param name="countZ"></param>
-        protected GridField3d(Domain3d domain, int countX, int countY, int countZ)
+        protected Grid3d(Domain3d domain, int countX, int countY, int countZ)
             : this(countX, countY, countZ)
         {
             Domain = domain;
@@ -75,7 +77,7 @@ namespace SpatialSlur.SlurField
         /// <param name="countZ"></param>
         /// <param name="sampleMode"></param>
         /// <param name="wrapMode"></param>
-        protected GridField3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapMode)
+        protected Grid3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapMode)
             : this(countX, countY, countZ)
         {
             Domain = domain;
@@ -95,7 +97,7 @@ namespace SpatialSlur.SlurField
         /// <param name="wrapModeX"></param>
         /// <param name="wrapModeY"></param>
         /// <param name="wrapModeZ"></param>
-        protected GridField3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ)
+        protected Grid3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ)
             : this(countX, countY, countZ)
         {
             Domain = domain;
@@ -110,7 +112,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        protected GridField3d(GridField3d other)
+        protected Grid3d(Grid3d other)
         {
             _nx = other._nx;
             _ny = other._ny;
@@ -346,7 +348,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool ResolutionEquals(GridField3d other)
+        public bool ResolutionEquals(Grid3d other)
         {
             return (_nx == other._nx && _ny == other._ny && _nz == other._nz);
         }
@@ -616,7 +618,8 @@ namespace SpatialSlur.SlurField
             return (
             SlurMath.Fract((point.X - _x0) * _dxInv, out i),
             SlurMath.Fract((point.Y - _y0) * _dyInv, out j),
-            SlurMath.Fract((point.Z - _z0) * _dzInv, out k));
+            SlurMath.Fract((point.Z - _z0) * _dzInv, out k)
+            );
         }
     }
 
@@ -626,10 +629,11 @@ namespace SpatialSlur.SlurField
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class GridField3d<T> : GridField3d, IField2d<T>, IField3d<T>, IField<T>
+    public abstract class GridField3d<T> : Grid3d, IField2d<T>, IField3d<T>, IDiscreteField<T>
         where T : struct
     {
         #region Static
+
 
         /// <summary>
         /// 
@@ -652,6 +656,7 @@ namespace SpatialSlur.SlurField
                 }
             });
         }
+
 
         #endregion
 
@@ -711,7 +716,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        protected GridField3d(GridField3d other)
+        protected GridField3d(Grid3d other)
             : base(other)
         {
             _values = new T[Count];
@@ -736,6 +741,17 @@ namespace SpatialSlur.SlurField
         {
             get { return _values[index]; }
             set { _values[index] = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int i = 0; i < Count; i++)
+                yield return _values[i];
         }
 
 
@@ -1225,9 +1241,114 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        IField<T> IField<T>.Duplicate()
+        IDiscreteField<T> IDiscreteField<T>.Duplicate()
         {
             return DuplicateBase();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="item"></param>
+        void IList<T>.Insert(int index, T item)
+        {
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        void IList<T>.RemoveAt(int index)
+        {
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        int IList<T>.IndexOf(T item)
+        {
+            for (int i = 0; i < Count; i++)
+                if (item.Equals(_values[i])) return i;
+
+            return -1;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool ICollection<T>.IsReadOnly
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool ICollection<T>.Contains(T item)
+        {
+            for (int i = 0; i < Count; i++)
+                if (item.Equals(_values[i])) return true;
+
+            return false;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        void ICollection<T>.Add(T item)
+        {
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool ICollection<T>.Remove(T item)
+        {
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void ICollection<T>.Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
+        void ICollection<T>.CopyTo(T[] array, int index)
+        {
+            array.SetRange(_values, index, 0, Count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
 

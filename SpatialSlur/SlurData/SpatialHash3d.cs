@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// Spatial hash for broad phase collision detection between dynamic objects.
     /// </summary>
-    public sealed class SpatialHash3d<T>:SpatialMap3d<T>
+    public class SpatialHash3d<T>:SpatialMap3d<T>
     {
         private const int P1 = 73856093; // used in hash function
         private const int P2 = 19349663; // used in hash function
@@ -58,7 +58,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        protected override (int, int, int) Discretize(Vec3d point)
+        protected sealed override (int, int, int) Discretize(Vec3d point)
         {
             return (
                 (int)Math.Floor(point.X * _scaleInv),
@@ -91,7 +91,7 @@ namespace SpatialSlur.SlurData
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        protected override int ToIndex(int i, int j, int k)
+        protected sealed override int ToIndex(int i, int j, int k)
         {
             return SlurMath.Mod2(i * P1 ^ j * P2 ^ k * P3, BinCount);
         }

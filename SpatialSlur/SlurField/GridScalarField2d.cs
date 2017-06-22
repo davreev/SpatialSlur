@@ -84,7 +84,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public GridScalarField2d(GridField2d other)
+        public GridScalarField2d(Grid2d other)
             : base(other)
         {
         }
