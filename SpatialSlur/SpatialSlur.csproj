@@ -238,6 +238,7 @@
     <Compile Include="SlurMesh\MeshUtil.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Debug\" />
     <Folder Include="Sketch\" />
     <Folder Include="SlurField\WIP\" />
     <Folder Include="SlurMesh\WIP\" />

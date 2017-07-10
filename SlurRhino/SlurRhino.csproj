@@ -124,6 +124,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Debug\" />
     <Folder Include="SlurField\WIP\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
