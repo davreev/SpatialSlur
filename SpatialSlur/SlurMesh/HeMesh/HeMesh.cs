@@ -162,34 +162,37 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if the given vertex belongs to this mesh.
+        /// Note this is an O(1) operation.
         /// </summary>
         /// <param name="vertex"></param>
         /// <returns></returns>
-        public bool Owns(TV vertex)
+        public bool Contains(TV vertex)
         {
-            return _vertices.Owns(vertex);
+            return _vertices.Contains(vertex);
         }
 
 
         /// <summary>
         /// Returns true if the given halfedge belongs to this mesh.
+        /// Note this is an O(1) operation.
         /// </summary>
         /// <param name="hedge"></param>
         /// <returns></returns>
-        public bool Owns(TE hedge)
+        public bool Contains(TE hedge)
         {
-            return _hedges.Owns(hedge);
+            return _hedges.Contains(hedge);
         }
 
 
         /// <summary>
         /// Returns true if the given face belongs to this mesh.
+        /// Note this is an O(1) operation.
         /// </summary>
         /// <param name="face"></param>
         /// <returns></returns>
-        public bool Owns(TF face)
+        public bool Contains(TF face)
         {
-            return _faces.Owns(face);
+            return _faces.Contains(face);
         }
 
 
@@ -1012,7 +1015,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public TE SplitEdge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             return SplitEdgeImpl(hedge);
@@ -1118,7 +1121,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public TE SplitEdgeFace(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             return SplitEdgeFaceImpl(hedge);
@@ -1156,7 +1159,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public bool CollapseEdge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             return CollapseEdgeImpl(hedge);
@@ -1427,7 +1430,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public bool SpinEdge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             // halfedge must be adjacent to 2 faces
@@ -1493,7 +1496,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedge"></param>
         public TE DetachEdge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             // halfedge must be adjacent to 2 faces
@@ -2083,7 +2086,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public void Remove(TV vertex)
         {
-            _vertices.OwnsCheck(vertex);
+            _vertices.ContainsCheck(vertex);
             vertex.RemovedCheck();
             RemoveImpl(vertex);
         }
@@ -2117,8 +2120,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public bool MergeVertices(TV v0, TV v1)
         {
-            _vertices.OwnsCheck(v0);
-            _vertices.OwnsCheck(v1);
+            _vertices.ContainsCheck(v0);
+            _vertices.ContainsCheck(v1);
 
             v0.RemovedCheck();
             v1.RemovedCheck();
@@ -2191,8 +2194,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public TE SplitVertex(TE he0, TE he1)
         {
-            _hedges.OwnsCheck(he0);
-            _hedges.OwnsCheck(he1);
+            _hedges.ContainsCheck(he0);
+            _hedges.ContainsCheck(he1);
 
             he0.RemovedCheck();
             he1.RemovedCheck();
@@ -2262,7 +2265,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertex"></param>
         public void ChamferVertex(TV vertex)
         {
-            _vertices.OwnsCheck(vertex);
+            _vertices.ContainsCheck(vertex);
             vertex.RemovedCheck();
             ChamferVertexImpl(vertex);
         }
@@ -2392,7 +2395,7 @@ namespace SpatialSlur.SlurMesh
             // validate vertices and check for duplicates
             foreach (var v in vertices)
             {
-                _vertices.OwnsCheck(v);
+                _vertices.ContainsCheck(v);
                 if (v.Tag == currTag) return null;
                 v.Tag = currTag;
                 n++;
@@ -2560,7 +2563,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="face"></param>
         public void RemoveFace(TF face)
         {
-            _faces.OwnsCheck(face);
+            _faces.ContainsCheck(face);
             face.RemovedCheck();
             RemoveFaceImpl(face);
         }
@@ -2609,7 +2612,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public bool MergeFaces(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
             return MergeFacesImpl(hedge);
         }
@@ -2780,7 +2783,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public TF FillHole(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             // halfedge must be in a hole with at least 3 edges
@@ -2820,8 +2823,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public TE SplitFace(TE he0, TE he1)
         {
-            _hedges.OwnsCheck(he0);
-            _hedges.OwnsCheck(he1);
+            _hedges.ContainsCheck(he0);
+            _hedges.ContainsCheck(he1);
 
             he0.RemovedCheck();
             he1.RemovedCheck();
@@ -2885,7 +2888,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mode"></param>
         public void TriangulateFace(TF face, TriangulateMode mode)
         {
-            _faces.OwnsCheck(face);
+            _faces.ContainsCheck(face);
             face.RemovedCheck();
 
             switch (mode)
@@ -2913,7 +2916,7 @@ namespace SpatialSlur.SlurMesh
         public void TriangulateFace<T>(TF face, TriangulateMode mode, Func<TE, T> selector)
             where T : IComparable<T>
         {
-            _faces.OwnsCheck(face);
+            _faces.ContainsCheck(face);
             face.RemovedCheck();
 
             switch (mode)
@@ -3025,7 +3028,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mode"></param>
         public void QuadrangulateFace(TF face, QuadrangulateMode mode)
         {
-            _faces.OwnsCheck(face);
+            _faces.ContainsCheck(face);
             face.RemovedCheck();
 
             switch (mode)
@@ -3053,7 +3056,7 @@ namespace SpatialSlur.SlurMesh
         public void QuadrangulateFace<T>(TF face, QuadrangulateMode mode, Func<TE, T> selector)
             where T : IComparable<T>
         {
-            _faces.OwnsCheck(face);
+            _faces.ContainsCheck(face);
             face.RemovedCheck();
 
             switch (mode)
@@ -3312,7 +3315,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="start"></param>
         public void UnifyFaceOrientationQuad(TF start)
         {
-            _faces.OwnsCheck(start);
+            _faces.ContainsCheck(start);
             start.RemovedCheck();
 
             var stack = new Stack<TE>();

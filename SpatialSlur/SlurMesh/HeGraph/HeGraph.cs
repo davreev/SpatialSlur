@@ -109,9 +109,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="vertex"></param>
         /// <returns></returns>
-        public bool Owns(TV vertex)
+        public bool Contains(TV vertex)
         {
-            return _vertices.Owns(vertex);
+            return _vertices.Contains(vertex);
         }
 
 
@@ -120,9 +120,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="hedge"></param>
         /// <returns></returns>
-        public bool Owns(TE hedge)
+        public bool Contains(TE hedge)
         {
-            return _hedges.Owns(hedge);
+            return _hedges.Contains(hedge);
         }
 
 
@@ -444,8 +444,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public TE AddEdge(TV v0, TV v1)
         {
-            _vertices.OwnsCheck(v0);
-            _vertices.OwnsCheck(v1);
+            _vertices.ContainsCheck(v0);
+            _vertices.ContainsCheck(v1);
             return AddEdgeImpl(v0, v1);
         }
 
@@ -484,7 +484,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedge"></param>
         public void RemoveEdge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             RemoveEdgeImpl(hedge);
@@ -510,7 +510,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedge"></param>
         public void CollapseEdge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             CollapseEdgeImpl(hedge);
@@ -541,7 +541,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedge"></param>
         public TE SplitEdge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             return SplitEdgeImpl(hedge);
@@ -588,8 +588,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public TE ZipEdges(TE he0, TE he1)
         {
-            _hedges.OwnsCheck(he0);
-            _hedges.OwnsCheck(he1);
+            _hedges.ContainsCheck(he0);
+            _hedges.ContainsCheck(he1);
 
             he0.RemovedCheck();
             he1.RemovedCheck();
@@ -688,7 +688,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedge"></param>
         public void DetachHalfedge(TE hedge)
         {
-            _hedges.OwnsCheck(hedge);
+            _hedges.ContainsCheck(hedge);
             hedge.RemovedCheck();
 
             if (hedge.IsAtDegree1)
@@ -757,7 +757,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertex"></param>
         public void RemoveVertex(TV vertex)
         {
-            _vertices.OwnsCheck(vertex);
+            _vertices.ContainsCheck(vertex);
             vertex.RemovedCheck();
 
             RemoveVertexImpl(vertex);
@@ -788,8 +788,8 @@ namespace SpatialSlur.SlurMesh
         /// <param name="v1"></param>
         public void MergeVertices(TV v0, TV v1)
         {
-            _vertices.OwnsCheck(v0);
-            _vertices.OwnsCheck(v1);
+            _vertices.ContainsCheck(v0);
+            _vertices.ContainsCheck(v1);
 
             v0.RemovedCheck();
             v1.RemovedCheck();
@@ -818,12 +818,12 @@ namespace SpatialSlur.SlurMesh
         public void MergeVertices(IEnumerable<TV> vertices)
         {
             var v0 = vertices.ElementAt(0);
-            _vertices.OwnsCheck(v0);
+            _vertices.ContainsCheck(v0);
             v0.RemovedCheck();
 
             foreach (var v1 in vertices.Skip(1))
             {
-                _vertices.OwnsCheck(v1);
+                _vertices.ContainsCheck(v1);
                 v1.RemovedCheck();
 
                 MergeVerticesImpl(v1, v0);
@@ -850,8 +850,8 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he1"></param>
         public TE SplitVertex(TE he0, TE he1)
         {
-            _hedges.OwnsCheck(he0);
-            _hedges.OwnsCheck(he1);
+            _hedges.ContainsCheck(he0);
+            _hedges.ContainsCheck(he1);
 
             he0.RemovedCheck();
             he1.RemovedCheck();
@@ -904,7 +904,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertex"></param>
         public void DetachVertex(TV vertex)
         {
-            _vertices.OwnsCheck(vertex);
+            _vertices.ContainsCheck(vertex);
             vertex.RemovedCheck();
 
             DetachVertexImpl(vertex);

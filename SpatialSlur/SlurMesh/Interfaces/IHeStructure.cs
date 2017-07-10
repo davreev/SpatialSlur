@@ -174,7 +174,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var he in sources)
             {
                 if (he.IsRemoved) continue;
-                hedges.OwnsCheck(he);
+                hedges.ContainsCheck(he);
 
                 he.Tag = he.Twin.Tag = currTag;
                 queue.Enqueue(he);
@@ -240,7 +240,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var he in sources)
             {
                 if (he.IsRemoved) continue;
-                hedges.OwnsCheck(he);
+                hedges.ContainsCheck(he);
 
                 he.Tag = he.Twin.Tag = currTag;
                 stack.Push(he);
@@ -312,7 +312,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var he in sources)
             {
                 if (he.IsRemoved) continue;
-                hedges.OwnsCheck(he);
+                hedges.ContainsCheck(he);
 
                 he.Tag = he.Twin.Tag = currTag;
                 pq.Insert(he);
@@ -378,7 +378,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var v in sources)
             {
                 if (v.IsRemoved) continue;
-                verts.OwnsCheck(v);
+                verts.ContainsCheck(v);
 
                 v.Tag = currTag;
                 queue.Enqueue(v.FirstOut);
@@ -515,7 +515,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var v in sources)
             {
                 if (v.IsRemoved) continue;
-                verts.OwnsCheck(v);
+                verts.ContainsCheck(v);
 
                 v.Tag = currTag;
                 stack.Push(v.FirstOut);
@@ -658,7 +658,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var v in sources)
             {
                 if (v.IsRemoved) continue;
-                verts.OwnsCheck(v);
+                verts.ContainsCheck(v);
 
                 v.Tag = currTag;
                 pq.Insert(v.FirstOut);
@@ -1002,7 +1002,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to 0
             foreach (var he in sources)
             {
-                hedges.OwnsCheck(he);
+                hedges.ContainsCheck(he);
                 if (he.IsRemoved) continue;
 
                 setDepth(he, 0);
@@ -1388,7 +1388,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var v in sources)
             {
-                verts.OwnsCheck(v);
+                verts.ContainsCheck(v);
                 v.RemovedCheck();
 
                 setDepth(v, 0);
@@ -1431,7 +1431,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var v in sources)
             {
-                verts.OwnsCheck(v);
+                verts.ContainsCheck(v);
                 v.RemovedCheck();
 
                 setDistance(v, 0.0);
@@ -1627,7 +1627,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var f in sources)
             {
                 if (f.IsRemoved) continue;
-                faces.OwnsCheck(f);
+                faces.ContainsCheck(f);
 
                 f.Tag = currTag;
                 queue.Enqueue(f.First);
@@ -1747,7 +1747,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var f in sources)
             {
                 if (f.IsRemoved) continue;
-                faces.OwnsCheck(f);
+                faces.ContainsCheck(f);
 
                 f.Tag = currTag;
                 stack.Push(f.First);
@@ -1873,7 +1873,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var f in sources)
             {
                 if (f.IsRemoved) continue;
-                faces.OwnsCheck(f);
+                faces.ContainsCheck(f);
 
                 f.Tag = currTag;
                 pq.Insert(f.First);
@@ -2184,7 +2184,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to 0
             foreach (var he in sources)
             {
-                hedges.OwnsCheck(he);
+                hedges.ContainsCheck(he);
                 he.RemovedCheck();
 
                 setDepth(he, 0);
@@ -3139,7 +3139,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var f in sources)
             {
-                faces.OwnsCheck(f);
+                faces.ContainsCheck(f);
                 f.RemovedCheck();
 
                 setDepth(f, 0);
@@ -3183,7 +3183,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var f in sources)
             {
-                faces.OwnsCheck(f);
+                faces.ContainsCheck(f);
                 f.RemovedCheck();
 
                 setDistance(f, 0.0);

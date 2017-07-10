@@ -180,7 +180,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Removes all attributes corresponding with elements that have flagged for removal from the given list.
+        /// Removes all attributes corresponding with flagged elements.
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
@@ -192,8 +192,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Moves all attributes corresponding with elements that haven't been flagged for removal to the front of the given list.
-        /// Returns the number of attributes that haven't been flagged for removal.
+        /// Moves attributes that correspond with unflagged elements to the front of the given list.
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
@@ -213,7 +212,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Reduces the capacity to twice the count.
-        /// If the capacity is already less than twice the count, then this does nothing.
+        /// If the capacity is already less than twice the count, this does nothing.
         /// </summary>
         public void TrimExcess()
         {
@@ -240,66 +239,106 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the given element belongs to this list.
+        /// Returns true if this list contains the given element.
+        /// Note this is an O(1) operation.
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public bool Owns(T element)
+        public bool Contains(T element)
         {
             return element == _items[element.Index];
         }
 
 
         /// <summary>
-        /// Throws an exception for elements that don't belong to this mesh.
+        /// Throws an exception for elements that don't belong to this list.
         /// </summary>
         /// <param name="element"></param>
-        internal void OwnsCheck(T element)
+        internal void ContainsCheck(T element)
         {
-            if (!Owns(element))
+            if (!Contains(element))
                 throw new ArgumentException("The given element must belong to this mesh.");
         }
 
 
         /// <summary>
-        /// Returns the number of elements present in both of the given collections.
+        /// Returns unique elements from the given collection (no duplicates).
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
         /// <returns></returns>
-        public int CountCommon(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
+        public IEnumerable<T> GetDistinct(IEnumerable<T> elements)
         {
-            foreach (var e in elementsA.Concat(elementsB))
-            {
-                OwnsCheck(e);
-                e.RemovedCheck();
-            }
+            foreach (var e in elements)
+                ContainsCheck(e);
 
-            return CountCommonImpl(elementsA, elementsB);
+            return GetDistinctImpl(elements);
         }
 
 
         /// <summary>
-        /// Returns the number of elements present in both of the given collections.
-        /// Assumes the given elements all belong to the same mesh.
+        /// 
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
         /// <returns></returns>
-        internal int CountCommonImpl(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
+        internal IEnumerable<T> GetDistinctImpl(IEnumerable<T> elements)
+        {
+            int currTag = NextTag;
+
+            foreach (var e in elements)
+            {
+                if (e.Tag == currTag) continue;
+                e.Tag = currTag;
+                yield return e;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns unique elements that appear in either of the two given collections.
+        /// </summary>
+        /// <param name="elementsA"></param>
+        /// <param name="elementsB"></param>
+        /// <returns></returns>
+        public IEnumerable<T> GetUnion(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
+        {
+            return GetDistinct(elementsA.Concat(elementsB));
+        }
+
+
+        /// <summary>
+        /// Returns elements from the first collection which are not present in the second.
+        /// </summary>
+        /// <param name="elementsA"></param>
+        /// <param name="elementsB"></param>
+        /// <returns></returns>
+        public IEnumerable<T> GetDifference(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
+        {
+            foreach (var e in elementsA.Concat(elementsB))
+                ContainsCheck(e);
+
+            return GetDifferenceImpl(elementsA, elementsB);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elementsA"></param>
+        /// <param name="elementsB"></param>
+        /// <returns></returns>
+        internal IEnumerable<T> GetDifferenceImpl(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
         {
             int currTag = NextTag;
 
             // tag elements in A
-            foreach (var eA in elementsA)
-                eA.Tag = currTag;
-
-            // count tagged elements in B
-            int count = 0;
             foreach (var eB in elementsB)
-                if (eB.Tag == currTag) count++;
+                eB.Tag = currTag;
 
-            return count;
+            // return tagged elements in B
+            foreach (var eA in elementsA)
+                if (eA.Tag != currTag) yield return eA;
         }
 
 
@@ -309,26 +348,22 @@ namespace SpatialSlur.SlurMesh
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
         /// <returns></returns>
-        public IEnumerable<T> GetCommon(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
+        public IEnumerable<T> GetIntersection(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
         {
             foreach (var e in elementsA.Concat(elementsB))
-            {
-                OwnsCheck(e);
-                e.RemovedCheck();
-            }
+                ContainsCheck(e);
 
-            return GetCommonImpl(elementsA, elementsB);
+            return GetIntersectionImpl(elementsA, elementsB);
         }
 
 
         /// <summary>
-        /// Returns elements which are present in both of the given collections.
-        /// Assumes the given elements all belong to the same mesh.
+        /// 
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
         /// <returns></returns>
-        internal IEnumerable<T> GetCommonImpl(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
+        internal IEnumerable<T> GetIntersectionImpl(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
         {
             int currTag = NextTag;
 
@@ -340,5 +375,6 @@ namespace SpatialSlur.SlurMesh
             foreach (var eB in elementsB)
                 if (eB.Tag == currTag) yield return eB;
         }
+
     }
 }

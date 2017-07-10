@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurMesh
             var faces = mesh.Faces;
 
             // TODO return as IEnumerable<IEnumerable<Halfedge>> instead
-            faces.OwnsCheck(start);
+            faces.ContainsCheck(start);
             start.RemovedCheck();
 
             var result = new List<List<TE>>();
