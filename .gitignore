@@ -190,4 +190,5 @@ ModelManifest.xml
 
 # Additional files & folders
 /Documentation/
+/Examples/
 *Test.cs
