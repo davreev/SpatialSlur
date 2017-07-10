@@ -106,7 +106,6 @@
     <Compile Include="Sketch\LoopGrowth\LoopGrower.cs" />
     <Compile Include="Sketch\LoopGrowth\HeMeshLG.cs" />
     <Compile Include="Sketch\Remesher\HeMeshDM.cs" />
-    <Compile Include="SlurField\Interfaces\IMeshField.cs" />
     <Compile Include="SlurField\Isosurface.cs" />
     <Compile Include="Extensions\SlurFieldExtensions.cs" />
     <Compile Include="Extensions\SlurMeshExtensions.cs" />
@@ -124,7 +123,9 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="SlurField\WIP\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

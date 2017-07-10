@@ -69,7 +69,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _h1;
                 yield return _h2;
                 yield return _h3;
-
             }
         }
 
@@ -81,7 +80,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="vertex1"></param>
         /// <param name="vertex2"></param>
         /// <param name="vertex3"></param>
-        /// <param name="restAngle"></param>
         /// <param name="weight"></param>
         public CyclicQuad(int vertex0, int vertex1, int vertex2, int vertex3, double weight = 1.0)
         {

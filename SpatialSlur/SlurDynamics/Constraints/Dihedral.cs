@@ -21,8 +21,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
     {
         private H _h0 = new H();
         private H _h1 = new H();
-        private H _hL = new H();
-        private H _hR = new H();
+        private H _h2 = new H();
+        private H _h3 = new H();
 
         private double _targetAngle;
 
@@ -50,7 +50,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         public H Left
         {
-            get { return _hL; }
+            get { return _h2; }
         }
 
 
@@ -59,7 +59,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         public H Right
         {
-            get { return _hR; }
+            get { return _h3; }
         }
 
 
@@ -72,8 +72,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
             {
                 yield return _h0;
                 yield return _h1;
-                yield return _hL;
-                yield return _hR;
+                yield return _h2;
+                yield return _h3;
             }
         }
 
@@ -117,8 +117,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
             Vec3d p0 = particles[_h0].Position;
             Vec3d p1 = particles[_h1].Position;
-            Vec3d p2 = particles[_hL].Position;
-            Vec3d p3 = particles[_hR].Position;
+            Vec3d p2 = particles[_h2].Position;
+            Vec3d p3 = particles[_h3].Position;
 
             Vec3d v01 = p1 - p0;
             Vec3d v02 = p2 - p0;
@@ -152,8 +152,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
             // calculate deltas
             _h0.Delta = n0 * (m * c1) + n1 * (m * c3);
             _h1.Delta = n0 * (m * c0) + n1 * (m * c2);
-            _hL.Delta = n0 * -(m * (c0 + c1));
-            _hR.Delta = n1 * -(m * (c2 + c3));
+            _h2.Delta = n0 * -(m * (c0 + c1));
+            _h3.Delta = n1 * -(m * (c2 + c3));
         }
 
         
@@ -168,8 +168,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             _h0.Index = start;
             _h1.Index = end;
-            _hL.Index = left;
-            _hR.Index = right;
+            _h2.Index = left;
+            _h3.Index = right;
         }
     }
 }

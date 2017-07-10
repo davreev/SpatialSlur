@@ -189,6 +189,7 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 # Additional files & folders
-/Documentation/
-/Examples/
+Documentation/
+Examples/
+*WIP/
 *Test.cs

@@ -1,8 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\SpatialSlur"
+    "\\Examples",
+    "\\SlurRhino\\Sketch",
+    "\\SlurRhino\\SlurMesh"
   ],
-  "SelectedNode": "\\SlurRhino",
+  "SelectedNode": "\\.gitignore",
   "PreviewInSolutionExplorer": false
 }
