@@ -36,6 +36,17 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static HeGraph<V, E> TryCast(object obj)
+        {
+            return obj as HeGraph<V, E>;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         [Serializable]
         public class V : HeVertex<V, E>
         {

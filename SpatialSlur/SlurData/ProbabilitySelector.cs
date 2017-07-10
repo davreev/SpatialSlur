@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
+using static SpatialSlur.SlurCore.ArrayMath;
+
 /*
  * Notes
  */ 
@@ -72,7 +74,7 @@ namespace SpatialSlur.SlurData
             }
 
             // normalize
-            _weights.Scale(1.0 / sum, _weights);
+            Scale(_weights, 1.0 / sum, _weights);
         }
 
 

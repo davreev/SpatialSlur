@@ -15,10 +15,10 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
     /// <summary>
     /// 
     /// </summary>
-    public class GraphGrowerSettings
+    public class LoopGrowerSettings
     {
         private Domain _lengthRange = new Domain(1.0, 1.0);
-        private double _radFactor = 0.5;
+        private double _radFactor = 0.75;
 
         private double _featureWeight = 100.0;
         private double _smoothWeight = 5.0;
@@ -34,7 +34,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <summary>
         /// 
         /// </summary>
-        public GraphGrowerSettings() { }
+        public LoopGrowerSettings() { }
 
 
         /// <summary>

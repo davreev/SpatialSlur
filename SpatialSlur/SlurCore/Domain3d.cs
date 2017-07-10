@@ -183,9 +183,9 @@ namespace SpatialSlur.SlurCore
             : this()
         {
             var p = points.ElementAt(0);
-            X.T0 = X.T1 = p.X;
-            Y.T0 = Y.T1 = p.Y;
-            Z.T0 = Z.T1 = p.Z;
+            X = new Domain(p.X);
+            Y = new Domain(p.Y);
+            Z = new Domain(p.Z);
 
             Include(points.Skip(1));
         }

@@ -24,10 +24,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     public class SphereCollide<P> : DynamicConstraint<P, H>
         where P : IParticle
     {
-        private const double TargetBinScale = 2.0;
-        private const double MinBinScale = 0.5;
-        private const double MaxBinScale = 4.0;
-        private const double GridPadding = 1.0e-8;
+        private const double TargetBinScale = 4.0;
 
         private SpatialGrid3d<H> _grid;
         private double _radius = 1.0;
@@ -127,35 +124,26 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="particles"></param>
         private void UpdateGrid(IReadOnlyList<P> particles)
         {
+            // recalculate domain
             Domain3d d = new Domain3d(particles.Select(p => p.Position));
-            d.Expand(GridPadding);
+            d.Expand(_radius);
 
             // lazy instantiation
             if (_grid == null)
             {
-                InitGrid(d, _radius * TargetBinScale);
+                _grid = new SpatialGrid3d<H>(d, _radius * TargetBinScale);
                 return;
             }
 
             // rebuild grid if bins are too large or too small in any one dimension
             _grid.Domain = d;
-            double t0 = _radius * MaxBinScale;
-            double t1 = _radius * MinBinScale;
-   
-            if (!(Contains(_grid.BinScaleX, t0, t1) && Contains(_grid.BinScaleY, t0, t1) && Contains(_grid.BinScaleZ, t0, t1)))
-                InitGrid(d, _radius * TargetBinScale);
-        }
+            double maxScale = _radius * TargetBinScale * 2.0;
+            double minScale = _radius * TargetBinScale * 0.5;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void InitGrid(Domain3d domain, double binScale)
-        {
-            int nx = (int)Math.Ceiling(domain.X.Span / binScale);
-            int ny = (int)Math.Ceiling(domain.Y.Span / binScale);
-            int nz = (int)Math.Ceiling(domain.Z.Span / binScale);
-            _grid = new SpatialGrid3d<H>(domain, nx, ny, nz);
+            // if bin scale is out of range, rebuild
+            if (!Contains(_grid.BinScaleX, minScale, maxScale) || !Contains(_grid.BinScaleY, minScale, maxScale) || !Contains(_grid.BinScaleZ, minScale, maxScale))
+                _grid = new SpatialGrid3d<H>(d, _radius * TargetBinScale);
         }
+        
     }
 }

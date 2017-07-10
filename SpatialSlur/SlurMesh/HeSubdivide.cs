@@ -8,6 +8,8 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
+    using M = HeMesh<HeMesh3d.V, HeMesh3d.E, HeMesh3d.F>;
+
     /// <summary>
     /// 
     /// </summary>
@@ -65,9 +67,99 @@ namespace SpatialSlur.SlurMesh
             int nf = mesh.Faces.Count;
 
             // TODO create elements before assigning attributes
-            
+
             QuadSplitTopo(mesh);
-            QuadSplitGeom(mesh, vertexPositions);
+            QuadSplitGeom(mesh, getPosition, setPosition, nv, nhe, nf);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        private static void QuadSplitTopo<TV, TE, TF>(HeMesh<TV, TE, TF> mesh)
+            where TV : HeVertex<TV, TE, TF>
+            where TE : Halfedge<TV, TE, TF>
+            where TF : HeFace<TV, TE, TF>
+        {
+            var hedges = mesh.Halfedges;
+            var verts = mesh.Vertices;
+            var faces = mesh.Faces;
+
+            int nhe = hedges.Count;
+            int nv = verts.Count;
+            int nf = faces.Count;
+
+            // create face vertices (1 new vertex per face)
+            mesh.AddVertices(nf);
+
+            // create edge vertices (1 new vertex per edge)
+            for (int i = 0; i < nhe; i += 2)
+            {
+                var he = hedges[i];
+
+                if (he.IsRemoved)
+                    mesh.AddVertex(); // add placeholder
+                else
+                    mesh.SplitEdgeImpl(he); // split edge (adds a new vertex)
+            }
+
+            // create new edges and faces
+            for (int i = 0; i < nf; i++)
+            {
+                var f = faces[i];
+                if (f.IsRemoved) continue;
+
+                var fv = verts[i + nv]; // face vertex
+                var he0 = f.First;
+                var v0 = he0.Start;
+
+                // advance to first old vertex in face
+                if (v0.Index >= nv)
+                {
+                    he0 = he0.NextInFace;
+                    v0 = he0.Start;
+                }
+
+                // create new halfedges to face vertex and link up with old halfedges
+                var he1 = he0;
+                do
+                {
+                    var he2 = he1.NextInFace;
+                    var he3 = mesh.AddEdge(he2.Start, fv);
+
+                    he1.MakeConsecutive(he3);
+                    he3.Twin.MakeConsecutive(he2);
+
+                    he1 = he2.NextInFace;
+                } while (he1 != he0);
+
+                // connect new halfedges and create new faces
+                {
+                    fv.FirstOut = he1.NextInFace.Twin;
+                    var he2 = he1.PrevInFace;
+
+                    do
+                    {
+                        var he3 = he1.NextInFace;
+                        var he4 = he2.PrevInFace;
+                        he3.MakeConsecutive(he4);
+
+                        if (f == null)
+                        {
+                            f = mesh.AddFace();
+                            he1.Face = he2.Face = f;
+                        }
+
+                        he3.Face = he4.Face = f; // set face refs for new halfedges
+                        f.First = he1; // set first halfedge in face
+
+                        f = null;
+                        he2 = he3.Twin.NextInFace;
+                        he1 = he2.NextInFace;
+                    } while (he1 != he0);
+                }
+            }
         }
 
 
@@ -107,96 +199,6 @@ namespace SpatialSlur.SlurMesh
 
                 var v = verts[(i >> 1) + nf + nv];
                 setPosition(v, he.Lerp(getPosition, 0.5));
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        private static void QuadSplitTopo<TV,TE,TF>(HeMesh<TV,TE,TF> mesh)
-            where TV : HeVertex<TV, TE, TF>
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
-        {
-            var hedges = mesh.Halfedges;
-            var verts = mesh.Vertices;
-            var faces = mesh.Faces;
-
-            int nhe = hedges.Count;
-            int nv = verts.Count;
-            int nf = faces.Count;
-
-            // create face vertices (1 new vertex per face)
-            mesh.AddVertices(nf);
-
-            // create edge vertices (1 new vertex per edge)
-            for (int i = 0; i < nhe; i += 2)
-            {
-                var he = hedges[i];
-
-                if (he.IsRemoved)
-                    mesh.AddVertex(); // add placeholder
-                else
-                    mesh.SplitEdgeImpl(he); // split edge (adds a new vertex)
-            }
-
-            // create new edges and faces
-            for (int i = 0; i < nf; i++)
-            {
-                var f = faces[i];
-                if (f.IsRemoved) continue;
-           
-                var fv = verts[i + nv]; // face vertex
-                var he0 = f.First;
-                var v0 = he0.Start;
-
-                // advance to first old vertex in face
-                if (v0.Index >= nv)
-                {
-                    he0 = he0.NextInFace;
-                    v0 = he0.Start;
-                }
-
-                // create new halfedges to face vertex and link up with old halfedges
-                var he1 = he0;
-                do
-                {
-                    var he2 = he1.NextInFace;
-                    var he3 = mesh.AddEdge(he2.Start, fv);
-            
-                    he1.MakeConsecutive(he3);
-                    he3.Twin.MakeConsecutive(he2);
-
-                    he1 = he2.NextInFace;
-                } while (he1 != he0);
-
-                // connect new halfedges and create new faces
-                {
-                    fv.FirstOut = he1.NextInFace.Twin;
-                    var he2 = he1.PrevInFace;
-  
-                    do
-                    {
-                        var he3 = he1.NextInFace;
-                        var he4 = he2.PrevInFace;
-                        he3.MakeConsecutive(he4);
-
-                        if (f == null)
-                        {
-                            f = mesh.AddFace();
-                            he1.Face = he2.Face = f;
-                        }
-
-                        he3.Face = he4.Face = f; // set face refs for new halfedges
-                        f.First = he1; // set first halfedge in face
-
-                        f = null;
-                        he2 = he3.Twin.NextInFace;
-                        he1 = he2.NextInFace;
-                    } while (he1 != he0);
-                }
             }
         }
 

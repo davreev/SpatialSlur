@@ -28,8 +28,8 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         public SpatialHash3d(int binCount, double binScale)
-            :base(binCount)
         {
+            Init(binCount);
             BinScale = binScale;
         }
 

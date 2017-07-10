@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
-using static SpatialSlur.SlurField.FieldUtil;
+using static SpatialSlur.SlurField.GridUtil;
 
 /*
  * Notes

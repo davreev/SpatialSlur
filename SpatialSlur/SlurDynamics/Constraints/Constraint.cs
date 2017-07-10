@@ -58,7 +58,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         public void Apply(IReadOnlyList<P> particles)
         {
             foreach (var h in Handles)
-                particles[h].ApplyMove(h.Delta, Weight);
+                particles[h].ApplyForce(h.Delta, Weight);
         }
 
 

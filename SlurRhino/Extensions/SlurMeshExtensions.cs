@@ -290,7 +290,7 @@ namespace SpatialSlur.SlurRhino
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var v = verts[i];
-                    v.Position = xform.Multiply(v.Position, true);
+                    v.Position = xform.Apply(v.Position, true);
                 }
             };
 

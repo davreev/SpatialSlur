@@ -32,7 +32,18 @@ namespace SpatialSlur.SlurMesh
         {
             return Factory.Create(vertexCapacity, hedgeCapacity, faceCapacity);
         }
-        
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static HeMesh<V, E, F> TryCast(object obj)
+        {
+            return obj as HeMesh<V, E, F>;
+        }
+
 
         /// <summary>
         /// 

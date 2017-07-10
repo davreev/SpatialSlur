@@ -42,7 +42,7 @@ namespace SpatialSlur.SlurMesh
             HalfedgeProvider = hedgeProvider;
 
             _vertices = new HeElementList<TV>(vertexCapacity);
-            _hedges = new HeElementList<TE>(hedgeCapacity);
+            _hedges = new HalfedgeList<TV, TE>(hedgeCapacity);
         }
 
 
@@ -141,8 +141,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeGraph<TV, TE> Duplicate(Action<TV, TV> setVertex, Action<TE, TE> setHedge)
         {
-            var factory = HeGraphFactory.Create(this);
-            return factory.CreateCopy(this, setVertex, setHedge);
+            var copy = HeGraph.Create(_newTV, _newTE, _vertices.Count, _hedges.Count);
+            copy.Append(this, setVertex, setHedge);
+            return copy;
         }
 
 
@@ -205,10 +206,9 @@ namespace SpatialSlur.SlurMesh
         /// Returns an array of connected components.
         /// For each edge in this graph, returns a handle to the corresponding element within the connected component.
         /// </summary>
-        public HeGraph<TV, TE>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge)
+        public HeGraph<TV, TE>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge)
         {
-            var factory = HeGraphFactory.Create(this);
-            return factory.CreateConnectedComponents(this, getHandle, setVertex, setHedge);
+            return SplitDisjoint(HeGraphFactory.Create(this), getHandle, setHandle, setVertex, setHedge);
         }
 
 
@@ -216,11 +216,11 @@ namespace SpatialSlur.SlurMesh
         /// Returns an array of connected components.
         /// For each edge in this graph, returns a handle to the corresponding element within the connected component.
         /// </summary>
-        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(IFactory<HeGraph<UV, UE>> factory, Func<TE, ElementHandle> getHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge)
+        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(IFactory<HeGraph<UV, UE>> factory, Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            int ncomp = this.GetEdgeComponentIndices((he, i) => getHandle(he).ComponentIndex = i);
+            int ncomp = this.GetEdgeComponentIndices((he, i) => setHandle(he,new ElementHandle(i)));
             var comps = new HeGraph<UV, UE>[ncomp];
 
             // initialize components
@@ -234,8 +234,11 @@ namespace SpatialSlur.SlurMesh
                 if (heA.IsRemoved) continue;
 
                 var sd = getHandle(heA);
+
                 var comp = comps[sd.ComponentIndex];
                 sd.ElementIndex = comp.AddEdge().Index >> 1;
+
+                setHandle(heA, sd);
             }
 
             // set component halfedge->halfedge refs
@@ -245,15 +248,15 @@ namespace SpatialSlur.SlurMesh
                 if (heA0.IsRemoved) continue;
 
                 var heA1 = heA0.NextAtStart;
-                var sd0 = getHandle(heA0);
-                var sd1 = getHandle(heA1);
+                var h0 = getHandle(heA0);
+                var h1 = getHandle(heA1);
 
                 // the component to which heA0 was copied
-                var compHedges = comps[sd0.ComponentIndex]._hedges;
+                var compHedges = comps[h0.ComponentIndex]._hedges;
 
                 // set refs
-                var heB0 = compHedges[(sd0.ElementIndex << 1) + (i & 1)];
-                var heB1 = compHedges[(sd1.ElementIndex << 1) + (heA1.Index & 1)];
+                var heB0 = compHedges[(h0.ElementIndex << 1) + (i & 1)];
+                var heB1 = compHedges[(h1.ElementIndex << 1) + (heA1.Index & 1)];
                 heB0.MakeConsecutive(heB1);
 
                 setHedge(heB0, heA0);
@@ -266,13 +269,13 @@ namespace SpatialSlur.SlurMesh
                 if (vA.IsRemoved) continue;
 
                 var heA = vA.FirstOut;
-                var sd = getHandle(heA);
+                var h = getHandle(heA);
 
-                var comp = comps[sd.ComponentIndex];
+                var comp = comps[h.ComponentIndex];
                 var vB = comp.AddVertex();
 
                 // set vertex refs
-                var heB = comp._hedges[(sd.ElementIndex << 1) + (heA.Index & 1)];
+                var heB = comp._hedges[(h.ElementIndex << 1) + (heA.Index & 1)];
                 vB.FirstOut = heB;
 
                 foreach (var he in heB.CirculateStart)
@@ -1025,6 +1028,17 @@ namespace SpatialSlur.SlurMesh
         public static HeGraph<V, E> Create(int vertexCapacity = 4, int hedgeCapacity = 4)
         {
             return Factory.Create(vertexCapacity, hedgeCapacity);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static HeGraph<V, E> TryCast(object obj)
+        {
+            return obj as HeGraph<V, E>;
         }
 
 

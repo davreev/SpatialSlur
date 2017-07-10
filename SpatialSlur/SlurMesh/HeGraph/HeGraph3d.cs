@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurMesh
     public static class HeGraph3d
     {
         /// <summary></summary>
-        public static readonly HeGraphFactory<V,E> Factory = HeGraphFactory.Create(() => new V(), () => new E());
+        public static readonly HeGraphFactory<V, E> Factory = HeGraphFactory.Create(() => new V(), () => new E());
 
 
         /// <summary>
@@ -30,6 +30,17 @@ namespace SpatialSlur.SlurMesh
         public static HeGraph<V, E> Create(int vertexCapacity = 4, int hedgeCapacity = 4)
         {
             return Factory.Create(vertexCapacity, hedgeCapacity);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static HeGraph<V, E> TryCast(object obj)
+        {
+            return obj as HeGraph<V, E>;
         }
 
 

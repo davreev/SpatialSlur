@@ -42,6 +42,19 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="seqeunce"></param>
+        /// <param name="action"></param>
+        public static void Action<T>(this IEnumerable<T> seqeunce, Action<T> action)
+        {
+            foreach (var t in seqeunce)
+                action(t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <typeparam name="U"></typeparam>
         /// <param name="sequence"></param>
         /// <param name="selector"></param>
@@ -318,7 +331,7 @@ namespace SpatialSlur.SlurCore
         public static double Sum(this IEnumerable<double> vector)
         {
             if (vector is double[])
-                return ArrayExtensions.Sum((double[])vector);
+                return ArrayMath.Sum((double[])vector);
 
             double sum = 0.0;
             foreach (double t in vector) sum += t;
@@ -332,7 +345,7 @@ namespace SpatialSlur.SlurCore
         public static double Mean(this IEnumerable<double> vector)
         {
             if (vector is double[])
-                return ArrayExtensions.Mean((double[])vector);
+                return ArrayMath.Mean((double[])vector);
 
             double sum = 0.0;
             int count = 0;
@@ -357,7 +370,7 @@ namespace SpatialSlur.SlurCore
         public static Vec2d Sum(this IEnumerable<Vec2d> vectors)
         {
             if (vectors is Vec2d[])
-                return ArrayExtensions.Sum((Vec2d[])vectors);
+                return ArrayMath.Sum((Vec2d[])vectors);
 
             Vec2d sum = new Vec2d();
             foreach (Vec2d v in vectors) sum += v;
@@ -371,7 +384,7 @@ namespace SpatialSlur.SlurCore
         public static Vec2d Mean(this IEnumerable<Vec2d> vectors)
         {
             if (vectors is Vec2d[])
-                return ArrayExtensions.Mean((Vec2d[])vectors);
+                return ArrayMath.Mean((Vec2d[])vectors);
 
             Vec2d sum = new Vec2d();
             int count = 0;
@@ -432,7 +445,7 @@ namespace SpatialSlur.SlurCore
         public static Vec3d Sum(this IEnumerable<Vec3d> vectors)
         {
             if (vectors is Vec3d[])
-                return ArrayExtensions.Sum((Vec3d[])vectors);
+                return ArrayMath.Sum((Vec3d[])vectors);
 
             var sum = new Vec3d();
             foreach (Vec3d v in vectors) sum += v;
@@ -446,7 +459,7 @@ namespace SpatialSlur.SlurCore
         public static Vec3d Mean(this IEnumerable<Vec3d> vectors)
         {
             if (vectors is Vec3d[])
-                return ArrayExtensions.Mean((Vec3d[])vectors);
+                return ArrayMath.Mean((Vec3d[])vectors);
 
             Vec3d sum = new Vec3d();
             int count = 0;
@@ -514,14 +527,14 @@ namespace SpatialSlur.SlurCore
         {
             if (vectors is double[][])
             {
-                ArrayExtensions.Sum((double[][])vectors, result);
+                ArrayMath.Sum((double[][])vectors, result);
                 return;
             }
 
             Array.Clear(result, 0, vectors.ElementAt(0).Length);
 
             foreach (double[] v in vectors)
-                ArrayExtensions.Add(result, v, result);
+                ArrayMath.Add(result, v, result);
         }
 
 
@@ -534,7 +547,7 @@ namespace SpatialSlur.SlurCore
         {
             if (vectors is double[][])
             {
-                ArrayExtensions.Mean((double[][])vectors, result);
+                ArrayMath.Mean((double[][])vectors, result);
                 return;
             }
 
@@ -543,11 +556,11 @@ namespace SpatialSlur.SlurCore
             int count = 0;
             foreach (double[] v in vectors)
             {
-                ArrayExtensions.Add(result, v, result);
+                ArrayMath.Add(result, v, result);
                 count++;
             }
 
-            ArrayExtensions.Scale(result, 1.0 / count, result);
+            ArrayMath.Scale(result, 1.0 / count, result);
         }
 
 

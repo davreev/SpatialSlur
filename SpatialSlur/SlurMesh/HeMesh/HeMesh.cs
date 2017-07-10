@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurMesh
             FaceProvider = faceProvider;
 
             _vertices = new HeElementList<TV>(vertexCapacity);
-            _hedges = new HeElementList<TE>(hedgeCapacity);
+            _hedges = new HalfedgeList<TV, TE>(hedgeCapacity);
             _faces = new HeElementList<TF>(faceCapacity);
         }
 
@@ -319,13 +319,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Appends a deep copy of the given mesh to this mesh.
         /// </summary>
         /// <returns></returns>
         public HeMesh<TV, TE, TF> Duplicate(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
         {
-            var factory = HeMeshFactory.Create(this);
-            return factory.CreateCopy(this, setVertex, setHedge, setFace);
+            var copy = HeMesh.Create(_newTV, _newTE, _newTF, _vertices.Count, _hedges.Count, _faces.Count);
+            copy.Append(this, setVertex, setHedge, setFace);
+            return copy;
         }
 
 
@@ -361,7 +362,7 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < otherHedges.Count; i += 2)
                 AddEdge();
-            
+
             for (int i = 0; i < otherFaces.Count; i++)
                 AddFace();
 
@@ -382,7 +383,7 @@ namespace SpatialSlur.SlurMesh
                 var f0 = otherFaces[i];
                 var f1 = _faces[i + nf];
                 setFace(f1, f0);
-                
+
                 if (f0.IsRemoved) continue;
                 f1.First = _hedges[f0.First.Index + nhe];
             }
@@ -405,14 +406,149 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF> Duplicate()
+        {
+            var copy = HeMesh.Create(_newTV, _newTE, _newTF, _vertices.Count, _hedges.Count, _faces.Count);
+            copy.Append(this);
+            return copy;
+        }
+
+
+        /// <summary>
+        /// Appends a deep copy of the given mesh to this mesh.
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <typeparam name="UF"></typeparam>
+        /// <param name="other"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="parallel"></param>
+        public void Append<UV, UE, UF>(HeMesh<UV, UE, UF> other, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Action<TF, UF> setFace, bool parallel = false)
+            where UV : HeVertex<UV, UE, UF>
+            where UE : Halfedge<UV, UE, UF>
+            where UF : HeFace<UV, UE, UF>
+        {
+            int nv = _vertices.Count;
+            int nhe = _hedges.Count;
+            int nf = _faces.Count;
+
+            // append topology
+            Append(other);
+
+            // set additional properties
+            SetElements(_vertices, other.Vertices, setVertex, nv, parallel);
+            SetElements(_hedges, other.Halfedges, setHedge, nhe, parallel);
+            SetElements(_faces, other.Faces, setFace, nf, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void SetElements<T, U>(HeElementList<T> target, HeElementList<U> source, Action<T, U> set, int offset, bool parallel = false)
+            where T : HeElement
+            where U : HeElement
+        {
+            Action<Tuple<int, int>> func = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    set(target[i + offset], source[i]);
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, source.Count), func);
+            else
+                func(Tuple.Create(0, source.Count));
+        }
+
+
+        /// <summary>
+        /// Appends a deep copy of the given mesh to this mesh.
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <typeparam name="UF"></typeparam>
+        /// <param name="other"></param>
+        public void Append<UV, UE, UF>(HeMesh<UV, UE, UF> other)
+            where UV : HeVertex<UV, UE, UF>
+            where UE : Halfedge<UV, UE, UF>
+            where UF : HeFace<UV, UE, UF>
+        {
+            if (ReferenceEquals(this, other))
+                throw new ArgumentException("The mesh can not be appended to itself.");
+
+            int nv = _vertices.Count;
+            int nhe = _hedges.Count;
+            int nf = _faces.Count;
+
+            var otherVerts = other._vertices;
+            var otherHedges = other._hedges;
+            var otherFaces = other._faces;
+
+            // append new elements
+            for (int i = 0; i < otherVerts.Count; i++)
+                AddVertex();
+
+            for (int i = 0; i < otherHedges.Count; i += 2)
+                AddEdge();
+
+            for (int i = 0; i < otherFaces.Count; i++)
+                AddFace();
+
+            // link new vertices to new halfedges
+            for (int i = 0; i < otherVerts.Count; i++)
+            {
+                var v0 = otherVerts[i];
+                var v1 = _vertices[i + nv];
+          
+                if (v0.IsRemoved) continue;
+                v1.FirstOut = _hedges[v0.FirstOut.Index + nhe];
+            }
+
+            // link new faces to new halfedges
+            for (int i = 0; i < otherFaces.Count; i++)
+            {
+                var f0 = otherFaces[i];
+                var f1 = _faces[i + nf];
+      
+                if (f0.IsRemoved) continue;
+                f1.First = _hedges[f0.First.Index + nhe];
+            }
+
+            // link new halfedges to eachother, new vertices, and new faces
+            for (int i = 0; i < otherHedges.Count; i++)
+            {
+                var he0 = otherHedges[i];
+                var he1 = _hedges[i + nhe];
+           
+                if (he0.IsRemoved) continue;
+                he1.PrevInFace = _hedges[he0.PrevInFace.Index + nhe];
+                he1.NextInFace = _hedges[he0.NextInFace.Index + nhe];
+                he1.Start = _vertices[he0.Start.Index + nv];
+
+                if (he0.Face != null)
+                    he1.Face = _faces[he0.Face.Index + nf];
+            }
+        }
+        */
+
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         public HeMesh<TV, TE, TF> GetDual(Action<TV, TF> setVertex, Action<TE, TE> setHedge, Action<TF, TV> setFace)
         {
-            var factory = HeMeshFactory.Create(this);
-            return factory.CreateDual(this, setVertex, setHedge, setFace);
+            var dual = HeMesh.Create(_newTV, _newTE, _newTF, _faces.Count, _hedges.Count, _vertices.Count);
+            dual.AppendDual(this, setVertex, setHedge, setFace);
+            return dual;
         }
 
 
@@ -446,7 +582,7 @@ namespace SpatialSlur.SlurMesh
             // add new elements
             for (int i = 0; i < otherFaces.Count; i++)
                 AddVertex();
-            
+
             for (int i = 0; i < otherVerts.Count; i++)
                 AddFace();
 
@@ -543,17 +679,185 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF> GetDual()
+        {
+            var dual = HeMesh.Create(_newTV, _newTE, _newTF, _faces.Count, _hedges.Count, _vertices.Count);
+            dual.AppendDual(this);
+            return dual;
+        }
+
+
+        /// <summary>
+        /// Appends the dual of the given mesh to this mesh.
+        /// Note this method preserves indexical correspondance between primal and dual elements.
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <typeparam name="UF"></typeparam>
+        /// <param name="other"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="parallel"></param>
+        public void AppendDual<UV, UE, UF>(HeMesh<UV, UE, UF> other, Action<TV, UF> setVertex, Action<TE, UE> setHedge, Action<TF, UV> setFace, bool parallel = false)
+            where UV : HeVertex<UV, UE, UF>
+            where UE : Halfedge<UV, UE, UF>
+            where UF : HeFace<UV, UE, UF>
+        {
+            int nv = _vertices.Count;
+            int nhe = _hedges.Count;
+            int nf = _faces.Count;
+
+            // append topology
+            AppendDual(other);
+
+            // set additional properties
+            SetElements(_vertices, other.Faces, setVertex, nv, parallel);
+            SetElements(_hedges, other.Halfedges, setHedge, nhe, parallel);
+            SetElements(_faces, other.Vertices, setFace, nf, parallel);
+        }
+
+
+        /// <summary>
+        /// Appends the dual of the given mesh to this mesh.
+        /// Note this method preserves indexical correspondance between primal and dual elements.
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <typeparam name="UF"></typeparam>
+        /// <param name="other"></param>
+        public void AppendDual<UV, UE, UF>(HeMesh<UV, UE, UF> other)
+            where UV : HeVertex<UV, UE, UF>
+            where UE : Halfedge<UV, UE, UF>
+            where UF : HeFace<UV, UE, UF>
+        {
+            if (ReferenceEquals(this, other))
+                throw new ArgumentException("Cannot append the dual of an HeMesh to itself.");
+
+            int nv = _vertices.Count;
+            int nhe = _hedges.Count;
+            int nf = _faces.Count;
+
+            var otherVerts = other._vertices;
+            var otherHedges = other._hedges;
+            var otherFaces = other._faces;
+
+            // add new elements
+            for (int i = 0; i < otherFaces.Count; i++)
+                AddVertex();
+
+            for (int i = 0; i < otherVerts.Count; i++)
+                AddFace();
+
+            // add halfedges and set their faces/vertices
+            // spin each halfedge such that its face in the primal mesh corresponds with its start vertex in the dual
+            for (int i = 0; i < otherHedges.Count; i += 2)
+            {
+                var heA0 = AddEdge();
+                var heB0 = otherHedges[i];
+                if (heB0.IsRemoved || heB0.IsBoundary) continue; // skip boundary edges
+
+                var heB1 = otherHedges[i + 1];
+                var vB0 = heB0.Start;
+                var vB1 = heB1.Start;
+
+                int mask = 0;
+                if (vB0.IsBoundary) mask |= 1;
+                if (vB1.IsBoundary) mask |= 2;
+                if (mask == 3) continue; // skip invalid dual edges
+
+                var heA1 = heA0.Twin;
+                heA0.Start = _vertices[heB0.Face.Index + nv];
+                heA1.Start = _vertices[heB1.Face.Index + nv];
+
+                if ((mask & 1) == 0) heA1.Face = _faces[vB0.Index + nf]; // vB0 is interior
+                if ((mask & 2) == 0) heA0.Face = _faces[vB1.Index + nf]; // vB1 is interior
+            }
+
+            // set halfedge -> halfedge refs
+            for (int i = 0; i < otherHedges.Count; i++)
+            {
+                var heA0 = _hedges[i + nhe];
+                var heB0 = otherHedges[i];
+
+                if (heA0.IsRemoved) continue;
+                var heB1 = heB0.NextInFace;
+                var heA1 = _hedges[heB1.Index + nhe];
+
+                // backtrack around primal face, until dual halfedge is valid
+                while (heA1.IsRemoved)
+                {
+                    heB1 = heB1.NextInFace;
+                    heA1 = _hedges[heB1.Index + nhe];
+                }
+
+                heA1.Twin.MakeConsecutive(heA0);
+            }
+
+            // set dual face -> halfedge refs 
+            // must be set before vertex refs to check for boundary invariant
+            for (int i = 0; i < otherVerts.Count; i++)
+            {
+                var fA = _faces[i + nf];
+                var vB = otherVerts[i];
+
+                if (vB.IsRemoved || vB.IsBoundary) continue;
+                fA.First = _hedges[vB.FirstOut.Twin.Index + nhe]; // can assume dual edge around interior vertex is valid
+            }
+
+            // set dual vertex -> halfedge refs
+            for (int i = 0; i < otherFaces.Count; i++)
+            {
+                var vA = _vertices[i + nv];
+                var fB = otherFaces[i];
+
+                if (fB.IsRemoved) continue;
+                var heB = fB.First; // primal halfedge
+                var heA = _hedges[heB.Index + nhe]; // corresponding dual halfedge
+
+                // find first used dual halfedge
+                while (heA.IsRemoved)
+                {
+                    heB = heB.NextInFace;
+                    if (heB == fB.First) goto EndFor; // dual vertex has no valid halfedges
+                    heA = _hedges[heB.Index + nhe];
+                }
+
+                vA.FirstOut = heA;
+                vA.SetFirstToBoundary();
+
+                EndFor:;
+            }
+
+            // cleanup any appended degree 2 faces
+            for (int i = nf; i < _faces.Count; i++)
+            {
+                var f = _faces[i];
+                if (!f.IsRemoved && f.IsDegree2)
+                    CleanupDegree2Face(f.First);
+            }
+        }
+        */
+
+
+        /// <summary>
+        /// Returns an array of connected components.
+        /// For each edge in this mesh, returns a handle to the corresponding element within the connected component.
+        /// </summary>
         /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <param name="setFace"></param>
         /// <returns></returns>
-        public HeMesh<TV, TE, TF>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
+        public HeMesh<TV, TE, TF>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
         {
-            return SplitDisjoint(HeMeshFactory.Create(this), getHandle, setVertex, setHedge, setFace);
+            return SplitDisjoint(HeMeshFactory.Create(this), getHandle, setHandle, setVertex, setHedge, setFace);
         }
 
 
@@ -561,12 +865,12 @@ namespace SpatialSlur.SlurMesh
         /// Returns an array of connected components.
         /// For each edge in this mesh, returns a handle to the corresponding element within the connected component.
         /// </summary>
-        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(IFactory<HeMesh<UV,UE,UF>> factory, Func<TE, ElementHandle> getHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace)
+        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(IFactory<HeMesh<UV, UE, UF>> factory, Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            int ncomp = this.GetEdgeComponentIndices((he, i) => getHandle(he).ComponentIndex = i);
+            int ncomp = this.GetEdgeComponentIndices((he, i) => setHandle(he, new ElementHandle(i)));
             var comps = new HeMesh<UV, UE, UF>[ncomp];
 
             // initialize components
@@ -579,9 +883,10 @@ namespace SpatialSlur.SlurMesh
                 var heA = _hedges[i];
                 if (heA.IsRemoved) continue;
 
-                var sd = getHandle(heA);
-                var comp = comps[sd.ComponentIndex];
-                sd.ElementIndex = comp.AddEdge().Index >> 1;
+                var h = getHandle(heA);
+                var comp = comps[h.ComponentIndex];
+                h.ElementIndex = comp.AddEdge().Index >> 1;
+                setHandle(heA, h);
             }
 
             // set component halfedge->halfedge refs
@@ -591,17 +896,16 @@ namespace SpatialSlur.SlurMesh
                 if (heA0.IsRemoved) continue;
 
                 var heA1 = heA0.NextInFace;
-                var sd0 = getHandle(heA0);
-                var sd1 = getHandle(heA1);
+                var h0 = getHandle(heA0);
+                var h1 = getHandle(heA1);
 
                 // the component to which heA0 was copied
-                var compHedges = comps[sd0.ComponentIndex]._hedges;
+                var compHedges = comps[h0.ComponentIndex]._hedges;
 
-                // set refs
-                var heB0 = compHedges[(sd0.ElementIndex << 1) + (i & 1)];
-                var heB1 = compHedges[(sd1.ElementIndex << 1) + (heA1.Index & 1)];
+                // set hedge refs
+                var heB0 = compHedges[(h0.ElementIndex << 1) + (i & 1)];
+                var heB1 = compHedges[(h1.ElementIndex << 1) + (heA1.Index & 1)];
                 heB0.MakeConsecutive(heB1);
-
                 setHedge(heB0, heA0);
             }
 
@@ -612,18 +916,15 @@ namespace SpatialSlur.SlurMesh
                 if (vA.IsRemoved) continue;
 
                 var heA = vA.FirstOut;
-                var sd = getHandle(heA);
+                var h = getHandle(heA);
 
-                var comp = comps[sd.ComponentIndex];
+                var comp = comps[h.ComponentIndex];
                 var vB = comp.AddVertex();
 
                 // set vertex refs
-                var heB = comp._hedges[(sd.ElementIndex << 1) + (heA.Index & 1)];
+                var heB = comp._hedges[(h.ElementIndex << 1) + (heA.Index & 1)];
                 vB.FirstOut = heB;
-
-                foreach (var he in heB.CirculateStart)
-                    he.Start = vB;
-
+                foreach (var he in heB.CirculateStart) he.Start = vB;
                 setVertex(vB, vA);
             }
 
@@ -634,18 +935,15 @@ namespace SpatialSlur.SlurMesh
                 if (fA.IsRemoved) continue;
 
                 var heA = fA.First;
-                var sd = getHandle(heA);
+                var h = getHandle(heA);
 
-                var comp = comps[sd.ComponentIndex];
+                var comp = comps[h.ComponentIndex];
                 var fB = comp.AddFace();
 
                 // set face refs
-                var heB = comp._hedges[(sd.ElementIndex << 1) + (heA.Index & 1)];
+                var heB = comp._hedges[(h.ElementIndex << 1) + (heA.Index & 1)];
                 fB.First = heB;
-
-                foreach (var he in heB.CirculateFace)
-                    he.Face = fB;
-
+                foreach (var he in heB.CirculateFace) he.Face = fB;
                 setFace(fB, fA);
             }
 
@@ -707,7 +1005,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Splits the given edge at the specified paramter creating a new vertex and halfedge pair.
+        /// Splits the given edge creating a new vertex and halfedge pair.
         /// Returns the new halfedge which starts at the new vertex.
         /// </summary>
         /// <param name="hedge"></param>
@@ -1189,8 +1487,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the new boundary halfedge created at the detach interface.
-        /// The twin of the given halfedge will have a null face reference after detaching.
+        /// Returns the new halfedge with the same orientation as the given one.
+        /// The given halfedge will have a null face reference after this operation.
         /// </summary>
         /// <param name="hedge"></param>
         public TE DetachEdge(TE hedge)
@@ -1223,9 +1521,9 @@ namespace SpatialSlur.SlurMesh
                 case 0:
                     return DetachEdgeInterior(he0);
                 case 1:
-                    return DetachEdgeMixed(he1);
+                    return DetachEdgeAtStart(he0);
                 case 2:
-                    return DetachEdgeMixed(he0);
+                    return DetachEdgeAtEnd(he0);
                 case 3:
                     return DetachEdgeBoundary(he0);
             }
@@ -1234,6 +1532,211 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <summary>
+        /// Assumes both start and end vertices are interior.
+        /// </summary>
+        private TE DetachEdgeInterior(TE hedge)
+        {
+            var he0 = hedge;
+            var he1 = he0.Twin;
+
+            var v0 = he0.Start;
+            var v1 = he1.Start;
+
+            var he2 = AddEdge(v1, v0);
+            var he3 = he2.Twin;
+
+            var f0 = he0.Face;
+
+            // update halfedge-face refs
+            he0.Face = he2.Face = null;
+            he3.Face = f0;
+
+            //update face-halfedge ref if necessary
+            if (f0.First == he0)
+                f0.First = he3;
+
+            // update halfedge-halfedge refs
+            he0.PrevInFace.MakeConsecutive(he3);
+            he3.MakeConsecutive(he0.NextInFace);
+
+            he0.MakeConsecutive(he2);
+            he2.MakeConsecutive(he0);
+
+            // update vertex-halfedge refs
+            v0.FirstOut = he0;
+            v1.FirstOut = he2;
+
+            return he3;
+        }
+
+
+        /// <summary>
+        /// Assumes both start and end vertices are on the mesh boundary.
+        /// </summary>
+        private TE DetachEdgeBoundary(TE hedge)
+        {
+            var he0 = hedge;
+            var he1 = he0.Twin;
+
+            var v0 = he0.Start;
+            var v1 = he1.Start;
+
+            var v2 = AddVertex();
+            var v3 = AddVertex();
+
+            var he2 = AddEdge(v3, v2);
+            var he3 = he2.Twin;
+
+            var he4 = v0.FirstOut;
+            var he5 = v1.FirstOut;
+
+            var f0 = he0.Face;
+
+            // update halfedge-face refs
+            he0.Face = he2.Face = null;
+            he3.Face = f0;
+
+            //update face-halfedge ref if necessary
+            if (f0.First == he0)
+                f0.First = he3;
+
+            // update halfedge-halfedge refs
+            he0.PrevInFace.MakeConsecutive(he3);
+            he3.MakeConsecutive(he0.NextInFace);
+
+            he4.PrevInFace.MakeConsecutive(he0);
+            he5.PrevInFace.MakeConsecutive(he2);
+
+            he0.MakeConsecutive(he5);
+            he2.MakeConsecutive(he4);
+
+            // update vertex-halfedge refs
+            v0.FirstOut = he0;
+            v2.FirstOut = he4;
+            v3.FirstOut = he2;
+
+            //update halfedge-vertex refs around each new vert
+            var he = he2;
+            do
+            {
+                he.Start = v3;
+                he = he.NextAtStart;
+            } while (he != he2);
+
+            he = he3;
+            do
+            {
+                he.Start = v2;
+                he = he.NextAtStart;
+            } while (he != he3);
+
+            return he3;
+        }
+
+
+        /// <summary>
+        /// Assumes vertex at the start of the given halfedge is on the boundary.
+        /// </summary>
+        private TE DetachEdgeAtStart(TE hedge)
+        {
+            var he0 = hedge;
+            var he1 = he0.Twin;
+
+            var v0 = he0.Start;
+            var v1 = he1.Start;
+            var v2 = AddVertex();
+
+            var he2 = AddEdge(v1, v2);
+            var he3 = he2.Twin;
+            var he4 = v0.FirstOut;
+
+            var f0 = he0.Face;
+
+            // update halfedge-face refs
+            he0.Face = he2.Face = null;
+            he3.Face = f0;
+
+            //update face-halfedge ref if necessary
+            if (f0.First == he0)
+                f0.First = he3;
+
+            // update halfedge-halfedge refs
+            he0.PrevInFace.MakeConsecutive(he3);
+            he3.MakeConsecutive(he0.NextInFace);
+
+            he4.PrevInFace.MakeConsecutive(he0);
+            he0.MakeConsecutive(he2);
+            he2.MakeConsecutive(he4);
+
+            // update vertex-halfedge refs
+            v0.FirstOut = he0;
+            v1.FirstOut = he2;
+            v2.FirstOut = he4;
+
+            //update halfedge-vertex refs around each new vert
+            var he = he2;
+            do
+            {
+                he.Start = v2;
+                he = he.NextAtStart;
+            } while (he != he2);
+
+            return he3;
+        }
+
+
+        /// <summary>
+        /// Assumes vertex at the end of the given halfedge is on the boundary.
+        /// </summary>
+        private TE DetachEdgeAtEnd(TE hedge)
+        {
+            var he0 = hedge;
+            var he1 = he0.Twin;
+
+            var v0 = he0.Start;
+            var v1 = he1.Start;
+            var v2 = AddVertex();
+
+            var he2 = AddEdge(v2, v0);
+            var he3 = he2.Twin;
+            var he4 = v1.FirstOut;
+
+            var f0 = he0.Face;
+
+            // update halfedge-face refs
+            he0.Face = he2.Face = null;
+            he3.Face = f0;
+
+            //update face-halfedge ref if necessary
+            if (f0.First == he0)
+                f0.First = he3;
+
+            // update halfedge-halfedge refs
+            he0.PrevInFace.MakeConsecutive(he3);
+            he3.MakeConsecutive(he0.NextInFace);
+
+            he4.PrevInFace.MakeConsecutive(he2);
+            he2.MakeConsecutive(he0);
+            he0.MakeConsecutive(he4);
+
+            // update vertex-halfedge refs
+            v0.FirstOut = he0;
+            v2.FirstOut = he2;
+
+            //update halfedge-vertex refs around each new vert
+            var he = he2;
+            do
+            {
+                he.Start = v2;
+                he = he.NextAtStart;
+            } while (he != he2);
+
+            return he3;
+        }
+
+
+        /*
         /// <summary>
         /// Neither vertex is on the mesh boundary
         /// </summary>
@@ -1273,8 +1776,10 @@ namespace SpatialSlur.SlurMesh
 
             return he3;
         }
+        */
 
 
+        /*
         /// <summary>
         /// Both vertices are on the mesh boundary
         /// </summary>
@@ -1336,10 +1841,12 @@ namespace SpatialSlur.SlurMesh
 
             return he3;
         }
+        */
 
 
+        /*
         /// <summary>
-        /// TV at the end of the given halfedge is on the boundary.
+        /// Vertex at the end of the given halfedge is on the boundary.
         /// </summary>
         private TE DetachEdgeMixed(TE hedge)
         {
@@ -1389,6 +1896,7 @@ namespace SpatialSlur.SlurMesh
 
             return he3;
         }
+        */
 
 
         /*
@@ -2885,7 +3393,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedgeCapacity"></param>
         /// <param name="faceCapacity"></param>
         /// <returns></returns>
-        public static HeMesh<TV,TE,TF> Create<TV, TE, TF>(Func<TV> vertexProvider, Func<TE> hedgeProvider, Func<TF> faceProvider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
+        public static HeMesh<TV, TE, TF> Create<TV, TE, TF>(Func<TV> vertexProvider, Func<TE> hedgeProvider, Func<TF> faceProvider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
             where TV : HeVertex<TV, TE, TF>
             where TE : Halfedge<TV, TE, TF>
             where TF : HeFace<TV, TE, TF>
@@ -2905,7 +3413,18 @@ namespace SpatialSlur.SlurMesh
         {
             return Factory.Create(vertexCapacity, hedgeCapacity, faceCapacity);
         }
-       
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static HeMesh<V, E, F> TryCast(object obj)
+        {
+            return obj as HeMesh<V, E, F>;
+        }
+
 
         /// <summary>
         /// Default empty vertex

@@ -24,13 +24,33 @@ namespace SpatialSlur.SlurData
         ///
         /// </summary>
         public SpatialGrid2d(Domain2d domain, int binCountX, int binCountY)
-            : base(binCountX * binCountY)
         {
-            if (binCountX < 1 || binCountY < 1)
-                throw new System.ArgumentOutOfRangeException("There must be at least 1 bin in each dimension.");
-
+            Init(binCountX * binCountY);
+      
             _nx = binCountX;
             _ny = binCountY;
+            Domain = domain;
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        public SpatialGrid2d(Domain2d domain, double binScale)
+            :this(domain, binScale, binScale)
+        {
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        public SpatialGrid2d(Domain2d domain, double binScaleX, double binScaleY)
+        {
+            _nx = Math.Max((int)Math.Round(domain.X.Span / binScaleX), 1);
+            _ny = Math.Max((int)Math.Round(domain.Y.Span / binScaleY), 1);
+
+            Init(_nx * _ny);
             Domain = domain;
         }
 

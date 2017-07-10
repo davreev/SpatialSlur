@@ -1603,7 +1603,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge crossed to get to each face.
+        /// Returns a halfedge from each face as visited in breadth first order.
+        /// The twin of the returned halfedge belongs to the previously visited face.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>

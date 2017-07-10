@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using SpatialSlur.SlurCore;
+
 /*
  * Notes
  */ 
@@ -13,7 +15,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// Utility class for stray methods.
     /// </summary>
-    public static class FieldUtil
+    public static class GridUtil
     {
         /// <summary>
         /// 
@@ -69,8 +71,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static int MirrorRepeat(int i, int n)
         {
-            i %= n + n;
-            if (i < 0) i += n + n;
+            i = Repeat(i, n + n);
             return (i < n) ? i : n + n - i - 1;
         }
 

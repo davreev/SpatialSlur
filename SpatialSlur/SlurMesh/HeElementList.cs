@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -16,8 +17,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class HeElementList<T> : IReadOnlyList<T>
-        where T : HeElement
+    public class HeElementList<T> : IReadOnlyList<T> where T : HeElement
     {
         private const int MinCapacity = 4;
 
@@ -223,50 +223,17 @@ namespace SpatialSlur.SlurMesh
                 Array.Resize(ref _items, max);
         }
 
-        
-        /*
-        /// <summary>
-        /// Sorting will corrupt halfedge pairs
-        /// ResetIndices must be different for halfedges
-        /// Promote this to a mesh level call
-        /// </summary>
-        /// <param name="compare"></param>
-        public void Sort(Comparison<T> compare)
-        {
-            Sort(Comparer<T>.Create(compare)); // converts delegate to Comparer<T> instance
-        }
-
 
         /// <summary>
         /// 
-        /// </summary>
-        /// <param name="comparer"></param>
-        public void Sort(IComparer<T> comparer)
-        {
-            Array.Sort(_items, 0, _count, comparer);
-            ResetIndices();
-        }
-
-
-        /// <summary>
-        /// Sorts the element list with a list of corresponding comparable keys.
-        /// Note this method does not modify the given list of keys.
         /// </summary>
         /// <typeparam name="K"></typeparam>
-        /// <param name="keys"></param>
-        public void Sort<K>(IReadOnlyList<K> keys)
-            where K : IComparable<K>
+        /// <param name="getKey"></param>
+        public virtual void Sort<K>(Func<T, K> getKey)
         {
-            Sort((t0, t1) => keys[t0].CompareTo(keys[t1]));
-        }
-        */
+            Array.Sort(_items, 0, _count, Comparer<K>.Default);
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void ResetIndices()
-        {
+            // reset indices
             for (int i = 0; i < _count; i++)
                 _items[i].Index = i;
         }
@@ -292,19 +259,6 @@ namespace SpatialSlur.SlurMesh
             if (!Owns(element))
                 throw new ArgumentException("The given element must belong to this mesh.");
         }
-
-
-        /*
-        /// <summary>
-        /// Returns a new attribute list of the specified type.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <returns></returns>
-        public HeAttributeList<T, U> CreateAttributeList<U>()
-        {
-            return new HeAttributeList<T, U>(this);
-        }
-        */
 
 
         /// <summary>

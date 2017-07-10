@@ -122,14 +122,15 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="UE"></typeparam>
         /// <param name="graph"></param>
         /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Func<UE, ElementHandle> getHandle, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
+        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Func<UE, ElementHandle> getHandle, Action<UE, ElementHandle> setHandle, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            return graph.SplitDisjoint(this, getHandle, setVertex, setHedge);
+            return graph.SplitDisjoint(this, getHandle, setHandle, setVertex, setHedge);
         }
 
 

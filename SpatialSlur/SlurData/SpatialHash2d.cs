@@ -27,8 +27,8 @@ namespace SpatialSlur.SlurData
         ///
         /// </summary>
         public SpatialHash2d(int binCount, double binScale)
-            : base(binCount)
         {
+            Init(binCount);
             BinScale = binScale;
         }
 

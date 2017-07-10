@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    public interface IIntegrable
+    public interface IUpdatable
     {
         /// <summary>
         /// Updates position and returns speed.

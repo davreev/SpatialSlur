@@ -24,15 +24,37 @@ namespace SpatialSlur.SlurData
         ///
         /// </summary>
         public SpatialGrid3d(Domain3d domain, int binCountX, int binCountY, int binCountZ)
-            : base(binCountX * binCountY * binCountZ)
         {
-            if (binCountX < 1 || binCountY < 1 || binCountZ < 1)
-                throw new System.ArgumentOutOfRangeException("There must be at least 1 bin in each dimension.");
+            Init(binCountX * binCountY * binCountZ);
 
             _nx = binCountX;
             _ny = binCountY;
             _nz = binCountZ;
             _nxy = _nx * _ny;
+            Domain = domain;
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        public SpatialGrid3d(Domain3d domain, double binScale)
+            :this(domain, binScale, binScale, binScale)
+        {
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        public SpatialGrid3d(Domain3d domain, double binScaleX, double binScaleY, double binScaleZ)
+        {
+            _nx = Math.Max((int)Math.Round(domain.X.Span / binScaleX), 1);
+            _ny = Math.Max((int)Math.Round(domain.Y.Span / binScaleY), 1);
+            _nz = Math.Max((int)Math.Round(domain.Z.Span / binScaleZ), 1);
+            _nxy = _nx * _ny;
+
+            Init(_nxy * _nz);
             Domain = domain;
         }
 

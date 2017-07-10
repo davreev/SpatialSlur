@@ -8,7 +8,7 @@ using System.Drawing.Imaging;
 
 using SpatialSlur.SlurCore;
 
-using static SpatialSlur.SlurField.FieldUtil;
+using static SpatialSlur.SlurField.GridUtil;
 
 /*
  * Notes
@@ -30,6 +30,8 @@ namespace SpatialSlur.SlurField
 
         private SampleMode _sampleMode;
         private WrapMode _wrapModeX, _wrapModeY;
+
+        // Func<int, int> _wrapX, _wrapY, _wrapZ; // compare delegate performance to switch (release & debug)
 
 
         /// <summary>

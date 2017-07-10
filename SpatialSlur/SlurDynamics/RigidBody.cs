@@ -19,8 +19,8 @@ namespace SpatialSlur.SlurDynamics
     {
         private Vec3d _position;
         private Vec3d _velocity;
-        private Vec3d _moveSum;
-        private double _moveWeightSum;
+        private Vec3d _forceSum;
+        private double _forceWeightSum;
 
         private Rotation3d _rotation;
         private Vec3d _angleVelocity;
@@ -136,10 +136,10 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="move"></param>
         /// <param name="weight"></param>
-        public void ApplyMove(Vec3d move, double weight)
+        public void ApplyForce(Vec3d move, double weight)
         {
-            _moveSum += move * weight;
-            _moveWeightSum += weight;
+            _forceSum += move * weight;
+            _forceWeightSum += weight;
         }
 
 
@@ -165,13 +165,13 @@ namespace SpatialSlur.SlurDynamics
         {
             _velocity *= damping;
 
-            if (_moveWeightSum > 0.0)
-                _velocity += _moveSum * (timeStep / (_moveWeightSum * _mass));
+            if (_forceWeightSum > 0.0)
+                _velocity += _forceSum * (timeStep / (_forceWeightSum * _mass));
 
             _position += _velocity * timeStep;
 
-            _moveSum.Set(0.0);
-            _moveWeightSum = 0.0;
+            _forceSum.Set(0.0);
+            _forceWeightSum = 0.0;
 
             return _velocity.SquareLength;
         }

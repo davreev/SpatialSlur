@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
-    public class ElementHandle
+    public struct ElementHandle
     {
         /// <summary>
         /// The index of the component to which the corresponding element belongs.
@@ -27,5 +27,15 @@ namespace SpatialSlur.SlurMesh
         /// The index of the corresponding element within the component.
         /// </summary>
         public int ElementIndex;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ElementHandle(int componentIndex = -1, int elementIndex = -1)
+        {
+            ComponentIndex = componentIndex;
+            ElementIndex = elementIndex;
+        }
     }
 }

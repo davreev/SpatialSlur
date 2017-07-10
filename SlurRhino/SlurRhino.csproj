@@ -74,7 +74,7 @@
   <ItemGroup>
     <Reference Include="RhinoCommon, Version=5.1.30000.16, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5.0 (64-bit)\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -91,25 +91,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GraphGrowth\GraphGrowerSettings.cs" />
+    <Compile Include="MeshUtil.cs" />
+    <Compile Include="Sketch\LoopGrowth\LoopGrowerSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\RhinoExtensions.cs" />
     <Compile Include="Extensions\SlurCoreExtensions.cs" />
-    <Compile Include="Remesher\DynamicRemesher.cs" />
-    <Compile Include="Remesher\DynamicRemesherSettings.cs" />
-    <Compile Include="Remesher\Features\CurveFeature.cs" />
-    <Compile Include="Remesher\Features\IFeature.cs" />
-    <Compile Include="Remesher\Features\MeshFeature.cs" />
-    <Compile Include="Remesher\Features\PointFeature.cs" />
-    <Compile Include="Remesher\Features\PolylineFeature.cs" />
-    <Compile Include="GraphGrowth\GraphGrower.cs" />
-    <Compile Include="GraphGrowth\HeGraphGG.cs" />
-    <Compile Include="Remesher\HeMeshDM.cs" />
+    <Compile Include="Sketch\Remesher\DynamicRemesher.cs" />
+    <Compile Include="Sketch\Remesher\DynamicRemesherSettings.cs" />
+    <Compile Include="Sketch\Remesher\Features\CurveFeature.cs" />
+    <Compile Include="Sketch\Remesher\Features\IFeature.cs" />
+    <Compile Include="Sketch\Remesher\Features\MeshFeature.cs" />
+    <Compile Include="Sketch\Remesher\Features\PointFeature.cs" />
+    <Compile Include="Sketch\Remesher\Features\PolylineFeature.cs" />
+    <Compile Include="Sketch\LoopGrowth\LoopGrower.cs" />
+    <Compile Include="Sketch\LoopGrowth\HeMeshLG.cs" />
+    <Compile Include="Sketch\Remesher\HeMeshDM.cs" />
     <Compile Include="SlurField\Interfaces\IMeshField.cs" />
     <Compile Include="SlurField\Isosurface.cs" />
     <Compile Include="Extensions\SlurFieldExtensions.cs" />
     <Compile Include="Extensions\SlurMeshExtensions.cs" />
-    <Compile Include="Test.cs" />
+    <Compile Include="SlurMesh\HeMeshUnroller.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SpatialSlur\SpatialSlur.csproj">
@@ -123,6 +124,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

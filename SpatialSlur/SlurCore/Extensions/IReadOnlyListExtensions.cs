@@ -1221,7 +1221,6 @@ namespace SpatialSlur.SlurCore
 
         #region IReadOnlyList<double[]>
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -1244,9 +1243,8 @@ namespace SpatialSlur.SlurCore
             else if (i >= last)
                 result.Set(vectors[last]);
             else
-                ArrayExtensions.LerpTo(vectors[i], vectors[i + 1], t, size, result);
+                ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
         }
-
 
         #endregion
     }

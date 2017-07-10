@@ -100,6 +100,15 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        public bool IsCorner
+        {
+            get { return IsBoundary && IsDegree2; }
+        }
+
+
+        /// <summary>
         /// Returns false if the vertex is incident to multiple boundary edges.
         /// </summary>
         public bool IsManifold

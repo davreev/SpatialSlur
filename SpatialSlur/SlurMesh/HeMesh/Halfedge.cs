@@ -207,7 +207,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true this halfedge is interior and connects two boundary vertices.
+        /// Returns true this halfedge spans between 2 non-consecutive boundary vertices.
         /// </summary>
         public bool IsBridge
         {

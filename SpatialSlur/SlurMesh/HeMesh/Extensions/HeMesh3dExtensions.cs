@@ -72,9 +72,11 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="getHandle"></param>
-        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, ElementHandle> getHandle)
+        /// <param name="setHandle"></param>
+        /// <returns></returns>
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, ElementHandle> getHandle, Action<E, ElementHandle> setHandle)
         {
-            return mesh.SplitDisjoint(getHandle, Set, Set, Set);
+            return mesh.SplitDisjoint(getHandle, setHandle, Set, Set, Set);
         }
 
 
@@ -114,7 +116,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary> </summary>
         private static void Set(V v, F f)
         {
-            v.Position = f.Vertices.Mean(_getPosition);
+            if (!f.IsRemoved) v.Position = f.Vertices.Mean(_getPosition);
             v.Normal = f.Normal;
         }
 

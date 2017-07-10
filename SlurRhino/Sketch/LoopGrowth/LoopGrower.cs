@@ -30,14 +30,15 @@ using static SpatialSlur.SlurCore.SlurMath;
 
 namespace SpatialSlur.SlurRhino.GraphGrowth
 {
-    using V = HeGraphGG.V;
-    using E = HeGraphGG.E;
+    using V = HeMeshLG.V;
+    using E = HeMeshLG.E;
+    using F = HeMeshLG.F;
 
 
     /// <summary>
     /// 
     /// </summary>
-    public class GraphGrower
+    public class LoopGrower
     {
         #region Static
 
@@ -51,28 +52,25 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <param name="mesh"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static GraphGrower Create<TV, TE>(HeGraph<TV, TE> graph, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
-            where TV : HeVertex<TV, TE>, IVertex3d
-            where TE : Halfedge<TV, TE>
+        public static LoopGrower Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+            where TV : HeVertex<TV, TE, TF>, IVertex3d
+            where TE : Halfedge<TV, TE, TF>
+            where TF : HeFace<TV, TE, TF>
         {
-            var copy = HeGraphGG.Factory.CreateCopy(graph, (v0, v1) => v0.Position = v1.Position, delegate { });
-            return new GraphGrower(copy, target, features, tolerance);
+            var copy = HeMeshLG.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
+            return new LoopGrower(copy, features, tolerance);
         }
 
 
         #endregion
         
-
-        private const double TargetBinScale = 2.0;
-        private const double MinBinScale = TargetBinScale * 0.5;
-        private const double MaxBinScale = TargetBinScale * 2.0;
-        private const double GridPadding = 1.0e-4;
+        private const double TargetBinScale = 4.0;
 
         //
         // simulation mesh
         //
 
-        private HeGraph<V, E> _graph;
+        private HeMesh<V, E, F> _mesh;
         private HeElementList<V> _verts;
         private HeElementList<E> _hedges;
         private SpatialGrid3d<V> _grid;
@@ -89,7 +87,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         // simulation settings
         //
 
-        private GraphGrowerSettings _settings;
+        private LoopGrowerSettings _settings;
         private int _stepCount = 0;
         private int _vertTag = int.MinValue;
 
@@ -99,17 +97,14 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// </summary>
         /// <param name="source"></param>
         /// <param name="target"></param>
-        public GraphGrower(HeGraph<V, E> graph, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public LoopGrower(HeMesh<V, E, F> graph, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
-            _graph = graph;
-            _verts = _graph.Vertices;
-            _hedges = _graph.Halfedges;
-
-            // initialize features
-            _target = target;
+            _mesh = graph;
+            _verts = _mesh.Vertices;
+            _hedges = _mesh.Halfedges;
+            
             InitFeatures(features, tolerance);
-
-            _settings = new GraphGrowerSettings();
+            _settings = new LoopGrowerSettings();
             _stepCount = 0;
         }
 
@@ -131,6 +126,10 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
                 // if vertex is close enough, assign feature
                 foreach (var v in _verts)
                 {
+                    // skip verts which have already assigned
+                    if (v.FeatureIndex != -1)
+                        continue;
+
                     var p = v.Position;
                     if (p.SquareDistanceTo(f.ClosestPoint(p)) < tolSqr)
                         v.FeatureIndex = index;
@@ -142,9 +141,29 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <summary>
         /// 
         /// </summary>
-        public HeGraph<V, E> Graph
+        public HeMesh<V, E, F> Mesh
         {
-            get { return _graph; }
+            get { return _mesh; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IFeature Target
+        {
+            get { return _target; }
+            set { _target = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<IFeature> Features
+        {
+            get { return _features; }
+            set { _features = value; }
         }
 
 
@@ -161,7 +180,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <summary>
         /// 
         /// </summary>
-        public GraphGrowerSettings Settings
+        public LoopGrowerSettings Settings
         {
             get { return _settings; }
             set { _settings = value; }
@@ -203,7 +222,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <returns></returns>
         private void CalculateForces()
         {
-            PullToFeatures(_settings.FeatureWeight);
+            //PullToFeatures(_settings.FeatureWeight);
             LaplacianFair(_settings.SmoothWeight);
             //LaplacianFair2(_settings.SmoothWeight);
             SphereCollide(_settings.CollideRadius, _settings.CollideWeight);
@@ -230,21 +249,6 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
                     if (fi == -1) continue;
                     v.MoveSum += (_features[fi].ClosestPoint(p) - p) * weight;
                     v.WeightSum += weight;
-
-                    /*
-                    if (fi == -1)
-                    {
-                        if (_target == null) continue;
-
-                        v.MoveSum += (_target.ClosestPoint(p) - p);
-                        v.WeightSum += 1.0; // default weight of 1.0 for target
-                    }
-                    else
-                    {
-                        v.MoveSum += (_features[fi].ClosestPoint(p) - p) * weight;
-                        v.WeightSum += weight;
-                    }
-                    */
                 }
             });
         }
@@ -260,7 +264,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
             {
                 var v0 = _verts[i];
                 if (v0.IsRemoved) continue;
-                
+
                 // calculate graph laplacian
                 var sum = new Vec3d();
                 var count = 0;
@@ -377,34 +381,23 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         {
             // recalculate domain
             Domain3d d = new Domain3d(_verts.Select(v => v.Position));
-            d.Expand(GridPadding);
+            d.Expand(radius);
 
             // lazy instantiation
             if(_grid == null)
             {
-                InitGrid(d, radius * TargetBinScale);
+                _grid = new SpatialGrid3d<V>(d, radius * TargetBinScale);
                 return;
             }
 
             // rebuild grid if bins are too large or too small in any one dimension
             _grid.Domain = d;
-            double t0 = radius * MaxBinScale;
-            double t1 = radius * MinBinScale;
+            double maxScale = radius * TargetBinScale * 2.0;
+            double minScale = radius * TargetBinScale * 0.5;
 
-            if (!(Contains(_grid.BinScaleX, t0, t1) && Contains(_grid.BinScaleY, t0, t1) && Contains(_grid.BinScaleZ, t0, t1)))
-                InitGrid(d, radius * TargetBinScale);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void InitGrid(Domain3d domain, double binScale)
-        {
-            int nx = (int)Math.Ceiling(domain.X.Span / binScale);
-            int ny = (int)Math.Ceiling(domain.Y.Span / binScale);
-            int nz = (int)Math.Ceiling(domain.Z.Span / binScale);
-            _grid = new SpatialGrid3d<V>(domain, nx, ny, nz);
+            // if bin scale is out of range, rebuild
+            if (!Contains(_grid.BinScaleX, minScale, maxScale) || !Contains(_grid.BinScaleY, minScale, maxScale) || !Contains(_grid.BinScaleZ, minScale, maxScale))
+                _grid = new SpatialGrid3d<V>(d, radius * TargetBinScale);
         }
 
 
@@ -428,8 +421,10 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
                     if (w > 0.0) v.Velocity += v.MoveSum * (timeStep / w);
                     v.Position += v.Velocity * timeStep;
 
-                    // snap to target
-                    if (_target != null)
+                    // snap to feature/target
+                    if (v.FeatureIndex != -1)
+                        v.Position = _features[v.FeatureIndex].ClosestPoint(v.Position);
+                    else if (_target != null)
                         v.Position = _target.ClosestPoint(v.Position);
   
                     v.MoveSum = new Vec3d();
@@ -477,7 +472,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
                 // split edge if length exceeds max
                 if (p0.SquareDistanceTo(p1) > he.MaxLength * he.MaxLength)
                 {
-                    var v2 = _graph.SplitEdge(he).Start;
+                    var v2 = _mesh.SplitEdge(he).Start;
 
                     // set attributes of new vertex
                     v2.Position = (v0.Position + v1.Position) * 0.5;

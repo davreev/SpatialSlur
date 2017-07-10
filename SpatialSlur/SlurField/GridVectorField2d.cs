@@ -228,7 +228,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
-            (int di, int dj) = FieldUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -292,7 +292,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            (int di, int dj) = FieldUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -355,7 +355,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            (int di, int dj) = FieldUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
 
             Action<Tuple<int, int>> func = range =>
             {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using SpatialSlur.SlurCore;
 
+using static SpatialSlur.SlurCore.ArrayMath;
+
 /*
  * Notes
  * 
@@ -217,13 +219,33 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Creates a shallow copy of all nodes in the tree.
+        /// Creates a shallow copy of the tree
         /// </summary>
         /// <returns></returns>
         public KdTree<T> Duplicate()
         {
-            // TODO
-            throw new NotImplementedException();
+            var copy = new KdTree<T>(_k);
+            copy._root = Duplicate(_root);
+            return copy;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        private KdNode Duplicate(KdNode other)
+        {
+            var copy = new KdNode(other.Point, other.Value);
+
+            if (other.Left != null)
+                copy.Left = Duplicate(other.Left);
+
+            if (other.Right != null)
+                copy.Right = Duplicate(other.Right);
+
+            return copy;
         }
         
 
@@ -340,7 +362,7 @@ namespace SpatialSlur.SlurData
             if (node == null) 
                 return null;
 
-            if (point.ApproxEquals(node.Point, _epsilon))
+            if (ApproxEquals(point, node.Point, _epsilon))
                 return node;
 
             // wrap dimension
@@ -426,7 +448,7 @@ namespace SpatialSlur.SlurData
                     j++;
             }
 
-            // create node and recurse on left and right children
+            // create node and recall on left and right children
             KdNode node = new KdNode(points[mid], values[mid]);
             node.Left = InsertBalanced(points, values, from, mid - 1, i + 1);
             node.Right = InsertBalanced(points, values, mid + 1, to, i + 1);
@@ -469,7 +491,7 @@ namespace SpatialSlur.SlurData
                     j++;
             }
 
-            // create node and recurse on left and right children
+            // create node and recall on left and right children
             KdNode node = new KdNode(points[mid], values[mid]);
             node.Left = InsertBalanced(points, values, from, mid - 1, i + 1);
             node.Right = InsertBalanced(points, values, mid + 1, to, i + 1);
@@ -511,7 +533,7 @@ namespace SpatialSlur.SlurData
                     j++;
             }
 
-            // create node and recurse on left and right children
+            // create node and recall on left and right children
             node.Left = InsertBalanced(nodes, from, mid - 1, i + 1);
             node.Right = InsertBalanced(nodes, mid + 1, to, i + 1);
             return node;
@@ -549,7 +571,7 @@ namespace SpatialSlur.SlurData
             // wrap dimension
             if (i == _k) i = 0;
 
-            if (point.ApproxEquals(node.Point, _epsilon))
+            if (ApproxEquals(point, node.Point, _epsilon))
             {
                 // found the node to remove
                 if (node.Right != null)
@@ -600,7 +622,7 @@ namespace SpatialSlur.SlurData
 
             if (dim == i)
             {
-                // recurse on left subtree tree only
+                // recall on left subtree tree only
                 if (node.Left == null)
                     return node;
                 else
@@ -608,7 +630,7 @@ namespace SpatialSlur.SlurData
             }
             else
             {
-                // recurse on both subtrees if they exist
+                // recall on both subtrees if they exist
                 if (node.IsLeaf)
                     return node;
                 else if (node.Right == null)
@@ -656,8 +678,9 @@ namespace SpatialSlur.SlurData
         /// <param name="node"></param>
         /// <param name="point"></param>
         /// <param name="range"></param>
-        /// <param name="result"></param>
+        /// <param name="callback"></param>
         /// <param name="i"></param>
+        /// <returns></returns>
         private bool BoxSearchImpl(KdNode node, double[] point, double[] range, Func<T, bool> callback, int i)
         {
             if (node == null) return true;
@@ -666,26 +689,26 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // callback on node if within range
-            if (point.ApproxEquals(node.Point, range))
+            if (ApproxEquals(point, node.Point, range))
                 if (!callback(node.Value)) return false;
 
             // if left side of tree
             double d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
-                // point is to the left so recurse in left subtree first
+                // point is to the left, recall in left subtree first
                 BoxSearchImpl(node.Left, point, range, callback, i + 1);
 
-                // recurse in right subtree only if necessary
+                // recall in right subtree only if necessary
                 if (Math.Abs(d) < range[i])
                     BoxSearchImpl(node.Right, point, range, callback, i + 1);
             }
             else
             {
-                // point is to the right so recurse in right subtree first
+                // point is to the right, recall in right subtree first
                 BoxSearchImpl(node.Right, point, range, callback, i + 1);
 
-                // recurse in left subtree only if necessary
+                // recall in left subtree only if necessary
                 if (Math.Abs(d) < range[i])
                     BoxSearchImpl(node.Left, point, range, callback, i + 1);
             }
@@ -739,25 +762,25 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // enqueue value if node is within range
-            if (point.SquareDistanceToL2(node.Point) < range)
+            if (SquareDistanceL2(point, node.Point) < range)
                 if(!callback(node.Value)) return false;
 
             double d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
-                // point is to the left so recurse in left subtree first
+                // point is to the left, recall in left subtree first
                 RangeSearchL2Impl(node.Left, point, range, callback, i + 1);
 
-                // recurse in right subtree only if necessary
+                // recall in right subtree only if necessary
                 if (d * d < range)
                     RangeSearchL2Impl(node.Right, point, range, callback, i + 1);
             }
             else
             {
-                // point is to the right so recurse in right subtree first
+                // point is to the right, recall in right subtree first
                 RangeSearchL2Impl(node.Right, point, range, callback, i + 1);
 
-                // recurse in left subtree only if necessary
+                // recall in left subtree only if necessary
                 if (d * d < range)
                     RangeSearchL2Impl(node.Left, point, range, callback, i + 1);
             }
@@ -811,25 +834,25 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if within range
-            if (point.DistanceToL1(node.Point) < range)
+            if (DistanceL1(point, node.Point) < range)
                 if (!callback(node.Value)) return false;
 
             double d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
-                // point is to the left so recurse in left subtree first
+                // point is to the left, recall in left subtree first
                 RangeSearchL1Impl(node.Left, point, range, callback, i + 1);
 
-                // recurse in right subtree only if necessary
+                // recall in right subtree only if necessary
                 if (Math.Abs(d) < range)
                     RangeSearchL1Impl(node.Right, point, range, callback, i + 1);
             }
             else
             {
-                // point is to the right so recurse in right subtree first
+                // point is to the right, recall in right subtree first
                 RangeSearchL1Impl(node.Right, point, range, callback, i + 1);
 
-                // recurse in left subtree only if necessary
+                // recall in left subtree only if necessary
                 if (Math.Abs(d) < range)
                     RangeSearchL1Impl(node.Left, point, range, callback, i + 1); 
             }
@@ -887,7 +910,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // update nearest if necessary
-            double d = point.SquareDistanceToL2(node.Point);
+            double d = SquareDistanceL2(point, node.Point);
             if (d < distance)
             {
                 nearest = node.Value;
@@ -897,19 +920,19 @@ namespace SpatialSlur.SlurData
             d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
-                // point is to the left so recurse in left subtree first
+                // point is to the left, recall in left subtree first
                 NearestL2(node.Left, point, i + 1, ref nearest, ref distance);
 
-                // recurse in right subtree only if necessary
+                // recall in right subtree only if necessary
                 if (d * d < distance)
                     NearestL2(node.Right, point, i + 1, ref nearest, ref distance);
             }
             else
             {
-                // point is to the right so recurse in right subtree first
+                // point is to the right, recall in right subtree first
                 NearestL2(node.Right, point, i + 1, ref nearest, ref distance);
 
-                // recurse in left subtree only if necessary
+                // recall in left subtree only if necessary
                 if (d * d < distance)
                     NearestL2(node.Left, point, i + 1, ref nearest, ref distance);
             }
@@ -963,7 +986,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // update nearest if necessary
-            double d = point.DistanceToL1(node.Point);
+            double d = DistanceL1(point, node.Point);
             if (d < distance)
             {
                 nearest = node.Value;
@@ -973,19 +996,19 @@ namespace SpatialSlur.SlurData
             d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
-                // point is to the left so recurse in left subtree first
+                // point is to the left, recall in left subtree first
                 NearestL1(node.Left, point, i + 1, ref nearest, ref distance);
 
-                // recurse in right subtree only if necessary
+                // recall in right subtree only if necessary
                 if (Math.Abs(d) < distance)
                     NearestL1(node.Right, point, i + 1, ref nearest, ref distance);
             }
             else
             {
-                // point is to the right so recurse in right subtree first
+                // point is to the right, recall in right subtree first
                 NearestL1(node.Right, point, i + 1, ref nearest, ref distance);
 
-                // recurse in left subtree only if necessary
+                // recall in left subtree only if necessary
                 if (Math.Abs(d) < distance)
                     NearestL1(node.Left, point, i + 1, ref nearest, ref distance); 
             }
@@ -1025,7 +1048,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if closer than nth element
-            double d = point.SquareDistanceToL2(node.Point);
+            double d = SquareDistanceL2(point, node.Point);
 
             if (result.Count < k)
                 result.Insert((node.Value, d));
@@ -1035,19 +1058,19 @@ namespace SpatialSlur.SlurData
             d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
-                // point is to the left so recurse in left subtree first
+                // point is to the left, recall in left subtree first
                 KNearestL2(node.Left, point, k, i + 1, result);
 
-                // recurse in right subtree only if necessary
+                // recall in right subtree only if necessary
                 if (result.Count < k || d * d < result.Min.Item2)
                     KNearestL2(node.Right, point, k, i + 1, result);
             }
             else
             {
-                // point is to the right so recurse in right subtree first
+                // point is to the right, recall in right subtree first
                 KNearestL2(node.Right, point, k, i + 1, result);
 
-                // recurse in left subtree only if necessary
+                // recall in left subtree only if necessary
                 if (result.Count < k || d * d < result.Min.Item2)
                     KNearestL2(node.Left, point, k, i + 1, result);
             }
@@ -1087,7 +1110,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // add node if closer than nth element
-            double d = point.DistanceToL1(node.Point);
+            double d = DistanceL1(point, node.Point);
 
             if (result.Count < k)
                 result.Insert((node.Value, d));
@@ -1097,19 +1120,19 @@ namespace SpatialSlur.SlurData
             d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
-                // point is to the left so recurse in left subtree first
+                // point is to the left, recall in left subtree first
                 KNearestL1(node.Left, point, k, i + 1, result);
 
-                // recurse in right subtree only if necessary
+                // recall in right subtree only if necessary
                 if (result.Count < k || Math.Abs(d) < result.Min.Item2)
                     KNearestL1(node.Right, point, k, i + 1, result); 
             }
             else
             {
-                // point is to the right so recurse in right subtree first
+                // point is to the right, recall in right subtree first
                 KNearestL1(node.Right, point, k, i + 1, result);
 
-                // recurse in left subtree only if necessary
+                // recall in left subtree only if necessary
                 if (result.Count < k || Math.Abs(d) < result.Min.Item2)
                     KNearestL1(node.Left, point, k, i + 1, result); 
             }

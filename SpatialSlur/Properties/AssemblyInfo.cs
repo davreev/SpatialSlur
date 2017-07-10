@@ -36,4 +36,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("0.2.2.*")]
 
 // Expose internals to dependant projects
-// [assembly: InternalsVisibleTo("SlurRhino")]
+[assembly: InternalsVisibleTo("SlurRhino")]

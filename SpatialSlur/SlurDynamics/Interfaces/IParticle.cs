@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Interface for a 3dof particle
     /// </summary>
-    public interface IParticle : IIntegrable
+    public interface IParticle : IUpdatable
     {
         /// <summary>
         /// 
@@ -34,6 +34,6 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
-        void ApplyMove(Vec3d delta, double weight);
+        void ApplyForce(Vec3d delta, double weight);
     }
 }

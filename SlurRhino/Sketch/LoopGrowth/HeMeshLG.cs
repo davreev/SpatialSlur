@@ -16,10 +16,10 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
     /// <summary>
     /// Contains HeMesh element classes used in dynamic remeshing
     /// </summary>
-    public static class HeGraphGG
+    public static class HeMeshLG
     {
         /// <summary></summary>
-        public static readonly HeGraphFactory<V, E> Factory = HeGraphFactory.Create(() => new V(), () => new E());
+        public static readonly HeMeshFactory<V, E, F> Factory = HeMeshFactory.Create(() => new V(), () => new E(), () => new F());
 
 
         /// <summary>
@@ -29,16 +29,16 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <param name="hedgeCapacity"></param>
         /// <param name="faceCapacity"></param>
         /// <returns></returns>
-        public static HeGraph<V, E> Create(int vertexCapacity = 4, int hedgeCapacity = 4)
+        public static HeMesh<V, E, F> Create(int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
         {
-            return Factory.Create(vertexCapacity, hedgeCapacity);
+            return Factory.Create(vertexCapacity, hedgeCapacity, faceCapacity);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public class V : HeVertex<V, E>, IVertex3d
+        public class V : HeVertex<V, E, F>, IVertex3d
         {
             /// <summary></summary>
             public Vec3d Position { get; set; }
@@ -57,7 +57,6 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
             /// <summary></summary>
             public int Tag = int.MinValue;
 
-
             #region Explicit interface implementations
 
             
@@ -75,7 +74,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <summary>
         /// 
         /// </summary>
-        public class E : Halfedge<V, E>
+        public class E : Halfedge<V, E, F>
         {
             private double _maxLength;
 
@@ -90,6 +89,14 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
 
             /// <summary></summary>
             public int Tag = int.MinValue;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class F : HeFace<V, E, F>
+        {
         }
     }
 }

@@ -261,7 +261,7 @@ namespace SpatialSlur.SlurMesh
             hedges[last].MakeConsecutive(hedges[0]);
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>

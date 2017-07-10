@@ -173,7 +173,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static bool ApproxEquals(this IDiscreteField<double> f0, IDiscreteField<double> f1, double epsilon)
         {
-            return f0.Values.ApproxEquals(f1.Values, epsilon, f0.Count);
+            return ArrayMath.ApproxEquals(f0.Values, f1.Values, epsilon, f0.Count);
         }
 
 
@@ -182,7 +182,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static double Sum(this IDiscreteField<double> field)
         {
-            return field.Values.Sum(field.Count);
+            return ArrayMath.Sum(field.Values, field.Count);
         }
 
 
@@ -191,7 +191,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static double Mean(this IDiscreteField<double> field)
         {
-            return field.Values.Mean(field.Count);
+            return ArrayMath.Mean(field.Values, field.Count);
         }
 
 
@@ -200,7 +200,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static double Max(this IDiscreteField<double> field)
         {
-            return field.Values.Max(field.Count);
+            return ArrayMath.Max(field.Values, field.Count);
         }
 
 
@@ -210,9 +210,9 @@ namespace SpatialSlur.SlurField
         public static void Max(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.MaxParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.MaxParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Max(f1.Values, f0.Count, result.Values);
+                ArrayMath.Max(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -221,7 +221,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static double Min(this IDiscreteField<double> field)
         {
-            return field.Values.Min(field.Count);
+            return ArrayMath.Min(field.Values, field.Count);
         }
 
 
@@ -231,9 +231,9 @@ namespace SpatialSlur.SlurField
         public static void Min(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.MinParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.MinParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Min(f1.Values, f0.Count, result.Values);
+                ArrayMath.Min(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -243,9 +243,9 @@ namespace SpatialSlur.SlurField
         public static void Abs(this IDiscreteField<double> f0, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AbsParallel(f0.Count, result.Values);
+                ArrayMath.AbsParallel(f0.Values, f0.Count, result.Values);
             else
-                f0.Values.Abs(f0.Count, result.Values);
+                ArrayMath.Abs(f0.Values, f0.Count, result.Values);
         }
 
 
@@ -255,9 +255,9 @@ namespace SpatialSlur.SlurField
         public static void Add(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.AddParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Add(f1.Values, f0.Count, result.Values);
+                ArrayMath.Add(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -267,9 +267,9 @@ namespace SpatialSlur.SlurField
         public static void Subtract(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.SubtractParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.SubtractParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Subtract(f1.Values, f0.Count, result.Values);
+                ArrayMath.Subtract(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -279,9 +279,9 @@ namespace SpatialSlur.SlurField
         public static void Scale(this IDiscreteField<double> f0, double t, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.ScaleParallel(t, f0.Count, result.Values);
+                ArrayMath.ScaleParallel(f0.Values, t, f0.Count, result.Values);
             else
-                f0.Values.Scale(t, f0.Count, result.Values);
+                ArrayMath.Scale(f0.Values, t, f0.Count, result.Values);
         }
 
 
@@ -291,9 +291,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<double> f0, IDiscreteField<double> f1, double t, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, f1.Values, t, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, f1.Values, t, f0.Count, result.Values);
         }
 
 
@@ -303,9 +303,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> t, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -315,9 +315,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<double> f0, double t0, IDiscreteField<double> f1, double t1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(t0, f1.Values, t1, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, t0, f1.Values, t1, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(t0, f1.Values, t1, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, t0, f1.Values, t1, f0.Count, result.Values);
         }
 
 
@@ -327,9 +327,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<double> f0, IDiscreteField<double> t0, IDiscreteField<double> f1, IDiscreteField<double> t1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
         }
 
 
@@ -339,9 +339,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaledDelta(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> f2, double t, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledDeltaParallel(f1.Values, f2.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledDeltaParallel(f0.Values, f1.Values, f2.Values, t, f0.Count, result.Values);
             else
-                f0.Values.AddScaledDelta(f1.Values, f2.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledDelta(f0.Values, f1.Values, f2.Values, t, f0.Count, result.Values);
         }
 
 
@@ -351,9 +351,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaledDelta(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> f2, IDiscreteField<double> t, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledDeltaParallel(f1.Values, f2.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledDeltaParallel(f0.Values, f1.Values, f2.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaledDelta(f1.Values, f2.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledDelta(f0.Values, f1.Values, f2.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -363,9 +363,9 @@ namespace SpatialSlur.SlurField
         public static void Multiply(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.MultiplyParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.MultiplyParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Multiply(f1.Values, f0.Count, result.Values);
+                ArrayMath.Multiply(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -375,9 +375,9 @@ namespace SpatialSlur.SlurField
         public static void Divide(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.DivideParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.DivideParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Divide(f1.Values, f0.Count, result.Values);
+                ArrayMath.Divide(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -387,9 +387,9 @@ namespace SpatialSlur.SlurField
         public static void LerpTo(this IDiscreteField<double> f0, IDiscreteField<double> f1, double t, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.LerpToParallel(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.LerpParallel(f0.Values, f1.Values, t, f0.Count, result.Values);
             else
-                f0.Values.LerpTo(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.Lerp(f0.Values, f1.Values, t, f0.Count, result.Values);
         }
 
 
@@ -399,9 +399,9 @@ namespace SpatialSlur.SlurField
         public static void LerpTo(this IDiscreteField<double> f0, IDiscreteField<double> f1, IDiscreteField<double> t, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.LerpToParallel(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.LerpParallel(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.LerpTo(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.Lerp(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -411,9 +411,9 @@ namespace SpatialSlur.SlurField
         public static void Normalize(this IDiscreteField<double> field, Domain domain, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.NormalizeParallel(domain, result.Values);
+                ArrayMath.NormalizeParallel(field.Values, domain, result.Values);
             else
-                field.Values.Normalize(domain, result.Values);
+                ArrayMath.Normalize(field.Values, domain, result.Values);
         }
 
 
@@ -423,9 +423,9 @@ namespace SpatialSlur.SlurField
         public static void Evaluate(this IDiscreteField<double> field, Domain domain, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.EvaluateParallel(domain, result.Values);
+                ArrayMath.EvaluateParallel(field.Values, domain, result.Values);
             else
-                field.Values.Evaluate(domain, result.Values);
+                ArrayMath.Evaluate(field.Values, domain, result.Values);
         }
 
 
@@ -435,9 +435,9 @@ namespace SpatialSlur.SlurField
         public static void Remap(this IDiscreteField<double> field, Domain from, Domain to, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.RemapParallel(from, to, result.Values);
+                ArrayMath.RemapParallel(field.Values, from, to, result.Values);
             else
-                field.Values.Remap(from, to, result.Values);
+                ArrayMath.Remap(field.Values, from, to, result.Values);
         }
 
 
@@ -452,7 +452,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static bool ApproxEquals(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, Vec2d epsilon)
         {
-            return f0.Values.ApproxEquals(f1.Values, epsilon, f0.Count);
+            return ArrayMath.ApproxEquals(f0.Values, f1.Values, epsilon, f0.Count);
         }
 
 
@@ -461,7 +461,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static Vec2d Sum(this IDiscreteField<Vec2d> field)
         {
-            return field.Values.Sum(field.Count);
+            return ArrayMath.Sum(field.Values, field.Count);
         }
 
 
@@ -470,7 +470,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static Vec2d Mean(this IDiscreteField<Vec2d> field)
         {
-            return field.Values.Mean(field.Count);
+            return ArrayMath.Mean(field.Values, field.Count);
         }
 
 
@@ -480,9 +480,9 @@ namespace SpatialSlur.SlurField
         public static void Max(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.MaxParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.MaxParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Max(f1.Values, f0.Count, result.Values);
+                ArrayMath.Max(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -492,9 +492,9 @@ namespace SpatialSlur.SlurField
         public static void Min(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.MinParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.MinParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Min(f1.Values, f0.Count, result.Values);
+                ArrayMath.Min(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -504,9 +504,9 @@ namespace SpatialSlur.SlurField
         public static void Abs(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AbsParallel(f0.Count, result.Values);
+                ArrayMath.AbsParallel(f0.Values, f0.Count, result.Values);
             else
-                f0.Values.Abs(f0.Count, result.Values);
+                ArrayMath.Abs(f0.Values, f0.Count, result.Values);
         }
 
 
@@ -516,9 +516,9 @@ namespace SpatialSlur.SlurField
         public static void Add(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.AddParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Add(f1.Values, f0.Count, result.Values);
+                ArrayMath.Add(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -528,9 +528,9 @@ namespace SpatialSlur.SlurField
         public static void Subtract(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.SubtractParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.SubtractParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Subtract(f1.Values, f0.Count, result.Values);
+                ArrayMath.Subtract(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -540,9 +540,9 @@ namespace SpatialSlur.SlurField
         public static void Scale(this IDiscreteField<Vec2d> f0, double t, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.ScaleParallel(t, f0.Count, result.Values);
+                ArrayMath.ScaleParallel(f0.Values, t, f0.Count, result.Values);
             else
-                f0.Values.Scale(t, f0.Count, result.Values);
+                ArrayMath.Scale(f0.Values, t, f0.Count, result.Values);
         }
 
 
@@ -552,9 +552,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, double t, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, f1.Values, t, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, f1.Values, t, f0.Count, result.Values);
         }
 
 
@@ -564,9 +564,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<double> t, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -576,9 +576,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec2d> f0, double t0, IDiscreteField<Vec2d> f1, double t1, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(t0, f1.Values, t1, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, t0, f1.Values, t1, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(t0, f1.Values, t1, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, t0, f1.Values, t1, f0.Count, result.Values);
         }
 
 
@@ -588,9 +588,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec2d> f0, IDiscreteField<double> t0, IDiscreteField<Vec2d> f1, IDiscreteField<double> t1, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
         }
 
 
@@ -600,9 +600,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaledDelta(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<Vec2d> f2, double t, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledDeltaParallel(f1.Values, f2.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledDeltaParallel(f0.Values, f1.Values, f2.Values, t, f0.Count, result.Values);
             else
-                f0.Values.AddScaledDelta(f1.Values, f2.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledDelta(f0.Values, f1.Values, f2.Values, t, f0.Count, result.Values);
         }
 
 
@@ -612,9 +612,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaledDelta(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<Vec2d> f2, IDiscreteField<double> t, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledDeltaParallel(f1.Values, f2.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledDeltaParallel(f0.Values, f1.Values, f2.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaledDelta(f1.Values, f2.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledDelta(f0.Values, f1.Values, f2.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -624,9 +624,9 @@ namespace SpatialSlur.SlurField
         public static void LerpTo(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, double t, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.LerpToParallel(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.LerpParallel(f0.Values, f1.Values, t, f0.Count, result.Values);
             else
-                f0.Values.LerpTo(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.Lerp(f0.Values, f1.Values, t, f0.Count, result.Values);
         }
 
 
@@ -636,9 +636,9 @@ namespace SpatialSlur.SlurField
         public static void LerpTo(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, IDiscreteField<double> t, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.LerpToParallel(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.LerpParallel(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.LerpTo(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.Lerp(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -648,9 +648,9 @@ namespace SpatialSlur.SlurField
         public static void Normalize(this IDiscreteField<Vec2d> field, Domain2d domain, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.NormalizeParallel(domain, result.Values);
+                ArrayMath.NormalizeParallel(field.Values, domain, result.Values);
             else
-                field.Values.Normalize(domain, result.Values);
+                ArrayMath.Normalize(field.Values, domain, result.Values);
         }
 
 
@@ -660,9 +660,9 @@ namespace SpatialSlur.SlurField
         public static void Evaluate(this IDiscreteField<Vec2d> field, Domain2d domain, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.EvaluateParallel(domain, result.Values);
+                ArrayMath.EvaluateParallel(field.Values, domain, result.Values);
             else
-                field.Values.Evaluate(domain, result.Values);
+                ArrayMath.Evaluate(field.Values, domain, result.Values);
         }
 
 
@@ -672,9 +672,9 @@ namespace SpatialSlur.SlurField
         public static void Remap(this IDiscreteField<Vec2d> field, Domain2d from, Domain2d to, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.RemapParallel(from, to, result.Values);
+                ArrayMath.RemapParallel(field.Values, from, to, result.Values);
             else
-                field.Values.Remap(from, to, result.Values);
+                ArrayMath.Remap(field.Values, from, to, result.Values);
         }
 
 
@@ -689,7 +689,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static bool ApproxEquals(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, Vec3d epsilon)
         {
-            return f0.Values.ApproxEquals(f1.Values, epsilon, f0.Count);
+            return ArrayMath.ApproxEquals(f0.Values, f1.Values, epsilon, f0.Count);
         }
 
 
@@ -698,7 +698,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static Vec3d Sum(this IDiscreteField<Vec3d> field)
         {
-            return field.Values.Sum(field.Count);
+            return ArrayMath.Sum(field.Values, field.Count);
         }
 
 
@@ -707,7 +707,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public static Vec3d Mean(this IDiscreteField<Vec3d> field)
         {
-            return field.Values.Mean(field.Count);
+            return ArrayMath.Mean(field.Values, field.Count);
         }
 
 
@@ -717,9 +717,9 @@ namespace SpatialSlur.SlurField
         public static void Max(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.MaxParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.MaxParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Max(f1.Values, f0.Count, result.Values);
+                ArrayMath.Max(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -729,9 +729,9 @@ namespace SpatialSlur.SlurField
         public static void Min(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.MinParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.MinParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Min(f1.Values, f0.Count, result.Values);
+                ArrayMath.Min(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -741,9 +741,9 @@ namespace SpatialSlur.SlurField
         public static void Abs(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AbsParallel(f0.Count, result.Values);
+                ArrayMath.AbsParallel(f0.Values, f0.Count, result.Values);
             else
-                f0.Values.Abs(f0.Count, result.Values);
+                ArrayMath.Abs(f0.Values, f0.Count, result.Values);
         }
 
 
@@ -753,9 +753,9 @@ namespace SpatialSlur.SlurField
         public static void Add(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.AddParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Add(f1.Values, f0.Count, result.Values);
+                ArrayMath.Add(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -765,9 +765,9 @@ namespace SpatialSlur.SlurField
         public static void Subtract(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.SubtractParallel(f1.Values, f0.Count, result.Values);
+                ArrayMath.SubtractParallel(f0.Values, f1.Values, f0.Count, result.Values);
             else
-                f0.Values.Subtract(f1.Values, f0.Count, result.Values);
+                ArrayMath.Subtract(f0.Values, f1.Values, f0.Count, result.Values);
         }
 
 
@@ -777,9 +777,9 @@ namespace SpatialSlur.SlurField
         public static void Scale(this IDiscreteField<Vec3d> f0, double t, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.ScaleParallel(t, f0.Count, result.Values);
+                ArrayMath.ScaleParallel(f0.Values, t, f0.Count, result.Values);
             else
-                f0.Values.Scale(t, f0.Count, result.Values);
+                ArrayMath.Scale(f0.Values, t, f0.Count, result.Values);
         }
 
 
@@ -789,9 +789,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, double t, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, f1.Values, t, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, f1.Values, t, f0.Count, result.Values);
         }
 
 
@@ -801,9 +801,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<double> t, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -813,9 +813,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec3d> f0, double t0, IDiscreteField<Vec3d> f1, double t1, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(t0, f1.Values, t1, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, t0, f1.Values, t1, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(t0, f1.Values, t1, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, t0, f1.Values, t1, f0.Count, result.Values);
         }
 
 
@@ -825,9 +825,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaled(this IDiscreteField<Vec3d> f0, IDiscreteField<double> t0, IDiscreteField<Vec3d> f1, IDiscreteField<double> t1, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledParallel(t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledParallel(f0.Values, t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaled(t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
+                ArrayMath.AddScaled(f0.Values, t0.Values, f1.Values, t1.Values, f0.Count, result.Values);
         }
 
 
@@ -837,9 +837,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaledDelta(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<Vec3d> f2, double t, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledDeltaParallel(f1.Values, f2.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledDeltaParallel(f0.Values, f1.Values, f2.Values, t, f0.Count, result.Values);
             else
-                f0.Values.AddScaledDelta(f1.Values, f2.Values, t, f0.Count, result.Values);
+                ArrayMath.AddScaledDelta(f0.Values, f1.Values, f2.Values, t, f0.Count, result.Values);
         }
 
 
@@ -849,9 +849,9 @@ namespace SpatialSlur.SlurField
         public static void AddScaledDelta(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<Vec3d> f2, IDiscreteField<double> t, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.AddScaledDeltaParallel(f1.Values, f2.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledDeltaParallel(f0.Values, f1.Values, f2.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.AddScaledDelta(f1.Values, f2.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.AddScaledDelta(f0.Values, f1.Values, f2.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -861,9 +861,9 @@ namespace SpatialSlur.SlurField
         public static void LerpTo(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, double t, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.LerpToParallel(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.LerpParallel(f0.Values, f1.Values, t, f0.Count, result.Values);
             else
-                f0.Values.LerpTo(f1.Values, t, f0.Count, result.Values);
+                ArrayMath.Lerp(f0.Values, f1.Values, t, f0.Count, result.Values);
         }
 
 
@@ -873,9 +873,9 @@ namespace SpatialSlur.SlurField
         public static void LerpTo(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, IDiscreteField<double> t, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.LerpToParallel(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.LerpParallel(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
             else
-                f0.Values.LerpTo(f1.Values, t.Values, f0.Count, result.Values);
+                ArrayMath.Lerp(f0.Values, f1.Values, t.Values, f0.Count, result.Values);
         }
 
 
@@ -885,9 +885,9 @@ namespace SpatialSlur.SlurField
         public static void Normalize(this IDiscreteField<Vec3d> field, Domain3d domain, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.NormalizeParallel(domain, result.Values);
+                ArrayMath.NormalizeParallel(field.Values, domain, result.Values);
             else
-                field.Values.Normalize(domain, result.Values);
+                ArrayMath.Normalize(field.Values, domain, result.Values);
         }
 
 
@@ -897,9 +897,9 @@ namespace SpatialSlur.SlurField
         public static void Evaluate(this IDiscreteField<Vec3d> field, Domain3d domain, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.EvaluateParallel(domain, result.Values);
+                ArrayMath.EvaluateParallel(field.Values, domain, result.Values);
             else
-                field.Values.Evaluate(domain, result.Values);
+                ArrayMath.Evaluate(field.Values, domain, result.Values);
         }
 
 
@@ -909,9 +909,9 @@ namespace SpatialSlur.SlurField
         public static void Remap(this IDiscreteField<Vec3d> field, Domain3d from, Domain3d to, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.RemapParallel(from, to, result.Values);
+                ArrayMath.RemapParallel(field.Values, from, to, result.Values);
             else
-                field.Values.Remap(from, to, result.Values);
+                ArrayMath.Remap(field.Values, from, to, result.Values);
         }
 
 

@@ -30,7 +30,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="binCount"></param>
-        protected SpatialMap3d(int binCount)
+        protected void Init(int binCount)
         {
             if (binCount < 1)
                 throw new System.ArgumentOutOfRangeException("There must be at least 1 bin in the map.");

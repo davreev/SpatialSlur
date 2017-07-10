@@ -100,7 +100,7 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <returns></returns>
-        public static Vec4d Multiply(this Transform xform, Vec4d vector)
+        public static Vec4d Apply(this Transform xform, Vec4d vector)
         {
             return new Vec4d(
              vector.X * xform.M00 + vector.Y * xform.M01 + vector.Z * xform.M02 + vector.W * xform.M03,
@@ -117,7 +117,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="xform"></param>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vec3d Multiply(this Transform xform, Vec3d vector, bool isPosition = false)
+        public static Vec3d Apply(this Transform xform, Vec3d vector, bool isPosition = false)
         {
             if (isPosition)
             {
@@ -321,115 +321,6 @@ namespace SpatialSlur.SlurRhino
         public static Domain3d ToDomain3d(this Line line)
         {
             return new Domain3d(line.From.ToVec3d(), line.To.ToVec3d());
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="other"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static Point3d LerpTo(this Point3d point, Point3d other, double t)
-        {
-            return point + (other - point) * t;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public static double SquareDistanceTo(this Point3d point, Point3d other)
-        {
-            Vector3d v = other - point;
-            return v.SquareLength;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <param name="other"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static Vector3d LerpTo(this Vector3d vector, Vector3d other, double t)
-        {
-            return vector + (other - vector) * t;
-        }
-
-
-        /// <summary>
-        /// Returns the transform matrix described by this plane.
-        /// </summary>
-        /// <param name="plane"></param>
-        /// <returns></returns>
-        public static Transform ToWorld(this Plane plane)
-        {
-            Point3d o = plane.Origin;
-            Vector3d x = plane.XAxis;
-            Vector3d y = plane.YAxis;
-            Vector3d z = plane.ZAxis;
-
-            Transform m = new Transform();
-
-            m[0, 0] = x.X;
-            m[0, 1] = y.X;
-            m[0, 2] = z.X;
-            m[0, 3] = o.X;
-
-            m[1, 0] = x.Y;
-            m[1, 1] = y.Y;
-            m[1, 2] = z.Y;
-            m[1, 3] = o.Y;
-
-            m[2, 0] = x.Z;
-            m[2, 1] = y.Z;
-            m[2, 2] = z.Z;
-            m[2, 3] = o.Z;
-
-            m[3, 3] = 1.0;
-
-            return m;
-        }
-
-
-        /// <summary>
-        /// Returns the inverse transformation matrix described by this plane.
-        /// </summary>
-        /// <param name="plane"></param>
-        /// <returns></returns>
-        public static Transform ToLocal(this Plane plane)
-        {
-            Vector3d d = new Vector3d(plane.Origin);
-            Vector3d x = plane.XAxis;
-            Vector3d y = plane.YAxis;
-            Vector3d z = plane.ZAxis;
-
-            Transform m = new Transform();
-
-            m[0, 0] = x.X;
-            m[0, 1] = x.Y;
-            m[0, 2] = x.Z;
-            m[0, 3] = -(d * x);
-
-            m[1, 0] = y.X;
-            m[1, 1] = y.Y;
-            m[1, 2] = y.Z;
-            m[1, 3] = -(d * y);
-
-            m[2, 0] = z.X;
-            m[2, 1] = z.Y;
-            m[2, 2] = z.Z;
-            m[2, 3] = -(d * z);
-
-            m[3, 3] = 1.0;
-
-            return m;
         }
     }
 }
