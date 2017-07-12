@@ -240,7 +240,7 @@ namespace SpatialSlur.SlurCore
         {
             if (list is T[])
             {
-                ArrayExtensions.Reverse((T[])list, from, to);
+                Array.Reverse((T[])list, from, to);
                 return;
             }
 
@@ -264,7 +264,7 @@ namespace SpatialSlur.SlurCore
         public static int FindIndex<T>(this IList<T> list, int index, int length, Predicate<T> match)
         {
             if (list is T[])
-                return ArrayExtensions.FindIndex((T[])list, index, length, match);
+                return Array.FindIndex((T[])list, index, length, match);
 
             for (int i = index; i < index + length; i++)
             {

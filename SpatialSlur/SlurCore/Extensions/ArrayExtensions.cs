@@ -14,7 +14,7 @@ using static SpatialSlur.SlurCore.ArrayMath;
  */
 
 namespace SpatialSlur.SlurCore
-{
+{ 
     /// <summary>
     /// 
     /// </summary>

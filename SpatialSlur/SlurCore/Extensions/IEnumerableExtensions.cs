@@ -19,7 +19,6 @@ namespace SpatialSlur.SlurCore
     {
         #region IEnumerable<T>
 
-
         /// <summary>
         /// Assumes the number of elements in this sequence doesn't exceed the length of the given array.
         /// Returns the number of items in this sequence.
@@ -318,7 +317,6 @@ namespace SpatialSlur.SlurCore
                     setValue(t, getValue(t) * inv);
             }
         }
-
 
         #endregion
 

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -15,47 +13,8 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
-    public static class DotNetExtensions
+    public static class RandomExtensions
     {
-        #region T
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Yield<T>(this T item)
-        {
-            yield return item;
-        }
-
-        #endregion
-
-
-        #region Color
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="c"></param>
-        /// <param name="other"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static Color LerpTo(this Color c, Color other, double t)
-        {
-            int a = (int)(c.A + (other.A - c.A) * t);
-            int r = (int)(c.R + (other.R - c.R) * t);
-            int g = (int)(c.G + (other.G - c.G) * t);
-            int b = (int)(c.B + (other.B - c.B) * t);
-            return Color.FromArgb(a, r, g, b);
-        }
-
-        #endregion
-
-
-        #region Random
-
         /// <summary>
         /// 
         /// </summary>
@@ -87,7 +46,7 @@ namespace SpatialSlur.SlurCore
         public static Vec2d NextVec2d(this Random random, double t0, double t1)
         {
             return new Vec2d(
-                SlurMath.Lerp(t0, t1, random.NextDouble()), 
+                SlurMath.Lerp(t0, t1, random.NextDouble()),
                 SlurMath.Lerp(t0, t1, random.NextDouble()));
         }
 
@@ -101,7 +60,7 @@ namespace SpatialSlur.SlurCore
         public static Vec2d NextVec2d(this Random random, Domain domain)
         {
             return new Vec2d(
-                domain.Evaluate(random.NextDouble()), 
+                domain.Evaluate(random.NextDouble()),
                 domain.Evaluate(random.NextDouble()));
         }
 
@@ -115,7 +74,7 @@ namespace SpatialSlur.SlurCore
         public static Vec2d NextVec2d(this Random random, Domain2d domain)
         {
             return new Vec2d(
-                domain.X.Evaluate(random.NextDouble()), 
+                domain.X.Evaluate(random.NextDouble()),
                 domain.Y.Evaluate(random.NextDouble()));
         }
 
@@ -140,8 +99,8 @@ namespace SpatialSlur.SlurCore
         public static Vec2d NextVec3d(this Random random, double t0, double t1)
         {
             return new Vec3d(
-                SlurMath.Lerp(t0, t1, random.NextDouble()), 
-                SlurMath.Lerp(t0, t1, random.NextDouble()), 
+                SlurMath.Lerp(t0, t1, random.NextDouble()),
+                SlurMath.Lerp(t0, t1, random.NextDouble()),
                 SlurMath.Lerp(t0, t1, random.NextDouble()));
         }
 
@@ -155,8 +114,8 @@ namespace SpatialSlur.SlurCore
         public static Vec3d NextVec3d(this Random random, Domain domain)
         {
             return new Vec3d(
-                domain.Evaluate(random.NextDouble()), 
-                domain.Evaluate(random.NextDouble()), 
+                domain.Evaluate(random.NextDouble()),
+                domain.Evaluate(random.NextDouble()),
                 domain.Evaluate(random.NextDouble()));
         }
 
@@ -170,8 +129,8 @@ namespace SpatialSlur.SlurCore
         public static Vec3d NextVec3d(this Random random, Domain3d domain)
         {
             return new Vec3d(
-                domain.X.Evaluate(random.NextDouble()), 
-                domain.Y.Evaluate(random.NextDouble()), 
+                domain.X.Evaluate(random.NextDouble()),
+                domain.Y.Evaluate(random.NextDouble()),
                 domain.Z.Evaluate(random.NextDouble()));
         }
 
@@ -200,7 +159,5 @@ namespace SpatialSlur.SlurCore
         {
             return items[random.Next(items.Length)];
         }
-
-        #endregion
     }
 }
