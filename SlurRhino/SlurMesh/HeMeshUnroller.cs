@@ -29,6 +29,23 @@ namespace SpatialSlur.SlurRhino
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="first"></param>
+        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first)
+            where V : HeVertex<V, E, F>, IVertex3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            Unroll(mesh, first, v => v.Position, (v, p) => v.Position = p);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="first"></param>
         /// <param name="getPosition"></param>
         /// <param name="setPosition"></param>
         public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition)
@@ -67,7 +84,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         internal HeMeshUnroller(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition)
         {
-            mesh.Faces.OwnsCheck(first);
+            mesh.Faces.ContainsCheck(first);
             first.RemovedCheck();
 
             _mesh = mesh;
