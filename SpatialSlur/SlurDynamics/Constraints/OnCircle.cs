@@ -14,11 +14,13 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class OnCircle<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class OnCircle : DynamicConstraint<H>
     {
+        /// <summary></summary>
         public Vec3d Origin;
+        /// <summary></summary>
         public Vec3d Normal;
+
         private double _radius;
       
 
@@ -35,6 +37,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _radius = value;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -59,8 +70,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="handles"></param>
-        /// <param name="start"></param>
-        /// <param name="direction"></param>
+        /// <param name="origin"></param>
+        /// <param name="normal"></param>
+        /// <param name="radius"></param>
         /// <param name="weight"></param>
         public OnCircle(IEnumerable<H> handles, Vec3d origin, Vec3d normal, double radius, double weight = 1.0)
             :base(handles, weight)
@@ -75,7 +87,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             foreach(var h in Handles)
             {

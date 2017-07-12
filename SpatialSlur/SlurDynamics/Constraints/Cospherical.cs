@@ -14,9 +14,17 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class Cospherical<P>:DynamicConstraint<P, H>
-        where P : IParticle
+    public class Cospherical : DynamicConstraint<H>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -41,7 +49,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="indices"></param>
+        /// <param name="handles"></param>
         /// <param name="weight"></param>
         public Cospherical(IEnumerable<H> handles, double weight = 1.0)
             : base(handles, weight)
@@ -53,7 +61,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             // TODO solve best fit sphere
             throw new NotImplementedException();

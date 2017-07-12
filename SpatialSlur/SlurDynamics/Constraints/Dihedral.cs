@@ -16,8 +16,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// http://www.tsg.ne.jp/TT/cg/ElasticOrigami_Tachi_IASS2013.pdf
     /// </summary>
-    public class Dihedral<P> : Constraint<P, H>
-        where P : IParticle
+    public class Dihedral : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -66,7 +65,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -75,6 +74,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _h2;
                 yield return _h3;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -109,8 +117,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
+            // TODO revise implementation
+            throw new NotImplementedException();
+
             // TODO fix angle range
             // currently becoming unstable @ 0/2PI restAngle
             // TODO revise with new dihedral angle calculation

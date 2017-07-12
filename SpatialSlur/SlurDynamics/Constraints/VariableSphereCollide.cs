@@ -18,10 +18,18 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class VariableSphereCollide<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class VariableSphereCollide : DynamicConstraint<H>
     {
         private SpatialGrid3d<H> _grid;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
 
 
         /// <summary>
@@ -50,7 +58,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             _grid.Clear();
             var r0 = double.MaxValue;
@@ -71,14 +79,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
             // TODO
             throw new NotImplementedException();
         }
-    }
 
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class VariableSphereCollide
-    {
         /// <summary>
         /// 
         /// </summary>

@@ -13,12 +13,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// Applies a force proportional to the distance between 2 particles.
     /// </summary>
-    public class LinearWeight<P> : Constraint<P, H>
-        where P : IParticle
+    public class LinearWeight : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
 
+        /// <summary></summary>
         public Vec3d Direction;
         private double _massPerLength;
 
@@ -44,7 +44,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -73,11 +73,19 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        /// <param name="index2"></param>
-        /// <param name="index3"></param>
-        /// <param name="restAngle"></param>
+        /// <param name="direction"></param>
+        /// <param name="massPerLength"></param>
         /// <param name="weight"></param>
         public LinearWeight(int start, int end, Vec3d direction, double massPerLength = 1.0, double weight = 1.0)
         {
@@ -92,7 +100,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             _h0.Delta = _h1.Delta = Direction * (particles[_h0].Position.DistanceTo(particles[_h1].Position) * _massPerLength * 0.5);
         }

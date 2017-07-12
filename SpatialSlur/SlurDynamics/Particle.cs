@@ -60,7 +60,6 @@ namespace SpatialSlur.SlurDynamics
             }
         }
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -114,6 +113,49 @@ namespace SpatialSlur.SlurDynamics
 
 
         #region Explicit interface implementations
+
+        private static readonly string _message = "This implementation of IParticle does not support rotation.";
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IParticle.HasRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        Rotation3d IParticle.Rotation
+        {
+            get { throw new NotSupportedException(_message); }
+            set { throw new NotSupportedException(_message); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        Vec3d IParticle.AngularVelocity
+        {
+            get { throw new NotSupportedException(_message); }
+            set { throw new NotSupportedException(_message); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        /// <param name="weight"></param>
+        void IParticle.ApplyTorque(Vec3d delta, double weight)
+        {
+            throw new NotSupportedException(_message);
+        }
+
 
         /// <summary>
         /// 

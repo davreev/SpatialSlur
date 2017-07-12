@@ -14,14 +14,22 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class AbovePlane<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class AbovePlane : DynamicConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Origin;
         /// <summary></summary>
         public Vec3d Normal;
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+            
 
         /// <summary>
         /// 
@@ -52,13 +60,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
-
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="handles"></param>
         /// <param name="origin"></param>
         /// <param name="normal"></param>
-        /// <param name="capacity"></param>
         /// <param name="weight"></param>
         public AbovePlane(IEnumerable<H> handles, Vec3d origin, Vec3d normal, double weight = 1.0)
             : base(handles, weight)
@@ -72,7 +79,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             foreach(var h in Handles)
             {

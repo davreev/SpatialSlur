@@ -14,13 +14,20 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class Coincident<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class Coincident : DynamicConstraint<H>
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="capacity"></param>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="weight"></param>
         public Coincident(double weight = 1.0)
             : base(weight)
@@ -54,7 +61,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             Vec3d mean = new Vec3d();
 

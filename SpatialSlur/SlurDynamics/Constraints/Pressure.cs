@@ -16,13 +16,13 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// Applies a force along the normal of the triangle between 3 particles with a magnitude proportional to the area.
     /// </summary>
-    public class Pressure<P> : Constraint<P, H>
-        where P : IParticle
+    public class Pressure : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
         private H _h2 = new H();
 
+        /// <summary></summary>
         public double ForcePerArea;
 
 
@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -70,9 +70,19 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="vertex0"></param>
         /// <param name="vertex1"></param>
         /// <param name="vertex2"></param>
+        /// <param name="forcePerArea"></param>
         /// <param name="weight"></param>
         public Pressure(int vertex0, int vertex1, int vertex2, double forcePerArea, double weight = 1.0)
         {
@@ -86,7 +96,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             Vec3d p0 = particles[_h0].Position;
             Vec3d p1 = particles[_h1].Position;

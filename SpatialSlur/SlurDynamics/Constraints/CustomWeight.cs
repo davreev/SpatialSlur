@@ -14,13 +14,21 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// Applies a force proportional to the mass stored on each handle.
     /// </summary>
-    public class CustomWeight<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class CustomWeight : DynamicConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Direction;
 
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -41,7 +49,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="direction"></param>
         /// <param name="weight"></param>
         public CustomWeight(IEnumerable<H> handles, Vec3d direction, double weight = 1.0)
-            :base(handles,weight)
+            : base(handles, weight)
         {
             Direction = direction;
         }
@@ -51,19 +59,13 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             foreach (var h in Handles)
                 h.Delta = Direction * h.Mass;
         }
-    }
 
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class CustomWeight
-    {
         /// <summary>
         /// 
         /// </summary>

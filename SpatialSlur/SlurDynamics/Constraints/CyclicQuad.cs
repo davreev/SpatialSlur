@@ -13,8 +13,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class CyclicQuad<P> : Constraint<P, H>
-        where P : IParticle
+    public class CyclicQuad : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -61,7 +60,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -70,6 +69,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _h2;
                 yield return _h3;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -92,7 +100,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             Vec3d p0 = particles[_h0].Position;
             Vec3d p1 = particles[_h1].Position;

@@ -14,9 +14,17 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class TangentialSmooth<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class TangentialSmooth : DynamicConstraint<H>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -46,7 +54,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             Vec3d sum = new Vec3d();
             double nInv = 1.0 / (Handles.Count - 1);
@@ -72,7 +80,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// Calculates the normal as the sum of triangle area gradients
         /// </summary>
         /// <returns></returns>
-        private Vec3d ComputeNormal(IReadOnlyList<P> particles)
+        private Vec3d ComputeNormal(IReadOnlyList<IParticle> particles)
         {
             var p = particles[Handles[0]].Position;
             var sum = new Vec3d();

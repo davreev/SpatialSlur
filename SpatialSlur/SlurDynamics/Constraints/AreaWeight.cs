@@ -13,13 +13,13 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// Applies a force proportional to the area of the triangle defined by 3 particles.
     /// </summary>
-    public class AreaWeight<P> : Constraint<P, H>
-        where P : IParticle
+    public class AreaWeight : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
         private H _h2 = new H();
-        
+
+        /// <summary></summary>
         public Vec3d Direction;
         private double _massPerArea;
 
@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -84,11 +84,20 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="vertex0"></param>
         /// <param name="vertex1"></param>
         /// <param name="vertex2"></param>
-        /// <param name="index3"></param>
-        /// <param name="restAngle"></param>
+        /// <param name="direction"></param>
+        /// <param name="massPerArea"></param>
         /// <param name="weight"></param>
         public AreaWeight(int vertex0, int vertex1, int vertex2, Vec3d direction, double massPerArea = 1.0, double weight = 1.0)
         {
@@ -103,7 +112,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             Vec3d p0 = particles[_h0].Position;
             Vec3d p1 = particles[_h1].Position;

@@ -19,8 +19,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class LineCollide<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class LineCollide : DynamicConstraint<H>
     {
         private SpatialGrid3d<H> _grid;
         private double _radius;
@@ -39,6 +38,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _radius = value;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -68,7 +76,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             // TODO
             throw new NotImplementedException();

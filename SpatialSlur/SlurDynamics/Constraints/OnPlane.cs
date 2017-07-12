@@ -14,11 +14,21 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class OnPlane<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class OnPlane : DynamicConstraint<H>
     {
+        /// <summary></summary>
         public Vec3d Origin;
+        /// <summary></summary>
         public Vec3d Normal;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
 
 
         /// <summary>
@@ -55,7 +65,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             foreach(var h in Handles)
                 h.Delta = Vec3d.Project(Origin - particles[h].Position, Normal);

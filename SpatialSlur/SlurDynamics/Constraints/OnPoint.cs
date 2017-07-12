@@ -14,11 +14,20 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class OnPoint<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class OnPoint : DynamicConstraint<H>
     {
-        private Vec3d Position;
-      
+        /// <summary></summary>
+        public Vec3d Position;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
 
         /// <summary>
         /// 
@@ -50,7 +59,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             foreach(var h in Handles)
                 h.Delta = Position - particles[h].Position;

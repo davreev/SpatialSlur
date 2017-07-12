@@ -12,8 +12,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// Base class for 3dof constraints on a dynamic collection of particles.
     /// </summary>
-    public abstract class DynamicConstraint<P, H> : IConstraint<P>
-        where P : IParticle
+    public abstract class DynamicConstraint<H> : IConstraint
         where H : ParticleHandle
     {
         private List<H> _handles;
@@ -43,6 +42,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 _weight = value;
             }
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected abstract bool AppliesRotation { get; }
 
 
         /// <summary>
@@ -84,14 +89,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public abstract void Calculate(IReadOnlyList<P> particles);
+        public abstract void Calculate(IReadOnlyList<IParticle> particles);
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public void Apply(IReadOnlyList<P> particles)
+        public void Apply(IReadOnlyList<IParticle> particles)
         {
             foreach (var h in _handles)
                 particles[h].ApplyForce(h.Delta, Weight);
@@ -112,5 +117,18 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 itr.MoveNext();
             }
         }
+
+
+        #region Explicit interface implementations
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return AppliesRotation; }
+        }
+
+        #endregion
     }
 }

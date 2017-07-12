@@ -16,8 +16,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     ///
     /// </summary>
-    public class AlignPairs<P> : Constraint<P, H>
-        where P : IParticle
+    public class AlignPairs : Constraint<H>
     {
         private H _hA0 = new H();
         private H _hA1 = new H();
@@ -64,7 +63,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -79,8 +78,19 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="startA"></param>
         /// <param name="endA"></param>
+        /// <param name="startB"></param>
+        /// <param name="endB"></param>
         /// <param name="weight"></param>
         public AlignPairs(int startA, int endA, int startB, int endB, double weight = 1.0)
         {
@@ -93,7 +103,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             Vec3d d0 = particles[_hA1].Position - particles[_hA0].Position;
             Vec3d d1 = particles[_hB1].Position - particles[_hB0].Position;

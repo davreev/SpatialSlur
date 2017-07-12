@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    public class RigidBody : IRigidBody
+    public class RigidBody : IParticle
     {
         private Vec3d _position;
         private Vec3d _velocity;
@@ -196,5 +196,18 @@ namespace SpatialSlur.SlurDynamics
 
             return _angleVelocity.SquareLength;
         }
+
+
+        #region Explicit interface implementations
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IParticle.HasRotation
+        {
+            get { return true; }
+        }
+
+        #endregion
     }
 }

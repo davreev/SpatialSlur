@@ -16,17 +16,21 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class PlanarNgon<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class PlanarNgon : DynamicConstraint<H>
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index0"></param>
-        /// <param name="index1"></param>
-        /// <param name="index2"></param>
-        /// <param name="index3"></param>
-        /// <param name="restAngle"></param>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="handles"></param>
         /// <param name="weight"></param>
         public PlanarNgon(IEnumerable<H> handles, double weight = 1.0)
             : base(handles, weight)
@@ -38,7 +42,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             int n = Handles.Count;
 

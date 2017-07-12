@@ -21,8 +21,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class SphereCollide<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class SphereCollide : DynamicConstraint<H>
     {
         private const double TargetBinScale = 4.0;
 
@@ -43,6 +42,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _radius = value;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -76,7 +84,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             UpdateGrid(particles);
 
@@ -122,7 +130,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        private void UpdateGrid(IReadOnlyList<P> particles)
+        private void UpdateGrid(IReadOnlyList<IParticle> particles)
         {
             // recalculate domain
             Domain3d d = new Domain3d(particles.Select(p => p.Position));
@@ -144,6 +152,5 @@ namespace SpatialSlur.SlurDynamics.Constraints
             if (!Contains(_grid.BinScaleX, minScale, maxScale) || !Contains(_grid.BinScaleY, minScale, maxScale) || !Contains(_grid.BinScaleZ, minScale, maxScale))
                 _grid = new SpatialGrid3d<H>(d, _radius * TargetBinScale);
         }
-        
     }
 }

@@ -15,8 +15,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public abstract class Constraint<P, H> : IConstraint<P>
-        where P : IParticle
+    public abstract class Constraint<H> : IConstraint
         where H : ParticleHandle
     {
         private double _weight;
@@ -47,15 +46,21 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public abstract void Calculate(IReadOnlyList<P> particles);
+        protected abstract bool AppliesRotation { get; }
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public void Apply(IReadOnlyList<P> particles)
+        public abstract void Calculate(IReadOnlyList<IParticle> particles);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="particles"></param>
+        public void Apply(IReadOnlyList<IParticle> particles)
         {
             foreach (var h in Handles)
                 particles[h].ApplyForce(h.Delta, Weight);
@@ -76,5 +81,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 itr.MoveNext();
             }
         }
+
+
+        #region Explicit interface implementations
+
+        bool IConstraint.AppliesRotation
+        {
+            get { return AppliesRotation; }
+        }
+
+        #endregion
     }
 }

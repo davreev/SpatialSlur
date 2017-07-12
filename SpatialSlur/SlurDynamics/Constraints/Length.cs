@@ -16,8 +16,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     ///
     /// </summary>
-    public class Length<P> : Constraint<P, H>
-        where P : IParticle
+    public class Length : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -46,7 +45,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -54,7 +53,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _h1;
             }
         }
-
+        
 
         /// <summary>
         /// 
@@ -69,6 +68,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _targetLength = value;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -91,7 +99,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             var d = particles[_h1].Position - particles[_h0].Position;
             _h0.Delta = d * (1.0 - _targetLength / d.Length) * 0.5;

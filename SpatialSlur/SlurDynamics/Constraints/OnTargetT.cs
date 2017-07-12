@@ -16,8 +16,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="P"></typeparam>
-    public class OnTarget<T, P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class OnTarget<T> : DynamicConstraint<H>
     {
         private T _target;
         Func<T, Vec3d, Vec3d> _closestPoint;
@@ -36,6 +35,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _target = value;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -73,7 +81,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             foreach(var h in Handles)
             {

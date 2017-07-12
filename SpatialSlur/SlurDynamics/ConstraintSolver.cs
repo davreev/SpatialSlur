@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+
 using SpatialSlur.SlurCore;
-
 using SpatialSlur.SlurDynamics.Constraints;
-
-using static SpatialSlur.SlurDynamics.ConstraintSolver;
 
 /*
  * Notes
@@ -20,10 +18,9 @@ namespace SpatialSlur.SlurDynamics
     /// http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf
     /// </summary>
     /// <typeparam name="P"></typeparam>
-    public class ConstraintSolver<P>
-        where P : IParticle
+    public class ConstraintSolver
     {
-        private Settings _settings = new Settings();
+        private ConstraintSolverSettings _settings = new ConstraintSolverSettings();
         private double _maxDelta = double.MaxValue;
         private double _maxAngleDelta = double.MaxValue;
         private int _stepCount = 0;
@@ -32,7 +29,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public Settings Settings
+        public ConstraintSolverSettings Settings
         {
             get { return _settings; }
             set { _settings = value ?? throw new ArgumentNullException(); }
@@ -68,7 +65,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public ConstraintSolver(Settings settings)
+        public ConstraintSolver(ConstraintSolverSettings settings)
         {
             Settings = settings;
         }
@@ -79,7 +76,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        public void Step(IReadOnlyList<P> particles, IReadOnlyList<IConstraint<P>> constraints)
+        public void Step(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
         {
             LocalStep(particles, constraints);
             GlobalStep(particles, constraints);
@@ -93,7 +90,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        public void StepParallel(IReadOnlyList<P> particles, IReadOnlyList<IConstraint<P>> constraints)
+        public void StepParallel(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
         {
             LocalStepParallel(particles, constraints);
             GlobalStep(particles, constraints);
@@ -107,7 +104,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        private void LocalStep(IReadOnlyList<P> particles, IReadOnlyList<IConstraint<P>> constraints)
+        private void LocalStep(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
         {
             for (int i = 0; i < constraints.Count; i++)
                 constraints[i].Calculate(particles);
@@ -119,7 +116,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        private void LocalStepParallel(IReadOnlyList<P> particles, IReadOnlyList<IConstraint<P>> constraints)
+        private void LocalStepParallel(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
         {
             Parallel.ForEach(Partitioner.Create(0, constraints.Count), range =>
             {
@@ -134,7 +131,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        private void GlobalStep(IReadOnlyList<P> particles, IReadOnlyList<IConstraint<P>> constraints)
+        private void GlobalStep(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
         {
             for (int i = 0; i < constraints.Count; i++)
                 constraints[i].Apply(particles);
@@ -144,7 +141,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateParticles(IReadOnlyList<P> particles)
+        private void UpdateParticles(IReadOnlyList<IParticle> particles)
         {
             _maxDelta = 0.0;
             _maxAngleDelta = 0.0;
@@ -165,7 +162,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateParticlesParallel(IReadOnlyList<P> particles)
+        private void UpdateParticlesParallel(IReadOnlyList<IParticle> particles)
         {
             _maxDelta = 0.0;
             _maxAngleDelta = 0.0;
@@ -201,131 +198,6 @@ namespace SpatialSlur.SlurDynamics
                         _maxAngleDelta = daMax;
                 }
             });
-        }
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class ConstraintSolver
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        public class Settings
-        {
-            private double _timeStep = 1.0;
-            private double _damping = 0.9;
-            private double _angleDamping = 0.9;
-            private double _tolerance = 1.0e-4;
-            private double _angleTolerance = 1.0e-4;
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public Settings()
-            {
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double TimeStep
-            {
-                get { return _timeStep; }
-                set
-                {
-                    if (value < 0.0)
-                        throw new ArgumentOutOfRangeException("Time step cannot be negative.");
-
-                    _timeStep = value;
-                }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double Damping
-            {
-                get { return _damping; }
-                set
-                {
-                    if (value < 0.0 || value > 1.0)
-                        throw new ArgumentOutOfRangeException("Damping must be between 0.0 and 1.0.");
-
-                    _damping = value;
-                }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double AngularDamping
-            {
-                get { return _angleDamping; }
-                set
-                {
-                    if (value < 0.0 || value > 1.0)
-                        throw new ArgumentOutOfRangeException("The value must be between 0.0 and 1.0.");
-
-                    _angleDamping = value;
-                }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double Tolerance
-            {
-                get { return _tolerance; }
-                set
-                {
-                    if (value < 0.0)
-                        throw new ArgumentOutOfRangeException("The value cannot be negative.");
-
-                    _tolerance = value;
-                }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double AngularTolerance
-            {
-                get { return _angleTolerance; }
-                set
-                {
-                    if (value < 0.0)
-                        throw new ArgumentOutOfRangeException("The value cannot be negative.");
-
-                    _angleTolerance = value;
-                }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            internal double ToleranceSqr
-            {
-                get { return _tolerance * _tolerance; }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            internal double AngularToleranceSqr
-            {
-                get { return _angleTolerance * _angleTolerance; }
-            }
         }
     }
 }

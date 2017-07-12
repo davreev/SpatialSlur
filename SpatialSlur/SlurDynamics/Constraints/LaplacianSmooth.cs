@@ -15,9 +15,17 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class LaplacianSmooth<P> : DynamicConstraint<P, H>
-        where P : IParticle
+    public class LaplacianSmooth : DynamicConstraint<H>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -56,7 +64,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             Vec3d sum = new Vec3d();
             double nInv = 1.0 / (Handles.Count - 1);

@@ -16,12 +16,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     ///
     /// </summary>
-    public class Direction<P> : Constraint<P, H>
-        where P : IParticle
+    public class Direction : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
 
+        /// <summary></summary>
         public Vec3d TargetDirection;
 
 
@@ -46,13 +46,22 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
                 yield return _h0;
                 yield return _h1;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
         }
 
 
@@ -75,7 +84,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             _h0.Delta = Vec3d.Reject(particles[_h1].Position - particles[_h0].Position, TargetDirection) * 0.5;
             _h1.Delta = -_h0.Delta;

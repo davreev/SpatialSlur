@@ -13,8 +13,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="P"></typeparam>
-    public interface IConstraint<P>
+    public interface IConstraint
     {
         /// <summary>
         /// 
@@ -23,17 +22,24 @@ namespace SpatialSlur.SlurDynamics
 
 
         /// <summary>
-        /// 
+        /// Returns true if this constraint acts on the orientation of particles.
         /// </summary>
-        /// <param name="particles"></param>
-        void Calculate(IReadOnlyList<P> particles);
+        /// <returns></returns>
+        bool AppliesRotation { get; }
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        void Apply(IReadOnlyList<P> particles);
+        void Calculate(IReadOnlyList<IParticle> particles);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="particles"></param>
+        void Apply(IReadOnlyList<IParticle> particles);
 
 
         /// <summary>

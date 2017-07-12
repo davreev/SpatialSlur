@@ -39,12 +39,12 @@ namespace SpatialSlur.Examples
             };
 
             // create constraints
-            var constraints = new IConstraint<P>[] {
-                new PlanarQuad<P>(0, 1, 2, 3)
+            var constraints = new IConstraint[] {
+                new PlanarQuad(0, 1, 2, 3)
             };
 
             // create solver
-            var solver = new ConstraintSolver<P>();
+            var solver = new ConstraintSolver();
 
             // wait for keypress to start the solver
             Console.WriteLine("Press return to start the solver.");

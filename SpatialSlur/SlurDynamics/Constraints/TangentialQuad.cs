@@ -18,8 +18,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class TangentialQuad<P> : Constraint<P, H>
-        where P : IParticle
+    public class TangentialQuad : Constraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -66,7 +65,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public override IEnumerable<H> Handles
+        public override sealed IEnumerable<H> Handles
         {
             get
             {
@@ -82,11 +81,19 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
+        protected override sealed bool AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="vertex0"></param>
         /// <param name="vertex1"></param>
         /// <param name="vertex2"></param>
         /// <param name="vertex3"></param>
-        /// <param name="restAngle"></param>
         /// <param name="weight"></param>
         public TangentialQuad(int vertex0, int vertex1, int vertex2, int vertex3, double weight = 1.0)
         {
@@ -99,7 +106,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override void Calculate(IReadOnlyList<P> particles)
+        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
         {
             // equalize sum of opposite edges
             Vec3d p0 = particles[_h0].Position;
