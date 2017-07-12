@@ -8,8 +8,6 @@ using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
 using SpatialSlur.SlurMesh;
 
-using static SpatialSlur.SlurMesh.HeMesh3d;
-
 /*
  * Notes
  */ 
@@ -28,9 +26,9 @@ namespace SpatialSlur.Examples
         /// 
         /// </summary>
         /// <param name="args"></param>
-        public static void Main()
+        public static void Run()
         {
-            var mesh = CreateFromOBJ(Paths.Resources + FileIn);
+            var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + FileIn);
             
             double scale = 0.5;
             double offset = scale * Math.PI * 0.25;

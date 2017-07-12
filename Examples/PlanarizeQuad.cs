@@ -25,7 +25,7 @@ namespace SpatialSlur.Examples
         /// 
         /// </summary>
         /// <param name="args"></param>
-        public static void Main()
+        public static void Run()
         {
             var random = new Random(0);
             var box = new Domain3d(new Vec3d(0.0), new Vec3d(10.0)); // create a domain between the (0,0,0) and (10,10,10)

@@ -65,6 +65,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntryPoint.cs" />
+    <Compile Include="HeMeshFromFile.cs" />
     <Compile Include="Paths.cs" />
     <Compile Include="PlanarizeQuad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
