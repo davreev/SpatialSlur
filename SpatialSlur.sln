@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpatialSlur", "SpatialSlur\SpatialSlur.csproj", "{B57AF965-5201-4215-8077-50B3CC8B1F6B}"
 EndProject
@@ -12,6 +12,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlurRhino", "SlurRhino\Slur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "Examples\Examples.csproj", "{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}"
 	ProjectSection(ProjectDependencies) = postProject
+		{B57AF965-5201-4215-8077-50B3CC8B1F6B} = {B57AF965-5201-4215-8077-50B3CC8B1F6B}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlurGH", "SlurGH\SlurGH.csproj", "{BC254A97-352C-41D5-BEBE-CF792ABE454D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BC939B55-9BB3-446B-9DBF-8A16B5177A39} = {BC939B55-9BB3-446B-9DBF-8A16B5177A39}
 		{B57AF965-5201-4215-8077-50B3CC8B1F6B} = {B57AF965-5201-4215-8077-50B3CC8B1F6B}
 	EndProjectSection
 EndProject
@@ -33,6 +39,10 @@ Global
 		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC254A97-352C-41D5-BEBE-CF792ABE454D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC254A97-352C-41D5-BEBE-CF792ABE454D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC254A97-352C-41D5-BEBE-CF792ABE454D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC254A97-352C-41D5-BEBE-CF792ABE454D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
