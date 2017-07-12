@@ -1,11 +1,13 @@
 {
   "ExpandedNodes": [
     "",
+    "\\SpatialSlur",
     "\\SpatialSlur\\Properties",
     "\\SpatialSlur\\Sketch",
+    "\\SpatialSlur\\SlurField",
     "\\SpatialSlur\\SlurMesh",
     "\\SpatialSlur\\SlurMesh\\Interfaces"
   ],
-  "SelectedNode": "\\SpatialSlur",
+  "SelectedNode": "\\SpatialSlur\\SlurField\\GridScalarField2d.cs",
   "PreviewInSolutionExplorer": false
 }

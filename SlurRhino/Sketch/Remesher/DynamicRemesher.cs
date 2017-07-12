@@ -236,6 +236,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         {
             _mesh.GetVertexNormals(v => v.Position, (v, n) => v.Normal = n, true);
 
+
             // TODO Add NaN checks in force calcs?
             PullToFeatures(_settings.FeatureWeight);
             TangentialSmooth(_settings.SmoothWeight);

@@ -64,9 +64,9 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public Rotation3d(Vec3d axis, double angle)
+        public Rotation3d(AxisAngle3d axisAngle)
         {
-            Set(axis, angle);
+            Set(axisAngle);
         }
 
 
@@ -142,18 +142,21 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns false if the given axis is zero length.
+        /// The axis and angle of rotation are taken from the direction and length of the given vector respectively.
         /// </summary>
-        /// <param name="axis"></param>
-        /// <param name="angle"></param>
-        /// <returns></returns>
-        public bool Set(Vec3d axis, double angle)
+        /// <param name="vector"></param>
+        public bool Set(Vec3d vector)
         {
-            if (!axis.Unitize())
-                return false;
+            double t = vector.SquareLength;
 
-            SetImpl(axis, angle);
-            return true;
+            if (t > 0.0)
+            {
+                t = Math.Sqrt(t);
+                SetImpl(vector / t, Math.Cos(t), Math.Sin(t));
+                return true;
+            }
+
+            return false;
         }
 
 
@@ -162,48 +165,46 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="axisAngle"></param>
         /// <returns></returns>
-        public void Set(Vec3d axisAngle)
+        public bool Set(AxisAngle3d axisAngle)
         {
-            double d = axisAngle.SquareLength;
-
-            if (d > 0.0)
+            if(axisAngle.IsValid)
             {
-                d = Math.Sqrt(d);
-                SetImpl(axisAngle / d, d);
+                SetImpl(axisAngle.Axis, axisAngle.CosAngle, axisAngle.SinAngle);
+                return true;
             }
+
+            return false;
         }
 
 
         /// <summary>
-        /// Assumes the axis is unit length
+        /// 
         /// </summary>
         /// <param name="axis"></param>
-        /// <param name="angle"></param>
-        /// <returns></returns>
-        private void SetImpl(Vec3d axis, double angle)
+        /// <param name="cosAngle"></param>
+        /// <param name="sinAngle"></param>
+        private void SetImpl(Vec3d axis, double cosAngle, double sinAngle)
         {
-            double c = Math.Cos(angle);
-            double s = Math.Sin(angle);
-            double t = 1.0 - c;
+            double t = 1.0 - cosAngle;
 
-            _x.X = c + axis.X * axis.X * t;
-            _y.Y = c + axis.Y * axis.Y * t;
-            _z.Z = c + axis.Z * axis.Z * t;
+            _x.X = cosAngle + axis.X * axis.X * t;
+            _y.Y = cosAngle + axis.Y * axis.Y * t;
+            _z.Z = cosAngle + axis.Z * axis.Z * t;
 
             double p0 = axis.X * axis.Y * t;
-            double p1 = axis.Z * s;
+            double p1 = axis.Z * sinAngle;
 
             _x.Y = p0 + p1;
             _y.X = p0 - p1;
 
             p0 = axis.X * axis.Z * t;
-            p1 = axis.Y * s;
+            p1 = axis.Y * sinAngle;
 
             _x.Z = p0 - p1;
             _z.X = p0 + p1;
 
             p0 = axis.Y * axis.Z * t;
-            p1 = axis.X * s;
+            p1 = axis.X * sinAngle;
 
             _y.Z = p0 + p1;
             _z.Y = p0 - p1;

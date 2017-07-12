@@ -115,7 +115,6 @@ namespace SpatialSlur.SlurDynamics
 
         #region Explicit interface implementations
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -126,7 +125,6 @@ namespace SpatialSlur.SlurDynamics
         {
             return 0.0;
         }
-
 
         #endregion
     }

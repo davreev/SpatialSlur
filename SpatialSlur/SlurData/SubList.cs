@@ -107,7 +107,6 @@ namespace SpatialSlur.SlurData
 
         #region Explicit Interface Implementations
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -212,7 +211,6 @@ namespace SpatialSlur.SlurData
         {
             return GetEnumerator();
         }
-
 
         #endregion
     }

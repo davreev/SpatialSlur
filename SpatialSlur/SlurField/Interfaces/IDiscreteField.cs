@@ -49,7 +49,6 @@ namespace SpatialSlur.SlurField
     {
         #region IDiscreteField<T>
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -161,12 +160,10 @@ namespace SpatialSlur.SlurField
                 f0.Values.Function(f1.Values, f2.Values, f0.Count, func, result.Values);
         }
 
-
         #endregion
 
 
         #region  IDiscreteField<double>
-
 
         /// <summary>
         /// 
@@ -440,12 +437,10 @@ namespace SpatialSlur.SlurField
                 ArrayMath.Remap(field.Values, from, to, result.Values);
         }
 
-
         #endregion
 
 
         #region  IDiscreteField<Vec2d>
-
 
         /// <summary>
         /// 
@@ -677,12 +672,10 @@ namespace SpatialSlur.SlurField
                 ArrayMath.Remap(field.Values, from, to, result.Values);
         }
 
-
         #endregion
 
 
         #region  IDiscreteField<Vec3d>
-
 
         /// <summary>
         /// 
@@ -913,7 +906,6 @@ namespace SpatialSlur.SlurField
             else
                 ArrayMath.Remap(field.Values, from, to, result.Values);
         }
-
 
         #endregion
     }

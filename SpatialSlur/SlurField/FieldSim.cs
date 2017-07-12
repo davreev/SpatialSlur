@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurData;
@@ -753,12 +754,14 @@ namespace SpatialSlur.SlurField
                     int i1 = i0 + j;
                     if (!tags[i1])
                     {
-                        double y = (y0 == 0) ? result[i1 + nx]
-                          : (y0 == ny - 1) ? result[i1 - nx]
-                          : Math.Min(result[i1 - nx], result[i1 + nx]);
+                        double y = (y0 == 0) ? 
+                          result[i1 + nx] : 
+                          (y0 == ny - 1) ? result[i1 - nx] : 
+                          Math.Min(result[i1 - nx], result[i1 + nx]);
 
-                        double t1 = (y > double.MaxValue) ? t0 + dx * costVals[i1] 
-                            : eikonal.Evaluate(t0, y, costVals[i1]);
+                        double t1 = (y > double.MaxValue) ? 
+                            t0 + dx * costVals[i1] :
+                            eikonal.Evaluate(t0, y, costVals[i1]);
 
                         if (t1 < result[i1])
                         {
@@ -776,12 +779,14 @@ namespace SpatialSlur.SlurField
                     int i1 = i0 + j * nx;
                     if (!tags[i1])
                     {
-                        double x = (x0 == 0) ? result[i1 + 1]
-                          : (x0 == nx - 1) ? result[i1 - 1]
-                          : Math.Min(result[i1 - 1], result[i1 + 1]);
+                        double x = (x0 == 0) ? 
+                          result[i1 + 1] :
+                          (x0 == nx - 1) ? result[i1 - 1] :
+                          Math.Min(result[i1 - 1], result[i1 + 1]);
 
-                        double t1 = (x > double.MaxValue) ? t0 + dy * costVals[i1] 
-                            : eikonal.Evaluate(x, t0, costVals[i1]);
+                        double t1 = (x > double.MaxValue) ? 
+                            t0 + dy * costVals[i1] :
+                            eikonal.Evaluate(x, t0, costVals[i1]);
 
                         if (t1 < result[i1])
                         {
@@ -799,7 +804,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private class Eikonal2d
         {
-            private double _dx, _dy, _tx, _ty, _a, _a2Inv; // constants used within evaluation
+            private double _dx, _dy, _tx, _ty, _a, _a2Inv; // constants used during evaluation
 
 
             /// <summary>

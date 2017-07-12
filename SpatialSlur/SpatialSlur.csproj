@@ -92,9 +92,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\Test.cs" />
     <Compile Include="SlurCore\ArrayMath.cs" />
+    <Compile Include="SlurCore\AxisAngle3d.cs" />
     <Compile Include="SlurCore\CoreUtil.cs" />
+    <Compile Include="SlurCore\Extensions\ColorExtensions.cs" />
     <Compile Include="SlurCore\Extensions\IDictionaryExtensions.cs" />
+    <Compile Include="SlurCore\Extensions\RandomExtensions.cs" />
+    <Compile Include="SlurCore\Extensions\TExtensions.cs" />
     <Compile Include="SlurCore\Interfaces\IProperty.cs" />
     <Compile Include="SlurData\DataUtil.cs" />
     <Compile Include="SlurDynamics\ConstraintSolver.cs" />
@@ -158,20 +163,22 @@
     <Compile Include="SlurCore\Extensions\ListExtensions.cs" />
     <Compile Include="SlurCore\IOUtil.cs" />
     <Compile Include="SlurMesh\HalfedgeList.cs" />
+    <Compile Include="SlurMesh\HalfedgeLoop.cs" />
+    <Compile Include="SlurMesh\EdgeList.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraph3dExtensions.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraphExtensions.cs" />
     <Compile Include="SlurMesh\HeGraph\HeGraph3d.cs" />
+    <Compile Include="SlurMesh\HalfedgeStrip.cs" />
+    <Compile Include="SlurMesh\Interfaces\IHeElementList.cs" />
     <Compile Include="SlurMesh\SharedHelperTypes.cs" />
     <Compile Include="SlurMesh\HeMesh\Enums\PrimitiveType.cs" />
     <Compile Include="SlurMesh\HeMesh\Extensions\HeMesh3dExtensions.cs" />
     <Compile Include="SlurMesh\HeMesh\Extensions\HeMeshExtensions.cs" />
-    <Compile Include="SlurMesh\Interfaces\IHeStructureFactory.cs" />
     <None Include="packages.config" />
     <Compile Include="SlurCore\Vec2i.cs" />
     <Compile Include="SlurCore\Domain.cs" />
     <Compile Include="SlurCore\Domain2d.cs" />
     <Compile Include="SlurCore\Domain3d.cs" />
-    <Compile Include="SlurCore\Extensions\DotNetExtensions.cs" />
     <Compile Include="SlurCore\Vec2d.cs" />
     <Compile Include="SlurCore\Vec3d.cs" />
     <Compile Include="SlurCore\Vec3i.cs" />
@@ -238,8 +245,8 @@
     <Compile Include="SlurMesh\MeshUtil.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Debug\" />
     <Folder Include="Sketch\" />
+    <Folder Include="SlurCore\WIP\" />
     <Folder Include="SlurField\WIP\" />
     <Folder Include="SlurMesh\WIP\" />
   </ItemGroup>

@@ -19,7 +19,6 @@ namespace SpatialSlur.SlurDynamics
     {
         #region Static
 
-
         /// <summary>
         /// Implicitly converts a handle to its index for convenience.
         /// </summary>
@@ -28,7 +27,6 @@ namespace SpatialSlur.SlurDynamics
         {
             return handle.Index;
         }
-
 
         #endregion
 

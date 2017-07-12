@@ -91,6 +91,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\Test.cs" />
     <Compile Include="MeshUtil.cs" />
     <Compile Include="Sketch\LoopGrowth\LoopGrowerSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -124,7 +125,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Debug\" />
     <Folder Include="SlurField\WIP\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

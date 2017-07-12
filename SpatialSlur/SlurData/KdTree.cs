@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using SpatialSlur.SlurCore;
 
 using static SpatialSlur.SlurCore.ArrayMath;
