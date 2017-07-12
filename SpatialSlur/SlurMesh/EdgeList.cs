@@ -234,7 +234,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        #region Explicit Interface Implementations
+        #region Explicit interface implementations
 
         /// <summary>
         /// Explicit implementation of non-generic method.

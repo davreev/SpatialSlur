@@ -71,7 +71,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _h1;
                 yield return _h2;
                 yield return _h3;
-
             }
         }
 

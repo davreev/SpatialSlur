@@ -3376,6 +3376,108 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="flip"></param>
+        /// <returns></returns>
+        public IEnumerable<TE> GetFacesOrientedQuad(bool flip)
+        {
+            var stack = new Stack<TE>();
+            int currTag = _faces.NextTag;
+
+            for (int i = 0; i < _faces.Count; i++)
+            {
+                var f = _faces[i];
+                if (f.IsRemoved || f.Tag == currTag) continue; // skip if unused or already visited
+
+                f.Tag = currTag;
+                stack.Push(flip? f.First.NextInFace: f.First);
+
+                foreach (var he in GetFacesOrientedQuad(stack, currTag))
+                    yield return he;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="flip"></param>
+        /// <returns></returns>
+        public IEnumerable<TE> GetFacesOrientedQuad(TF start, bool flip)
+        {
+            _faces.ContainsCheck(start);
+            start.RemovedCheck();
+
+            var stack = new Stack<TE>();
+            int currTag = _faces.NextTag;
+
+            start.Tag = currTag;
+            stack.Push(flip ? start.First.NextInFace : start.First);
+
+            return GetFacesOrientedQuad(stack, currTag);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stack"></param>
+        /// <param name="currTag"></param>
+        /// <returns></returns>
+        private IEnumerable<TE> GetFacesOrientedQuad(Stack<TE> stack, int currTag)
+        {
+            while (stack.Count > 0)
+            {
+                var he0 = stack.Pop();
+                yield return he0;
+
+                foreach (var he1 in AdjacentQuads(he0))
+                {
+                    var f1 = he1.Face;
+                    if (f1 == null || f1.Tag == currTag) continue;
+
+                    f1.Tag = currTag;
+                    stack.Push(he1);
+                }
+            }
+
+            IEnumerable<TE> AdjacentQuads(TE hedge)
+            {
+                yield return hedge.NextAtStart.NextInFace; // down
+                yield return hedge.PrevInFace.PrevAtStart; // up
+                yield return hedge.PrevAtStart.PrevInFace; // left
+                yield return hedge.NextInFace.NextAtStart; // right
+            }
+        }
+
+
+        /// <summary>
+        /// Sets the first halfedge in each face to create consistent orientation where possible.
+        /// Assumes quadrilateral faces.
+        /// http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf
+        /// </summary>
+        public void UnifyFaceOrientationQuad(bool flip)
+        {
+            foreach(var he in GetFacesOrientedQuad(flip))
+                he.MakeFirstInFace();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        public void UnifyFaceOrientationQuad(TF start, bool flip)
+        {
+            foreach (var he in GetFacesOrientedQuad(start, flip))
+                he.MakeFirstInFace();
+        }
+
+
+        /*
+        /// <summary>
         /// Turns all faces to create consistent directionality across the mesh where possible.
         /// Assumes quadrilateral faces.
         /// http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf
@@ -3436,12 +3538,11 @@ namespace SpatialSlur.SlurMesh
                 foreach (var he1 in AdjacentQuads(he0))
                 {
                     var f1 = he1.Face;
-                    if (f1 != null && f1.Tag != currTag)
-                    {
-                        f1.First = he1;
-                        f1.Tag = currTag;
-                        stack.Push(he1);
-                    }
+                    if (f1 == null || f1.Tag == currTag) continue;
+
+                    f1.First = he1;
+                    f1.Tag = currTag;
+                    stack.Push(he1);
                 }
             }
 
@@ -3453,6 +3554,7 @@ namespace SpatialSlur.SlurMesh
                 yield return hedge.NextInFace.NextAtStart; // right
             }
         }
+        */
 
 
         #endregion

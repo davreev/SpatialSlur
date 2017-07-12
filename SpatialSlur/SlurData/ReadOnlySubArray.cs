@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurData
         }
 
 
-        #region Explicit Interface Implementations
+        #region Explicit interface implementations
 
 
         /// <summary>

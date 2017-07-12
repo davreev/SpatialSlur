@@ -17,34 +17,25 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\..\AppData\Roaming\Grasshopper\Libraries\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\SpatialSlur.XML</DocumentationFile>
+    <DocumentationFile>bin\SpatialSlur.xml</DocumentationFile>
     <RegisterForComInterop>false</RegisterForComInterop>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Documentation|AnyCPU'">
-    <OutputPath>bin\Release_Documentation\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\SpatialSlur.XML</DocumentationFile>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -58,17 +49,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\SpatialSlur.XML</DocumentationFile>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Documentation|x64'">
-    <OutputPath>bin\x64\Release_Documentation\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>bin\Release\SpatialSlur.XML</DocumentationFile>
@@ -168,7 +148,7 @@
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraph3dExtensions.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraphExtensions.cs" />
     <Compile Include="SlurMesh\HeGraph\HeGraph3d.cs" />
-    <Compile Include="SlurMesh\HalfedgeStrip.cs" />
+    <Compile Include="SlurMesh\HeQuadStrip.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeElementList.cs" />
     <Compile Include="SlurMesh\SharedHelperTypes.cs" />
     <Compile Include="SlurMesh\HeMesh\Enums\PrimitiveType.cs" />
