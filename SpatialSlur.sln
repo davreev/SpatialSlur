@@ -1,16 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpatialSlur", "SpatialSlur\SpatialSlur.csproj", "{B57AF965-5201-4215-8077-50B3CC8B1F6B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlurRhino", "SlurRhino\SlurRhino.csproj", "{BC939B55-9BB3-446B-9DBF-8A16B5177A39}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B57AF965-5201-4215-8077-50B3CC8B1F6B} = {B57AF965-5201-4215-8077-50B3CC8B1F6B}
-	EndProjectSection
-EndProject
-Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "Documentation", "Documentation\Documentation.shfbproj", "{935C4B29-5739-441B-B0FA-D14EEAF193D1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B57AF965-5201-4215-8077-50B3CC8B1F6B} = {B57AF965-5201-4215-8077-50B3CC8B1F6B}
 	EndProjectSection
@@ -23,30 +18,19 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Release_Doc|Any CPU = Release_Doc|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B57AF965-5201-4215-8077-50B3CC8B1F6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B57AF965-5201-4215-8077-50B3CC8B1F6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B57AF965-5201-4215-8077-50B3CC8B1F6B}.Release_Doc|Any CPU.ActiveCfg = Release_Documentation|Any CPU
-		{B57AF965-5201-4215-8077-50B3CC8B1F6B}.Release_Doc|Any CPU.Build.0 = Release_Documentation|Any CPU
 		{B57AF965-5201-4215-8077-50B3CC8B1F6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B57AF965-5201-4215-8077-50B3CC8B1F6B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BC939B55-9BB3-446B-9DBF-8A16B5177A39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BC939B55-9BB3-446B-9DBF-8A16B5177A39}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BC939B55-9BB3-446B-9DBF-8A16B5177A39}.Release_Doc|Any CPU.ActiveCfg = Release_Documentation|Any CPU
-		{BC939B55-9BB3-446B-9DBF-8A16B5177A39}.Release_Doc|Any CPU.Build.0 = Release_Documentation|Any CPU
 		{BC939B55-9BB3-446B-9DBF-8A16B5177A39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC939B55-9BB3-446B-9DBF-8A16B5177A39}.Release|Any CPU.Build.0 = Release|Any CPU
-		{935C4B29-5739-441B-B0FA-D14EEAF193D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{935C4B29-5739-441B-B0FA-D14EEAF193D1}.Release_Doc|Any CPU.ActiveCfg = Release_Documentation|Any CPU
-		{935C4B29-5739-441B-B0FA-D14EEAF193D1}.Release_Doc|Any CPU.Build.0 = Release_Documentation|Any CPU
-		{935C4B29-5739-441B-B0FA-D14EEAF193D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Release_Doc|Any CPU.ActiveCfg = Release|Any CPU
-		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Release_Doc|Any CPU.Build.0 = Release|Any CPU
 		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BCAE614-C7C3-4359-9701-3A1F7DD4C85F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

@@ -89,16 +89,14 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
-        /// <typeparam name="F"></typeparam>
         /// <param name="first"></param>
         /// <param name="last"></param>
         /// <returns></returns>
-        internal static HalfedgeStrip<V, E, F> Create<V, E, F>(E first, E last)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+        internal static HalfedgeLoop<V, E> Create<V, E>(E first, E last)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
-            return new HalfedgeStrip<V, E, F>(first, last);
+            return new HalfedgeLoop<V, E>(first, last);
         }
     }
 }
