@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Drawing;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
-using SpatialSlur.SlurMesh;
-
 using Rhino.Geometry;
+
+using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
 
 /*
  * Notes
@@ -17,133 +17,35 @@ using Rhino.Geometry;
 
 namespace SpatialSlur.SlurRhino
 {
+    using M = HeMesh<HeMesh3d.V, HeMesh3d.E, HeMesh3d.F>;
+    using G = HeGraph<HeGraph3d.V, HeGraph3d.E>;
+
+
     /// <summary>
     /// 
     /// </summary>
-    public static partial class RhinoExtensions
+    public static class MeshExtensions
     {
-        #region Point3d
-
-
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
-        /// <param name="other"></param>
-        /// <param name="t"></param>
+        /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Point3d LerpTo(this Point3d point, Point3d other, double t)
+        public static G ToHeGraph(this Mesh mesh)
         {
-            return point + (other - point) * t;
+            return HeGraph3d.Factory.CreateFromVertexTopology(mesh);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
-        /// <param name="other"></param>
+        /// <param name="mesh"></param>
         /// <returns></returns>
-        public static double SquareDistanceTo(this Point3d point, Point3d other)
+        public static M ToHeMesh(this Mesh mesh)
         {
-            Vector3d v = other - point;
-            return v.SquareLength;
+            return HeMesh3d.Factory.CreateFromMesh(mesh);
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <param name="other"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static Vector3d LerpTo(this Vector3d vector, Vector3d other, double t)
-        {
-            return vector + (other - vector) * t;
-        }
-
-
-        #endregion
-
-
-        #region Plane
-
-
-        /// <summary>
-        /// Returns the transform matrix described by this plane.
-        /// </summary>
-        /// <param name="plane"></param>
-        /// <returns></returns>
-        public static Transform ToWorld(this Plane plane)
-        {
-            Point3d o = plane.Origin;
-            Vector3d x = plane.XAxis;
-            Vector3d y = plane.YAxis;
-            Vector3d z = plane.ZAxis;
-
-            Transform m = new Transform();
-
-            m[0, 0] = x.X;
-            m[0, 1] = y.X;
-            m[0, 2] = z.X;
-            m[0, 3] = o.X;
-
-            m[1, 0] = x.Y;
-            m[1, 1] = y.Y;
-            m[1, 2] = z.Y;
-            m[1, 3] = o.Y;
-
-            m[2, 0] = x.Z;
-            m[2, 1] = y.Z;
-            m[2, 2] = z.Z;
-            m[2, 3] = o.Z;
-
-            m[3, 3] = 1.0;
-
-            return m;
-        }
-
-
-        /// <summary>
-        /// Returns the inverse transformation matrix described by this plane.
-        /// </summary>
-        /// <param name="plane"></param>
-        /// <returns></returns>
-        public static Transform ToLocal(this Plane plane)
-        {
-            Vector3d d = new Vector3d(plane.Origin);
-            Vector3d x = plane.XAxis;
-            Vector3d y = plane.YAxis;
-            Vector3d z = plane.ZAxis;
-
-            Transform m = new Transform();
-
-            m[0, 0] = x.X;
-            m[0, 1] = x.Y;
-            m[0, 2] = x.Z;
-            m[0, 3] = -(d * x);
-
-            m[1, 0] = y.X;
-            m[1, 1] = y.Y;
-            m[1, 2] = y.Z;
-            m[1, 3] = -(d * y);
-
-            m[2, 0] = z.X;
-            m[2, 1] = z.Y;
-            m[2, 2] = z.Z;
-            m[2, 3] = -(d * z);
-
-            m[3, 3] = 1.0;
-
-            return m;
-        }
-
-
-        #endregion
-
-
-        #region Mesh
 
 
         /// <summary>
@@ -386,207 +288,5 @@ namespace SpatialSlur.SlurRhino
                 }
             }
         }
-
-
-        #endregion
-
-
-        #region IReadOnlyList<Point3d>
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, double tolerance)
-        {
-            return RemoveDuplicatePoints(points, tolerance, out int[] indexMap, out RTree tree);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="indexMap"></param>
-        /// <returns></returns>
-        public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, double tolerance, out int[] indexMap)
-        {
-            return RemoveDuplicatePoints(points, tolerance, out indexMap, out RTree tree);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="indexMap"></param>
-        /// <param name="tree"></param>
-        /// <returns></returns>
-        public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, double tolerance, out int[] indexMap, out RTree tree)
-        {
-            indexMap = new int[points.Count];
-            tree = new RTree();
-
-            List<Point3d> result = new List<Point3d>();
-            Vector3d span = new Vector3d(tolerance, tolerance, tolerance);
-
-            // for each point, search for coincident points in the tree
-            for (int i = 0; i < points.Count; i++)
-            {
-                Point3d pt = points[i];
-                var index = -1;
-                tree.Search(new BoundingBox(pt - span, pt + span), (s, e) =>
-                {
-                    index = e.Id; // cache index of found object
-                    e.Cancel = true; // abort search
-                });
-
-                // if no coincident point was found...
-                if (index == -1)
-                {
-                    index = result.Count; // set id of point
-                    tree.Insert(pt, index); // insert point in tree
-                    result.Add(pt); // add point to results
-                }
-
-                indexMap[i] = index;
-            }
-
-            return result;
-        }
-
-
-        #endregion
-
-
-        #region IEnumerable<Point3d>
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        public static Point3d Mean(this IEnumerable<Point3d> points)
-        {
-            var sum = new Point3d();
-            int count = 0;
-
-            foreach (Point3d p in points)
-            {
-                sum += p;
-                count++;
-            }
-
-            return sum / count;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static Vector3d Mean(this IEnumerable<Vector3d> vectors)
-        {
-            var sum = new Vector3d();
-            int count = 0;
-
-            foreach (Vector3d v in vectors)
-            {
-                sum += v;
-                count++;
-            }
-
-            return sum / count;
-        }
-
-
-        /// <summary>
-        /// Returns the the entries of the covariance matrix in column-major order.
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
-        public static void GetCovarianceMatrix(this IEnumerable<Vector3d> vectors, double[] result)
-        {
-            GetCovarianceMatrix(vectors, Mean(vectors), result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="mean"></param>
-        /// <returns></returns>
-        public static void GetCovarianceMatrix(this IEnumerable<Vector3d> vectors, Vector3d mean, double[] result)
-        {
-            Array.Clear(result, 0, 9);
-
-            // calculate lower triangular covariance matrix
-            foreach (Vector3d v in vectors)
-            {
-                Vector3d d = v - mean;
-                result[0] += d.X * d.X;
-                result[1] += d.X * d.Y;
-                result[2] += d.X * d.Z;
-                result[4] += d.Y * d.Y;
-                result[5] += d.Y * d.Z;
-                result[8] += d.Z * d.Z;
-            }
-
-            // set symmetric values
-            result[3] = result[1];
-            result[6] = result[2];
-            result[7] = result[5];
-        }
-
-
-        /// <summary>
-        /// Returns the the entries of the covariance matrix in column-major order.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        public static void GetCovarianceMatrix(this IEnumerable<Point3d> points, double[] result)
-        {
-            GetCovarianceMatrix(points, Mean(points), result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="mean"></param>
-        /// <returns></returns>
-        public static void GetCovarianceMatrix(this IEnumerable<Point3d> points, Point3d mean, double[] result)
-        {
-            Array.Clear(result, 0, 9);
-
-            // calculate lower triangular covariance matrix
-            foreach (Point3d p in points)
-            {
-                Vector3d d = p - mean;
-                result[0] += d.X * d.X;
-                result[1] += d.X * d.Y;
-                result[2] += d.X * d.Z;
-                result[4] += d.Y * d.Y;
-                result[5] += d.Y * d.Z;
-                result[8] += d.Z * d.Z;
-            }
-
-            // set symmetric values
-            result[3] = result[1];
-            result[6] = result[2];
-            result[7] = result[5];
-        }
-
-
-        #endregion
     }
 }

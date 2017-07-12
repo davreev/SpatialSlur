@@ -16,77 +16,24 @@ using Rhino.Geometry;
 
 namespace SpatialSlur.SlurRhino
 {
-    using M = HeMesh<HeMesh3d.V, HeMesh3d.E, HeMesh3d.F>;
-    using G = HeGraph<HeGraph3d.V, HeGraph3d.E>;
-
-
     /// <summary>
     /// 
     /// </summary>
     public static class SlurMeshExtensions
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lines"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="allowMultiEdges"></param>
-        /// <param name="allowLoops"></param>
-        /// <returns></returns>
-        public static G ToHeGraph(this IReadOnlyList<Line> lines, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
-        {
-            return HeGraph3d.Factory.CreateFromLineSegments(lines, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static G ToHeGraph(this Mesh mesh)
-        {
-            return HeGraph3d.Factory.CreateFromVertexTopology(mesh);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="polylines"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static M ToHeMesh(this IEnumerable<Polyline> polylines, double tolerance = 1.0e-8)
-        {
-            return HeMesh3d.Factory.CreateFromPolylines(polylines, (v, p) => v.Position = p, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static M ToHeMesh(this Mesh mesh)
-        {
-            return HeMesh3d.Factory.CreateFromMesh(mesh);
-        }
-
-
         #region IHeElement
 
-
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
         /// <param name="hedge"></param>
         /// <param name="getPosition"></param>
         /// <returns></returns>
-        public static Line ToLine<TV, TE>(this IHalfedge<TV, TE> hedge, Func<TV, Vec3d> getPosition)
-            where TV : IHeVertex<TV, TE>
-            where TE : IHalfedge<TV, TE>
+        public static Line ToLine<V, E>(this IHalfedge<V, E> hedge, Func<V, Vec3d> getPosition)
+            where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
         {
             Vec3d p0 = getPosition(hedge.Start);
             Vec3d p1 = getPosition(hedge.End);
@@ -97,16 +44,16 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
-        /// <typeparam name="TF"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
         /// <param name="face"></param>
         /// <param name="getPosition"></param>
         /// <returns></returns>
-        public static Polyline ToPolyline<TV, TE, TF>(this IHeFace<TV, TE, TF> face, Func<TV, Vec3d> getPosition)
-            where TV : IHeVertex<TV, TE, TF>
-            where TE : IHalfedge<TV, TE, TF>
-            where TF : IHeFace<TV, TE, TF>
+        public static Polyline ToPolyline<V, E, F>(this IHeFace<V, E, F> face, Func<V, Vec3d> getPosition)
+            where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
+            where F : IHeFace<V, E, F>
         {
             Polyline result = new Polyline();
 
@@ -126,16 +73,16 @@ namespace SpatialSlur.SlurRhino
         /// Assumes the face is triangular.
         /// http://mathworld.wolfram.com/Incenter.html
         /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
-        /// <typeparam name="TF"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
         /// <param name="face"></param>
         /// <param name="getPosition"></param>
         /// <returns></returns>
-        public static Circle GetCircumcircle<TV, TE, TF>(this IHeFace<TV, TE, TF> face, Func<TV, Vec3d> getPosition)
-            where TV : IHeVertex<TV, TE, TF>
-            where TE : IHalfedge<TV, TE, TF>
-            where TF : IHeFace<TV, TE, TF>
+        public static Circle GetCircumcircle<V, E, F>(this IHeFace<V, E, F> face, Func<V, Vec3d> getPosition)
+            where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
+            where F : IHeFace<V, E, F>
         {
             var he = face.First;
             var p0 = getPosition(he.PrevInFace.Start);
@@ -172,12 +119,10 @@ namespace SpatialSlur.SlurRhino
         }
         */
 
-
         #endregion
 
 
         #region HeElementList
-        
 
         /// <summary>
         /// 
@@ -185,9 +130,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="hedges"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetEdgeLines<TV, TE>(this IHeStructure<TV, TE> structure, Func<TV, Vec3d> getPosition, Action<TE, Line> setResult, bool parallel = false)
-            where TV : HeElement, IHeVertex<TV, TE>
-            where TE : HeElement, IHalfedge<TV, TE>
+        public static void GetEdgeLines<V, E>(this IHeStructure<V, E> structure, Func<V, Vec3d> getPosition, Action<E, Line> setResult, bool parallel = false)
+            where V : HeElement, IHeVertex<V, E>
+            where E : HeElement, IHalfedge<V, E>
         {
             var hedges = structure.Halfedges;
 
@@ -214,10 +159,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetFacePolylines<TV, TE, TF>(this IHeStructure<TV, TE, TF> structure, Func<TV, Vec3d> getPosition, Action<TF, Polyline> setResult, bool parallel = false)
-            where TV : HeElement, IHeVertex<TV, TE, TF>
-            where TE : HeElement, IHalfedge<TV, TE, TF>
-            where TF : HeElement, IHeFace<TV, TE, TF>
+        public static void GetFacePolylines<V, E, F>(this IHeStructure<V, E, F> structure, Func<V, Vec3d> getPosition, Action<F, Polyline> setResult, bool parallel = false)
+            where V : HeElement, IHeVertex<V, E, F>
+            where E : HeElement, IHalfedge<V, E, F>
+            where F : HeElement, IHeFace<V, E, F>
         {
             var faces = structure.Faces;
 
@@ -228,7 +173,7 @@ namespace SpatialSlur.SlurRhino
                     var f = faces[i];
                     if (f.IsRemoved) continue;
 
-                    setResult(f, f.ToPolyline<TV, TE, TF>(getPosition));
+                    setResult(f, f.ToPolyline<V, E, F>(getPosition));
                 }
             };
 
@@ -245,10 +190,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="faces"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetFaceCircumcircles<TV, TE, TF>(this IHeStructure<TV, TE, TF> structure, Func<TV, Vec3d> getPosition, Action<TF, Circle> setResult, bool parallel = false)
-            where TV : HeElement, IHeVertex<TV, TE, TF>
-            where TE : HeElement, IHalfedge<TV, TE, TF>
-            where TF : HeElement, IHeFace<TV, TE, TF>
+        public static void GetFaceCircumcircles<V, E, F>(this IHeStructure<V, E, F> structure, Func<V, Vec3d> getPosition, Action<F, Circle> setResult, bool parallel = false)
+            where V : HeElement, IHeVertex<V, E, F>
+            where E : HeElement, IHalfedge<V, E, F>
+            where F : HeElement, IHeFace<V, E, F>
         {
             var faces = structure.Faces;
 
@@ -258,7 +203,7 @@ namespace SpatialSlur.SlurRhino
                 {
                     var f = faces[i];
                     if (f.IsRemoved) continue;
-                    setResult(f, f.GetCircumcircle<TV, TE, TF>(getPosition));
+                    setResult(f, f.GetCircumcircle<V, E, F>(getPosition));
                 }
             };
 
@@ -268,20 +213,18 @@ namespace SpatialSlur.SlurRhino
                 func(Tuple.Create(0, faces.Count));
         }
 
-
         #endregion
 
 
         #region IHeStructure
 
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="xform"></param>
-        public static void Transform<TV, TE>(this IHeStructure<TV, TE> structure, Transform xform, bool parallel = false)
-            where TV : HeElement, IHeVertex<TV, TE>, IVertex3d
-            where TE : HeElement, IHalfedge<TV, TE>
+        public static void Transform<V, E>(this IHeStructure<V, E> structure, Transform xform, bool parallel = false)
+            where V : HeElement, IHeVertex<V, E>, IVertex3d
+            where E : HeElement, IHalfedge<V, E>
         {
             var verts = structure.Vertices;
 
@@ -305,9 +248,9 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <param name="xform"></param>
-        public static void SpaceMorph<TV, TE>(this IHeStructure<TV, TE> structure, SpaceMorph xmorph, bool parallel = false)
-            where TV : HeElement, IHeVertex<TV, TE>, IVertex3d
-            where TE : HeElement, IHalfedge<TV, TE>
+        public static void SpaceMorph<V, E>(this IHeStructure<V, E> structure, SpaceMorph xmorph, bool parallel = false)
+            where V : HeElement, IHeVertex<V, E>, IVertex3d
+            where E : HeElement, IHalfedge<V, E>
         {
             var verts = structure.Vertices;
 
@@ -326,22 +269,20 @@ namespace SpatialSlur.SlurRhino
                 func(Tuple.Create(0, verts.Count));
         }
 
-
         #endregion
 
-        
-        #region HeMesh
 
+        #region HeMesh
 
         /// <summary>
         /// Note that unused and n-gon faces are skipped.
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Mesh ToMesh<TV, TE, TF>(this HeMesh<TV, TE, TF> mesh)
-            where TV : HeVertex<TV, TE, TF>, IVertex3d
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+        public static Mesh ToMesh<V, E, F>(this HeMesh<V, E, F> mesh)
+            where V : HeVertex<V, E, F>, IVertex3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             return mesh.ToMesh(
                 v => v.Position.ToPoint3f(),
@@ -357,10 +298,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Mesh ToMesh<TV, TE, TF>(this HeMesh<TV, TE, TF> mesh, Func<TV, Point3f> getPosition, Func<TV, Vector3f> getNormal, Func<TV, Point2f> getTexCoord, Func<TV, Color> getColor)
-            where TV : HeVertex<TV, TE, TF>
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+        public static Mesh ToMesh<V, E, F>(this HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal, Func<V, Point2f> getTexCoord, Func<V, Color> getColor)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
@@ -421,15 +362,15 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
-        /// <typeparam name="TF"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Mesh ToPolySoup<TV, TE, TF>(this HeMesh<TV, TE, TF> mesh)
-            where TV : HeVertex<TV, TE, TF>, IVertex3d
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+        public static Mesh ToPolySoup<V, E, F>(this HeMesh<V, E, F> mesh)
+            where V : HeVertex<V, E, F>, IVertex3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             return mesh.ToPolySoup(v => v.Position.ToPoint3f());
         }
@@ -441,10 +382,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static Mesh ToPolySoup<TV, TE, TF>(this HeMesh<TV, TE, TF> mesh, Func<TV, Point3f> getPosition)
-        where TV : HeVertex<TV, TE, TF>
-        where TE : Halfedge<TV, TE, TF>
-        where TF : HeFace<TV, TE, TF>
+        public static Mesh ToPolySoup<V, E, F>(this HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition)
+        where V : HeVertex<V, E, F>
+        where E : Halfedge<V, E, F>
+        where F : HeFace<V, E, F>
         {
             Mesh result = new Mesh();
             var newVerts = result.Vertices;
@@ -534,12 +475,10 @@ namespace SpatialSlur.SlurRhino
         }
         */
 
-
         #endregion
 
 
         #region HeGraphFactory
-
 
         /// <summary>
         /// 
@@ -550,9 +489,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static HeGraph<TV, TE> CreateFromLineSegments<TV, TE>(this HeGraphFactory<TV, TE> factory, IReadOnlyList<Line> lines, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
-            where TV : HeVertex<TV, TE>, IVertex3d
-            where TE : Halfedge<TV, TE>
+        public static HeGraph<V, E> CreateFromLineSegments<V, E>(this HeGraphFactory<V, E> factory, IReadOnlyList<Line> lines, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
+            where V : HeVertex<V, E>, IVertex3d
+            where E : Halfedge<V, E>
         {
             return factory.CreateFromLineSegments(lines, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
         }
@@ -567,9 +506,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static HeGraph<TV, TE> CreateFromLineSegments<TV, TE>(this HeGraphFactory<TV, TE> factory, IReadOnlyList<Line> lines, Action<TV, Vec3d> setPosition, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
-        where TV : HeVertex<TV, TE>
-        where TE : Halfedge<TV, TE>
+        public static HeGraph<V, E> CreateFromLineSegments<V, E>(this HeGraphFactory<V, E> factory, IReadOnlyList<Line> lines, Action<V, Vec3d> setPosition, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
+        where V : HeVertex<V, E>
+        where E : Halfedge<V, E>
         {
             Vec3d[] endPoints = new Vec3d[lines.Count << 1];
 
@@ -590,14 +529,14 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="dual"></param>
         /// <returns></returns>
-        public static HeGraph<TV, TE> CreateFromVertexTopology<TV, TE>(this HeGraphFactory<TV, TE> factory, Mesh mesh)
-            where TV : HeVertex<TV, TE>, IVertex3d
-            where TE : Halfedge<TV, TE>
+        public static HeGraph<V, E> CreateFromVertexTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh)
+            where V : HeVertex<V, E>, IVertex3d
+            where E : Halfedge<V, E>
         {
-            return factory.CreateFromVertexTopology( mesh, 
-                (v, p) => v.Position = p.ToVec3d(), 
-                (v, n) => v.Normal = n.ToVec3d(), 
-                (v, t) => v.TexCoord = t.ToVec2d(), 
+            return factory.CreateFromVertexTopology(mesh,
+                (v, p) => v.Position = p.ToVec3d(),
+                (v, n) => v.Normal = n.ToVec3d(),
+                (v, t) => v.TexCoord = t.ToVec2d(),
                 delegate { }
                 );
         }
@@ -609,9 +548,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="dual"></param>
         /// <returns></returns>
-        public static HeGraph<TV, TE> CreateFromVertexTopology<TV, TE>(this HeGraphFactory<TV, TE> factory, Mesh mesh, Action<TV, Point3f> setPosition, Action<TV, Vector3f> setNormal, Action<TV, Point2f> setTexCoord, Action<TV, Color> setColor)
-            where TV : HeVertex<TV, TE>
-            where TE : Halfedge<TV, TE>
+        public static HeGraph<V, E> CreateFromVertexTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             // TODO
             throw new NotImplementedException();
@@ -624,9 +563,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="dual"></param>
         /// <returns></returns>
-        public static HeGraph<TV, TE> CreateFromFaceTopology<TV, TE>(this HeGraphFactory<TV, TE> factory, Mesh mesh)
-            where TV : HeVertex<TV, TE>, IVertex3d
-            where TE : Halfedge<TV, TE>
+        public static HeGraph<V, E> CreateFromFaceTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh)
+            where V : HeVertex<V, E>, IVertex3d
+            where E : Halfedge<V, E>
         {
             return factory.CreateFromFaceTopology(
                 mesh,
@@ -644,30 +583,28 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="dual"></param>
         /// <returns></returns>
-        public static HeGraph<TV, TE> CreateFromFaceTopology<TV, TE>(this HeGraphFactory<TV, TE> factory, Mesh mesh, Action<TV, Point3f> setPosition, Action<TV, Vector3f> setNormal, Action<TV, Point2f> setTexCoord, Action<TV, Color> setColor)
-            where TV : HeVertex<TV, TE>
-            where TE : Halfedge<TV, TE>
+        public static HeGraph<V, E> CreateFromFaceTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             // TODO
             throw new NotImplementedException();
         }
-
 
         #endregion
 
 
         #region HeMeshFactory
 
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static HeMesh<TV, TE, TF> CreateFromMesh<TV, TE, TF>(this HeMeshFactory<TV, TE, TF> factory, Mesh mesh)
-            where TV : HeVertex<TV, TE, TF>, IVertex3d
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+        public static HeMesh<V, E, F> CreateFromMesh<V, E, F>(this HeMeshFactory<V, E, F> factory, Mesh mesh)
+            where V : HeVertex<V, E, F>, IVertex3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             return factory.CreateFromMesh(mesh,
                 (v, p) => v.Position = p.ToVec3d(),
@@ -682,10 +619,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static HeMesh<TV,TE,TF> CreateFromMesh<TV,TE,TF>(this HeMeshFactory<TV, TE, TF> factory, Mesh mesh, Action<TV, Point3f> setPosition, Action<TV, Vector3f> setNormal, Action<TV, Point2f> setTexCoord, Action<TV, Color> setColor)
-            where TV : HeVertex<TV, TE, TF>
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+        public static HeMesh<V, E, F> CreateFromMesh<V, E, F>(this HeMeshFactory<V, E, F> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
@@ -704,7 +641,7 @@ namespace SpatialSlur.SlurRhino
                 var v = result.AddVertex();
                 setPosition(v, verts[i]);
 
-                if (hasNorms) setNormal (v, norms[i]);
+                if (hasNorms) setNormal(v, norms[i]);
                 if (hasTexCoords) setTexCoord(v, texCoords[i]);
                 if (hasColors) setColor(v, colors[i]);
             }
@@ -728,10 +665,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static HeMesh<TV, TE, TF> CreateFromPolylines<TV, TE, TF>(this HeMeshFactory<TV, TE, TF> factory, IEnumerable<Polyline> polylines, double tolerance = 1.0e-8)
-            where TV : HeVertex<TV, TE, TF>, IVertex3d
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+        public static HeMesh<V, E, F> CreateFromPolylines<V, E, F>(this HeMeshFactory<V, E, F> factory, IEnumerable<Polyline> polylines, double tolerance = 1.0e-8)
+            where V : HeVertex<V, E, F>, IVertex3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             return factory.CreateFromPolylines(polylines, (v, p) => v.Position = p, tolerance);
         }
@@ -742,10 +679,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public static HeMesh<TV, TE, TF> CreateFromPolylines<TV, TE, TF>(this HeMeshFactory<TV, TE, TF> factory, IEnumerable<Polyline> polylines, Action<TV, Vec3d> setPosition, double tolerance = 1.0e-8)
-            where TV : HeVertex<TV, TE, TF>
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+        public static HeMesh<V, E, F> CreateFromPolylines<V, E, F>(this HeMeshFactory<V, E, F> factory, IEnumerable<Polyline> polylines, Action<V, Vec3d> setPosition, double tolerance = 1.0e-8)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             List<Vec3d> points = new List<Vec3d>();
             List<int> sizes = new List<int>();
@@ -767,6 +704,64 @@ namespace SpatialSlur.SlurRhino
             return factory.CreateFromFaceVertexData(vertPos, indexMap.Segment(sizes), setPosition);
         }
 
+        #endregion
+
+
+        #region HeQuadStrip
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="strip"></param>
+        /// <returns></returns>
+        public static Mesh ToMesh<V, E, F>(this HeQuadStrip<V, E, F> strip, Func<V, Point3f> getPosition)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            // TODO include normals and texCoords
+
+            var mesh = new Mesh();
+
+            var verts = mesh.Vertices;
+            var faces = mesh.Faces;
+
+            if(strip.IsPeriodic)
+            {
+                // add verts
+                foreach(var he in strip.SkipLast(1))
+                {
+                    verts.Add(getPosition(he.Start));
+                    verts.Add(getPosition(he.End));
+                }
+
+                // add faces
+                var n = verts.Count - 2;
+                for(int i = 0; i < n; i+=2)
+                    faces.AddFace(i, i + 1, i + 3, i + 2);
+
+                faces.AddFace(n, n + 1, 1, 0); // add last face
+            }
+            else
+            {
+                // add verts
+                foreach (var he in strip)
+                {
+                    verts.Add(getPosition(he.Start));
+                    verts.Add(getPosition(he.End));
+                }
+
+                // add faces
+                var n = verts.Count - 2;
+                for (int i = 0; i < n; i += 2)
+                    faces.AddFace(i, i + 1, i + 3, i + 2);
+            }
+
+            return mesh;
+        }
 
         #endregion
     }
