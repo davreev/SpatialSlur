@@ -26,7 +26,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        HeElementList<E> Halfedges { get; }
+        HalfedgeList<E> Halfedges { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        EdgeList<E> Edges { get; }
 
 
         /// <summary>
@@ -57,9 +63,10 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="E"></typeparam>
     /// <typeparam name="V"></typeparam>
+    /// <typeparam name="E"></typeparam>
     /// <typeparam name="F"></typeparam>
+    /// <typeparam name="C"></typeparam>
     public interface IHeStructure<V, E, F, C> : IHeStructure<V, E, F>
         where V : HeElement, IHeVertex<V, E, F, C>
         where E : HeElement, IHalfedge<V, E, F, C>
@@ -82,7 +89,6 @@ namespace SpatialSlur.SlurMesh
 
 
         #region Topological Search
-
 
         /// <summary>
         /// Returns the number of connected components in the graph.
@@ -137,7 +143,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns edges in breadth first order.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -153,7 +159,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns edges in breadth first order.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -203,7 +209,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns edges in depth first order.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -219,7 +225,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns edges in depth first order.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -269,7 +275,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns edges in order of increasing priority.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -288,7 +294,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns edges in order of increasing priority.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -341,7 +347,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge taken to get to each vertex.
+        /// Returns vertices in breadth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -355,9 +361,9 @@ namespace SpatialSlur.SlurMesh
             return graph.GetVerticesBreadthFirst(sources, Enumerable.Empty<V>());
         }
 
-     
+
         /// <summary>
-        /// Returns the edge taken to get to each vertex.
+        /// Returns vertices in breadth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -478,7 +484,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge taken to get to each vertex.
+        /// Returns vertices in depth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -494,7 +500,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge taken to get to each vertex.
+        /// Returns vertices in depth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -615,7 +621,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge taken to get to each vertex.
+        /// Returns vertices in order of increasing priority via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -634,7 +640,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge taken to get to each vertex.
+        /// Returns vertices in order of increasing priority via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -688,7 +694,6 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
-
         #endregion
 
 
@@ -696,7 +701,6 @@ namespace SpatialSlur.SlurMesh
 
 
         #region Halfedge Attributes
-
 
         /// <summary>
         /// 
@@ -762,12 +766,10 @@ namespace SpatialSlur.SlurMesh
                 func(Tuple.Create(0, hedges.Count));
         }
 
-
         #endregion
 
 
         #region Edge Attributes
-
 
         /// <summary>
         /// 
@@ -1025,7 +1027,6 @@ namespace SpatialSlur.SlurMesh
                 }
             }
         }
-
 
         #endregion
 
@@ -1583,9 +1584,8 @@ namespace SpatialSlur.SlurMesh
 
         #region Topological Search
 
-
         /// <summary>
-        /// 
+        /// Returns faces in breadth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -1603,8 +1603,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns a halfedge from each face as visited in breadth first order.
-        /// The twin of the returned halfedge belongs to the previously visited face.
+        /// Returns faces in breadth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -1706,7 +1705,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge crossed to get to each face.
+        /// Returns faces in depth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -1724,7 +1723,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge crossed to get to each face.
+        /// Returns faces in depth first order via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -1826,7 +1825,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge crossed to get to each face.
+        /// Returns faces in order of increasing priority via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -1847,7 +1846,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the edge crossed to get to each face.
+        /// Returns faces in order of increasing priority via the traversed halfedge.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -1903,7 +1902,6 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
-
         #endregion
 
 
@@ -1911,7 +1909,6 @@ namespace SpatialSlur.SlurMesh
 
 
         #region Halfedge Attributes
-
 
         /// <summary>
         /// Calculates the area associated with each halfedge.
@@ -2158,12 +2155,10 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
-
         #endregion
 
 
         #region Edge Attributes
-
 
         /// <summary>
         /// Calculates the minimum topological depth of each edge from a collection of sources.
@@ -2343,12 +2338,10 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
-
         #endregion
 
 
         #region Vertex Attributes
-
 
         /// <summary>
         /// 
@@ -2718,12 +2711,10 @@ namespace SpatialSlur.SlurMesh
                 func(Tuple.Create(0, verts.Count));
         }
 
-
         #endregion
 
 
         #region Face Attributes
-
 
         /// <summary>
         /// 
@@ -3325,7 +3316,6 @@ namespace SpatialSlur.SlurMesh
                 result[i * nf + i] = -wsum;
             }
         }
-
 
         #endregion
 

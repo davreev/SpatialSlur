@@ -71,12 +71,35 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh)
+        {
+            return mesh.SplitDisjoint(Set, Set, Set);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="edgeHandles"></param>
+        /// <returns></returns>
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, out SplitDisjointHandle[] edgeHandles)
+        {
+            return mesh.SplitDisjoint(Set, Set, Set, out edgeHandles);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
         /// <param name="getHandle"></param>
         /// <param name="setHandle"></param>
         /// <returns></returns>
-        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, ElementHandle> getHandle, Action<E, ElementHandle> setHandle)
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, SplitDisjointHandle> getHandle, Action<E, SplitDisjointHandle> setHandle)
         {
-            return mesh.SplitDisjoint(getHandle, setHandle, Set, Set, Set);
+            return mesh.SplitDisjoint(Set, Set, Set, getHandle, setHandle);
         }
 
 

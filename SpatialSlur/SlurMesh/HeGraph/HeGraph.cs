@@ -23,7 +23,8 @@ namespace SpatialSlur.SlurMesh
         where TE : Halfedge<TV, TE>
     {
         private HeElementList<TV> _vertices;
-        private HeElementList<TE> _hedges;
+        private HalfedgeList<TE> _hedges;
+        private EdgeList<TE> _edges;
 
         private Func<TV> _newTV;
         private Func<TE> _newTE;
@@ -42,7 +43,8 @@ namespace SpatialSlur.SlurMesh
             HalfedgeProvider = hedgeProvider;
 
             _vertices = new HeElementList<TV>(vertexCapacity);
-            _hedges = new HalfedgeList<TV, TE>(hedgeCapacity);
+            _hedges = new HalfedgeList<TE>(hedgeCapacity);
+            _edges = new EdgeList<TE>(_hedges);
         }
 
 
@@ -58,9 +60,18 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeElementList<TE> Halfedges
+        public HalfedgeList<TE> Halfedges
         {
             get { return _hedges; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public EdgeList<TE> Edges
+        {
+            get { return _edges; }
         }
 
 
@@ -204,23 +215,101 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns an array of connected components.
-        /// For each edge in this graph, returns a handle to the corresponding element within the connected component.
+        /// For each edge in this graph, also returns a handle to the corresponding component edge.
         /// </summary>
-        public HeGraph<TV, TE>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge)
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <returns></returns>
+        public HeGraph<TV, TE>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge)
         {
-            return SplitDisjoint(HeGraphFactory.Create(this), getHandle, setHandle, setVertex, setHedge);
+            return SplitDisjoint(HeGraphFactory.Create(this), setVertex, setHedge);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <returns></returns>
+        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(HeGraphFactory<UV, UE> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge)
+          where UV : HeVertex<UV, UE>
+          where UE : Halfedge<UV, UE>
+        {
+            return SplitDisjoint(factory, setVertex, setHedge, out SplitDisjointHandle[] handles);
+
         }
 
 
         /// <summary>
         /// Returns an array of connected components.
-        /// For each edge in this graph, returns a handle to the corresponding element within the connected component.
+        /// For each edge in this graph, also returns a handle to the corresponding component edge.
         /// </summary>
-        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(IFactory<HeGraph<UV, UE>> factory, Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge)
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="edgeHandles"></param>
+        /// <returns></returns>
+        public HeGraph<TV, TE>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, out SplitDisjointHandle[] edgeHandles)
+        {
+            return SplitDisjoint(HeGraphFactory.Create(this), setVertex, setHedge, out edgeHandles);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="edgeHandles"></param>
+        /// <returns></returns>
+        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(HeGraphFactory<UV, UE> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, out SplitDisjointHandle[] edgeHandles)
+          where UV : HeVertex<UV, UE>
+          where UE : Halfedge<UV, UE>
+        {
+            edgeHandles = new SplitDisjointHandle[_hedges.Count >> 1];
+
+            var handles = edgeHandles; // for use in lambda below
+            return SplitDisjoint(factory, setVertex, setHedge, he => handles[he >> 1], (he, h) => handles[he >> 1] = h);
+        }
+
+
+        /// <summary>
+        /// Returns an array of connected components.
+        /// For each edge in this graph, also returns a handle to the corresponding component edge.
+        /// </summary>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
+        /// <returns></returns>
+        public HeGraph<TV, TE>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Func<TE, SplitDisjointHandle> getHandle, Action<TE, SplitDisjointHandle> setHandle)
+        {
+            return SplitDisjoint(HeGraphFactory.Create(this), setVertex, setHedge, getHandle, setHandle);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
+        /// <returns></returns>
+        public HeGraph<UV, UE>[] SplitDisjoint<UV, UE>(HeGraphFactory<UV, UE> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Func<TE, SplitDisjointHandle> getHandle, Action<TE, SplitDisjointHandle> setHandle)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            int ncomp = this.GetEdgeComponentIndices((he, i) => setHandle(he,new ElementHandle(i)));
+            int ncomp = this.GetEdgeComponentIndices((he, i) => setHandle(he,new SplitDisjointHandle(i)));
             var comps = new HeGraph<UV, UE>[ncomp];
 
             // initialize components
@@ -236,7 +325,7 @@ namespace SpatialSlur.SlurMesh
                 var sd = getHandle(heA);
 
                 var comp = comps[sd.ComponentIndex];
-                sd.ElementIndex = comp.AddEdge().Index >> 1;
+                sd.EdgeIndex = comp.AddEdge().Index >> 1;
 
                 setHandle(heA, sd);
             }
@@ -255,10 +344,9 @@ namespace SpatialSlur.SlurMesh
                 var compHedges = comps[h0.ComponentIndex]._hedges;
 
                 // set refs
-                var heB0 = compHedges[(h0.ElementIndex << 1) + (i & 1)];
-                var heB1 = compHedges[(h1.ElementIndex << 1) + (heA1.Index & 1)];
+                var heB0 = compHedges[(h0.EdgeIndex << 1) + (i & 1)];
+                var heB1 = compHedges[(h1.EdgeIndex << 1) + (heA1.Index & 1)];
                 heB0.MakeConsecutive(heB1);
-
                 setHedge(heB0, heA0);
             }
 
@@ -275,12 +363,9 @@ namespace SpatialSlur.SlurMesh
                 var vB = comp.AddVertex();
 
                 // set vertex refs
-                var heB = comp._hedges[(h.ElementIndex << 1) + (heA.Index & 1)];
+                var heB = comp._hedges[(h.EdgeIndex << 1) + (heA.Index & 1)];
                 vB.FirstOut = heB;
-
-                foreach (var he in heB.CirculateStart)
-                    he.Start = vB;
-
+                foreach (var he in heB.CirculateStart) he.Start = vB;
                 setVertex(vB, vA);
             }
 

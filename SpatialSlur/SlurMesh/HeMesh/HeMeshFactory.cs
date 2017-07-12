@@ -60,7 +60,7 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
     /// <typeparam name="TF"></typeparam>
-    public class HeMeshFactory<TV, TE, TF> : IHeStructureFactory<HeMesh<TV, TE, TF>, TV, TE, TF>
+    public class HeMeshFactory<TV, TE, TF> : IFactory<HeMesh<TV,TE,TF>>
         where TV : HeVertex<TV, TE, TF>
         where TE : Halfedge<TV, TE, TF>
         where TF : HeFace<TV, TE, TF>
@@ -159,18 +159,18 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="UE"></typeparam>
         /// <typeparam name="UF"></typeparam>
         /// <param name="mesh"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <param name="setFace"></param>
+        /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
         /// <returns></returns>
-        public HeMesh<TV, TE, TF>[] CreateConnectedComponents<UV, UE, UF>(HeMesh<UV, UE, UF> mesh, Func<UE, ElementHandle> getHandle, Action<UE, ElementHandle> setHandle, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Action<TF, UF> setFace)
+        public HeMesh<TV, TE, TF>[] CreateConnectedComponents<UV, UE, UF>(HeMesh<UV, UE, UF> mesh, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Action<TF, UF> setFace, Func<UE, SplitDisjointHandle> getHandle, Action<UE, SplitDisjointHandle> setHandle)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-           return mesh.SplitDisjoint(this, getHandle, setHandle, setVertex, setHedge, setFace);
+           return mesh.SplitDisjoint(this, setVertex, setHedge, setFace, getHandle, setHandle);
         }
 
 

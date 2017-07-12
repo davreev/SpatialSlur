@@ -49,10 +49,35 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="graph"></param>
-        /// <param name="getHandle"></param>
-        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, Func<E, ElementHandle> getHandle, Action<E, ElementHandle> setHandle)
+        /// <returns></returns>
+        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph)
         {
-            return graph.SplitDisjoint(getHandle, setHandle, Set, Set);
+            return graph.SplitDisjoint(Set, Set);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="edgeHandles"></param>
+        /// <returns></returns>
+        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, out SplitDisjointHandle[] edgeHandles)
+        {
+            return graph.SplitDisjoint(Set, Set, out edgeHandles);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
+        /// <returns></returns>
+        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, Func<E, SplitDisjointHandle> getHandle, Action<E, SplitDisjointHandle> setHandle)
+        {
+            return graph.SplitDisjoint(Set, Set, getHandle, setHandle);
         }
 
 

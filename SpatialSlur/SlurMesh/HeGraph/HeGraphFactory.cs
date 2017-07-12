@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
-    public class HeGraphFactory<TV, TE> : IHeStructureFactory<HeGraph<TV, TE>, TV, TE>
+    public class HeGraphFactory<TV, TE> : IFactory<HeGraph<TV,TE>>
         where TV : HeVertex<TV, TE>
         where TE : Halfedge<TV, TE>
     {
@@ -121,16 +121,16 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="UV"></typeparam>
         /// <typeparam name="UE"></typeparam>
         /// <param name="graph"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
+        /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Func<UE, ElementHandle> getHandle, Action<UE, ElementHandle> setHandle, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
+        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Func<UE, SplitDisjointHandle> getHandle, Action<UE, SplitDisjointHandle> setHandle)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            return graph.SplitDisjoint(this, getHandle, setHandle, setVertex, setHedge);
+            return graph.SplitDisjoint(this, setVertex, setHedge, getHandle, setHandle);
         }
 
 

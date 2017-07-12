@@ -67,9 +67,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getHandle"></param>
         /// <param name="setHandle"></param>
         /// <returns></returns>
-        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, ElementHandle> getHandle, Action<E, ElementHandle> setHandle)
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, SplitDisjointHandle> getHandle, Action<E, SplitDisjointHandle> setHandle)
         {
-            return mesh.SplitDisjoint(getHandle, setHandle, delegate { }, delegate { }, delegate { });
+            return mesh.SplitDisjoint(delegate { }, delegate { }, delegate { }, getHandle, setHandle);
         }
     }
 }

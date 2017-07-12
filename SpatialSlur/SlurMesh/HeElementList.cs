@@ -17,7 +17,8 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class HeElementList<T> : IReadOnlyList<T> where T : HeElement
+    public class HeElementList<T> : IHeElementList<T>
+        where T : HeElement
     {
         private const int MinCapacity = 4;
 
@@ -30,7 +31,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="capacity"></param>
-        public HeElementList(int capacity)
+        internal HeElementList(int capacity)
         {
             _items = new T[Math.Max(capacity, MinCapacity)];
         }
@@ -59,7 +60,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public int Capacity
         {
@@ -112,17 +113,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < _count; i++)
                 yield return _items[i];
         }
-
-
-        /// <summary>
-        /// Explicit implementation of non-generic method.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator(); // call generic version
-        }
-
+        
 
         /// <summary>
         /// Adds an element to the list.
@@ -141,8 +132,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns the number of elements that have been flagged for removal.
+        /// 
         /// </summary>
         /// <returns></returns>
         public int CountRemoved()
@@ -238,9 +230,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns true if this list contains the given element.
-        /// Note this is an O(1) operation.
+        /// 
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
@@ -264,8 +256,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns unique elements from the given collection (no duplicates).
         /// </summary>
-        /// <param name="elementsA"></param>
-        /// <param name="elementsB"></param>
+        /// <param name="elements"></param>
         /// <returns></returns>
         public IEnumerable<T> GetDistinct(IEnumerable<T> elements)
         {
@@ -279,8 +270,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="elementsA"></param>
-        /// <param name="elementsB"></param>
+        /// <param name="elements"></param>
         /// <returns></returns>
         internal IEnumerable<T> GetDistinctImpl(IEnumerable<T> elements)
         {
@@ -376,5 +366,18 @@ namespace SpatialSlur.SlurMesh
                 if (eB.Tag == currTag) yield return eB;
         }
 
+
+        #region Explicit Interface Implementations
+
+        /// <summary>
+        /// Explicit implementation of non-generic method.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator(); // call generic version
+        }
+
+        #endregion
     }
 }

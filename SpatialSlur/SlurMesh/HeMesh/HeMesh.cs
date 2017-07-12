@@ -25,7 +25,8 @@ namespace SpatialSlur.SlurMesh
         where TF : HeFace<TV, TE, TF>
     {
         private HeElementList<TV> _vertices;
-        private HeElementList<TE> _hedges;
+        private HalfedgeList<TE> _hedges;
+        private EdgeList<TE> _edges;
         private HeElementList<TF> _faces;
 
         private Func<TV> _newTV;
@@ -49,7 +50,8 @@ namespace SpatialSlur.SlurMesh
             FaceProvider = faceProvider;
 
             _vertices = new HeElementList<TV>(vertexCapacity);
-            _hedges = new HalfedgeList<TV, TE>(hedgeCapacity);
+            _hedges = new HalfedgeList<TE>(hedgeCapacity);
+            _edges = new EdgeList<TE>(_hedges);
             _faces = new HeElementList<TF>(faceCapacity);
         }
 
@@ -66,9 +68,18 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeElementList<TE> Halfedges
+        public HalfedgeList<TE> Halfedges
         {
             get { return _hedges; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public EdgeList<TE> Edges
+        {
+            get { return _edges; }
         }
 
 
@@ -850,30 +861,111 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns an array of connected components.
-        /// For each edge in this mesh, returns a handle to the corresponding element within the connected component.
         /// </summary>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <param name="setFace"></param>
         /// <returns></returns>
-        public HeMesh<TV, TE, TF>[] SplitDisjoint(Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
+        public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
         {
-            return SplitDisjoint(HeMeshFactory.Create(this), getHandle, setHandle, setVertex, setHedge, setFace);
+            return SplitDisjoint(HeMeshFactory.Create(this), setVertex, setHedge, setFace);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <typeparam name="UF"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <returns></returns>
+        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV, UE, UF> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace)
+            where UV : HeVertex<UV, UE, UF>
+            where UE : Halfedge<UV, UE, UF>
+            where UF : HeFace<UV, UE, UF>
+        {
+            return SplitDisjoint(factory, setVertex, setHedge, setFace, out SplitDisjointHandle[] handles);
         }
 
 
         /// <summary>
         /// Returns an array of connected components.
-        /// For each edge in this mesh, returns a handle to the corresponding element within the connected component.
+        /// For each edge in this mesh, also returns a handle to the corresponding component edge.
         /// </summary>
-        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(IFactory<HeMesh<UV, UE, UF>> factory, Func<TE, ElementHandle> getHandle, Action<TE, ElementHandle> setHandle, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace)
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="edgeHandles"></param>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace, out SplitDisjointHandle[] edgeHandles)
+        {
+            return SplitDisjoint(HeMeshFactory.Create(this), setVertex, setHedge, setFace, out edgeHandles);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <typeparam name="UF"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="edgeHandles"></param>
+        /// <returns></returns>
+        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV, UE, UF> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace, out SplitDisjointHandle[] edgeHandles)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            int ncomp = this.GetEdgeComponentIndices((he, i) => setHandle(he, new ElementHandle(i)));
+            edgeHandles = new SplitDisjointHandle[_hedges.Count >> 1];
+
+            var handles = edgeHandles; // for use in lambda below
+            return SplitDisjoint(factory, setVertex, setHedge, setFace, he => handles[he >> 1], (he, h) => handles[he >> 1] = h);
+        }
+    
+
+        /// <summary>
+        /// Returns an array of connected components.
+        /// For each edge in this mesh, also returns a handle to the corresponding component edge.
+        /// </summary>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace, Func<TE, SplitDisjointHandle> getHandle, Action<TE, SplitDisjointHandle> setHandle)
+        {
+            return SplitDisjoint(HeMeshFactory.Create(this), setVertex, setHedge, setFace, getHandle, setHandle);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <typeparam name="UF"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="getHandle"></param>
+        /// <param name="setHandle"></param>
+        /// <returns></returns>
+        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV, UE, UF> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace, Func<TE, SplitDisjointHandle> getHandle, Action<TE, SplitDisjointHandle> setHandle)
+            where UV : HeVertex<UV, UE, UF>
+            where UE : Halfedge<UV, UE, UF>
+            where UF : HeFace<UV, UE, UF>
+        {
+            int ncomp = this.GetEdgeComponentIndices((he, i) => setHandle(he, new SplitDisjointHandle(i)));
             var comps = new HeMesh<UV, UE, UF>[ncomp];
 
             // initialize components
@@ -887,8 +979,10 @@ namespace SpatialSlur.SlurMesh
                 if (heA.IsRemoved) continue;
 
                 var h = getHandle(heA);
+
                 var comp = comps[h.ComponentIndex];
-                h.ElementIndex = comp.AddEdge().Index >> 1;
+                h.EdgeIndex = comp.AddEdge().Index >> 1;
+
                 setHandle(heA, h);
             }
 
@@ -906,8 +1000,8 @@ namespace SpatialSlur.SlurMesh
                 var compHedges = comps[h0.ComponentIndex]._hedges;
 
                 // set hedge refs
-                var heB0 = compHedges[(h0.ElementIndex << 1) + (i & 1)];
-                var heB1 = compHedges[(h1.ElementIndex << 1) + (heA1.Index & 1)];
+                var heB0 = compHedges[(h0.EdgeIndex << 1) + (i & 1)];
+                var heB1 = compHedges[(h1.EdgeIndex << 1) + (heA1.Index & 1)];
                 heB0.MakeConsecutive(heB1);
                 setHedge(heB0, heA0);
             }
@@ -925,7 +1019,7 @@ namespace SpatialSlur.SlurMesh
                 var vB = comp.AddVertex();
 
                 // set vertex refs
-                var heB = comp._hedges[(h.ElementIndex << 1) + (heA.Index & 1)];
+                var heB = comp._hedges[(h.EdgeIndex << 1) + (heA.Index & 1)];
                 vB.FirstOut = heB;
                 foreach (var he in heB.CirculateStart) he.Start = vB;
                 setVertex(vB, vA);
@@ -944,7 +1038,7 @@ namespace SpatialSlur.SlurMesh
                 var fB = comp.AddFace();
 
                 // set face refs
-                var heB = comp._hedges[(h.ElementIndex << 1) + (heA.Index & 1)];
+                var heB = comp._hedges[(h.EdgeIndex << 1) + (heA.Index & 1)];
                 fB.First = heB;
                 foreach (var he in heB.CirculateFace) he.Face = fB;
                 setFace(fB, fA);

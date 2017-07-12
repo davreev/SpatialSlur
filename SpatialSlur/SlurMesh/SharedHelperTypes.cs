@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
-    public struct ElementHandle
+    public struct SplitDisjointHandle
     {
         /// <summary>
         /// The index of the component to which the corresponding element belongs.
@@ -24,18 +24,18 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// The index of the corresponding element within the component.
+        /// The index of the corresponding edge within the component.
         /// </summary>
-        public int ElementIndex;
+        public int EdgeIndex;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public ElementHandle(int componentIndex = -1, int elementIndex = -1)
+        public SplitDisjointHandle(int componentIndex = -1, int edgeIndex = -1)
         {
             ComponentIndex = componentIndex;
-            ElementIndex = elementIndex;
+            EdgeIndex = edgeIndex;
         }
     }
 }

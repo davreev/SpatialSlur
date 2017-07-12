@@ -47,6 +47,16 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        public TE Older
+        {
+            get { return _self < _twin ? _self : _twin; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
         public TE PrevAtStart
         {
             get { return _prev; }

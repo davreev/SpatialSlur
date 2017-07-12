@@ -13,17 +13,37 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     /// <typeparam name="E"></typeparam>
-    /// <typeparam name="V"></typeparam>
-    public interface IHalfedge<V, E> : IHeElement
-        where E : IHalfedge<V, E>
-        where V : IHeVertex<V, E>
+    public interface IHalfedge<E> : IHeElement
+        where E : IHalfedge<E>
     {
         /// <summary>
-        /// Returns the oppositely oriented halfedge in the adjacent face or hole.
+        /// Returns the oppositely oriented halfedge in the pair.
         /// </summary>
         E Twin { get; }
 
 
+        /// <summary>
+        /// Returns the older of the two halfedges in the pair.
+        /// </summary>
+        E Older { get; }
+
+
+        /// <summary>
+        /// Returns a halfedge from each pair connected to this one.
+        /// </summary>
+        IEnumerable<E> ConnectedPairs { get; }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="E"></typeparam>
+    /// <typeparam name="V"></typeparam>
+    public interface IHalfedge<V, E> : IHalfedge<E>
+        where E : IHalfedge<V, E>
+        where V : IHeVertex<V, E>
+    {
         /// <summary>
         /// Returns the vertex at the start of this halfedge.
         /// </summary>
@@ -58,12 +78,6 @@ namespace SpatialSlur.SlurMesh
         /// Forward circulates through all halfedges incoming to the end vertex of this halfedge.
         /// </summary>
         IEnumerable<E> CirculateEnd { get; }
-
-
-        /// <summary>
-        /// Returns a halfedge from each pair connected to this one.
-        /// </summary>
-        IEnumerable<E> ConnectedPairs { get; }
 
 
         /// <summary>
