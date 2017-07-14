@@ -8,12 +8,12 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// Applies a force proportional to the area of the triangle defined by 3 particles.
     /// </summary>
-    public class AreaWeight : Constraint<H>
+    public class AreaWeight : PositionConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -80,16 +80,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
             }
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>

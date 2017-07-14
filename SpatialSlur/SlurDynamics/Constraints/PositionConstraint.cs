@@ -8,21 +8,21 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */
+ */ 
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
     /// <summary>
-    /// Base class for constraints.
+    /// Base class for position-only constraints.
     /// </summary>
-    public abstract class Constraint<H> : IConstraint
-        where H : ParticleHandle
+    public abstract class PositionConstraint<H> : IConstraint
+        where H : PositionHandle
     {
         private double _weight;
 
 
         /// <summary>
-        /// Allows iteration over all handles used by this constraint.
+        /// All handles used by this constraint.
         /// </summary>
         public abstract IEnumerable<H> Handles { get; }
 
@@ -48,7 +48,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         public bool AppliesRotation
         {
-            get { return true; }
+            get { return false; }
         }
 
 
@@ -66,11 +66,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         public void Apply(IReadOnlyList<IParticle> particles)
         {
             foreach (var h in Handles)
-            {
-                var p = particles[h];
-                p.ApplyMove(h.Delta, Weight);
-                p.ApplyRotate(h.AngleDelta, Weight);
-            }
+                particles[h].ApplyMove(h.Delta, Weight);
         }
 
 

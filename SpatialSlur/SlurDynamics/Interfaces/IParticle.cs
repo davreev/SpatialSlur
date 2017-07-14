@@ -52,7 +52,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
-        void ApplyForce(Vec3d delta, double weight);
+        void ApplyMove(Vec3d delta, double weight);
 
 
         /// <summary>
@@ -60,6 +60,6 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
-        void ApplyTorque(Vec3d delta, double weight);
+        void ApplyRotate(Vec3d delta, double weight);
     }
 }

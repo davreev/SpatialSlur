@@ -136,7 +136,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="move"></param>
         /// <param name="weight"></param>
-        public void ApplyForce(Vec3d move, double weight)
+        public void ApplyMove(Vec3d move, double weight)
         {
             _forceSum += move * weight;
             _forceWeightSum += weight;
@@ -148,7 +148,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
-        public void ApplyTorque(Vec3d delta, double weight)
+        public void ApplyRotate(Vec3d delta, double weight)
         {
             _torqueSum += delta * weight;
             _torqueWeightSum += weight;

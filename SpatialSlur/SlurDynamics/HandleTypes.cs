@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    public class ParticleHandle
+    public class PositionHandle
     {
         #region Static
 
@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurDynamics
         /// Implicitly converts a handle to its index for convenience.
         /// </summary>
         /// <param name="handle"></param>
-        public static implicit operator int(ParticleHandle handle)
+        public static implicit operator int(PositionHandle handle)
         {
             return handle.Index;
         }
@@ -36,5 +36,15 @@ namespace SpatialSlur.SlurDynamics
 
         /// <summary></summary>
         public Vec3d Delta;
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ParticleHandle : PositionHandle
+    {
+        /// <summary></summary>
+        public Vec3d AngleDelta;
     }
 }

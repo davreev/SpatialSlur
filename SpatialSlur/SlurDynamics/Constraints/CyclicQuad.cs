@@ -8,12 +8,12 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class CyclicQuad : Constraint<H>
+    public class CyclicQuad : PositionConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -69,15 +69,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _h2;
                 yield return _h3;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
         }
 
 

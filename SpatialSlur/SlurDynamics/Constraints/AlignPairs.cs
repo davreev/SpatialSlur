@@ -11,12 +11,12 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     ///
     /// </summary>
-    public class AlignPairs : Constraint<H>
+    public class AlignPairs : PositionConstraint<H>
     {
         private H _hA0 = new H();
         private H _hA1 = new H();
@@ -73,16 +73,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _hB1;
             }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
+        
 
         /// <summary>
         /// 

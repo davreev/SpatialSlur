@@ -11,22 +11,13 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class EqualizeLengths : DynamicConstraint<H>
+    public class EqualizeLengths : DynamicPositionConstraint<H>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
-
         /// <summary>
         /// 
         /// </summary>

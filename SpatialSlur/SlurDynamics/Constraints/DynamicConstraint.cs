@@ -10,7 +10,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurDynamics.Constraints
 {
     /// <summary>
-    /// Base class for 3dof constraints on a dynamic collection of particles.
+    /// Base class for constraints on a dynamic collection of particles.
     /// </summary>
     public abstract class DynamicConstraint<H> : IConstraint
         where H : ParticleHandle
@@ -47,7 +47,10 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        protected abstract bool AppliesRotation { get; }
+        public bool AppliesRotation
+        {
+            get { return true; }
+        }
 
 
         /// <summary>
@@ -99,7 +102,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
         public void Apply(IReadOnlyList<IParticle> particles)
         {
             foreach (var h in _handles)
-                particles[h].ApplyForce(h.Delta, Weight);
+            {
+                var p = particles[h];
+                p.ApplyMove(h.Delta, Weight);
+                p.ApplyRotate(h.AngleDelta, Weight);
+            }
         }
 
 
@@ -111,24 +118,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             var itr = indices.GetEnumerator();
 
-            foreach(var h in _handles)
+            foreach (var h in _handles)
             {
                 h.Index = itr.Current;
                 itr.MoveNext();
             }
         }
-
-
-        #region Explicit interface implementations
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return AppliesRotation; }
-        }
-
-        #endregion
     }
 }

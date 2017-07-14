@@ -9,12 +9,12 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = VariableSphereCollide.Handle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class OnCircle : DynamicConstraint<H>
+    public class OnCircle : DynamicPositionConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Origin;
@@ -37,15 +37,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _radius = value;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
         }
 
 

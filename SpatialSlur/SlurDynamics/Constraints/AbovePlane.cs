@@ -9,27 +9,18 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class AbovePlane : DynamicConstraint<H>
+    public class AbovePlane : DynamicPositionConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Origin;
         /// <summary></summary>
         public Vec3d Normal;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-            
+        
 
         /// <summary>
         /// 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
 
@@ -14,12 +13,12 @@ using SpatialSlur.SlurData;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class LineCollide : DynamicConstraint<H>
+    public class LineCollide : DynamicPositionConstraint<H>
     {
         private SpatialGrid3d<H> _grid;
         private double _radius;
@@ -38,15 +37,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _radius = value;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
         }
 
 

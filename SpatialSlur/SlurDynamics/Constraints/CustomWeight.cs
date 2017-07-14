@@ -14,20 +14,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// Applies a force proportional to the mass stored on each handle.
     /// </summary>
-    public class CustomWeight : DynamicConstraint<H>
+    public class CustomWeight : DynamicPositionConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Direction;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
+        
 
         /// <summary>
         /// 
@@ -69,7 +60,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public class Handle : ParticleHandle
+        public class Handle : PositionHandle
         {
             private double _mass;
 

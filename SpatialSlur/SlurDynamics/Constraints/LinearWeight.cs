@@ -8,12 +8,12 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// Applies a force proportional to the distance between 2 particles.
     /// </summary>
-    public class LinearWeight : Constraint<H>
+    public class LinearWeight : PositionConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -67,15 +67,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _massPerLength = value;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
         }
 
 

@@ -83,7 +83,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="move"></param>
         /// <param name="weight"></param>
-        public void ApplyForce(Vec3d move, double weight)
+        public void ApplyMove(Vec3d move, double weight)
         {
             _forceSum += move * weight;
             _forceWeightSum += weight;
@@ -151,7 +151,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
-        void IParticle.ApplyTorque(Vec3d delta, double weight)
+        void IParticle.ApplyRotate(Vec3d delta, double weight)
         {
             throw new NotSupportedException(_message);
         }

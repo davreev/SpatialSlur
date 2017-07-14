@@ -11,22 +11,13 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = VariableSphereCollide.Handle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class PlanarNgon : DynamicConstraint<H>
+    public class PlanarNgon : DynamicPositionConstraint<H>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
-
         /// <summary>
         /// 
         /// </summary>

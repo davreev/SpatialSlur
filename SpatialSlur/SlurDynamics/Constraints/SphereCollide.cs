@@ -16,12 +16,12 @@ using static SpatialSlur.SlurCore.SlurMath;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class SphereCollide : DynamicConstraint<H>
+    public class SphereCollide : DynamicPositionConstraint<H>
     {
         private const double TargetBinScale = 4.0;
 
@@ -42,15 +42,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                 _radius = value;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
         }
 
 

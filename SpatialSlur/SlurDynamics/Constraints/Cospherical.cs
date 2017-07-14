@@ -9,22 +9,13 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class Cospherical : DynamicConstraint<H>
+    public class Cospherical : DynamicPositionConstraint<H>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
-
         /// <summary>
         /// 
         /// </summary>

@@ -18,18 +18,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    public class VariableSphereCollide : DynamicConstraint<H>
+    public class VariableSphereCollide : DynamicPositionConstraint<H>
     {
         private SpatialGrid3d<H> _grid;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
 
 
         /// <summary>
@@ -84,7 +75,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public class Handle : ParticleHandle
+        public class Handle : PositionHandle
         {
             private double _radius;
 

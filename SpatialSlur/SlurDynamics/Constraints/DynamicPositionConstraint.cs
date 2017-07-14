@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using SpatialSlur.SlurCore;
 
 /*
@@ -13,18 +10,22 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurDynamics.Constraints
 {
     /// <summary>
-    /// Base class for constraints.
+    /// Base class for position-only constraints on a dynamic collection of particles.
     /// </summary>
-    public abstract class Constraint<H> : IConstraint
-        where H : ParticleHandle
+    public abstract class DynamicPositionConstraint<H> : IConstraint
+        where H : PositionHandle
     {
+        private List<H> _handles;
         private double _weight;
 
 
         /// <summary>
-        /// Allows iteration over all handles used by this constraint.
+        /// 
         /// </summary>
-        public abstract IEnumerable<H> Handles { get; }
+        public List<H> Handles
+        {
+            get { return _handles; }
+        }
 
 
         /// <summary>
@@ -48,7 +49,42 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         public bool AppliesRotation
         {
-            get { return true; }
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="weight"></param>
+        public DynamicPositionConstraint(double weight = 1.0)
+        {
+            _handles = new List<H>();
+            Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="capacity"></param>
+        /// <param name="weight"></param>
+        public DynamicPositionConstraint(int capacity, double weight = 1.0)
+        {
+            _handles = new List<H>(capacity);
+            Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="handles"></param>
+        /// <param name="weight"></param>
+        public DynamicPositionConstraint(IEnumerable<H> handles, double weight = 1.0)
+        {
+            _handles = new List<H>(handles);
+            Weight = weight;
         }
 
 
@@ -65,12 +101,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="particles"></param>
         public void Apply(IReadOnlyList<IParticle> particles)
         {
-            foreach (var h in Handles)
-            {
-                var p = particles[h];
-                p.ApplyMove(h.Delta, Weight);
-                p.ApplyRotate(h.AngleDelta, Weight);
-            }
+            foreach (var h in _handles)
+                particles[h].ApplyMove(h.Delta, Weight);
         }
 
 
@@ -82,7 +114,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             var itr = indices.GetEnumerator();
 
-            foreach (var h in Handles)
+            foreach(var h in _handles)
             {
                 h.Index = itr.Current;
                 itr.MoveNext();

@@ -8,12 +8,12 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class MinimizeArea : Constraint<H>
+    public class MinimizeArea : PositionConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -59,16 +59,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 yield return _h2;
             }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
+        
 
         /// <summary>
         /// 

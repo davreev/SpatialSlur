@@ -9,28 +9,19 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = VariableSphereCollide.Handle;
+    using H = PositionHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class OnLine : DynamicConstraint<H>
+    public class OnLine : DynamicPositionConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Start;
         /// <summary> </summary>
         public Vec3d Direction;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override sealed bool AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
