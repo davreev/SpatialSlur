@@ -27,6 +27,17 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="comparer"></param>
         /// <param name="capacity"></param>
+        public PriorityQueue(Comparer<T> comparer, int capacity = MinCapacity)
+            : this(comparer.Compare, capacity)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="comparer"></param>
+        /// <param name="capacity"></param>
         public PriorityQueue(IComparer<T> comparer, int capacity = MinCapacity)
             : this(comparer.Compare, capacity)
         {
