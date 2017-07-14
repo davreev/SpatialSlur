@@ -36,6 +36,24 @@ namespace SpatialSlur.SlurDynamics
 
         /// <summary></summary>
         public Vec3d Delta;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ParticleHandle()
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        public ParticleHandle(int index)
+        {
+            Index = index;
+        }
     }
 
 
@@ -46,5 +64,23 @@ namespace SpatialSlur.SlurDynamics
     {
         /// <summary></summary>
         public Vec3d AngleDelta;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public BodyHandle()
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        public BodyHandle(int index)
+            :base(index)
+        {
+        }
     }
 }

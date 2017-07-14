@@ -10,7 +10,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
     /// Base class for position-only constraints.

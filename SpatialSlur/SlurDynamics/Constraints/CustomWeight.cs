@@ -7,7 +7,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = CustomWeight.Handle;
 
@@ -78,6 +78,26 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                     _mass = value;
                 }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public Handle()
+            {
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="index"></param>
+            /// <param name="mass"></param>
+            public Handle(int index, double mass = 1.0)
+                :base(index)
+            {
+                Mass = mass;
             }
         }
     }

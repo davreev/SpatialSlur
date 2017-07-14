@@ -9,14 +9,14 @@ using SpatialSlur.SlurCore;
  * Notes 
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
     /// <summary>
     /// http://www.tsg.ne.jp/TT/cg/ElasticOrigami_Tachi_IASS2013.pdf
     /// </summary>
-    public class Dihedral : PositionConstraint<H>
+    public class DihedralConstraint : PositionConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -96,7 +96,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="right"></param>
         /// <param name="targetAngle"></param>
         /// <param name="weight"></param>
-        public Dihedral(int start, int end, int left, int right, double targetAngle, double weight = 1.0)
+        public DihedralConstraint(int start, int end, int left, int right, double targetAngle, double weight = 1.0)
         {
             SetHandles(start, end, left, right);
             TargetAngle = targetAngle;

@@ -9,14 +9,14 @@ using SpatialSlur.SlurCore;
  * Notes 
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
     /// <summary>
     ///
     /// </summary>
-    public class Length : PositionConstraint<H>
+    public class LengthConstraint : PositionConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="end"></param>
         /// <param name="targetLength"></param>
         /// <param name="weight"></param>
-        public Length(int start, int end, double targetLength, double weight = 1.0)
+        public LengthConstraint(int start, int end, double targetLength, double weight = 1.0)
         {
             SetHandles(start, end);
             TargetLength = targetLength;

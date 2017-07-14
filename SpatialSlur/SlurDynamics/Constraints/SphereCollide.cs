@@ -14,7 +14,7 @@ using static SpatialSlur.SlurCore.SlurMath;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 

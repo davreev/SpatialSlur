@@ -11,7 +11,7 @@ using SpatialSlur.SlurData;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = VariableSphereCollide.Handle;
 
@@ -93,6 +93,26 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                     _radius = value;
                 }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public Handle()
+            {
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="index"></param>
+            /// <param name="radius"></param>
+            public Handle(int index, double radius = 1.0)
+                :base(index)
+            {
+                Radius = radius;
             }
         }
     }

@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-using SpatialSlur.SlurDynamics.Constraints;
+using SpatialSlur.SlurDynamics;
 
 /*
  * Notes

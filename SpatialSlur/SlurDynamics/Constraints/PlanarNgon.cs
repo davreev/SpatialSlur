@@ -9,7 +9,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
@@ -18,6 +18,17 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// </summary>
     public class PlanarNgon : DynamicPositionConstraint<H>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weight"></param>
+        public PlanarNgon(IEnumerable<int> indices, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
+        {
+        }
+
+
         /// <summary>
         /// 
         /// </summary>

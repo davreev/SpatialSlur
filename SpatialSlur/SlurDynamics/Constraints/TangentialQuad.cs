@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
  * Can also be used to find tangent incircles for adjacent triangles.
  */
  
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 

@@ -7,7 +7,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
@@ -45,6 +45,21 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="weight"></param>
         public AbovePlane(Vec3d origin, Vec3d normal, int capacity, double weight = 1.0)
             : base(capacity, weight)
+        {
+            Origin = origin;
+            Normal = normal;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="origin"></param>
+        /// <param name="normal"></param>
+        /// <param name="weight"></param>
+        public AbovePlane(IEnumerable<int> indices, Vec3d origin, Vec3d normal, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
         {
             Origin = origin;
             Normal = normal;

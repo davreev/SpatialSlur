@@ -7,7 +7,7 @@
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// Interface for a dynamic body with positiona and orientation.
+    /// Interface for a dynamic body with position and orientation.
     /// </summary>
     public interface IBody : IUpdatable
     {
