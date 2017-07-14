@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurMesh
     /// Provides an alternate view of the halfedge list which considers the first halfedge in each pair.
     /// </summary>
     /// <typeparam name="E"></typeparam>
+    [Serializable]
     public class EdgeList<E> : IHeElementList<E>
         where E : HeElement, IHalfedge<E>
     {

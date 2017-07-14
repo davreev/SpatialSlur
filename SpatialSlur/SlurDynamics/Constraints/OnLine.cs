@@ -14,6 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class OnLine : DynamicPositionConstraint<H>
     {
         /// <summary></summary>

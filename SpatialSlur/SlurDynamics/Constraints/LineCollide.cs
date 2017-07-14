@@ -18,6 +18,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class LineCollide : DynamicPositionConstraint<H>
     {
         private SpatialGrid3d<H> _grid;

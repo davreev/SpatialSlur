@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     /// <typeparam name="E"></typeparam>
+    [Serializable]
     public class HalfedgeList<E> : HeElementList<E>
         where E : HeElement, IHalfedge<E>
     {

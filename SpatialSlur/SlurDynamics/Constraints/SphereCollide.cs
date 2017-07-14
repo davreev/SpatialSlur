@@ -21,6 +21,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class SphereCollide : DynamicPositionConstraint<H>
     {
         private const double TargetBinScale = 4.0;

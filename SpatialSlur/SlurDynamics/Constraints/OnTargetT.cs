@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurDynamics
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="P"></typeparam>
+    [Serializable]
     public class OnTarget<T> : DynamicPositionConstraint<H>
     {
         private T _target;

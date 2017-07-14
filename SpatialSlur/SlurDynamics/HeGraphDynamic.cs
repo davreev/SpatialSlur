@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Static constructors for an HeGraph that holds particle handles on its vertices.
     /// </summary>
+    [Serializable]
     public static class HeGraphDynamic<H>
             where H : ParticleHandle
     {

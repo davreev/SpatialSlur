@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class PlanarNgon : DynamicPositionConstraint<H>
     {
         /// <summary>

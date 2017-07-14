@@ -16,14 +16,15 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// Spatial hash for broad phase collision detection between dynamic objects.
     /// </summary>
-    public class SpatialHash3d<T>:SpatialMap3d<T>
+    [Serializable]
+    public class SpatialHash3d<T> : SpatialMap3d<T>
     {
         private const int P1 = 73856093; // used in hash function
         private const int P2 = 19349663; // used in hash function
         private const int P3 = 83492791; // used in hash function
         private double _scale, _scaleInv; // scale of implicit grid
 
-      
+
         /// <summary>
         /// 
         /// </summary>

@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public struct SplitDisjointHandle
     {
         /// <summary>

@@ -38,6 +38,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class V : HeVertex<V, E, F>, IVertex3d
         {
             /// <summary></summary>
@@ -72,6 +73,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class E : Halfedge<V, E, F>
         {
             private double _maxLength;
@@ -89,6 +91,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class F : HeFace<V, E, F>
         {
         }

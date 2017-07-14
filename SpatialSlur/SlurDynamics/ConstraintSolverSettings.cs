@@ -12,6 +12,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ConstraintSolverSettings
     {
         private double _timeStep = 1.0;

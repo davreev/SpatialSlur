@@ -17,6 +17,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class MeshFeature : IFeature
     {
         private Mesh _mesh;

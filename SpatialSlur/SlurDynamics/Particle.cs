@@ -14,6 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class Particle : IBody
     {
         private Vec3d _position;

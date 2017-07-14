@@ -13,6 +13,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Applies a force proportional to the area of the triangle defined by 3 particles.
     /// </summary>
+    [Serializable]
     public class AreaWeight : PositionConstraint<H>
     {
         private H _h0 = new H();

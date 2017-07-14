@@ -18,6 +18,7 @@ namespace SpatialSlur.SlurRhino.Constraints
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class OnSurface : OnTarget<Surface>
     {
         #region Static

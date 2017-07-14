@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Base class for position-only constraints.
     /// </summary>
+    [Serializable]
     public abstract class PositionConstraint<H> : IConstraint
         where H : ParticleHandle
     {

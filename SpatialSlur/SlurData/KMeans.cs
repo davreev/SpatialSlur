@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class KMeans
     {
         private double[][] _points;

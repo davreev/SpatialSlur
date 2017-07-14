@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     ///
     /// </summary>
+    [Serializable]
     public class AlignPairs : PositionConstraint<H>
     {
         private H _hA0 = new H();

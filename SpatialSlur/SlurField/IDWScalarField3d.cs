@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class IDWScalarField3d : IDWField3d<double>
     {
         /// <summary>

@@ -14,6 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class Coincident : DynamicPositionConstraint<H>
     {
         /// <summary>

@@ -14,6 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Applies a force proportional to the mass stored on each handle.
     /// </summary>
+    [Serializable]
     public class CustomWeight : DynamicPositionConstraint<H>
     {
         /// <summary></summary>
@@ -60,6 +61,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class Handle : ParticleHandle
         {
             private double _mass;

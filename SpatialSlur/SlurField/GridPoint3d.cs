@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 /*
  * Notes
  */
@@ -8,6 +10,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class GridPoint3d
     {
         private readonly double[] _weights;

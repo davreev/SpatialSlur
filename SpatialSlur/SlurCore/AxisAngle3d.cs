@@ -9,6 +9,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// Axis angle representation of a 3d rotation.
     /// </summary>
+    [Serializable]
     public struct AxisAngle3d
     {
         private Vec3d _axis;

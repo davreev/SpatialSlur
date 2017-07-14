@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class DynamicRemesherSettings
     {
         private Domain _lengthRange = new Domain(1.0, 1.0);

@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurField
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public class IDWPoint3d<T>
     {
         /// <summary></summary>

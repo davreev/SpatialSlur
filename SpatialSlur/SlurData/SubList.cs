@@ -14,6 +14,7 @@ namespace SpatialSlur.SlurData
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public struct SubList<T>: IList<T>, IReadOnlyList<T>
     {
         private readonly IList<T> _source;

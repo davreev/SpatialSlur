@@ -17,6 +17,7 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ProbabilitySelector
     {
         private double[] _weights;

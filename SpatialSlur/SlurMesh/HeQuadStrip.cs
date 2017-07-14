@@ -14,6 +14,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class HeQuadStrip<V, E, F> : IEnumerable<E>
         where V : HeVertex<V, E, F>
         where E : Halfedge<V, E, F>

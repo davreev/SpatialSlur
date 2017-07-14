@@ -17,6 +17,7 @@ namespace SpatialSlur.SlurField
     /// Field type that uses inverse distance weighting to interpolate between known spatial values.
     /// https://en.wikipedia.org/wiki/Inverse_distance_weighting
     /// </summary>
+    [Serializable]
     public abstract class IDWField3d<T> : IField2d<T>, IField3d<T>
     {
         /// <summary></summary>

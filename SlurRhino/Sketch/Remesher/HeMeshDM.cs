@@ -38,6 +38,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class V : HeVertex<V, E, F>, IVertex3d
         {
             /// <summary></summary>
@@ -76,6 +77,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class E : Halfedge<V, E, F>
         {
             private double _targetLength;
@@ -92,6 +94,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class F : HeFace<V, E, F>
         {
             /// <summary></summary>

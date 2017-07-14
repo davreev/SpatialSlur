@@ -13,6 +13,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class MinimizeArea : PositionConstraint<H>
     {
         private H _h0 = new H();

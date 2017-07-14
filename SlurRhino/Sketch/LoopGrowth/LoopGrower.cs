@@ -38,6 +38,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class LoopGrower
     {
         #region Static

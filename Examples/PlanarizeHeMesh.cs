@@ -53,7 +53,6 @@ namespace SpatialSlur.Examples
                 solver.Step(particles, constraints);
                 Console.WriteLine($"    step {solver.StepCount}");
             }
-
             Console.WriteLine("\nSolver converged! Press return to exit.");
 
             // update mesh vertices
@@ -63,7 +62,6 @@ namespace SpatialSlur.Examples
             // compute vertex normals & write to file
             mesh.GetVertexNormals(v => v.Position, (v, n) => v.Normal = n, true);
             mesh.WriteToOBJ(Paths.Resources + FileOut);
-
             Console.ReadLine();
         }
     }

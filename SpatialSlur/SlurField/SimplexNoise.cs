@@ -82,9 +82,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static double Evaluate(Vec2d point)
+        public static double ValueAt(Vec2d point)
         {
-            return Evaluate(point.X, point.Y);
+            return ValueAt(point.X, point.Y);
         }
 
 
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurField
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static double Evaluate(double x, double y)
+        public static double ValueAt(double x, double y)
         {
             // find unit grid cell containing point in skewed coordinates
             double t = (x + y) * Skew2;
@@ -151,9 +151,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static double Evaluate(Vec3d point)
+        public static double ValueAt(Vec3d point)
         {
-            return Evaluate(point.X, point.Y, point.Z);
+            return ValueAt(point.X, point.Y, point.Z);
         }
 
 
@@ -164,7 +164,7 @@ namespace SpatialSlur.SlurField
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns></returns>
-        public static double Evaluate(double x, double y, double z)
+        public static double ValueAt(double x, double y, double z)
         {
             // find unit grid cell containing point in skewed coordinates
             double s = (x + y + z) * Skew3;

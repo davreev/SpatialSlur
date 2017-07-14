@@ -54,6 +54,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
+    [Serializable]
     public class HeGraphFactory<TV, TE> : IFactory<HeGraph<TV,TE>>
         where TV : HeVertex<TV, TE>
         where TE : Halfedge<TV, TE>

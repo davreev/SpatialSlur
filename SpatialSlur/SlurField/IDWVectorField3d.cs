@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class IDWVectorField3d : IDWField3d<Vec3d>
     {
         /// <summary>

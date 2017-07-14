@@ -19,6 +19,7 @@ namespace SpatialSlur.SlurRhino
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public static class HeMeshUnroller
     {
         /// <summary>

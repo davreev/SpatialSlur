@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Base class for constraints.
     /// </summary>
+    [Serializable]
     public abstract class Constraint<H> : IConstraint
         where H : BodyHandle
     {

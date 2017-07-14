@@ -10,6 +10,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// Represents a 3d right-handed orthonormal basis.
     /// </summary>
+    [Serializable]
     public class Rotation3d
     {
         private Vec3d _x = Vec3d.UnitX;

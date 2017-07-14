@@ -18,6 +18,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class CurveFeature : IFeature
     {
         private Curve _curve;

@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     ///
     /// </summary>
+    [Serializable]
     public class DirectionConstraint : PositionConstraint<H>
     {
         private H _h0 = new H();

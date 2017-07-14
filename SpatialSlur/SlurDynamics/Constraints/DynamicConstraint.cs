@@ -12,6 +12,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Base class for constraints on a dynamic collection of particles.
     /// </summary>
+    [Serializable]
     public abstract class DynamicConstraint<H> : IConstraint
         where H : BodyHandle
     {

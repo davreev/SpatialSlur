@@ -18,6 +18,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class VariableSphereCollide : DynamicPositionConstraint<H>
     {
         private SpatialGrid3d<H> _grid;
@@ -75,6 +76,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public class Handle : ParticleHandle
         {
             private double _radius;

@@ -13,6 +13,7 @@ namespace SpatialSlur.SlurData
     /// Can be used as a max priority queue by inverting the given comparison delegate.
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public class PriorityQueue<T>
     {
         private const int MinCapacity = 4;

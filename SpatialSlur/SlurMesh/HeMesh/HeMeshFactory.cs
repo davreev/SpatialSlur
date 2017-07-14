@@ -60,6 +60,7 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
     /// <typeparam name="TF"></typeparam>
+    [Serializable]
     public class HeMeshFactory<TV, TE, TF> : IFactory<HeMesh<TV,TE,TF>>
         where TV : HeVertex<TV, TE, TF>
         where TE : Halfedge<TV, TE, TF>

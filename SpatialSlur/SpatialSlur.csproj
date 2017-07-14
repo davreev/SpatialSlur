@@ -126,7 +126,7 @@
     <Compile Include="SlurCore\Extensions\ListExtensions.cs" />
     <Compile Include="SlurCore\IOUtil.cs" />
     <Compile Include="SlurMesh\HalfedgeList.cs" />
-    <Compile Include="SlurMesh\HalfedgeLoop.cs" />
+    <Compile Include="SlurMesh\WIP\HalfedgeLoop.cs" />
     <Compile Include="SlurMesh\EdgeList.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraph3dExtensions.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraphExtensions.cs" />
@@ -213,7 +213,6 @@
     <Folder Include="SlurCore\WIP\" />
     <Folder Include="SlurData\WIP\" />
     <Folder Include="SlurField\WIP\" />
-    <Folder Include="SlurMesh\WIP\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

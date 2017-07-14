@@ -33,6 +33,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class DynamicRemesher
     {
         #region Static

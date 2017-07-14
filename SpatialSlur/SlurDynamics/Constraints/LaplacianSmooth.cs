@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class LaplacianSmooth : DynamicPositionConstraint<H>
     {
         /// <summary>

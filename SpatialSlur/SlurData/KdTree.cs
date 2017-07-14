@@ -25,6 +25,7 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// Generic implementation of a k-dimensional binary search tree.
     /// </summary>
+    [Serializable]
     public class KdTree<T>
     {
         #region Static

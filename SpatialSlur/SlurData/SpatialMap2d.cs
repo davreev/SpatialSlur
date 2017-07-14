@@ -19,6 +19,7 @@ namespace SpatialSlur.SlurData
     /// Data structure for handling broad-phase collision checks between 2d objects.
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public abstract class SpatialMap2d<T>
     {
         private Bin[] _bins;

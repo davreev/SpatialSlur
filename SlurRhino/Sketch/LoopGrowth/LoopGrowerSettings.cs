@@ -15,6 +15,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class LoopGrowerSettings
     {
         private Domain _lengthRange = new Domain(1.0, 1.0);

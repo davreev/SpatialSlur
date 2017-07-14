@@ -12,6 +12,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Base class for position-only constraints on a dynamic collection of particles.
     /// </summary>
+    [Serializable]
     public abstract class DynamicPositionConstraint<H> : IConstraint
         where H : ParticleHandle
     {

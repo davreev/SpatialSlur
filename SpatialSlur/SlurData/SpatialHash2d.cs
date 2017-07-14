@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurData
     /// <summary>
     /// Spatial hash for broad phase collision detection between dynamic objects.
     /// </summary>
+    [Serializable]
     public class SpatialHash2d<T> : SpatialMap2d<T>
     {
         private const int P1 = 73856093; // used in hash function

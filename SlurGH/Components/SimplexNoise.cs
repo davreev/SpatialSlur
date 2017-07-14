@@ -13,6 +13,9 @@ using SpatialSlur.SlurField;
 
 namespace SpatialSlur.SlurGH.Components
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SimplexNoise : GH_Component
     {
         /// <summary>
@@ -59,7 +62,7 @@ namespace SpatialSlur.SlurGH.Components
             if (!DA.GetData(0, ref point)) return;
             DA.GetData(1, ref scale);
 
-            double t = SpatialSlur.SlurField.SimplexNoise.Evaluate(point.X * scale.X, point.Y * scale.Y, point.Z * scale.Z);
+            double t = SlurField.SimplexNoise.ValueAt(point.X * scale.X, point.Y * scale.Y, point.Z * scale.Z);
 
             DA.SetData(0, t);
         }

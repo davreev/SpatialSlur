@@ -11,7 +11,8 @@ namespace SpatialSlur.SlurData
     /// Simple grid for broad phase collision detection between dynamic objects.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SpatialGrid2d<T>:SpatialMap2d<T>
+    [Serializable]
+    public class SpatialGrid2d<T> : SpatialMap2d<T>
     {
         private Domain2d _domain;
         private Vec2d _from;
@@ -26,7 +27,7 @@ namespace SpatialSlur.SlurData
         public SpatialGrid2d(Domain2d domain, int binCountX, int binCountY)
         {
             Init(binCountX * binCountY);
-      
+
             _nx = binCountX;
             _ny = binCountY;
             Domain = domain;
@@ -37,7 +38,7 @@ namespace SpatialSlur.SlurData
         ///
         /// </summary>
         public SpatialGrid2d(Domain2d domain, double binScale)
-            :this(domain, binScale, binScale)
+            : this(domain, binScale, binScale)
         {
         }
 
@@ -130,7 +131,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="point"></param>
-        protected sealed override(int,int) Discretize(Vec2d point)
+        protected sealed override (int, int) Discretize(Vec2d point)
         {
             return (
                 SlurMath.Clamp((int)Math.Floor((point.X - _from.X) * _dxInv), _nx - 1),

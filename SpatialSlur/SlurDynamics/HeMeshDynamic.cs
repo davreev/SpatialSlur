@@ -16,6 +16,7 @@ namespace SpatialSlur.SlurDynamics
     /// Static constructors for an HeMesh that holds particle handles on its vertices.
     /// </summary>
     /// <typeparam name="H"></typeparam>
+    [Serializable]
     public static class HeMeshDynamic<H>
         where H : ParticleHandle
     {

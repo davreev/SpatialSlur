@@ -18,6 +18,7 @@ namespace SpatialSlur.SlurDynamics
     /// http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf
     /// </summary>
     /// <typeparam name="P"></typeparam>
+    [Serializable]
     public class ConstraintSolver
     {
         private ConstraintSolverSettings _settings = new ConstraintSolverSettings();
