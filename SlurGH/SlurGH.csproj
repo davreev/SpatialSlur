@@ -27,12 +27,12 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <DocumentationFile>bin\SlurGH.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\SlurGH.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GH_IO">
@@ -45,17 +45,17 @@
     </Reference>
     <Reference Include="RhinoCommon, Version=6.0.0.1, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\Program Files\Rhinoceros 5.0 (64-bit)\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5.0 (64-bit)\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SlurRhino, Version=0.2.0.21570, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SlurRhino\bin\SlurRhino.dll</HintPath>
+      <HintPath>..\SlurRhino\bin\Release\SlurRhino.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SpatialSlur, Version=0.2.1.21570, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SpatialSlur\bin\SpatialSlur.dll</HintPath>
+      <HintPath>..\SpatialSlur\bin\Release\SpatialSlur.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -83,6 +83,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Examples\170712_HeMesh_Quad_Strips_01.gh" />
     <None Include="packages.config" />
     <Compile Include="Sketch\Remesher\GH_DynamicRemesher.cs" />
     <Compile Include="Sketch\Remesher\GH_DynamicRemesherSettings.cs" />

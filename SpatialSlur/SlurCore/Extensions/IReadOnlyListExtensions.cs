@@ -101,7 +101,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="action"></param>
         public static void Action<T>(this IReadOnlyList<T> source, Action<T> action)
         {
-            ActionRange(source, 0, source.Count, action);
+            ModifyRange(source, 0, source.Count, action);
         }
 
 
@@ -147,9 +147,9 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void ActionParallel<T>(this IReadOnlyList<T> source, Action<T> action)
+        public static void ModifyParallel<T>(this IReadOnlyList<T> source, Action<T> action)
         {
-            ActionRangeParallel(source, 0, source.Count, action);
+            ModifyRangeParallel(source, 0, source.Count, action);
         }
 
 
@@ -197,11 +197,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ActionRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
+        public static void ModifyRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
         {
             if (source is T[])
             {
-                ArrayExtensions.ActionRange((T[])source, index, count, action);
+                ArrayExtensions.ModifyRange((T[])source, index, count, action);
                 return;
             }
 
@@ -293,11 +293,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ActionRangeParallel<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
+        public static void ModifyRangeParallel<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
         {
             if (source is T[])
             {
-                ArrayExtensions.ActionRangeParallel((T[])source, index, count, action);
+                ArrayExtensions.ModifyRangeParallel((T[])source, index, count, action);
                 return;
             }
 
@@ -393,11 +393,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ActionSelection<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
+        public static void ModifySelection<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
         {
             if (source is T[] && indices is int[])
             {
-                ArrayExtensions.ActionSelection<T>((T[])source, (int[])indices, action);
+                ArrayExtensions.ModifySelection<T>((T[])source, (int[])indices, action);
                 return;
             }
 
@@ -484,11 +484,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ActionSelectionParallel<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
+        public static void ModifySelectionParallel<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
         {
             if (source is T[] && indices is int[])
             {
-                ArrayExtensions.ActionSelectionParallel<T>((T[])source, (int[])indices, action);
+                ArrayExtensions.ModifySelectionParallel<T>((T[])source, (int[])indices, action);
                 return;
             }
 

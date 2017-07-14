@@ -61,7 +61,7 @@ namespace SpatialSlur.SlurCore
         public static T SelectMin<T, U>(this IEnumerable<T> sequence, Func<T, U> selector)
             where U : IComparable<U>
         {
-            T tMin = sequence.ElementAt(0);
+            T tMin = sequence.First();
             U uMin = selector(tMin);
 
             foreach (T t in sequence.Skip(1))
@@ -90,7 +90,7 @@ namespace SpatialSlur.SlurCore
         public static T SelectMax<T, U>(this IEnumerable<T> sequence, Func<T, U> selector)
             where U : IComparable<U>
         {
-            T tMax = sequence.ElementAt(0);
+            T tMax = sequence.First();
             U uMax = selector(tMax);
 
             foreach (T t in sequence.Skip(1))
@@ -529,7 +529,7 @@ namespace SpatialSlur.SlurCore
                 return;
             }
 
-            Array.Clear(result, 0, vectors.ElementAt(0).Length);
+            Array.Clear(result, 0, vectors.First().Length);
 
             foreach (double[] v in vectors)
                 ArrayMath.Add(result, v, result);
@@ -549,7 +549,7 @@ namespace SpatialSlur.SlurCore
                 return;
             }
 
-            Array.Clear(result, 0, vectors.ElementAt(0).Length);
+            Array.Clear(result, 0, vectors.First().Length);
 
             int count = 0;
             foreach (double[] v in vectors)
@@ -569,7 +569,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<double[]> vectors, double[] result)
         {
-            var mean = new double[vectors.ElementAt(0).Length];
+            var mean = new double[vectors.First().Length];
             vectors.Mean(mean);
             GetCovarianceMatrix(vectors, mean, result);
         }

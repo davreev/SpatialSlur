@@ -212,9 +212,9 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void Action<T>(this T[] source, Action<T> action)
+        public static void Modify<T>(this T[] source, Action<T> action)
         {
-            ActionRange(source, 0, source.Length, action);
+            ModifyRange(source, 0, source.Length, action);
         }
 
 
@@ -260,9 +260,9 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void ActionParallel<T>(this T[] source, Action<T> action)
+        public static void ModifyParallel<T>(this T[] source, Action<T> action)
         {
-            ActionRangeParallel(source, 0, source.Length, action);
+            ModifyRangeParallel(source, 0, source.Length, action);
         }
 
 
@@ -310,7 +310,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ActionRange<T>(this T[] source, int index, int count, Action<T> action)
+        public static void ModifyRange<T>(this T[] source, int index, int count, Action<T> action)
         {
             for (int i = 0; i < count; i++)
                 action(source[i + index]);
@@ -370,7 +370,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ActionRangeParallel<T>(this T[] source, int index, int count, Action<T> action)
+        public static void ModifyRangeParallel<T>(this T[] source, int index, int count, Action<T> action)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -434,7 +434,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ActionSelection<T>(this T[] source, int[] indices, Action<T> action)
+        public static void ModifySelection<T>(this T[] source, int[] indices, Action<T> action)
         {
             for (int i = 0; i < indices.Length; i++)
                 action(source[indices[i]]);
@@ -489,7 +489,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ActionSelectionParallel<T>(this T[] source, int[] indices, Action<T> action)
+        public static void ModifySelectionParallel<T>(this T[] source, int[] indices, Action<T> action)
         {
             Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
             {

@@ -21,8 +21,81 @@ namespace SpatialSlur.SlurRhino
     /// </summary>
     public static class SlurFieldExtensions
     {
-        #region GridField2d
+        #region Grid2d
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        static Mesh MeshSelection(this Grid2d field, IEnumerable<int> selection)
+        {
+            var mesh = new Mesh();
+            var verts = mesh.Vertices;
+            var faces = mesh.Faces;
+
+            double dx = field.ScaleX * 0.5;
+            double dy = field.ScaleY * 0.5;
+
+            // add vertices
+            foreach (int index in selection)
+            {
+                var p = field.CoordinateAt(index);
+                verts.Add(p.X - dx, p.Y - dy, 0.0);
+                verts.Add(p.X + dx, p.Y - dy, 0.0);
+                verts.Add(p.X - dx, p.Y + dy, 0.0);
+                verts.Add(p.X + dx, p.Y + dy, 0.0);
+            }
+
+            // add faces
+            for (int i = 0; i < verts.Count; i += 4)
+                faces.AddFace(i, i + 1, i + 3, i + 2);
+
+            return mesh;
+        }
+
+        #endregion
+
+
+        #region Grid3d
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        static Mesh MeshSelection(this Grid3d field, IEnumerable<int> selection)
+        {
+            var mesh = new Mesh();
+            var verts = mesh.Vertices;
+            var faces = mesh.Faces;
+
+            double dx = field.ScaleX * 0.5;
+            double dy = field.ScaleY * 0.5;
+
+            // add vertices
+            foreach (int index in selection)
+            {
+                var p = field.CoordinateAt(index);
+                verts.Add(p.X - dx, p.Y - dy, p.Z);
+                verts.Add(p.X + dx, p.Y - dy, p.Z);
+                verts.Add(p.X - dx, p.Y + dy, p.Z);
+                verts.Add(p.X + dx, p.Y + dy, p.Z);
+            }
+
+            // add faces
+            for (int i = 0; i < verts.Count; i += 4)
+                faces.AddFace(i, i + 1, i + 3, i + 2);
+
+            return mesh;
+        }
+
+        #endregion
+
+
+        #region GridField2d<T>
 
         /// <summary>
         /// 
@@ -112,6 +185,48 @@ namespace SpatialSlur.SlurRhino
             return mesh;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="mapper"></param>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        static Mesh MeshSelection<T>(this GridField2d<T> field, Func<T, Color> mapper, IEnumerable<int> selection)
+            where T : struct
+        {
+            var mesh = new Mesh();
+            var verts = mesh.Vertices;
+            var colors = mesh.VertexColors;
+            var faces = mesh.Faces;
+
+            double dx = field.ScaleX * 0.5;
+            double dy = field.ScaleY * 0.5;
+
+            var values = field.Values;
+
+            // add vertices
+            foreach (int index in selection)
+            {
+                var p = field.CoordinateAt(index);
+     
+                verts.Add(p.X - dx, p.Y - dy, 0.0);
+                verts.Add(p.X + dx, p.Y - dy, 0.0);
+                verts.Add(p.X - dx, p.Y + dy, 0.0);
+                verts.Add(p.X + dx, p.Y + dy, 0.0);
+
+                var c = mapper(values[index]);
+                for (int k = 0; k < 4; k++) colors.Add(c);
+            }
+
+            // add faces
+            for (int i = 0; i < verts.Count; i += 4)
+                faces.AddFace(i, i + 1, i + 3, i + 2);
+
+            return mesh;
+        }
 
         #endregion
     }

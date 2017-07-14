@@ -168,7 +168,7 @@ namespace SpatialSlur.SlurCore
         public Domain2d(IEnumerable<Vec2d> points)
             : this()
         {
-            var p = points.ElementAt(0);
+            var p = points.First();
             X = new Domain(p.X);
             Y = new Domain(p.Y);
 

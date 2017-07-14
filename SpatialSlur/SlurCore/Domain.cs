@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurCore
         public Domain(IEnumerable<double> values)
             : this()
         {
-            T0 = T1 = values.ElementAt(0);
+            T0 = T1 = values.First();
             Include(values.Skip(1), ref T0, ref T1);
         }
 

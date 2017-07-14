@@ -63,6 +63,9 @@ namespace SpatialSlur.SlurRhino
     /// <summary>
     /// 
     /// </summary>
+    /// <typeparam name="V"></typeparam>
+    /// <typeparam name="E"></typeparam>
+    /// <typeparam name="F"></typeparam>
     internal class HeMeshUnroller<V, E, F>
         where V : HeVertex<V, E, F>
         where E : Halfedge<V, E, F>
@@ -89,7 +92,11 @@ namespace SpatialSlur.SlurRhino
 
             _mesh = mesh;
             _first = first;
+
+            _vertStack = new Stack<V>();
             _vertTags = new int[_mesh.Vertices.Count];
+            _getPosition = getPosition;
+            _setPosition = setPosition;
         }
 
 
@@ -185,7 +192,7 @@ namespace SpatialSlur.SlurRhino
 
                 // Transform all verts ahead of stack
                 foreach (var v in DepthFirstFrom(he0.Start))
-                    _setPosition(v, t0.Apply(_getPosition(v), true));
+                    _setPosition(v, t0.ApplyPosition(_getPosition(v)));
 
                 // Push other interior edges
                 foreach(var he1 in he0.CirculateFace.Skip(1))
@@ -204,7 +211,6 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <param name="hedge"></param>
-        /// <param name="vertexPositions"></param>
         /// <returns></returns>
         private Transform GetHalfedgeTransform(E hedge)
         {

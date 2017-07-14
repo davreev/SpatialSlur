@@ -117,9 +117,7 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// Assumes the number of vertices in the mesh equals the number of given values.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="mesh"></param>
-        /// <param name="values"></param>
         /// <param name="mapper"></param>
         /// <param name="parallel"></param>
         public static void PaintByVertexPosition(this Mesh mesh, Func<Point3f, Color> mapper, bool parallel = false)
@@ -144,9 +142,7 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// Assumes the number of vertices in the mesh equals the number of given values.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="mesh"></param>
-        /// <param name="values"></param>
         /// <param name="mapper"></param>
         /// <param name="parallel"></param>
         public static void PaintByVertexNormal(this Mesh mesh, Func<Vector3f, Color> mapper, bool parallel = false)
@@ -175,6 +171,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="values"></param>
         /// <param name="mapper"></param>
+        /// <param name="parallel"></param>
         public static void PaintByFaceValue<T>(this Mesh mesh, IReadOnlyList<T> values, Func<T, Color> mapper, bool parallel = false)
         {
             var faces = mesh.Faces;

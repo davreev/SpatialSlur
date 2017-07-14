@@ -182,7 +182,7 @@ namespace SpatialSlur.SlurCore
         public Domain3d(IEnumerable<Vec3d> points)
             : this()
         {
-            var p = points.ElementAt(0);
+            var p = points.First();
             X = new Domain(p.X);
             Y = new Domain(p.Y);
             Z = new Domain(p.Z);

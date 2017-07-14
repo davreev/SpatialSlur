@@ -127,8 +127,11 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="hedges"></param>
-        /// <param name="result"></param>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="structure"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="setResult"></param>
         /// <param name="parallel"></param>
         public static void GetEdgeLines<V, E>(this IHeStructure<V, E> structure, Func<V, Vec3d> getPosition, Action<E, Line> setResult, bool parallel = false)
             where V : HeElement, IHeVertex<V, E>
@@ -156,8 +159,12 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
-        /// <param name="result"></param>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="structure"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="setResult"></param>
         /// <param name="parallel"></param>
         public static void GetFacePolylines<V, E, F>(this IHeStructure<V, E, F> structure, Func<V, Vec3d> getPosition, Action<F, Polyline> setResult, bool parallel = false)
             where V : HeElement, IHeVertex<V, E, F>
@@ -187,8 +194,12 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="faces"></param>
-        /// <param name="result"></param>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="structure"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="setResult"></param>
         /// <param name="parallel"></param>
         public static void GetFaceCircumcircles<V, E, F>(this IHeStructure<V, E, F> structure, Func<V, Vec3d> getPosition, Action<F, Circle> setResult, bool parallel = false)
             where V : HeElement, IHeVertex<V, E, F>
@@ -221,7 +232,11 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="structure"></param>
         /// <param name="xform"></param>
+        /// <param name="parallel"></param>
         public static void Transform<V, E>(this IHeStructure<V, E> structure, Transform xform, bool parallel = false)
             where V : HeElement, IHeVertex<V, E>, IVertex3d
             where E : HeElement, IHalfedge<V, E>
@@ -233,7 +248,7 @@ namespace SpatialSlur.SlurRhino
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var v = verts[i];
-                    v.Position = xform.Apply(v.Position, true);
+                    v.Position = xform.ApplyPosition(v.Position);
                 }
             };
 
@@ -247,7 +262,11 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="xform"></param>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="structure"></param>
+        /// <param name="xmorph"></param>
+        /// <param name="parallel"></param>
         public static void SpaceMorph<V, E>(this IHeStructure<V, E> structure, SpaceMorph xmorph, bool parallel = false)
             where V : HeElement, IHeVertex<V, E>, IVertex3d
             where E : HeElement, IHalfedge<V, E>
@@ -296,7 +315,14 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// Note that unused and n-gon faces are skipped.
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="getNormal"></param>
+        /// <param name="getTexCoord"></param>
+        /// <param name="getColor"></param>
         /// <returns></returns>
         public static Mesh ToMesh<V, E, F>(this HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal, Func<V, Point2f> getTexCoord, Func<V, Color> getColor)
             where V : HeVertex<V, E, F>
@@ -380,7 +406,11 @@ namespace SpatialSlur.SlurRhino
         /// Vertices of the resulting mesh are not shared between faces.
         /// Note that unused and n-gon faces are skipped.
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
+        /// <param name="getPosition"></param>
         /// <returns></returns>
         public static Mesh ToPolySoup<V, E, F>(this HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition)
         where V : HeVertex<V, E, F>
@@ -500,8 +530,11 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
         /// <param name="factory"></param>
         /// <param name="lines"></param>
+        /// <param name="setPosition"></param>
         /// <param name="tolerance"></param>
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
@@ -526,8 +559,10 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="factory"></param>
         /// <param name="mesh"></param>
-        /// <param name="dual"></param>
         /// <returns></returns>
         public static HeGraph<V, E> CreateFromVertexTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh)
             where V : HeVertex<V, E>, IVertex3d
@@ -545,8 +580,14 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="factory"></param>
         /// <param name="mesh"></param>
-        /// <param name="dual"></param>
+        /// <param name="setPosition"></param>
+        /// <param name="setNormal"></param>
+        /// <param name="setTexCoord"></param>
+        /// <param name="setColor"></param>
         /// <returns></returns>
         public static HeGraph<V, E> CreateFromVertexTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
             where V : HeVertex<V, E>
@@ -560,8 +601,10 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="factory"></param>
         /// <param name="mesh"></param>
-        /// <param name="dual"></param>
         /// <returns></returns>
         public static HeGraph<V, E> CreateFromFaceTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh)
             where V : HeVertex<V, E>, IVertex3d
@@ -580,8 +623,14 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="factory"></param>
         /// <param name="mesh"></param>
-        /// <param name="dual"></param>
+        /// <param name="setPosition"></param>
+        /// <param name="setNormal"></param>
+        /// <param name="setTexCoord"></param>
+        /// <param name="setColor"></param>
         /// <returns></returns>
         public static HeGraph<V, E> CreateFromFaceTopology<V, E>(this HeGraphFactory<V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
             where V : HeVertex<V, E>
@@ -599,6 +648,10 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="factory"></param>
         /// <param name="mesh"></param>
         /// <returns></returns>
         public static HeMesh<V, E, F> CreateFromMesh<V, E, F>(this HeMeshFactory<V, E, F> factory, Mesh mesh)
@@ -617,7 +670,15 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="factory"></param>
         /// <param name="mesh"></param>
+        /// <param name="setPosition"></param>
+        /// <param name="setNormal"></param>
+        /// <param name="setTexCoord"></param>
+        /// <param name="setColor"></param>
         /// <returns></returns>
         public static HeMesh<V, E, F> CreateFromMesh<V, E, F>(this HeMeshFactory<V, E, F> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
             where V : HeVertex<V, E, F>
@@ -663,7 +724,12 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="polylines"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
         public static HeMesh<V, E, F> CreateFromPolylines<V, E, F>(this HeMeshFactory<V, E, F> factory, IEnumerable<Polyline> polylines, double tolerance = 1.0e-8)
             where V : HeVertex<V, E, F>, IVertex3d
@@ -677,7 +743,13 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="polylines"></param>
+        /// <param name="setPosition"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
         public static HeMesh<V, E, F> CreateFromPolylines<V, E, F>(this HeMeshFactory<V, E, F> factory, IEnumerable<Polyline> polylines, Action<V, Vec3d> setPosition, double tolerance = 1.0e-8)
             where V : HeVertex<V, E, F>
@@ -716,6 +788,7 @@ namespace SpatialSlur.SlurRhino
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="strip"></param>
+        /// <param name="getPosition"></param>
         /// <returns></returns>
         public static Mesh ToMesh<V, E, F>(this HeQuadStrip<V, E, F> strip, Func<V, Point3f> getPosition)
             where V : HeVertex<V, E, F>

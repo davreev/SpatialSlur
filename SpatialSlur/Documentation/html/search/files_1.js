@@ -6,6 +6,7 @@ var searchData=
   ['colorutil_2ecs',['ColorUtil.cs',['../_color_util_8cs.html',1,'']]],
   ['constraint_2ecs',['Constraint.cs',['../_constraint_8cs.html',1,'']]],
   ['constraintsolver_2ecs',['ConstraintSolver.cs',['../_constraint_solver_8cs.html',1,'']]],
+  ['constraintsolversettings_2ecs',['ConstraintSolverSettings.cs',['../_constraint_solver_settings_8cs.html',1,'']]],
   ['coplanar_2ecs',['Coplanar.cs',['../_coplanar_8cs.html',1,'']]],
   ['coreutil_2ecs',['CoreUtil.cs',['../_core_util_8cs.html',1,'']]],
   ['cospherical_2ecs',['Cospherical.cs',['../_cospherical_8cs.html',1,'']]],

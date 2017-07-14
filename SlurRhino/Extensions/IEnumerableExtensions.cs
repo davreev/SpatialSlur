@@ -69,7 +69,7 @@ namespace SpatialSlur.SlurRhino
         /// Returns the the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="vectors"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<Vector3d> vectors, double[] result)
         {
             GetCovarianceMatrix(vectors, Mean(vectors), result);
@@ -81,7 +81,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="vectors"></param>
         /// <param name="mean"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<Vector3d> vectors, Vector3d mean, double[] result)
         {
             Array.Clear(result, 0, 9);
@@ -109,7 +109,7 @@ namespace SpatialSlur.SlurRhino
         /// Returns the the entries of the covariance matrix in column-major order.
         /// </summary>
         /// <param name="points"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<Point3d> points, double[] result)
         {
             GetCovarianceMatrix(points, Mean(points), result);
@@ -121,7 +121,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="points"></param>
         /// <param name="mean"></param>
-        /// <returns></returns>
+        /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<Point3d> points, Point3d mean, double[] result)
         {
             Array.Clear(result, 0, 9);

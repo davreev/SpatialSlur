@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,34 +29,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\SpatialSlur.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\SpatialSlur.xml</DocumentationFile>
     <RegisterForComInterop>false</RegisterForComInterop>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\SpatialSlur.XML</DocumentationFile>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -72,7 +51,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Debug\Test.cs" />
     <Compile Include="SlurCore\ArrayMath.cs" />
     <Compile Include="SlurCore\AxisAngle3d.cs" />
     <Compile Include="SlurCore\CoreUtil.cs" />
@@ -82,6 +60,8 @@
     <Compile Include="SlurCore\Extensions\TExtensions.cs" />
     <Compile Include="SlurCore\Interfaces\IProperty.cs" />
     <Compile Include="SlurData\DataUtil.cs" />
+    <Compile Include="SlurData\KMeans.cs" />
+    <Compile Include="SlurDynamics\Constraints\Constraint.cs" />
     <Compile Include="SlurDynamics\ConstraintSolver.cs" />
     <Compile Include="SlurDynamics\ConstraintSolverSettings.cs" />
     <Compile Include="SlurDynamics\Constraints\AbovePlane.cs" />
@@ -89,14 +69,14 @@
     <Compile Include="SlurDynamics\Constraints\AreaWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\Coincident.cs" />
     <Compile Include="SlurDynamics\Constraints\Colinear.cs" />
-    <Compile Include="SlurDynamics\Constraints\Constraint.cs" />
+    <Compile Include="SlurDynamics\Constraints\PositionConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\Coplanar.cs" />
     <Compile Include="SlurDynamics\Constraints\Cospherical.cs" />
     <Compile Include="SlurDynamics\Constraints\CustomWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\CyclicQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\Dihedral.cs" />
     <Compile Include="SlurDynamics\Constraints\Direction.cs" />
-    <Compile Include="SlurDynamics\Constraints\DynamicConstraint.cs" />
+    <Compile Include="SlurDynamics\Constraints\DynamicPositionConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\EqualizeLengths.cs" />
     <Compile Include="SlurDynamics\Constraints\LaplacianSmooth.cs" />
     <Compile Include="SlurDynamics\Constraints\Length.cs" />
@@ -115,6 +95,7 @@
     <Compile Include="SlurDynamics\Constraints\VariableSphereCollide.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialSmooth.cs" />
+    <Compile Include="SlurDynamics\Constraints\DynamicConstraint.cs" />
     <Compile Include="SlurDynamics\DynamicsUtil.cs" />
     <Compile Include="SlurDynamics\HeGraphDynamic.cs" />
     <Compile Include="SlurDynamics\HeMeshDynamic.cs" />
@@ -123,11 +104,13 @@
     <Compile Include="SlurDynamics\Interfaces\IParticle.cs" />
     <Compile Include="SlurDynamics\Constraints\LineCollide.cs" />
     <Compile Include="SlurDynamics\Particle.cs" />
-    <Compile Include="SlurDynamics\ParticleHandle.cs" />
+    <Compile Include="SlurDynamics\HandleTypes.cs" />
     <Compile Include="SlurDynamics\RigidBody.cs" />
     <Compile Include="SlurCore\Rotation3d.cs" />
     <Compile Include="SlurField\Enums\SampleMode.cs" />
     <Compile Include="SlurField\Extensions\ArrayExtensions.cs" />
+    <Compile Include="SlurField\Grid2d.cs" />
+    <Compile Include="SlurField\Grid3d.cs" />
     <Compile Include="SlurField\IDWField3d.cs" />
     <Compile Include="SlurField\IDWPoint3d.cs" />
     <Compile Include="SlurField\IDWScalarField3d.cs" />
@@ -225,8 +208,10 @@
     <Compile Include="SlurMesh\MeshUtil.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Debug\" />
     <Folder Include="Sketch\" />
     <Folder Include="SlurCore\WIP\" />
+    <Folder Include="SlurData\WIP\" />
     <Folder Include="SlurField\WIP\" />
     <Folder Include="SlurMesh\WIP\" />
   </ItemGroup>

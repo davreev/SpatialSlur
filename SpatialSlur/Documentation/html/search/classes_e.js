@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['settings',['Settings',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraint_solver_1_1_settings.html',1,'SpatialSlur::SlurDynamics::ConstraintSolver']]],
   ['simplexnoise',['SimplexNoise',['../class_spatial_slur_1_1_slur_field_1_1_simplex_noise.html',1,'SpatialSlur::SlurField']]],
   ['slurmath',['SlurMath',['../class_spatial_slur_1_1_slur_core_1_1_slur_math.html',1,'SpatialSlur::SlurCore']]],
   ['spatialgrid2d',['SpatialGrid2d',['../class_spatial_slur_1_1_slur_data_1_1_spatial_grid2d.html',1,'SpatialSlur::SlurData']]],

@@ -251,11 +251,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:adab0eac765f33c79b7cc3bfb422c80c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html#adab0eac765f33c79b7cc3bfb422c80c7">QuadrangulateFaces&lt; T &gt;</a> (Func&lt; TE, T &gt; selector, <a class="el" href="namespace_spatial_slur_1_1_slur_mesh.html#a0cb773686d24c9dac8b01ee84567b222">QuadrangulateMode</a> mode=<a class="el" href="namespace_spatial_slur_1_1_slur_mesh.html#a0cb773686d24c9dac8b01ee84567b222a031b9e77f5c85a66723c832a06ba2735">QuadrangulateMode.Strip</a>)</td></tr>
 <tr class="memdesc:adab0eac765f33c79b7cc3bfb422c80c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits all n-gonal faces into quads (and tris where necessary). For each face, starts quadrangulation from the halfedge which returns the minimum value for the given selector function.  <a href="#adab0eac765f33c79b7cc3bfb422c80c7">More...</a><br /></td></tr>
 <tr class="separator:adab0eac765f33c79b7cc3bfb422c80c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a764e8590ac604c72801c08c3304a0e80"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; TE &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html#a764e8590ac604c72801c08c3304a0e80">GetFacesOrientedQuad</a> (bool flip)</td></tr>
+<tr class="separator:a764e8590ac604c72801c08c3304a0e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4665b81f0bd72d7e0bb86052e7f5f0ed"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; TE &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html#a4665b81f0bd72d7e0bb86052e7f5f0ed">GetFacesOrientedQuad</a> (TF start, bool flip)</td></tr>
+<tr class="separator:a4665b81f0bd72d7e0bb86052e7f5f0ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a705230c174277fb782da81fd6291fa9b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html#a705230c174277fb782da81fd6291fa9b">UnifyFaceOrientationQuad</a> (bool flip)</td></tr>
-<tr class="memdesc:a705230c174277fb782da81fd6291fa9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turns all faces to create consistent directionality across the mesh where possible. Assumes quadrilateral faces. <a href="http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf">http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf</a>  <a href="#a705230c174277fb782da81fd6291fa9b">More...</a><br /></td></tr>
+<tr class="memdesc:a705230c174277fb782da81fd6291fa9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the first halfedge in each face to create consistent orientation where possible. Assumes quadrilateral faces. <a href="http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf">http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf</a>  <a href="#a705230c174277fb782da81fd6291fa9b">More...</a><br /></td></tr>
 <tr class="separator:a705230c174277fb782da81fd6291fa9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1305848ae1151636939114d4c529bf61"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html#a1305848ae1151636939114d4c529bf61">UnifyFaceOrientationQuad</a> (TF start)</td></tr>
-<tr class="separator:a1305848ae1151636939114d4c529bf61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac29da27362e89faa95e7645d5ad57277"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html#ac29da27362e89faa95e7645d5ad57277">UnifyFaceOrientationQuad</a> (TF start, bool flip)</td></tr>
+<tr class="separator:ac29da27362e89faa95e7645d5ad57277"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -1386,6 +1390,71 @@ Properties</h2></td></tr>
 </div><div class="memdoc">
 
 <p></p>
+<dl class="section return"><dt>Returns</dt><dd></dd></dl>
+
+</div>
+</div>
+<a id="a764e8590ac604c72801c08c3304a0e80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a764e8590ac604c72801c08c3304a0e80">&#9670;&nbsp;</a></span>GetFacesOrientedQuad() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;TE&gt; <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html">SpatialSlur.SlurMesh.HeMesh</a>&lt; TV, TE, TF &gt;.GetFacesOrientedQuad </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>flip</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p></p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">flip</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd></dd></dl>
+
+</div>
+</div>
+<a id="a4665b81f0bd72d7e0bb86052e7f5f0ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4665b81f0bd72d7e0bb86052e7f5f0ed">&#9670;&nbsp;</a></span>GetFacesOrientedQuad() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;TE&gt; <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html">SpatialSlur.SlurMesh.HeMesh</a>&lt; TV, TE, TF &gt;.GetFacesOrientedQuad </td>
+          <td>(</td>
+          <td class="paramtype">TF&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>flip</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p></p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">start</td><td></td></tr>
+    <tr><td class="paramname">flip</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd></dd></dl>
 
 </div>
@@ -2675,12 +2744,12 @@ Properties</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Turns all faces to create consistent directionality across the mesh where possible. Assumes quadrilateral faces. <a href="http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf">http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf</a> </p>
+<p>Sets the first halfedge in each face to create consistent orientation where possible. Assumes quadrilateral faces. <a href="http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf">http://page.math.tu-berlin.de/~bobenko/MinimalCircle/minsurftalk.pdf</a> </p>
 
 </div>
 </div>
-<a id="a1305848ae1151636939114d4c529bf61"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1305848ae1151636939114d4c529bf61">&#9670;&nbsp;</a></span>UnifyFaceOrientationQuad() <span class="overload">[2/2]</span></h2>
+<a id="ac29da27362e89faa95e7645d5ad57277"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac29da27362e89faa95e7645d5ad57277">&#9670;&nbsp;</a></span>UnifyFaceOrientationQuad() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2689,8 +2758,18 @@ Properties</h2></td></tr>
           <td class="memname">void <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh.html">SpatialSlur.SlurMesh.HeMesh</a>&lt; TV, TE, TF &gt;.UnifyFaceOrientationQuad </td>
           <td>(</td>
           <td class="paramtype">TF&#160;</td>
-          <td class="paramname"><em>start</em></td><td>)</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>flip</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -2948,7 +3027,7 @@ Properties</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/Users/David/Google Drive/Visual Studio/Repos/SpatialSlur/SpatialSlur/SlurMesh/HeMesh/<a class="el" href="_he_mesh_8cs.html">HeMesh.cs</a></li>
+<li>C:/Users/david.re/Google Drive/Visual Studio/Repos/SpatialSlur/SpatialSlur/SlurMesh/HeMesh/<a class="el" href="_he_mesh_8cs.html">HeMesh.cs</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

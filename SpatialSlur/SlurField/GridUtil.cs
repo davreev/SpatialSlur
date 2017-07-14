@@ -32,9 +32,9 @@ namespace SpatialSlur.SlurField
                     return Repeat;
                 case WrapMode.MirrorRepeat:
                     return MirrorRepeat;
-                default:
-                    throw new NotImplementedException();
             }
+
+            throw new NotSupportedException();
         }
 
 

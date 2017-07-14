@@ -902,7 +902,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertices"></param>
         public void MergeVertices(IEnumerable<TV> vertices)
         {
-            var v0 = vertices.ElementAt(0);
+            var v0 = vertices.First();
             _vertices.ContainsCheck(v0);
             v0.RemovedCheck();
 
