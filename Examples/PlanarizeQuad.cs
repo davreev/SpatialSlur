@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurDynamics;
-using SpatialSlur.SlurDynamics.Constraints;
 
 /*
  * Notes
@@ -14,8 +13,6 @@ using SpatialSlur.SlurDynamics.Constraints;
 
 namespace SpatialSlur.Examples
 {
-    using P = Particle; // alias for the particle type used in the simulation below
-
     /// <summary>
     /// Planarizes a randomly generated quadrilateral.
     /// </summary>
@@ -31,11 +28,11 @@ namespace SpatialSlur.Examples
             var box = new Domain3d(new Vec3d(0.0), new Vec3d(10.0)); // create a domain between the (0,0,0) and (10,10,10)
 
             // create particles
-            var particles = new P[] {
-                new P(random.NextVec3d(box)),
-                new P(random.NextVec3d(box)),
-                new P(random.NextVec3d(box)),
-                new P(random.NextVec3d(box))
+            var particles = new Particle[] {
+                new Particle(random.NextVec3d(box)),
+                new Particle(random.NextVec3d(box)),
+                new Particle(random.NextVec3d(box)),
+                new Particle(random.NextVec3d(box))
             };
 
             // create constraints

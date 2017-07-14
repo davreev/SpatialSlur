@@ -15,6 +15,6 @@ namespace SpatialSlur.Examples
     /// </summary>
     static class Paths
     {
-        public const string Resources = @"../../Resources/";
+        public const string Resources = @"../../Examples/Resources/";
     }
 }

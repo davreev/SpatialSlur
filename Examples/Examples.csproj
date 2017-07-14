@@ -55,7 +55,7 @@
     <Compile Include="EntryPoint.cs" />
     <Compile Include="HeMeshFromFile.cs" />
     <Compile Include="Paths.cs" />
-    <Compile Include="WIP\PlanarizeHeMesh.cs" />
+    <Compile Include="PlanarizeHeMesh.cs" />
     <Compile Include="PlanarizeQuad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Debug\" />
+    <Folder Include="WIP\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
