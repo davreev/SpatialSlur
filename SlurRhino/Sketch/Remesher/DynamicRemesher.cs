@@ -37,7 +37,6 @@ namespace SpatialSlur.SlurRhino.Remesher
     {
         #region Static
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -46,6 +45,8 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <typeparam name="TF"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="target"></param>
+        /// <param name="features"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
         public static DynamicRemesher Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
             where TV : HeVertex<TV, TE, TF>, IVertex3d
@@ -55,7 +56,6 @@ namespace SpatialSlur.SlurRhino.Remesher
             var copy = HeMeshDM.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
             return new DynamicRemesher(copy, target, features, tolerance);
         }
-
 
         #endregion
 
@@ -95,8 +95,10 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
+        /// <param name="mesh"></param>
         /// <param name="target"></param>
+        /// <param name="features"></param>
+        /// <param name="tolerance"></param>
         public DynamicRemesher(HeMesh<V, E, F> mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
             _mesh = mesh;
@@ -158,10 +160,11 @@ namespace SpatialSlur.SlurRhino.Remesher
         {
             foreach (var he0 in _mesh.GetHoles())
             {
-                var poly = he0.CirculateFace.Select(he => he.Start.Position.ToPoint3d());
+                var poly = new Polyline(he0.CirculateFace.Select(he => he.Start.Position.ToPoint3d()));
+                poly.Add(poly[0]);
 
                 int index = _features.Count;
-                _features.Add(new PolylineFeature(poly, true));
+                _features.Add(new MeshFeature(MeshUtil.Extrude(poly, new Vector3d())));
 
                 // set vertex feature ids
                 foreach (var he1 in he0.CirculateFace)
@@ -442,7 +445,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                     // set attributes of new vertex
                     v2.Position = (p0 + p1) * 0.5;
                     v2.FeatureIndex = Math.Min(v0.FeatureIndex, v1.FeatureIndex);
-                    v2.Tag = _vertTag;
+                    v2.RefineTag = _vertTag;
                 }
             }
         }
@@ -468,7 +471,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                 if (v0.FeatureIndex != v1.FeatureIndex) continue;
 
                 // don't collapse to/from tagged vertices
-                if (v0.Tag == _vertTag || v1.Tag == _vertTag) continue;
+                if (v0.RefineTag == _vertTag || v1.RefineTag == _vertTag) continue;
 
                 var p0 = v0.Position;
                 var p1 = v1.Position;
@@ -483,7 +486,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                     if(_mesh.CollapseEdge(he))
                     {
                         v1.Position = (p0 + p1) * 0.5;
-                        v1.Tag = _vertTag;
+                        v1.RefineTag = _vertTag;
                         compact = true;
                     }
                 }
@@ -500,7 +503,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <returns></returns>
         private void SpinEdges()
         {
-            _mesh.GetVertexDegrees((v, d) => v.Valence = d, true);
+            _mesh.GetVertexDegrees((v, d) => v.DegreeCached = d, true);
             _faceTag++;
 
             for (int i = 0; i < _hedges.Count; i += 2)
@@ -513,7 +516,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                 var f1 = he1.Face;
 
                 // only allow 1 edge spin per face
-                if (f0.Tag == _faceTag || f1.Tag == _faceTag) continue;
+                if (f0.RefineTag == _faceTag || f1.RefineTag == _faceTag) continue;
 
                 var v0 = he0.Start;
                 var v2 = he1.Start;
@@ -528,10 +531,10 @@ namespace SpatialSlur.SlurRhino.Remesher
                 int vi3 = v3.Index;
 
                 // current valence error
-                int d0 = v0.Valence - (v0.IsBoundary ? 4 : 6);
-                int d1 = v1.Valence - (v1.IsBoundary ? 4 : 6);
-                int d2 = v2.Valence - (v2.IsBoundary ? 4 : 6);
-                int d3 = v3.Valence - (v3.IsBoundary ? 4 : 6);
+                int d0 = v0.DegreeCached - (v0.IsBoundary ? 4 : 6);
+                int d1 = v1.DegreeCached - (v1.IsBoundary ? 4 : 6);
+                int d2 = v2.DegreeCached - (v2.IsBoundary ? 4 : 6);
+                int d3 = v3.DegreeCached - (v3.IsBoundary ? 4 : 6);
                 int err0 = d0 * d0 + d1 * d1 + d2 * d2 + d3 * d3;
 
                 // flipped valence error
@@ -541,9 +544,9 @@ namespace SpatialSlur.SlurRhino.Remesher
                 // flip edge if it results in less error
                 if (err1 < err0 && _mesh.SpinEdge(he0))
                 {
-                    v0.Valence--; v2.Valence--;
-                    v1.Valence++; v3.Valence++;
-                    f0.Tag = f1.Tag = _faceTag; // tag faces
+                    v0.DegreeCached--; v2.DegreeCached--;
+                    v1.DegreeCached++; v3.DegreeCached++;
+                    f0.RefineTag = f1.RefineTag = _faceTag; // tag faces
                 }
             }
         }

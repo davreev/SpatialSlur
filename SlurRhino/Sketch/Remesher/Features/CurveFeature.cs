@@ -26,7 +26,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="curve"></param>
         public CurveFeature(Curve curve)
         {
             _curve = curve;

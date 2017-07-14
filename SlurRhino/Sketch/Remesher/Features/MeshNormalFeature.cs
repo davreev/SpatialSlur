@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     /// <summary>
     /// 
     /// </summary>
-    public class MeshFeature : IFeature
+    public class MeshNormalFeature : IFeature
     {
         private Mesh _mesh;
 
@@ -26,9 +26,10 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        public MeshFeature(Mesh mesh)
+        public MeshNormalFeature(Mesh mesh)
         {
             _mesh = mesh;
+            _mesh.Normals.ComputeNormals();
         }
         
 
@@ -39,7 +40,10 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <returns></returns>
         public Vec3d ClosestPoint(Vec3d point)
         {
-            return _mesh.ClosestPoint(point.ToPoint3d()).ToVec3d();
+            var mp = _mesh.ClosestMeshPoint(point.ToPoint3d(), 0.0);
+            var cp = _mesh.PointAt(mp).ToVec3d();
+            var cn = _mesh.NormalAt(mp).ToVec3d();
+            return point + Vec3d.Project(cp - point, cn);
         }
     }
 }

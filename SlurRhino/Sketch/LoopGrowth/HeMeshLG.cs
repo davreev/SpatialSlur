@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino.GraphGrowth
+namespace SpatialSlur.SlurRhino.LoopGrowth
 {
     /// <summary>
     /// Contains HeMesh element classes used in dynamic remeshing
@@ -54,8 +54,6 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
 
             /// <summary></summary>
             public int FeatureIndex = -1;
-            /// <summary></summary>
-            public int Tag = int.MinValue;
 
             #region Explicit interface implementations
 
@@ -85,10 +83,6 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
                 get { return _maxLength; }
                 set { _maxLength = Twin._maxLength = value; }
             }
-            
-
-            /// <summary></summary>
-            public int Tag = int.MinValue;
         }
 
 

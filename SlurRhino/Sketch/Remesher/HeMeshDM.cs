@@ -55,9 +55,9 @@ namespace SpatialSlur.SlurRhino.Remesher
             /// <summary></summary>
             public int FeatureIndex = -1;
             /// <summary></summary>
-            public int Valence;
+            public int DegreeCached;
             /// <summary></summary>
-            public int Tag = int.MinValue;
+            public int RefineTag = int.MinValue;
 
             #region Explicit interface implementations
 
@@ -86,9 +86,6 @@ namespace SpatialSlur.SlurRhino.Remesher
                 get { return _targetLength; }
                 set { _targetLength = Twin._targetLength = value; }
             }
-
-            /// <summary></summary>
-            public int Tag = int.MinValue;
         }
 
 
@@ -98,7 +95,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         public class F : HeFace<V, E, F>
         {
             /// <summary></summary>
-            public int Tag = int.MinValue;
+            public int RefineTag = int.MinValue;
         }
     }
 }

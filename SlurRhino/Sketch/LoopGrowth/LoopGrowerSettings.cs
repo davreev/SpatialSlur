@@ -10,7 +10,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino.GraphGrowth
+namespace SpatialSlur.SlurRhino.LoopGrowth
 {
     /// <summary>
     /// 
@@ -19,8 +19,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
     {
         private Domain _lengthRange = new Domain(1.0, 1.0);
         private double _radFactor = 0.75;
-
-        private double _featureWeight = 100.0;
+        
         private double _smoothWeight = 5.0;
         private double _collideWeight = 1.0;
 
@@ -64,17 +63,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         {
             get { return _lengthRange.Max * _radFactor * 0.5; }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double FeatureWeight
-        {
-            get { return _featureWeight; }
-            set { _featureWeight = Math.Max(value, 0.0); }
-        }
-
+        
 
         /// <summary>
         /// 

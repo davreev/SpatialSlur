@@ -28,7 +28,7 @@ using static SpatialSlur.SlurCore.SlurMath;
  * http://graphics.stanford.edu/courses/cs468-12-spring/LectureSlides/13_Remeshing1.pdf
  */
 
-namespace SpatialSlur.SlurRhino.GraphGrowth
+namespace SpatialSlur.SlurRhino.LoopGrowth
 {
     using V = HeMeshLG.V;
     using E = HeMeshLG.E;
@@ -42,7 +42,6 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
     {
         #region Static
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -50,7 +49,8 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <typeparam name="TE"></typeparam>
         /// <typeparam name="TF"></typeparam>
         /// <param name="mesh"></param>
-        /// <param name="target"></param>
+        /// <param name="features"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
         public static LoopGrower Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
             where TV : HeVertex<TV, TE, TF>, IVertex3d
@@ -61,8 +61,8 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
             return new LoopGrower(copy, features, tolerance);
         }
 
-
         #endregion
+
         
         private const double TargetBinScale = 4.0;
 
@@ -95,8 +95,9 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="target"></param>
+        /// <param name="graph"></param>
+        /// <param name="features"></param>
+        /// <param name="tolerance"></param>
         public LoopGrower(HeMesh<V, E, F> graph, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
             _mesh = graph;
@@ -127,7 +128,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
                 foreach (var v in _verts)
                 {
                     // skip verts which have already assigned
-                    if (v.FeatureIndex != -1)
+                    if (v.FeatureIndex > -1)
                         continue;
 
                     var p = v.Position;
@@ -215,7 +216,6 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
 
         #region Dynamics
 
-
         /// <summary>
         /// Calculates all forces in the system
         /// </summary>
@@ -223,8 +223,8 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         private void CalculateForces()
         {
             //PullToFeatures(_settings.FeatureWeight);
-            LaplacianFair(_settings.SmoothWeight);
-            //LaplacianFair2(_settings.SmoothWeight);
+            //LaplacianFair(_settings.SmoothWeight);
+            LaplacianFairBoundary(_settings.SmoothWeight);
             SphereCollide(_settings.CollideRadius, _settings.CollideWeight);
         }
 
@@ -293,43 +293,70 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         }
 
 
-        /*
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="weight"></param>
-        /// <returns></returns>
-        private void LaplacianFair2(double weight)
+        private void LaplacianFairBoundary(double weight)
         {
-            _graph.GetVertexLaplacian(v => v.Position, (v, n) => v.Normal = n, true); // precalculate position laplacian for each vertex
-
-            Parallel.ForEach(Partitioner.Create(0, _verts.Count), range =>
+            for (int i = 0; i < _verts.Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var v0 = _verts[i];
-                    if (v0.IsRemoved) continue;
+                var v0 = _verts[i];
+                if (v0.IsRemoved) continue;
 
-                    var move = v0.Normal;
-                    int count = 1;
+                if (v0.IsBoundary)
+                {
+                    var he = v0.FirstOut;
+
+                    var v1 = he.PrevInFace.Start;
+                    var v2 = he.NextInFace.Start;
+                    var move = (v1.Position + v2.Position) * 0.5 - v0.Position;
+
+                    // apply to central vertex
+                    v0.MoveSum += move * weight;
+                    v0.WeightSum += weight;
+
+                    // distribute negated to neighbours
+                    move *= -0.5;
+                    v1.MoveSum += move * weight;
+                    v1.WeightSum += weight;
+                    v2.MoveSum += move * weight;
+                    v2.WeightSum += weight;
+                }
+                else
+                {
+                    var sum = new Vec3d();
+                    var count = 0;
 
                     foreach (var v1 in v0.ConnectedVertices)
                     {
-                        move -= v1.Normal;
+                        sum += v1.Position;
                         count++;
                     }
 
-                    v0.MoveSum += move * (0.5 * weight / count);
+                    double t = 1.0 / count;
+                    var move = sum * t - v0.Position;
+
+                    // apply to central vertex
+                    v0.MoveSum += move * weight;
                     v0.WeightSum += weight;
+
+                    // distribute negated to neighbours
+                    move *= -t;
+                    foreach (var v1 in v0.ConnectedVertices)
+                    {
+                        v1.MoveSum += move * weight;
+                        v1.WeightSum += weight;
+                    }
                 }
-            });
+            }
         }
-        */
 
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="radius"></param>
         /// <param name="weight"></param>
         private void SphereCollide(double radius, double weight)
         {
@@ -376,7 +403,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
+        /// <param name="radius"></param>
         private void UpdateGrid(double radius)
         {
             // recalculate domain
@@ -384,7 +411,7 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
             d.Expand(radius);
 
             // lazy instantiation
-            if(_grid == null)
+            if (_grid == null)
             {
                 _grid = new SpatialGrid3d<V>(d, radius * TargetBinScale);
                 return;
@@ -433,12 +460,10 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
             });
         }
 
-
         #endregion
 
 
         #region Topology
-
 
         /// <summary>
         ///
@@ -465,6 +490,11 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
 
                 var v0 = he.Start;
                 var v1 = he.End;
+
+                // don't split edge that spans between 2 different features
+                var fi0 = v0.FeatureIndex;
+                var fi1 = v1.FeatureIndex;
+                if (fi0 > -1 && fi1 > -1 && fi0 != fi1) continue;
                 
                 var p0 = v0.Position;
                 var p1 = v1.Position;
@@ -476,17 +506,15 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
 
                     // set attributes of new vertex
                     v2.Position = (v0.Position + v1.Position) * 0.5;
-                    v2.FeatureIndex = Math.Min(v0.FeatureIndex, v1.FeatureIndex);
+                    v2.FeatureIndex = Math.Min(fi0, fi1);
                 }
             }
         }
-
 
         #endregion
 
 
         #region Attributes
-
 
         /// <summary>
         /// 
@@ -524,7 +552,6 @@ namespace SpatialSlur.SlurRhino.GraphGrowth
             else
                 body(Tuple.Create(0, _hedges.Count >> 1));
         }
-
 
         #endregion
     }
