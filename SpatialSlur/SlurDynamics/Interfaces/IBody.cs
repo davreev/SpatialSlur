@@ -7,9 +7,9 @@
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// Interface for a 3dof particle
+    /// Interface for a dynamic body with positiona and orientation.
     /// </summary>
-    public interface IParticle : IUpdatable
+    public interface IBody : IUpdatable
     {
         /// <summary>
         /// 

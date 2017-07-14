@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     ///
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             Vec3d d0 = particles[_hA1].Position - particles[_hA0].Position;
             Vec3d d1 = particles[_hB1].Position - particles[_hB0].Position;

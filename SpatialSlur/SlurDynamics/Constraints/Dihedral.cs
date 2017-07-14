@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     /// http://www.tsg.ne.jp/TT/cg/ElasticOrigami_Tachi_IASS2013.pdf
@@ -108,7 +108,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             // TODO revise implementation
             throw new NotImplementedException();

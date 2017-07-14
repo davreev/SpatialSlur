@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             _grid.Clear();
             var r0 = double.MaxValue;
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public class Handle : PositionHandle
+        public class Handle : ParticleHandle
         {
             private double _radius;
 

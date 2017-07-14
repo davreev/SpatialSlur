@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// Base class for constraints on a dynamic collection of particles.
     /// </summary>
     public abstract class DynamicConstraint<H> : IConstraint
-        where H : ParticleHandle
+        where H : BodyHandle
     {
         private List<H> _handles;
         private double _weight;
@@ -92,14 +92,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public abstract void Calculate(IReadOnlyList<IParticle> particles);
+        public abstract void Calculate(IReadOnlyList<IBody> particles);
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public void Apply(IReadOnlyList<IParticle> particles)
+        public void Apply(IReadOnlyList<IBody> particles)
         {
             foreach (var h in _handles)
             {

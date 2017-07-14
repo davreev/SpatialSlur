@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     /// Applies a force proportional to the distance between 2 particles.
@@ -91,7 +91,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             _h0.Delta = _h1.Delta = Direction * (particles[_h0].Position.DistanceTo(particles[_h1].Position) * _massPerLength * 0.5);
         }

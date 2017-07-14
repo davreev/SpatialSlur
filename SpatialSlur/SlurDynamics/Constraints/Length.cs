@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     ///
@@ -90,7 +90,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             var d = particles[_h1].Position - particles[_h0].Position;
             _h0.Delta = d * (1.0 - _targetLength / d.Length) * 0.5;

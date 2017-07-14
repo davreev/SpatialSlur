@@ -14,7 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    public class Particle : IParticle
+    public class Particle : IBody
     {
         private Vec3d _position;
         private Vec3d _velocity;
@@ -120,7 +120,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        bool IParticle.HasRotation
+        bool IBody.HasRotation
         {
             get { return false; }
         }
@@ -129,7 +129,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        Rotation3d IParticle.Rotation
+        Rotation3d IBody.Rotation
         {
             get { throw new NotSupportedException(_message); }
             set { throw new NotSupportedException(_message); }
@@ -139,7 +139,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        Vec3d IParticle.AngularVelocity
+        Vec3d IBody.AngularVelocity
         {
             get { throw new NotSupportedException(_message); }
             set { throw new NotSupportedException(_message); }
@@ -151,7 +151,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
-        void IParticle.ApplyRotate(Vec3d delta, double weight)
+        void IBody.ApplyRotate(Vec3d delta, double weight)
         {
             throw new NotSupportedException(_message);
         }

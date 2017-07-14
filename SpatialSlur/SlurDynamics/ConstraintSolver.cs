@@ -76,7 +76,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        public void Step(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
+        public void Step(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
         {
             LocalStep(particles, constraints);
             GlobalStep(particles, constraints);
@@ -90,7 +90,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        public void StepParallel(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
+        public void StepParallel(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
         {
             LocalStepParallel(particles, constraints);
             GlobalStep(particles, constraints);
@@ -104,7 +104,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        private void LocalStep(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
+        private void LocalStep(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
         {
             for (int i = 0; i < constraints.Count; i++)
                 constraints[i].Calculate(particles);
@@ -116,7 +116,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        private void LocalStepParallel(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
+        private void LocalStepParallel(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
         {
             Parallel.ForEach(Partitioner.Create(0, constraints.Count), range =>
             {
@@ -131,7 +131,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
-        private void GlobalStep(IReadOnlyList<IParticle> particles, IReadOnlyList<IConstraint> constraints)
+        private void GlobalStep(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
         {
             for (int i = 0; i < constraints.Count; i++)
                 constraints[i].Apply(particles);
@@ -141,7 +141,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateParticles(IReadOnlyList<IParticle> particles)
+        private void UpdateParticles(IReadOnlyList<IBody> particles)
         {
             _maxDelta = 0.0;
             _maxAngleDelta = 0.0;
@@ -162,7 +162,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateParticlesParallel(IReadOnlyList<IParticle> particles)
+        private void UpdateParticlesParallel(IReadOnlyList<IBody> particles)
         {
             _maxDelta = 0.0;
             _maxAngleDelta = 0.0;

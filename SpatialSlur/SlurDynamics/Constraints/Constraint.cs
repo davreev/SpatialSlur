@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// Base class for constraints.
     /// </summary>
     public abstract class Constraint<H> : IConstraint
-        where H : ParticleHandle
+        where H : BodyHandle
     {
         private double _weight;
 
@@ -56,14 +56,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public abstract void Calculate(IReadOnlyList<IParticle> particles);
+        public abstract void Calculate(IReadOnlyList<IBody> particles);
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public void Apply(IReadOnlyList<IParticle> particles)
+        public void Apply(IReadOnlyList<IBody> particles)
         {
             foreach (var h in Handles)
             {

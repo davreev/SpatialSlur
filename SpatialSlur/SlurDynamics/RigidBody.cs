@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    public class RigidBody : IParticle
+    public class Body : IBody
     {
         private Vec3d _position;
         private Vec3d _velocity;
@@ -89,7 +89,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public RigidBody()
+        public Body()
         {
             _rotation = new Rotation3d();
         }
@@ -99,7 +99,7 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="position"></param>
-        public RigidBody(Vec3d position)
+        public Body(Vec3d position)
         {
             _position = position;
             Rotation = new Rotation3d();
@@ -111,7 +111,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="position"></param>
         /// <param name="rotation"></param>
-        public RigidBody(Vec3d position, Rotation3d rotation)
+        public Body(Vec3d position, Rotation3d rotation)
         {
             _position = position;
             Rotation = rotation;
@@ -124,7 +124,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="position"></param>
         /// <param name="rotationX"></param>
         /// <param name="rotationY"></param>
-        public RigidBody(Vec3d position, Vec3d rotationX, Vec3d rotationY)
+        public Body(Vec3d position, Vec3d rotationX, Vec3d rotationY)
         {
             _position = position;
             _rotation = new Rotation3d(rotationX, rotationY);
@@ -203,7 +203,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        bool IParticle.HasRotation
+        bool IBody.HasRotation
         {
             get { return true; }
         }

@@ -9,7 +9,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     /// 
@@ -45,7 +45,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             Vec3d sum = new Vec3d();
             double nInv = 1.0 / (Handles.Count - 1);
@@ -71,7 +71,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// Calculates the normal as the sum of triangle area gradients
         /// </summary>
         /// <returns></returns>
-        private Vec3d ComputeNormal(IReadOnlyList<IParticle> particles)
+        private Vec3d ComputeNormal(IReadOnlyList<IBody> particles)
         {
             var p = particles[Handles[0]].Position;
             var sum = new Vec3d();

@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     /// Applies a force along the normal of the triangle between 3 particles with a magnitude proportional to the area.
@@ -87,7 +87,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             Vec3d p0 = particles[_h0].Position;
             Vec3d p1 = particles[_h1].Position;

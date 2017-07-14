@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurDynamics
     /// </summary>
     /// <typeparam name="H"></typeparam>
     public static class HeMeshDynamic<H>
-        where H : PositionHandle
+        where H : ParticleHandle
     {
         /// <summary></summary>
         public static readonly HeMeshFactory<V, E, F> Factory = HeMeshFactory.Create(() => new V(), () => new E(), () => new F());

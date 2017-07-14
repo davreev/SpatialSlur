@@ -16,7 +16,7 @@ using static SpatialSlur.SlurCore.SlurMath;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     /// 
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             UpdateGrid(particles);
 
@@ -121,7 +121,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        private void UpdateGrid(IReadOnlyList<IParticle> particles)
+        private void UpdateGrid(IReadOnlyList<IBody> particles)
         {
             // recalculate domain
             Domain3d d = new Domain3d(particles.Select(p => p.Position));

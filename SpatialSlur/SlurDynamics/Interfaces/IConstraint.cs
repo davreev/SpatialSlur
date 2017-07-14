@@ -32,14 +32,14 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        void Calculate(IReadOnlyList<IParticle> particles);
+        void Calculate(IReadOnlyList<IBody> particles);
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        void Apply(IReadOnlyList<IParticle> particles);
+        void Apply(IReadOnlyList<IBody> particles);
 
 
         /// <summary>

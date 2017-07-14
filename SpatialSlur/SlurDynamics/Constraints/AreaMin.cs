@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = PositionHandle;
+    using H = ParticleHandle;
 
     /// <summary>
     /// 
@@ -79,7 +79,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf p64
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IParticle> particles)
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             GeometryUtil.GetTriAreaGrads(
                 particles[_h0].Position,

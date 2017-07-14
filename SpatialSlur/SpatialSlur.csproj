@@ -101,7 +101,7 @@
     <Compile Include="SlurDynamics\HeMeshDynamic.cs" />
     <Compile Include="SlurDynamics\Interfaces\IConstraint.cs" />
     <Compile Include="SlurDynamics\Interfaces\IUpdatable.cs" />
-    <Compile Include="SlurDynamics\Interfaces\IParticle.cs" />
+    <Compile Include="SlurDynamics\Interfaces\IBody.cs" />
     <Compile Include="SlurDynamics\Constraints\LineCollide.cs" />
     <Compile Include="SlurDynamics\Particle.cs" />
     <Compile Include="SlurDynamics\HandleTypes.cs" />
