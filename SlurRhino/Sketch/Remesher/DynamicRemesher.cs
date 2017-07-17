@@ -72,7 +72,6 @@ namespace SpatialSlur.SlurRhino.Remesher
         private HeElementList<V> _verts;
         private HeElementList<E> _hedges;
         private HeElementList<F> _faces;
-        private int _boundaryCount;
 
         //
         // constraint objects
@@ -106,7 +105,6 @@ namespace SpatialSlur.SlurRhino.Remesher
             _verts = _mesh.Vertices;
             _hedges = _mesh.Halfedges;
             _faces = _mesh.Faces;
-            
 
             // triangulate all faces
             _mesh.TriangulateFaces(he =>
@@ -133,9 +131,50 @@ namespace SpatialSlur.SlurRhino.Remesher
             _features = new List<IFeature>();
             var tt = tolerance * tolerance;
 
+            // create features
+            foreach (var f in features)
+            {
+                int index = _features.Count;
+                _features.Add(f);
+
+                // if vertex is close enough, assign feature
+                foreach (var v in _verts)
+                {
+                    if (v.FeatureIndex != -1) continue; // skip if already assigned
+          
+                    var p = v.Position;
+                    if (p.SquareDistanceTo(f.ClosestPoint(p)) < tt)
+                        v.FeatureIndex = index;
+                }
+            }
+            
+            // create boundary features
+            foreach (var he0 in _mesh.GetHoles())
+            {
+                var poly = new Polyline(he0.CirculateFace.Select(he => he.Start.Position.ToPoint3d()));
+                poly.Add(poly[0]);
+
+                int index = _features.Count;
+                _features.Add(new MeshFeature(MeshUtil.Extrude(poly, new Vector3d())));
+
+                // set verts that haven't been assigned
+                foreach (var v in he0.CirculateFace.Select(he1 => he1.Start))
+                    if (v.FeatureIndex == -1) v.FeatureIndex = index;
+            }
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        private void InitFeatures(IEnumerable<IFeature> features, double tolerance)
+        {
+            _features = new List<IFeature>();
+            var tt = tolerance * tolerance;
+
             // create default boundary features
             CreateBoundaryFeatures();
-            _boundaryCount = _features.Count;
 
             // override with additional features
             foreach (var f in features)
@@ -172,6 +211,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                     he1.Start.FeatureIndex = index;
             }
         }
+        */
 
 
         /// <summary>
@@ -190,6 +230,16 @@ namespace SpatialSlur.SlurRhino.Remesher
         {
             get { return _lengthField; }
             set { _lengthField = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<IFeature> Features
+        {
+            get { return _features; }
+            set { _features = value; }
         }
 
 
@@ -230,7 +280,6 @@ namespace SpatialSlur.SlurRhino.Remesher
 
 
         #region Dynamics
-
 
         /// <summary>
         /// Calculates all forces in the system
@@ -390,12 +439,10 @@ namespace SpatialSlur.SlurRhino.Remesher
             });
         }
 
-
         #endregion
 
 
         #region Topology
-
 
         /// <summary>
         ///
@@ -431,7 +478,15 @@ namespace SpatialSlur.SlurRhino.Remesher
 
                 var v0 = he.Start;
                 var v1 = he.End;
-                
+
+                // don't split edge that spans between 2 different features
+                var fi0 = v0.FeatureIndex;
+                var fi1 = v1.FeatureIndex;
+                if (fi0 > -1 && fi1 > -1 && fi0 != fi1) continue;
+
+                // or allow split bw different features
+                // but don't assign either feature to the new vertex
+
                 var p0 = v0.Position;
                 var p1 = v1.Position;
 
@@ -445,7 +500,7 @@ namespace SpatialSlur.SlurRhino.Remesher
 
                     // set attributes of new vertex
                     v2.Position = (p0 + p1) * 0.5;
-                    v2.FeatureIndex = Math.Min(v0.FeatureIndex, v1.FeatureIndex);
+                    v2.FeatureIndex = Math.Min(fi0, fi1);
                     v2.RefineTag = _vertTag;
                 }
             }
@@ -552,13 +607,11 @@ namespace SpatialSlur.SlurRhino.Remesher
             }
         }
 
-
         #endregion
 
 
         #region Attributes
 
-       
         /// <summary>
         /// 
         /// </summary>
@@ -593,7 +646,6 @@ namespace SpatialSlur.SlurRhino.Remesher
             else
                 body(Tuple.Create(0, _hedges.Count >> 1));
         }
-
 
         #endregion
     }
