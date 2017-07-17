@@ -32,12 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SlurRhino">
-      <HintPath>..\SlurRhino\bin\Release\SlurRhino.dll</HintPath>
-    </Reference>
     <Reference Include="SpatialSlur, Version=0.2.2.8306, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\SpatialSlur\bin\Release\SpatialSlur.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,7 +50,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Debug\SwapTest.cs" />
     <Compile Include="Console\EntryPoint.cs" />
     <Compile Include="Console\HeMeshFromFile.cs" />
     <Compile Include="Console\Paths.cs" />
@@ -68,8 +65,6 @@
     <None Include="packages.config" />
     <None Include="Resources\face.obj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="WIP\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -20,8 +20,7 @@ namespace SpatialSlur.Examples
         /// </summary>
         public static void Main()
         {
-            //PlanarizeHeMesh.Run();
-            Debug.SwapTest.Run();
+            PlanarizeHeMesh.Run();
         }
     }
 }
