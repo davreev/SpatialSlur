@@ -53,15 +53,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Debug\SwapTest.cs" />
-    <Compile Include="EntryPoint.cs" />
-    <Compile Include="HeMeshFromFile.cs" />
-    <Compile Include="Paths.cs" />
-    <Compile Include="PlanarizeHeMesh.cs" />
-    <Compile Include="PlanarizeQuad.cs" />
+    <Compile Include="Console\EntryPoint.cs" />
+    <Compile Include="Console\HeMeshFromFile.cs" />
+    <Compile Include="Console\Paths.cs" />
+    <Compile Include="Console\PlanarizeHeMesh.cs" />
+    <Compile Include="Console\PlanarizeQuad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Grasshopper\170712_HeMesh_Quad_Strips_01.gh" />
+    <None Include="Grasshopper\170717_Remesher_Example_01.3dm" />
+    <None Include="Grasshopper\170717_Remesher_Example_01.gh" />
     <None Include="packages.config" />
     <None Include="Resources\face.obj" />
   </ItemGroup>

@@ -83,7 +83,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="Examples\170712_HeMesh_Quad_Strips_01.gh" />
     <None Include="packages.config" />
     <Compile Include="Sketch\Remesher\GH_DynamicRemesher.cs" />
     <Compile Include="Sketch\Remesher\GH_DynamicRemesherSettings.cs" />
