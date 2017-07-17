@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\Test.cs" />
     <Compile Include="SlurCore\ArrayMath.cs" />
     <Compile Include="SlurCore\AxisAngle3d.cs" />
     <Compile Include="SlurCore\CoreUtil.cs" />
@@ -208,7 +209,6 @@
     <Compile Include="SlurMesh\MeshUtil.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Debug\" />
     <Folder Include="Sketch\" />
     <Folder Include="SlurCore\WIP\" />
     <Folder Include="SlurData\WIP\" />

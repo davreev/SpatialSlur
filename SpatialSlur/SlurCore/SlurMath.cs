@@ -11,8 +11,11 @@ namespace SpatialSlur.SlurCore
     /// </summary>
     public static class SlurMath
     {
+        /// <summary></summary>
         public const double TwoPI = Math.PI * 2.0;
+        /// <summary></summary>
         public const double HalfPI = Math.PI * 0.5;
+        /// <summary></summary>
         public const double InvPI = 1.0 / Math.PI;
 
     
@@ -21,11 +24,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static bool ApproxEquals(double x, double y, double epsilon)
+        public static bool ApproxEquals(double x, double y, double tolerance)
         {
-            return Math.Abs(x - y) < epsilon;
+            return Math.Abs(x - y) < tolerance;
         }
 
 

@@ -152,13 +152,13 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="factory"></param>
         /// <param name="endPoints"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static HeGraph<V, E> CreateFromLineSegments(this HeGraphFactory<V, E> factory, IReadOnlyList<Vec3d> endPoints, double epsilon = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
+        public static HeGraph<V, E> CreateFromLineSegments(this HeGraphFactory<V, E> factory, IReadOnlyList<Vec3d> endPoints, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
         {
-            return factory.CreateFromLineSegments(endPoints, (v, p) => v.Position = p, epsilon, allowMultiEdges, allowLoops);
+            return factory.CreateFromLineSegments(endPoints, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
         }
 
 

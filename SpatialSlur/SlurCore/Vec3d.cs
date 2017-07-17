@@ -20,31 +20,14 @@ namespace SpatialSlur.SlurCore
     {
         #region Static
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec3d UnitX
-        {
-            get { return new Vec3d(1.0, 0.0, 0.0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec3d UnitY
-        {
-            get { return new Vec3d(0.0, 1.0, 0.0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec3d UnitZ
-        {
-            get { return new Vec3d(0.0, 0.0, 1.0); }
-        }
+        /// <summary></summary>
+        public static readonly Vec3d Zero = new Vec3d(0.0);
+        /// <summary></summary>
+        public static readonly Vec3d UnitX = new Vec3d(1.0, 0.0, 0.0);
+        /// <summary></summary>
+        public static readonly Vec3d UnitY = new Vec3d(0.0, 1.0, 0.0);
+        /// <summary></summary>
+        public static readonly Vec3d UnitZ = new Vec3d(0.0, 0.0, 1.0);
 
 
         /// <summary>
@@ -528,18 +511,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double epsilon)
+        public bool IsZero(double tolerance)
         {
-            return (Math.Abs(X) < epsilon) && (Math.Abs(Y) < epsilon) && (Math.Abs(Z) < epsilon);
+            return (Math.Abs(X) < tolerance) && (Math.Abs(Y) < tolerance) && (Math.Abs(Z) < tolerance);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double epsilon)
+        public bool IsUnit(double tolerance)
         {
-            return Math.Abs(SquareLength - 1.0) < epsilon;
+            return Math.Abs(SquareLength - 1.0) < tolerance;
         }
 
 
@@ -605,11 +588,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vec3d other, double epsilon)
+        public bool ApproxEquals(Vec3d other, double tolerance)
         {
-            return (Math.Abs(other.X - X) < epsilon) && (Math.Abs(other.Y - Y) < epsilon) && (Math.Abs(other.Z - Z) < epsilon);
+            return (Math.Abs(other.X - X) < tolerance) && (Math.Abs(other.Y - Y) < tolerance) && (Math.Abs(other.Z - Z) < tolerance);
         }
 
 
@@ -617,11 +600,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vec3d other, Vec3d epsilon)
+        public bool ApproxEquals(Vec3d other, Vec3d tolerance)
         {
-            return (Math.Abs(other.X - X) < epsilon.X) && (Math.Abs(other.Y - Y) < epsilon.Y) && (Math.Abs(other.Z - Z) < epsilon.Z);
+            return (Math.Abs(other.X - X) < tolerance.X) && (Math.Abs(other.Y - Y) < tolerance.Y) && (Math.Abs(other.Z - Z) < tolerance.Z);
         }
 
 
@@ -685,6 +668,18 @@ namespace SpatialSlur.SlurCore
             }
 
             return false;
+        }
+
+
+        /// <summary>
+        /// Returns a unitized copy of this vector.
+        /// Returns the zero vector if this vector is zero length.
+        /// </summary>
+        /// <returns></returns>
+        public Vec3d Unitized()
+        {
+            double d = SquareLength;
+            return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
         }
 
 

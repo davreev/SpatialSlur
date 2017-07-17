@@ -13,11 +13,9 @@ using SpatialSlur.SlurDynamics;
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// Projection based constraint solver based on
-    /// https://www.cs.utah.edu/~ladislav/bouaziz14projective/bouaziz14projective.pdf
-    /// http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf
+    /// Projection based constraint solver for geometry optimization and form-finding. 
+    /// This is an implementation of principles described in http://lgg.epfl.ch/publications/2012/shapeup/paper.pdf and follows many of the implementation details given in http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf.
     /// </summary>
-    /// <typeparam name="P"></typeparam>
     [Serializable]
     public class ConstraintSolver
     {
@@ -75,13 +73,13 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
+        /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        public void Step(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
+        public void Step(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
         {
-            LocalStep(particles, constraints);
-            GlobalStep(particles, constraints);
-            UpdateParticles(particles);
+            LocalStep(bodies, constraints);
+            GlobalStep(bodies, constraints);
+            UpdateBodies(bodies);
             _stepCount++;
         }
 
@@ -89,13 +87,13 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
+        /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        public void StepParallel(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
+        public void StepParallel(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
         {
-            LocalStepParallel(particles, constraints);
-            GlobalStep(particles, constraints);
-            UpdateParticlesParallel(particles);
+            LocalStepParallel(bodies, constraints);
+            GlobalStep(bodies, constraints);
+            UpdateBodiesParallel(bodies);
             _stepCount++;
         }
 
@@ -103,26 +101,26 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
+        /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        private void LocalStep(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
+        private void LocalStep(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
         {
             for (int i = 0; i < constraints.Count; i++)
-                constraints[i].Calculate(particles);
+                constraints[i].Calculate(bodies);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
+        /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        private void LocalStepParallel(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
+        private void LocalStepParallel(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
         {
             Parallel.ForEach(Partitioner.Create(0, constraints.Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    constraints[i].Calculate(particles);
+                    constraints[i].Calculate(bodies);
             });
         }
 
@@ -130,19 +128,19 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
+        /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        private void GlobalStep(IReadOnlyList<IBody> particles, IReadOnlyList<IConstraint> constraints)
+        private void GlobalStep(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
         {
             for (int i = 0; i < constraints.Count; i++)
-                constraints[i].Apply(particles);
+                constraints[i].Apply(bodies);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateParticles(IReadOnlyList<IBody> particles)
+        private void UpdateBodies(IReadOnlyList<IBody> bodies)
         {
             _maxDelta = 0.0;
             _maxAngleDelta = 0.0;
@@ -151,9 +149,9 @@ namespace SpatialSlur.SlurDynamics
             var damp = _settings.Damping;
             var dampAng = _settings.AngularDamping;
 
-            for (int i = 0; i < particles.Count; i++)
+            for (int i = 0; i < bodies.Count; i++)
             {
-                var p = particles[i];
+                var p = bodies[i];
                 _maxDelta = Math.Max(_maxDelta, p.UpdatePosition(timeStep, damp));
                 _maxAngleDelta = Math.Max(_maxAngleDelta, p.UpdateRotation(timeStep, dampAng));
             }
@@ -163,7 +161,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateParticlesParallel(IReadOnlyList<IBody> particles)
+        private void UpdateBodiesParallel(IReadOnlyList<IBody> bodies)
         {
             _maxDelta = 0.0;
             _maxAngleDelta = 0.0;
@@ -173,14 +171,14 @@ namespace SpatialSlur.SlurDynamics
             var damp = _settings.Damping;
             var dampAng = _settings.AngularDamping;
 
-            Parallel.ForEach(Partitioner.Create(0, particles.Count), range =>
+            Parallel.ForEach(Partitioner.Create(0, bodies.Count), range =>
             {
                 double dpMax = 0.0;
                 double daMax = 0.0;
 
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
-                    var p = particles[i];
+                    var p = bodies[i];
                     dpMax = Math.Max(dpMax, p.UpdatePosition(timeStep, damp));
                     daMax = Math.Max(daMax, p.UpdateRotation(timeStep, dampAng));
                 }

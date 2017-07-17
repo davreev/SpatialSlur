@@ -20,10 +20,14 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <returns></returns>
-        public static Domain Unit
-        {
-            get { return new Domain(0.0, 1.0); }
-        }
+        public static readonly Domain Zero = new Domain(0.0, 0.0);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static readonly Domain Unit = new Domain(0.0, 1.0);
 
 
         /// <summary>
@@ -208,11 +212,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Domain other, double epsilon)
+        public bool ApproxEquals(Domain other, double tolerance)
         {
-            return Math.Abs(other.T0 - T0) < epsilon && Math.Abs(other.T1 - T1) < epsilon;
+            return Math.Abs(other.T0 - T0) < tolerance && Math.Abs(other.T1 - T1) < tolerance;
         }
 
 

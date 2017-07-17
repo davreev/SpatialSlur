@@ -13,12 +13,13 @@ namespace SpatialSlur.SlurCore
     public struct AxisAngle3d
     {
         private Vec3d _axis;
+        private double _angle;
         private double _cosAngle;
         private double _sinAngle;
 
 
         /// <summary>
-        /// 
+        /// Unit vector indicating the axis of rotation.
         /// </summary>
         public Vec3d Axis
         {
@@ -38,8 +39,13 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public double Angle
         {
+            get
+            {
+                return _angle;
+            }
             set
             {
+                _angle = value;
                 _cosAngle = Math.Cos(value);
                 _sinAngle = Math.Sin(value);
             }
@@ -65,7 +71,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns false if the length of the axis is zero.
+        /// Returns false if the axis is undefined.
         /// </summary>
         public bool IsValid
         {
@@ -103,18 +109,18 @@ namespace SpatialSlur.SlurCore
         /// <param name="vector"></param>
         public void Set(Vec3d vector)
         {
-            var t = vector.SquareLength;
+            var d = vector.SquareLength;
 
-            if (t > 0.0)
+            if (d > 0.0)
             {
-                t = Math.Sqrt(t);
-                _axis = vector / t;
-                _cosAngle = Math.Cos(t);
-                _sinAngle = Math.Sin(t);
+                d = Math.Sqrt(d);
+                _axis = vector / d;
+                Angle = d;
             }
             else
             {
                 _axis = new Vec3d();
+                _angle = 0.0;
                 _cosAngle = 1.0;
                 _sinAngle = 0.0;
             }

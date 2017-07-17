@@ -23,19 +23,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[] v0, double[] v1, double epsilon)
+        public static bool ApproxEquals(double[] v0, double[] v1, double tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[] v0, double[] v1, double epsilon, int count)
+        public static bool ApproxEquals(double[] v0, double[] v1, double tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon) return false;
+                if (Math.Abs(v1[i] - v0[i]) >= tolerance) return false;
 
             return true;
         }
@@ -44,19 +44,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[] v0, double[] v1, double[] epsilon)
+        public static bool ApproxEquals(double[] v0, double[] v1, double[] tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[] v0, double[] v1, double[] epsilon, int count)
+        public static bool ApproxEquals(double[] v0, double[] v1, double[] tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon[i]) return false;
+                if (Math.Abs(v1[i] - v0[i]) >= tolerance[i]) return false;
 
             return true;
         }
@@ -1584,19 +1584,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, double epsilon)
+        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, double tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, double epsilon, int count)
+        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, double tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (!v0[i].ApproxEquals(v1[i], epsilon)) return false;
+                if (!v0[i].ApproxEquals(v1[i], tolerance)) return false;
 
             return true;
         }
@@ -1605,19 +1605,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d epsilon)
+        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d epsilon, int count)
+        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (!v0[i].ApproxEquals(v1[i], epsilon)) return false;
+                if (!v0[i].ApproxEquals(v1[i], tolerance)) return false;
 
             return true;
         }
@@ -1626,19 +1626,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d[] epsilon)
+        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d[] tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d[] epsilon, int count)
+        public static bool ApproxEquals(Vec2d[] v0, Vec2d[] v1, Vec2d[] tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (!v0[i].ApproxEquals(v1[i], epsilon[i])) return false;
+                if (!v0[i].ApproxEquals(v1[i], tolerance[i])) return false;
 
             return true;
         }
@@ -3351,19 +3351,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, double epsilon)
+        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, double tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, double epsilon, int count)
+        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, double tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (!v0[i].ApproxEquals(v1[i], epsilon)) return false;
+                if (!v0[i].ApproxEquals(v1[i], tolerance)) return false;
 
             return true;
         }
@@ -3372,19 +3372,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d epsilon)
+        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d epsilon, int count)
+        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (!v0[i].ApproxEquals(v1[i], epsilon)) return false;
+                if (!v0[i].ApproxEquals(v1[i], tolerance)) return false;
 
             return true;
         }
@@ -3393,19 +3393,19 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d[] epsilon)
+        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d[] tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d[] epsilon, int count)
+        public static bool ApproxEquals(Vec3d[] v0, Vec3d[] v1, Vec3d[] tolerance, int count)
         {
             for (int i = 0; i < count; i++)
-                if (!v0[i].ApproxEquals(v1[i], epsilon[i])) return false;
+                if (!v0[i].ApproxEquals(v1[i], tolerance[i])) return false;
 
             return true;
         }
@@ -5118,28 +5118,28 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double epsilon)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length, v0[0].Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length, v0[0].Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double epsilon, int count)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double tolerance, int count)
         {
-            return ApproxEquals(v0, v1, epsilon, count, v0[0].Length);
+            return ApproxEquals(v0, v1, tolerance, count, v0[0].Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double epsilon, int count, int size)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double tolerance, int count, int size)
         {
             for (int i = 0; i < count; i++)
-                if (!ApproxEquals(v0[i], v1[i], epsilon, size)) return false;
+                if (!ApproxEquals(v0[i], v1[i], tolerance, size)) return false;
 
             return true;
         }
@@ -5148,28 +5148,28 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double[] epsilon)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double[] tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length, v0[0].Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length, v0[0].Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double[] epsilon, int count)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double[] tolerance, int count)
         {
-            return ApproxEquals(v0, v1, epsilon, count, v0[0].Length);
+            return ApproxEquals(v0, v1, tolerance, count, v0[0].Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double[] epsilon, int count, int size)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double[] tolerance, int count, int size)
         {
             for (int i = 0; i < count; i++)
-                if (!ApproxEquals(v0[i], v1[i], epsilon, size)) return false;
+                if (!ApproxEquals(v0[i], v1[i], tolerance, size)) return false;
 
             return true;
         }
@@ -5178,28 +5178,28 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double[][] epsilon)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double[][] tolerance)
         {
-            return ApproxEquals(v0, v1, epsilon, v0.Length, v0[0].Length);
+            return ApproxEquals(v0, v1, tolerance, v0.Length, v0[0].Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double[][] epsilon, int count)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double[][] tolerance, int count)
         {
-            return ApproxEquals(v0, v1, epsilon, count, v0[0].Length);
+            return ApproxEquals(v0, v1, tolerance, count, v0[0].Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(double[][] v0, double[][] v1, double[][] epsilon, int count, int size)
+        public static bool ApproxEquals(double[][] v0, double[][] v1, double[][] tolerance, int count, int size)
         {
             for (int i = 0; i < count; i++)
-                if (!ApproxEquals(v0[i], v1[i], epsilon[i], size)) return false;
+                if (!ApproxEquals(v0[i], v1[i], tolerance[i], size)) return false;
 
             return true;
         }

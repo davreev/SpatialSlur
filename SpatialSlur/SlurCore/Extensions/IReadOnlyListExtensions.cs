@@ -707,11 +707,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, double epsilon = 1.0e-8)
+        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
         {
-            return RemoveDuplicates(points, out int[] indexMap, epsilon);
+            return RemoveDuplicates(points, out int[] indexMap, tolerance);
         }
 
 
@@ -719,13 +719,13 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, out int[] indexMap, double epsilon = 1.0e-8)
+        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var hash = new SpatialHash2d<int>(points.Count << 2, epsilon * 2.0);
-            return RemoveDuplicates(points, hash, out indexMap, epsilon);
+            var hash = new SpatialHash2d<int>(points.Count << 2, tolerance * 2.0);
+            return RemoveDuplicates(points, hash, out indexMap, tolerance);
         }
 
 
@@ -733,11 +733,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <param name="hash"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, SpatialHash2d<int> hash, out int[] indexMap, double epsilon = 1.0e-8)
+        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, SpatialHash2d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
         {
             List<Vec2d> result = new List<Vec2d>();
             var map = new int[points.Count];
@@ -747,7 +747,7 @@ namespace SpatialSlur.SlurCore
             for (int i = 0; i < points.Count; i++)
             {
                 var p = points[i];
-                var d = new Domain2d(p, epsilon, epsilon);
+                var d = new Domain2d(p, tolerance, tolerance);
 
                 // if search was aborted, then a duplicate was found
                 if (hash.Search(d, Callback))
@@ -759,7 +759,7 @@ namespace SpatialSlur.SlurCore
 
                 bool Callback(int j)
                 {
-                    if (p.ApproxEquals(result[j], epsilon)) { map[i] = j; return false; }
+                    if (p.ApproxEquals(result[j], tolerance)) { map[i] = j; return false; }
                     return true;
                 }
             }
@@ -773,13 +773,13 @@ namespace SpatialSlur.SlurCore
         /// For each point, returns the index of the first coincident point within the list. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash2d<int>(points.Count << 2, epsilon * 2.0);
-            return GetFirstCoincident(points, hash, epsilon, parallel);
+            var hash = new SpatialHash2d<int>(points.Count << 2, tolerance * 2.0);
+            return GetFirstCoincident(points, hash, tolerance, parallel);
         }
 
 
@@ -787,11 +787,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, SpatialHash2d<int> hash, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, SpatialHash2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[points.Count];
             hash.Clear();
@@ -806,13 +806,13 @@ namespace SpatialSlur.SlurCore
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var p = points[i];
-                    var d = new Domain2d(p, epsilon, epsilon);
+                    var d = new Domain2d(p, tolerance, tolerance);
                     result[i] = -1; // set to default
 
                     hash.Search(d, j =>
                     {
                         if (j == i) return true; // skip self
-                        if (p.ApproxEquals(points[j], epsilon)) { result[i] = j; return false; }
+                        if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
                         return true;
                     });
                 }
@@ -832,13 +832,13 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash2d<int>(pointsB.Count << 2, epsilon * 2.0);
-            return GetFirstCoincident(pointsA, pointsB, hash, epsilon, parallel);
+            var hash = new SpatialHash2d<int>(pointsB.Count << 2, tolerance * 2.0);
+            return GetFirstCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
 
@@ -847,11 +847,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, SpatialHash2d<int> hash, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, SpatialHash2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[pointsA.Count];
             hash.Clear();
@@ -866,12 +866,12 @@ namespace SpatialSlur.SlurCore
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var p = pointsA[i];
-                    var d = new Domain2d(p, epsilon, epsilon);
+                    var d = new Domain2d(p, tolerance, tolerance);
                     result[i] = -1; // set to default
 
                     hash.Search(d, j =>
                     {
-                        if (p.ApproxEquals(pointsB[j], epsilon)) { result[i] = j; return false; }
+                        if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
                         return true;
                     });
                 }
@@ -892,13 +892,13 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double epsilon = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash2d<int>(pointsB.Count << 2, epsilon * 2.0);
-            return GetAllCoincident(pointsA, pointsB, hash, epsilon, parallel);
+            var hash = new SpatialHash2d<int>(pointsB.Count << 2, tolerance * 2.0);
+            return GetAllCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
 
@@ -907,11 +907,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, SpatialHash2d<int> hash, double epsilon = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, SpatialHash2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             List<int>[] result = new List<int>[pointsA.Count];
             hash.Clear();
@@ -926,12 +926,12 @@ namespace SpatialSlur.SlurCore
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var p = pointsA[i];
-                    var d = new Domain2d(p, epsilon, epsilon);
+                    var d = new Domain2d(p, tolerance, tolerance);
                     var ids = new List<int>();
 
                     hash.Search(d, j =>
                     {
-                        if (p.ApproxEquals(pointsB[j], epsilon)) ids.Add(j);
+                        if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
                         return true;
                     });
 
@@ -975,11 +975,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, double epsilon = 1.0e-8)
+        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
         {
-            return RemoveDuplicates(points, out int[] indexMap, epsilon);
+            return RemoveDuplicates(points, out int[] indexMap, tolerance);
         }
 
 
@@ -987,13 +987,13 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, out int[] indexMap, double epsilon = 1.0e-8)
+        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var hash = new SpatialHash3d<int>(points.Count << 2, epsilon * 2.0);
-            return RemoveDuplicates(points, hash, out indexMap, epsilon);
+            var hash = new SpatialHash3d<int>(points.Count << 2, tolerance * 2.0);
+            return RemoveDuplicates(points, hash, out indexMap, tolerance);
         }
 
 
@@ -1001,11 +1001,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <param name="hash"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, SpatialHash3d<int> hash, out int[] indexMap, double epsilon = 1.0e-8)
+        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, SpatialHash3d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
         {
             var result = new List<Vec3d>();
             var map = new int[points.Count];
@@ -1015,7 +1015,7 @@ namespace SpatialSlur.SlurCore
             for (int i = 0; i < points.Count; i++)
             {
                 var p = points[i];
-                var d = new Domain3d(p, epsilon, epsilon, epsilon);
+                var d = new Domain3d(p, tolerance, tolerance, tolerance);
 
                 // if search was aborted, then a duplicate was found
                 if (hash.Search(d, Callback))
@@ -1027,7 +1027,7 @@ namespace SpatialSlur.SlurCore
 
                 bool Callback(int j)
                 {
-                    if (p.ApproxEquals(result[j], epsilon)) { map[i] = j; return false; }
+                    if (p.ApproxEquals(result[j], tolerance)) { map[i] = j; return false; }
                     return true;
                 }
             }
@@ -1041,13 +1041,13 @@ namespace SpatialSlur.SlurCore
         /// For each point, returns the index of the first coincident point within the list. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash3d<int>(points.Count << 2, epsilon * 2.0);
-            return GetFirstCoincident(points, hash, epsilon, parallel);
+            var hash = new SpatialHash3d<int>(points.Count << 2, tolerance * 2.0);
+            return GetFirstCoincident(points, hash, tolerance, parallel);
         }
 
 
@@ -1055,11 +1055,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, SpatialHash3d<int> hash, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, SpatialHash3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[points.Count];
             hash.Clear();
@@ -1074,13 +1074,13 @@ namespace SpatialSlur.SlurCore
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var p = points[i];
-                    var d = new Domain3d(p, epsilon, epsilon, epsilon);
+                    var d = new Domain3d(p, tolerance, tolerance, tolerance);
                     result[i] = -1; // set to default
 
                     hash.Search(d, j =>
                     {
                         if (j == i) return true; // skip self
-                        if (p.ApproxEquals(points[j], epsilon)) { result[i] = j; return false; }
+                        if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
                         return true;
                     });
                 }
@@ -1100,13 +1100,13 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash3d<int>(pointsB.Count << 2, epsilon * 2.0);
-            return GetFirstCoincident(pointsA, pointsB, hash, epsilon, parallel);
+            var hash = new SpatialHash3d<int>(pointsB.Count << 2, tolerance * 2.0);
+            return GetFirstCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
 
@@ -1115,11 +1115,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, SpatialHash3d<int> hash, double epsilon = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, SpatialHash3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[pointsA.Count];
             hash.Clear();
@@ -1134,12 +1134,12 @@ namespace SpatialSlur.SlurCore
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var p = pointsA[i];
-                    var d = new Domain3d(p, epsilon, epsilon, epsilon);
+                    var d = new Domain3d(p, tolerance, tolerance, tolerance);
                     result[i] = -1; // set to default
 
                     hash.Search(d, j =>
                     {
-                        if (p.ApproxEquals(pointsB[j], epsilon)) { result[i] = j; return false; }
+                        if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
                         return true;
                     });
                 }
@@ -1160,13 +1160,13 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double epsilon = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash3d<int>(pointsB.Count << 2, epsilon * 2.0);
-            return GetAllCoincident(pointsA, pointsB, hash, epsilon, parallel);
+            var hash = new SpatialHash3d<int>(pointsB.Count << 2, tolerance * 2.0);
+            return GetAllCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
 
@@ -1175,11 +1175,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, SpatialHash3d<int> hash, double epsilon = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, SpatialHash3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             List<int>[] result = new List<int>[pointsA.Count];
             hash.Clear();
@@ -1194,12 +1194,12 @@ namespace SpatialSlur.SlurCore
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var p = pointsA[i];
-                    var d = new Domain3d(p, epsilon, epsilon, epsilon);
+                    var d = new Domain3d(p, tolerance, tolerance, tolerance);
                     var ids = new List<int>();
 
                     hash.Search(d, j =>
                     {
-                        if (p.ApproxEquals(pointsB[j], epsilon)) ids.Add(j);
+                        if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
                         return true;
                     });
 

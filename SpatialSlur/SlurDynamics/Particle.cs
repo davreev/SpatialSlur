@@ -20,8 +20,8 @@ namespace SpatialSlur.SlurDynamics
         private Vec3d _position;
         private Vec3d _velocity;
 
-        private Vec3d _forceSum;
-        private double _forceWeightSum;
+        private Vec3d _moveSum;
+        private double _moveWeightSum;
 
         private double _mass = 1.0;
 
@@ -61,6 +61,7 @@ namespace SpatialSlur.SlurDynamics
             }
         }
 
+
         /// <summary>
         /// 
         /// </summary>
@@ -82,12 +83,12 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="move"></param>
+        /// <param name="delta"></param>
         /// <param name="weight"></param>
-        public void ApplyMove(Vec3d move, double weight)
+        public void ApplyMove(Vec3d delta, double weight)
         {
-            _forceSum += move * weight;
-            _forceWeightSum += weight;
+            _moveSum += delta * weight;
+            _moveWeightSum += weight;
         }
 
 
@@ -101,13 +102,13 @@ namespace SpatialSlur.SlurDynamics
         {
             _velocity *= damping;
 
-            if (_forceWeightSum > 0.0)
-                _velocity += _forceSum * (timeStep / (_forceWeightSum * _mass));
+            if (_moveWeightSum > 0.0)
+                _velocity += _moveSum * (timeStep / (_moveWeightSum * _mass));
 
             _position += _velocity * timeStep;
 
-            _forceSum.Set(0.0);
-            _forceWeightSum = 0.0;
+            _moveSum.Set(0.0);
+            _moveWeightSum = 0.0;
 
             return _velocity.SquareLength;
         }
@@ -115,7 +116,7 @@ namespace SpatialSlur.SlurDynamics
 
         #region Explicit interface implementations
 
-        private static readonly string _message = "This implementation of IParticle does not support rotation.";
+        private static readonly string _message = "This implementation of IBody does not support rotation.";
 
 
         /// <summary>
@@ -132,7 +133,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         Rotation3d IBody.Rotation
         {
-            get { throw new NotSupportedException(_message); }
+            get { return Rotation3d.Identity; }
             set { throw new NotSupportedException(_message); }
         }
 
@@ -142,7 +143,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         Vec3d IBody.AngularVelocity
         {
-            get { throw new NotSupportedException(_message); }
+            get { return Vec3d.Zero; }
             set { throw new NotSupportedException(_message); }
         }
 

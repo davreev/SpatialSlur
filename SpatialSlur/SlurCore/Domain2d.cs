@@ -281,11 +281,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Domain2d other, double epsilon)
+        public bool ApproxEquals(Domain2d other, double tolerance)
         {
-            return X.ApproxEquals(other.X, epsilon) && Y.ApproxEquals(other.Y, epsilon);
+            return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance);
         }
 
 

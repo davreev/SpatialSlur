@@ -14,31 +14,14 @@ namespace SpatialSlur.SlurCore
     {
         #region Static
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec3i UnitX
-        {
-            get { return new Vec3i(1, 0, 0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec3i UnitY
-        {
-            get { return new Vec3i(0, 1, 0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec3i UnitZ
-        {
-            get { return new Vec3i(0, 0, 1); }
-        }
+        /// <summary></summary>
+        public static readonly Vec3i Zero = new Vec3i(0);
+        /// <summary></summary>
+        public static readonly Vec3i UnitX = new Vec3i(1, 0, 0);
+        /// <summary></summary>
+        public static readonly Vec3i UnitY = new Vec3i(0, 1, 0);
+        /// <summary></summary>
+        public static readonly Vec3i UnitZ = new Vec3i(0, 0, 1);
 
 
         /// <summary>

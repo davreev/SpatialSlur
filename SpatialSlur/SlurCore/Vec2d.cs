@@ -18,22 +18,12 @@ namespace SpatialSlur.SlurCore
     {
         #region Static
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec2d UnitX
-        {
-            get { return new Vec2d(1.0, 0.0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static Vec2d UnitY
-        {
-            get { return new Vec2d(0.0, 1.0); }
-        }
+        /// <summary></summary>
+        public static readonly Vec2d Zero = new Vec2d(0.0);
+        /// <summary></summary>
+        public static readonly Vec2d UnitX = new Vec2d(1.0, 0.0);
+        /// <summary></summary>
+        public static readonly Vec2d UnitY = new Vec2d(0.0, 1.0);
 
 
         /// <summary>
@@ -493,18 +483,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double epsilon)
+        public bool IsZero(double tolerance)
         {
-            return (Math.Abs(X) < epsilon) && (Math.Abs(Y) < epsilon);
+            return (Math.Abs(X) < tolerance) && (Math.Abs(Y) < tolerance);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double epsilon)
+        public bool IsUnit(double tolerance)
         {
-            return Math.Abs(SquareLength - 1.0) < epsilon;
+            return Math.Abs(SquareLength - 1.0) < tolerance;
         }
 
 
@@ -566,11 +556,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vec2d other, double epsilon)
+        public bool ApproxEquals(Vec2d other, double tolerance)
         {
-            return (Math.Abs(other.X - X) < epsilon) && (Math.Abs(other.Y - Y) < epsilon);
+            return (Math.Abs(other.X - X) < tolerance) && (Math.Abs(other.Y - Y) < tolerance);
         }
 
 
@@ -578,11 +568,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="other"></param>
-        /// <param name="epsilon"></param>
+        /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vec2d other, Vec2d epsilon)
+        public bool ApproxEquals(Vec2d other, Vec2d tolerance)
         {
-            return (Math.Abs(other.X - X) < epsilon.X) && (Math.Abs(other.Y - Y) < epsilon.Y);
+            return (Math.Abs(other.X - X) < tolerance.X) && (Math.Abs(other.Y - Y) < tolerance.Y);
         }
 
 
@@ -642,6 +632,18 @@ namespace SpatialSlur.SlurCore
             }
 
             return false;
+        }
+
+
+        /// <summary>
+        /// Returns a unitized copy of this vector.
+        /// Returns the zero vector if this vector is zero length.
+        /// </summary>
+        /// <returns></returns>
+        public Vec2d Unitized()
+        {
+            double d = SquareLength;
+            return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
         }
 
 

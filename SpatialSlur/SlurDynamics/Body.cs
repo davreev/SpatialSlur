@@ -20,13 +20,13 @@ namespace SpatialSlur.SlurDynamics
     {
         private Vec3d _position;
         private Vec3d _velocity;
-        private Vec3d _forceSum;
-        private double _forceWeightSum;
+        private Vec3d _moveSum;
+        private double _moveWeightSum;
 
-        private Rotation3d _rotation;
+        private Rotation3d _rotation = Rotation3d.Identity;
         private Vec3d _angleVelocity;
-        private Vec3d _torqueSum; // direction = rotation axis, length = rotation angle
-        private double _torqueWeightSum;
+        private Vec3d _rotateSum; // direction = rotation axis, length = rotation angle
+        private double _rotateWeightSum;
 
         private double _mass = 1.0;
 
@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurDynamics
         public Rotation3d Rotation
         {
             get { return _rotation; }
-            set { _rotation = value ?? throw new ArgumentNullException(); }
+            set { _rotation = value; }
         }
 
 
@@ -92,7 +92,6 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         public Body()
         {
-            _rotation = new Rotation3d();
         }
 
 
@@ -103,7 +102,6 @@ namespace SpatialSlur.SlurDynamics
         public Body(Vec3d position)
         {
             _position = position;
-            Rotation = new Rotation3d();
         }
 
 
@@ -115,32 +113,19 @@ namespace SpatialSlur.SlurDynamics
         public Body(Vec3d position, Rotation3d rotation)
         {
             _position = position;
-            Rotation = rotation;
+            _rotation = rotation;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="position"></param>
-        /// <param name="rotationX"></param>
-        /// <param name="rotationY"></param>
-        public Body(Vec3d position, Vec3d rotationX, Vec3d rotationY)
-        {
-            _position = position;
-            _rotation = new Rotation3d(rotationX, rotationY);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="move"></param>
+        /// <param name="delta"></param>
         /// <param name="weight"></param>
-        public void ApplyMove(Vec3d move, double weight)
+        public void ApplyMove(Vec3d delta, double weight)
         {
-            _forceSum += move * weight;
-            _forceWeightSum += weight;
+            _moveSum += delta * weight;
+            _moveWeightSum += weight;
         }
 
 
@@ -151,8 +136,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         public void ApplyRotate(Vec3d delta, double weight)
         {
-            _torqueSum += delta * weight;
-            _torqueWeightSum += weight;
+            _rotateSum += delta * weight;
+            _rotateWeightSum += weight;
         }
 
 
@@ -166,13 +151,13 @@ namespace SpatialSlur.SlurDynamics
         {
             _velocity *= damping;
 
-            if (_forceWeightSum > 0.0)
-                _velocity += _forceSum * (timeStep / (_forceWeightSum * _mass));
+            if (_moveWeightSum > 0.0)
+                _velocity += _moveSum * (timeStep / (_moveWeightSum * _mass));
 
             _position += _velocity * timeStep;
 
-            _forceSum.Set(0.0);
-            _forceWeightSum = 0.0;
+            _moveSum.Set(0.0);
+            _moveWeightSum = 0.0;
 
             return _velocity.SquareLength;
         }
@@ -187,13 +172,13 @@ namespace SpatialSlur.SlurDynamics
         {
             _angleVelocity *= damping;
 
-            if (_torqueWeightSum > 0.0)
-                _angleVelocity += _torqueSum  * (timeStep / (_torqueWeightSum * Mass));
+            if (_rotateWeightSum > 0.0)
+                _angleVelocity += _rotateSum  * (timeStep / (_rotateWeightSum * _mass));
 
-            _rotation.Rotate(_angleVelocity * timeStep);
+            _rotation.Rotate(new AxisAngle3d(_angleVelocity * timeStep));
 
-            _torqueSum.Set(0.0);
-            _torqueWeightSum = 0.0;
+            _rotateSum.Set(0.0);
+            _rotateWeightSum = 0.0;
 
             return _angleVelocity.SquareLength;
         }

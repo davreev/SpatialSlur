@@ -168,9 +168,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(this IDiscreteField<double> f0, IDiscreteField<double> f1, double epsilon)
+        public static bool ApproxEquals(this IDiscreteField<double> f0, IDiscreteField<double> f1, double tolerance)
         {
-            return ArrayMath.ApproxEquals(f0.Values, f1.Values, epsilon, f0.Count);
+            return ArrayMath.ApproxEquals(f0.Values, f1.Values, tolerance, f0.Count);
         }
 
 
@@ -445,9 +445,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, Vec2d epsilon)
+        public static bool ApproxEquals(this IDiscreteField<Vec2d> f0, IDiscreteField<Vec2d> f1, Vec2d tolerance)
         {
-            return ArrayMath.ApproxEquals(f0.Values, f1.Values, epsilon, f0.Count);
+            return ArrayMath.ApproxEquals(f0.Values, f1.Values, tolerance, f0.Count);
         }
 
 
@@ -680,9 +680,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, Vec3d epsilon)
+        public static bool ApproxEquals(this IDiscreteField<Vec3d> f0, IDiscreteField<Vec3d> f1, Vec3d tolerance)
         {
-            return ArrayMath.ApproxEquals(f0.Values, f1.Values, epsilon, f0.Count);
+            return ArrayMath.ApproxEquals(f0.Values, f1.Values, tolerance, f0.Count);
         }
 
 

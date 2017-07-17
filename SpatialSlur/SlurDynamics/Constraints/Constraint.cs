@@ -56,19 +56,19 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public abstract void Calculate(IReadOnlyList<IBody> particles);
+        /// <param name="bodies"></param>
+        public abstract void Calculate(IReadOnlyList<IBody> bodies);
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Apply(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
             {
-                var p = particles[h];
+                var p = bodies[h];
                 p.ApplyMove(h.Delta, Weight);
                 p.ApplyRotate(h.AngleDelta, Weight);
             }
