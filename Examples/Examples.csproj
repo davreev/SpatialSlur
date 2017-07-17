@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\SwapTest.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="HeMeshFromFile.cs" />
     <Compile Include="Paths.cs" />
@@ -65,7 +66,6 @@
     <None Include="Resources\face.obj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Debug\" />
     <Folder Include="WIP\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
