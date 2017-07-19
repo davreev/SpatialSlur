@@ -268,7 +268,7 @@ namespace SpatialSlur.SlurMesh
                 do
                 {
                     yield return he;
-                    he = he.Twin.NextInFace;
+                    he = he.NextAtStart;
                 } while (he != this);
             }
         }

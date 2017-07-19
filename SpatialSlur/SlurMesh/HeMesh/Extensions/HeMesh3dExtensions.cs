@@ -110,7 +110,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="path"></param>
         public static void WriteToOBJ(this HeMesh<V, E, F> mesh, string path)
         {
-            HeMeshIO.WriteOBJ(mesh, path, v => v.Position, v => v.Normal, v => v.TexCoord);
+            HeMeshIO.WriteOBJ(mesh, path, v => v.Position, v => v.Normal, v => v.Texture);
         }
 
         

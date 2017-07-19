@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurMesh
             /// <summary></summary>
             public Vec3d Normal { get; set; }
             /// <summary></summary>
-            public Vec2d TexCoord { get; set; }
+            public Vec2d Texture { get; set; }
         }
 
 

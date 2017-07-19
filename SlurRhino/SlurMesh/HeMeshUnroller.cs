@@ -31,11 +31,29 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="first"></param>
         public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first)
+         where V : HeVertex<V, E, F>, IVertex3d
+         where E : Halfedge<V, E, F>
+         where F : HeFace<V, E, F>
+        {
+            Unroll(mesh, first, v => v.Position, (v, p) => v.Position = p, delegate { });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="first"></param>
+        /// <param name="setHandle"></param>
+        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first, Action<E, int> setHandle)
             where V : HeVertex<V, E, F>, IVertex3d
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            Unroll(mesh, first, v => v.Position, (v, p) => v.Position = p);
+            Unroll(mesh, first, v => v.Position, (v, p) => v.Position = p, setHandle);
         }
 
 
@@ -54,8 +72,26 @@ namespace SpatialSlur.SlurRhino
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            var unroller = new HeMeshUnroller<V, E, F>(mesh, first, getPosition, setPosition);
-            unroller.DetachFaceCycles();
+            Unroll(mesh, first, getPosition, setPosition, delegate { });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="first"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="setPosition"></param>
+        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition, Action<E, int> setHandle)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            var unroller = new HeMeshUnroller<V, E, F>(mesh, first, getPosition, setPosition, setHandle);
             unroller.Unroll();
         }
     }
@@ -75,10 +111,6 @@ namespace SpatialSlur.SlurRhino
         private HeMesh<V, E, F> _mesh;
         private F _first;
 
-        private Stack<V> _vertStack;
-        private int[] _vertTags;
-        private int _currTag = 0;
-
         private Func<V, Vec3d> _getPosition;
         private Action<V, Vec3d> _setPosition;
 
@@ -86,7 +118,7 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        internal HeMeshUnroller(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition)
+        public HeMeshUnroller(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition, Action<E, int> setHandle)
         {
             mesh.Faces.ContainsCheck(first);
             first.RemovedCheck();
@@ -94,78 +126,45 @@ namespace SpatialSlur.SlurRhino
             _mesh = mesh;
             _first = first;
 
-            _vertStack = new Stack<V>();
-            _vertTags = new int[_mesh.Vertices.Count];
             _getPosition = getPosition;
             _setPosition = setPosition;
+      
+            DetachFaceCycles(setHandle);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public void DetachFaceCycles()
+        public void DetachFaceCycles(Action<E, int> setHandle)
         {
-            var detach = new List<E>();
-            var currTag = _mesh.Faces.NextTag;
-       
-            foreach (var he in _mesh.GetFacesBreadthFirst(_first.Yield()))
-            {
-                var f = he.Face;
-                
-                if (f.Tag == currTag)
-                    detach.Add(he);
-                else
-                    f.Tag = currTag; 
-            }
+            var currTag = _mesh.Halfedges.NextTag;
 
-            foreach (var he0 in detach)
+            // tag traversed edges during BFS
+            foreach (var he in _mesh.GetFacesBreadthFirst(_first.Yield()))
+                he.Older.Tag = currTag;
+
+            var edges = _mesh.Edges;
+            var ne = edges.Count;
+
+            // detach all untagged edges
+            for (int i = 0; i < ne; i++)
             {
-                var he1 = _mesh.DetachEdge(he0);
+                var he0 = edges[i];
+
+                if (he0.IsRemoved || he0.IsBoundary || he0.Tag == currTag)
+                {
+                    setHandle(he0, -1); // no child edge
+                    continue;
+                }
+
+                var he1 = _mesh.DetachEdgeImpl(he0);
+                setHandle(he0, he1);
+
                 _setPosition(he1.Start, _getPosition(he0.Start));
                 _setPosition(he1.End, _getPosition(he0.End));
             }
         }
-
-
-        /*
-        /// <summary>
-        /// Returns true if the mesh has any number of cycles in the face topology.
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="start"></param>
-        /// <returns></returns>
-        bool HasFaceCycles()
-        {
-            var faceStack = new Stack<F>();
-            var currTag = _mesh.Faces.NextTag;
-
-            faceStack.Push(_first);
-            _first.Tag = currTag;
-
-            while (faceStack.Count > 0)
-            {
-                var f0 = faceStack.Pop();
-                int count = 0;
-
-                foreach (var f1 in f0.AdjacentFaces)
-                {
-                    if (f1.Tag == currTag)
-                    {
-                        count++;
-                        continue;
-                    }
-                    
-                    faceStack.Push(f1);
-                    f1.Tag = currTag;
-                }
-
-                if (count > 1) return true;
-            }
-
-            return false;
-        }
-        */
 
 
         /// <summary>
@@ -173,36 +172,77 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         public void Unroll()
         {
+            var vertTags = new int[_mesh.Vertices.Count];
+            int currTag = 0;
+
+            var vertStack = new Stack<V>();
             var hedgeStack = new Stack<E>();
 
-            // push twins of halfedges in first face
+            // push twin of each halfedge in the first face
             foreach (var he in _first.Halfedges)
             {
                 if (!he.IsBoundary)
-                {
                     hedgeStack.Push(he.Twin);
-                    _vertTags[he.Start] = -1;
-                }
             }
 
             // search
             while (hedgeStack.Count > 0)
             {
                 var he0 = hedgeStack.Pop();
-                var t0 = GetHalfedgeTransform(he0);
+                var xform = GetHalfedgeTransform(he0);
 
-                // Transform all verts ahead of stack
-                foreach (var v in DepthFirstFrom(he0.Start))
-                    _setPosition(v, t0.ApplyPosition(_getPosition(v)));
+                foreach (var v in DepthFirstFrom(he0, vertStack, vertTags, ++currTag))
+                    _setPosition(v, xform.Apply(_getPosition(v), true));
 
                 // Push other interior edges
-                foreach(var he1 in he0.CirculateFace.Skip(1))
+                foreach (var he1 in he0.CirculateFace.Skip(1))
                 {
                     if (!he1.IsBoundary)
-                    {
                         hedgeStack.Push(he1.Twin);
-                        _vertTags[he1.Start] = -1;
-                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="stack"></param>
+        /// <param name="tags"></param>
+        /// <param name="currTag"></param>
+        /// <returns></returns>
+        private IEnumerable<V> DepthFirstFrom(E first, Stack<V> stack, int[] tags, int currTag)
+        {
+            var itr = first.CirculateFace.GetEnumerator();
+
+            // tag first 2
+            for(int i = 0; i < 2; i++)
+            {
+                itr.MoveNext();
+                var v = itr.Current.Start;
+                tags[v] = currTag;
+            }
+
+            // tag and push remaining
+            while(itr.MoveNext())
+            {
+                var v = itr.Current.Start;
+                stack.Push(v);
+                tags[v] = currTag;
+            }
+
+            // dfs from first
+            while (stack.Count > 0)
+            {
+                var v0 = stack.Pop();
+                yield return v0;
+
+                foreach (var v1 in v0.ConnectedVertices)
+                {
+                    if (tags[v1] == currTag) continue; // skip tagged
+                    stack.Push(v1);
+                    tags[v1] = currTag;
                 }
             }
         }
@@ -225,44 +265,10 @@ namespace SpatialSlur.SlurRhino
             Vec3d p3 = (_getPosition(he1.PrevInFace.Start) + _getPosition(he1.NextInFace.End)) * 0.5;
 
             Vec3d x = p1 - p0;
-            Vec3d y0 = Vec3d.Cross(p0 - p2, x);
-            Vec3d y1 = Vec3d.Cross(p3 - p1, x);
+            Plane b0 = new Plane(p0.ToPoint3d(), x.ToVector3d(), (p2 - p0).ToVector3d());
+            Plane b1 = new Plane(p0.ToPoint3d(), x.ToVector3d(), (p1 - p3).ToVector3d());
 
-            Plane b0 = new Plane(p0.ToPoint3d(), x.ToVector3d(), y0.ToVector3d());
-            Plane b1 = new Plane(p0.ToPoint3d(), x.ToVector3d(), y1.ToVector3d());
             return Transform.PlaneToPlane(b0, b1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="first"></param>
-        /// <returns></returns>
-        IEnumerable<V> DepthFirstFrom(V first)
-        {
-            _vertStack.Push(first);
-            _vertTags[first] = ++_currTag;
-
-            // dfs from first
-            while (_vertStack.Count > 0)
-            {
-                var v0 = _vertStack.Pop();
-                yield return v0;
-
-                foreach (var v1 in v0.ConnectedVertices)
-                {
-                    int i1 = v1.Index;
-                    int t1 = _vertTags[i1];
-
-                    // skip if already visited
-                    if (t1 == -1 || t1 == _currTag)
-                        continue;
-
-                    _vertStack.Push(v1);
-                    _vertTags[i1] = _currTag;
-                }
-            }
         }
     }
 }

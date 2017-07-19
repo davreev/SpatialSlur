@@ -1604,25 +1604,22 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Assumes the given elements are valid for the operation.
         /// </summary>
-        private TE DetachEdgeImpl(TE hedge)
+        internal TE DetachEdgeImpl(TE hedge)
         {
-            var he0 = hedge;
-            var he1 = he0.Twin;
-
             int mask = 0;
-            if (he0.Start.IsBoundary) mask |= 1;
-            if (he1.Start.IsBoundary) mask |= 2;
+            if (hedge.Start.IsBoundary) mask |= 1;
+            if (hedge.End.IsBoundary) mask |= 2;
 
             switch (mask)
             {
                 case 0:
-                    return DetachEdgeInterior(he0);
+                    return DetachEdgeInterior(hedge);
                 case 1:
-                    return DetachEdgeAtStart(he0);
+                    return DetachEdgeAtStart(hedge);
                 case 2:
-                    return DetachEdgeAtEnd(he0);
+                    return DetachEdgeAtEnd(hedge);
                 case 3:
-                    return DetachEdgeBoundary(he0);
+                    return DetachEdgeBoundary(hedge);
             }
 
             return null;
@@ -1714,19 +1711,11 @@ namespace SpatialSlur.SlurMesh
             v3.FirstOut = he2;
 
             //update halfedge-vertex refs around each new vert
-            var he = he2;
-            do
-            {
+            foreach (var he in he2.CirculateStart.Skip(1))
                 he.Start = v3;
-                he = he.NextAtStart;
-            } while (he != he2);
 
-            he = he3;
-            do
-            {
+            foreach (var he in he3.CirculateStart.Skip(1))
                 he.Start = v2;
-                he = he.NextAtStart;
-            } while (he != he3);
 
             return he3;
         }
@@ -1772,12 +1761,8 @@ namespace SpatialSlur.SlurMesh
             v2.FirstOut = he4;
 
             //update halfedge-vertex refs around each new vert
-            var he = he2;
-            do
-            {
+            foreach (var he in he3.CirculateStart.Skip(1))
                 he.Start = v2;
-                he = he.NextAtStart;
-            } while (he != he2);
 
             return he3;
         }
@@ -1822,12 +1807,8 @@ namespace SpatialSlur.SlurMesh
             v2.FirstOut = he2;
 
             //update halfedge-vertex refs around each new vert
-            var he = he2;
-            do
-            {
+            foreach (var he in he2.CirculateStart.Skip(1))
                 he.Start = v2;
-                he = he.NextAtStart;
-            } while (he != he2);
 
             return he3;
         }
