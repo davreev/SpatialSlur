@@ -13,7 +13,7 @@ namespace SpatialSlur.Examples
     /// <summary>
     /// 
     /// </summary>
-    static class EntryPoint
+    static class Program
     {
         /// <summary>
         /// 

@@ -38,7 +38,7 @@ namespace SpatialSlur.Examples
             {
                 var p = v.Position * scale;
 
-                v.TexCoord = new Vec2d(
+                v.Texture = new Vec2d(
                     ImplicitSurfaces.Gyroid(p.X, p.Y, p.Z),
                     ImplicitSurfaces.Gyroid(p.X + offset, p.Y + offset, p.Z + offset)
                     );

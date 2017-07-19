@@ -50,11 +50,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Console\EntryPoint.cs" />
-    <Compile Include="Console\HeMeshFromFile.cs" />
-    <Compile Include="Console\Paths.cs" />
-    <Compile Include="Console\PlanarizeHeMesh.cs" />
-    <Compile Include="Console\PlanarizeQuad.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="HeMeshFromFile.cs" />
+    <Compile Include="Paths.cs" />
+    <Compile Include="PlanarizeHeMesh.cs" />
+    <Compile Include="PlanarizeQuad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -63,7 +63,11 @@
     <None Include="Grasshopper\170717_Remesher_Example_01.3dm" />
     <None Include="Grasshopper\170717_Remesher_Example_01.gh" />
     <None Include="packages.config" />
+    <None Include="Resources\chair_planar.obj" />
+    <None Include="Resources\chair_smooth.obj" />
     <None Include="Resources\face.obj" />
+    <None Include="Resources\face_mapped.obj" />
+    <None Include="Grasshopper\170718_HeMesh_Unroll_01.gh" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
