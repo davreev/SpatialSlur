@@ -63,7 +63,7 @@ namespace SpatialSlur.SlurMesh
             /// <summary>
             /// 
             /// </summary>
-            Vec2d IVertex3d.TexCoord
+            Vec2d IVertex3d.Texture
             {
                 get { return new Vec2d(); }
                 set { throw new NotImplementedException(); }

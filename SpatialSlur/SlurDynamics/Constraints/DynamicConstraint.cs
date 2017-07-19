@@ -121,8 +121,8 @@ namespace SpatialSlur.SlurDynamics
 
             foreach (var h in _handles)
             {
-                h.Index = itr.Current;
                 itr.MoveNext();
+                h.Index = itr.Current;
             }
         }
     }

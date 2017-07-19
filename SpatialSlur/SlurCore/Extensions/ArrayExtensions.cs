@@ -71,10 +71,10 @@ namespace SpatialSlur.SlurCore
         {
             var itr = sequence.GetEnumerator();
 
-            for(int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
-                array[i] = itr.Current;
                 itr.MoveNext();
+                array[i] = itr.Current;
             }
         }
 
@@ -129,8 +129,8 @@ namespace SpatialSlur.SlurCore
 
             for (int i = 0; i < count; i++)
             {
-                array[index + i] = itr.Current;
                 itr.MoveNext();
+                array[index + i] = itr.Current;
             }
         }
 

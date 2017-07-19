@@ -248,7 +248,7 @@ namespace SpatialSlur.SlurRhino
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var v = verts[i];
-                    v.Position = xform.ApplyPosition(v.Position);
+                    v.Position = xform.Apply(v.Position, true);
                 }
             };
 
@@ -306,7 +306,7 @@ namespace SpatialSlur.SlurRhino
             return mesh.ToMesh(
                 v => v.Position.ToPoint3f(),
                 v => v.Normal.ToVector3f(),
-                v => v.TexCoord.ToPoint2f(),
+                v => v.Texture.ToPoint2f(),
                 null
                 );
         }
@@ -571,7 +571,7 @@ namespace SpatialSlur.SlurRhino
             return factory.CreateFromVertexTopology(mesh,
                 (v, p) => v.Position = p.ToVec3d(),
                 (v, n) => v.Normal = n.ToVec3d(),
-                (v, t) => v.TexCoord = t.ToVec2d(),
+                (v, t) => v.Texture = t.ToVec2d(),
                 delegate { }
                 );
         }
@@ -614,7 +614,7 @@ namespace SpatialSlur.SlurRhino
                 mesh,
                 (v, p) => v.Position = p.ToVec3d(),
                 (v, n) => v.Normal = n.ToVec3d(),
-                (v, t) => v.TexCoord = t.ToVec2d(),
+                (v, t) => v.Texture = t.ToVec2d(),
                 delegate { }
                 );
         }
@@ -662,7 +662,7 @@ namespace SpatialSlur.SlurRhino
             return factory.CreateFromMesh(mesh,
                 (v, p) => v.Position = p.ToVec3d(),
                 (v, n) => v.Normal = n.ToVec3d(),
-                (v, t) => v.TexCoord = t.ToVec2d(),
+                (v, t) => v.Texture = t.ToVec2d(),
                 delegate { });
         }
 

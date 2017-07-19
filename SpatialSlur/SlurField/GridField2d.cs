@@ -46,6 +46,9 @@ namespace SpatialSlur.SlurField
 
         private readonly T[] _values;
 
+        private SampleMode _sampleMode;
+        // private Func<Vec2d, T> _sample;
+
 
         /// <summary>
         /// 
@@ -53,41 +56,11 @@ namespace SpatialSlur.SlurField
         /// <param name="domain"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        protected GridField2d(Domain2d domain, int countX, int countY)
+        protected GridField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode = SampleMode.Linear)
             : base(domain, countX, countY)
         {
             _values = new T[Count];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="sampleMode"></param>
-        /// <param name="wrapMode"></param>
-        protected GridField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapMode)
-            : base(domain, countX, countY, sampleMode, wrapMode)
-        {
-            _values = new T[Count];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="sampleMode"></param>
-        /// <param name="wrapModeX"></param>
-        /// <param name="wrapModeY"></param>
-        protected GridField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY)
-            : base(domain, countX, countY, sampleMode, wrapModeX, wrapModeY)
-        {
-            _values = new T[Count];
+            SampleMode = sampleMode;
         }
 
 
@@ -95,10 +68,45 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        protected GridField2d(Grid2d other)
+        /// <param name="sampleMode"></param>
+        protected GridField2d(Grid2d other, SampleMode sampleMode = SampleMode.Linear)
             : base(other)
         {
             _values = new T[Count];
+            SampleMode = sampleMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="wrapMode"></param>
+        /// <param name="sampleMode"></param>
+        protected GridField2d(Domain2d domain, int countX, int countY, WrapMode wrapMode, SampleMode sampleMode = SampleMode.Linear)
+            : base(domain, countX, countY, wrapMode)
+        {
+            _values = new T[Count];
+            SampleMode = sampleMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        /// <param name="sampleMode"></param>
+        protected GridField2d(Domain2d domain, int countX, int countY, WrapMode wrapModeX, WrapMode wrapModeY, SampleMode sampleMode = SampleMode.Linear)
+            : base(domain, countX, countY, wrapModeX, wrapModeY)
+        {
+            _values = new T[Count];
+            SampleMode = sampleMode;
         }
 
 
@@ -108,6 +116,16 @@ namespace SpatialSlur.SlurField
         public T[] Values
         {
             get { return _values; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SampleMode SampleMode
+        {
+            get { return _sampleMode; }
+            set { _sampleMode = value; }
         }
 
 

@@ -60,7 +60,7 @@ namespace SpatialSlur.SlurField
         /// <param name="sampleMode"></param>
         /// <param name="wrapMode"></param>
         public GridVectorField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapMode)
-            : base(domain, countX, countY, sampleMode, wrapMode)
+            : base(domain, countX, countY, wrapMode, sampleMode)
         {
         }
 
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurField
         /// <param name="wrapModeX"></param>
         /// <param name="wrapModeY"></param>
         public GridVectorField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY)
-            : base(domain, countX, countY, sampleMode, wrapModeX, wrapModeY)
+            : base(domain, countX, countY, wrapModeX, wrapModeY, sampleMode)
         {
         }
 

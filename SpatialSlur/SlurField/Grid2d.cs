@@ -29,7 +29,6 @@ namespace SpatialSlur.SlurField
         private double _dxInv, _dyInv; // cached to avoid unecessary divs
         private readonly int _nx, _ny, _n;
 
-        private SampleMode _sampleMode;
         private WrapMode _wrapModeX, _wrapModeY;
         // Func<int, int> _wrapX, _wrapY; // compare delegate performance to switch (release & debug)
 
@@ -60,7 +59,6 @@ namespace SpatialSlur.SlurField
             : this(countX, countY)
         {
             Domain = domain;
-            _sampleMode = SampleMode.Linear;
             WrapModeX = WrapModeY = WrapMode.Clamp;
         }
 
@@ -71,13 +69,11 @@ namespace SpatialSlur.SlurField
         /// <param name="domain"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        /// <param name="sampleMode"></param>
         /// <param name="wrapMode"></param>
-        protected Grid2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapMode)
+        protected Grid2d(Domain2d domain, int countX, int countY, WrapMode wrapMode)
             : this(countX, countY)
         {
             Domain = domain;
-            _sampleMode = SampleMode;
             WrapModeX = WrapModeY = wrapMode;
         }
 
@@ -88,14 +84,12 @@ namespace SpatialSlur.SlurField
         /// <param name="domain"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        /// <param name="sampleMode"></param>
         /// <param name="wrapModeX"></param>
         /// <param name="wrapModeY"></param>
-        protected Grid2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY)
+        protected Grid2d(Domain2d domain, int countX, int countY, WrapMode wrapModeX, WrapMode wrapModeY)
             : this(countX, countY)
         {
             Domain = domain;
-            _sampleMode = SampleMode;
             WrapModeX = wrapModeX;
             WrapModeY = wrapModeY;
         }
@@ -112,7 +106,6 @@ namespace SpatialSlur.SlurField
             _n = other._n;
 
             Domain = other._domain;
-            _sampleMode = other._sampleMode;
             WrapModeX = other._wrapModeX;
             WrapModeY = other._wrapModeY;
         }
@@ -177,16 +170,6 @@ namespace SpatialSlur.SlurField
         public double ScaleY
         {
             get { return _dy; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public SampleMode SampleMode
-        {
-            get { return _sampleMode; }
-            set { _sampleMode = value; }
         }
 
 

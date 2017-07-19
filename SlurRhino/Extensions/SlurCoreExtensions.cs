@@ -117,29 +117,22 @@ namespace SpatialSlur.SlurRhino
         /// <param name="xform"></param>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vec3d Apply(this Transform xform, Vec3d vector)
+        public static Vec3d Apply(this Transform xform, Vec3d vector, bool isPosition = false)
         {
+            if (isPosition)
+            {
+                return new Vec3d(
+                    vector.X * xform.M00 + vector.Y * xform.M01 + vector.Z * xform.M02 + xform.M03,
+                    vector.X * xform.M10 + vector.Y * xform.M11 + vector.Z * xform.M12 + xform.M13,
+                    vector.X * xform.M20 + vector.Y * xform.M21 + vector.Z * xform.M22 + xform.M23
+                    );
+            }
+  
             return new Vec3d(
                vector.X * xform.M00 + vector.Y * xform.M01 + vector.Z * xform.M02,
                vector.X * xform.M10 + vector.Y * xform.M11 + vector.Z * xform.M12,
                vector.X * xform.M20 + vector.Y * xform.M21 + vector.Z * xform.M22
                );
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xform"></param>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static Vec3d ApplyPosition(this Transform xform, Vec3d vector)
-        {
-            return new Vec3d(
-                vector.X * xform.M00 + vector.Y * xform.M01 + vector.Z * xform.M02 + xform.M03,
-                vector.X * xform.M10 + vector.Y * xform.M11 + vector.Z * xform.M12 + xform.M13,
-                vector.X * xform.M20 + vector.Y * xform.M21 + vector.Z * xform.M22 + xform.M23
-                );
         }
 
 

@@ -13,7 +13,7 @@ using SpatialSlur.SlurData;
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
-    /// Provides an alternate view of the halfedge list which considers the first halfedge in each pair.
+    /// Provides an alternate view of the halfedge list which allows access to the first halfedge in each pair.
     /// </summary>
     /// <typeparam name="E"></typeparam>
     [Serializable]

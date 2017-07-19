@@ -47,13 +47,4 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         IEnumerable<F> AdjacentCells { get; }
     }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class IHeCellExtensions
-    {
-
-    }
 }

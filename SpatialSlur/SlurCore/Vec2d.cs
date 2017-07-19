@@ -382,6 +382,21 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns a unitized copy of this vector.
+        /// Returns the zero vector if this vector is zero length.
+        /// </summary>
+        /// <returns></returns>
+        public Vec2d Unitized
+        {
+            get
+            {
+                double d = SquareLength;
+                return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
+            }
+        }
+
+
+        /// <summary>
         /// Returns the perpendicular vector rotated a quarter turn clockwise.
         /// </summary>
         public Vec2d PerpCW
@@ -632,18 +647,6 @@ namespace SpatialSlur.SlurCore
             }
 
             return false;
-        }
-
-
-        /// <summary>
-        /// Returns a unitized copy of this vector.
-        /// Returns the zero vector if this vector is zero length.
-        /// </summary>
-        /// <returns></returns>
-        public Vec2d Unitized()
-        {
-            double d = SquareLength;
-            return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
         }
 
 

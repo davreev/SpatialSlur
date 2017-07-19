@@ -58,14 +58,14 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="d0"></param>
-        /// <param name="d1"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain2d Union(Domain2d d0, Domain2d d1)
+        public static Domain2d Union(Domain2d a, Domain2d b)
         {
-            d0.X = Domain.Union(d0.X, d1.X);
-            d0.Y = Domain.Union(d0.Y, d1.Y);
-            return d0;
+            a.X = Domain.Union(a.X, b.X);
+            a.Y = Domain.Union(a.Y, b.Y);
+            return a;
         }
 
 

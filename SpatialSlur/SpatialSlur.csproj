@@ -125,6 +125,10 @@
     <Compile Include="SlurCore\GeometryUtil.cs" />
     <Compile Include="SlurCore\Extensions\ListExtensions.cs" />
     <Compile Include="SlurCore\IOUtil.cs" />
+    <Compile Include="SlurMesh\Extensions\IHalfedgeExtensions.cs" />
+    <Compile Include="SlurMesh\Extensions\IHeFaceExtensions.cs" />
+    <Compile Include="SlurMesh\Extensions\IHeStructureExtensions.cs" />
+    <Compile Include="SlurMesh\Extensions\IHeVertexExtensions.cs" />
     <Compile Include="SlurMesh\HalfedgeList.cs" />
     <Compile Include="SlurMesh\EdgeList.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraph3dExtensions.cs" />

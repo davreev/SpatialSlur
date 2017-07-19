@@ -45,26 +45,37 @@ namespace SpatialSlur.SlurCore
             return SlurMath.Remap(t, from.T0, from.T1, to.T0, to.T1);
         }
 
-
         /// <summary>
-        /// 
+        /// Returns the union of a and b.
         /// </summary>
-        /// <param name="d0"></param>
-        /// <param name="d1"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain Intersect(Domain d0, Domain d1)
+        public static Domain Union(Domain a, Domain b)
         {
             throw new NotImplementedException();
         }
 
 
         /// <summary>
-        /// 
+        /// Returns the region of a that is also in b.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Domain Intersect(Domain a, Domain b)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Returns the region of a that is not in b.
         /// </summary>
         /// <param name="d0"></param>
         /// <param name="d1"></param>
         /// <returns></returns>
-        public static Domain Union(Domain d0, Domain d1)
+        public static Domain Difference(Domain d0, Domain d1)
         {
             throw new NotImplementedException();
         }

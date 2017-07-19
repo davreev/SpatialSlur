@@ -24,6 +24,6 @@ namespace SpatialSlur.SlurMesh
         Vec3d Normal { get; set; }
 
         /// <summary></summary>
-        Vec2d TexCoord { get; set; }
+        Vec2d Texture { get; set; }
     }
 }

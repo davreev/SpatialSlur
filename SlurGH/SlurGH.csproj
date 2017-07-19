@@ -45,18 +45,14 @@
     </Reference>
     <Reference Include="RhinoCommon, Version=6.0.0.1, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5.0 (64-bit)\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SlurRhino, Version=0.2.0.21570, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SlurRhino">
       <HintPath>..\SlurRhino\bin\Release\SlurRhino.dll</HintPath>
-      <Private>False</Private>
     </Reference>
-    <Reference Include="SpatialSlur, Version=0.2.1.21570, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SpatialSlur">
       <HintPath>..\SpatialSlur\bin\Release\SpatialSlur.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

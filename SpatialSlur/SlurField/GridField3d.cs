@@ -54,6 +54,9 @@ namespace SpatialSlur.SlurField
 
         private readonly T[] _values;
 
+        private SampleMode _sampleMode;
+        // private Func<Vec3d, T> _sample;
+
 
         /// <summary>
         /// 
@@ -62,44 +65,12 @@ namespace SpatialSlur.SlurField
         /// <param name="nx"></param>
         /// <param name="ny"></param>
         /// <param name="nz"></param>
-        protected GridField3d(Domain3d domain, int nx, int ny, int nz)
+        /// <param name="sampleMode"></param>
+        protected GridField3d(Domain3d domain, int nx, int ny, int nz, SampleMode sampleMode = SampleMode.Linear)
           : base(domain, nx, ny, nz)
         {
             _values = new T[Count];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
-        /// <param name="sampleMode"></param>
-        /// <param name="wrapMode"></param>
-        protected GridField3d(Domain3d domain, int nx, int ny, int nz, SampleMode sampleMode, WrapMode wrapMode)
-            : base(domain, nx, ny, nz, sampleMode, wrapMode)
-        {
-            _values = new T[Count];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
-        /// <param name="sampleMode"></param>
-        /// <param name="wrapModeX"></param>
-        /// <param name="wrapModeY"></param>
-        /// <param name="wrapModeZ"></param>
-        protected GridField3d(Domain3d domain, int nx, int ny, int nz, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ)
-            : base(domain, nx, ny, nz, sampleMode, wrapModeX, wrapModeY, wrapModeZ)
-        {
-            _values = new T[Count];
+            SampleMode = sampleMode;
         }
 
 
@@ -107,10 +78,48 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        protected GridField3d(Grid3d other)
+        /// <param name="sampleMode"></param>
+        protected GridField3d(Grid3d other, SampleMode sampleMode = SampleMode.Linear)
             : base(other)
         {
             _values = new T[Count];
+            SampleMode = sampleMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="nx"></param>
+        /// <param name="ny"></param>
+        /// <param name="nz"></param>
+        /// <param name="wrapMode"></param>
+        /// <param name="sampleMode"></param>
+        protected GridField3d(Domain3d domain, int nx, int ny, int nz, WrapMode wrapMode, SampleMode sampleMode = SampleMode.Linear)
+            : base(domain, nx, ny, nz, wrapMode)
+        {
+            _values = new T[Count];
+            SampleMode = sampleMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="nx"></param>
+        /// <param name="ny"></param>
+        /// <param name="nz"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        /// <param name="wrapModeZ"></param>
+        /// <param name="sampleMode"></param>
+        protected GridField3d(Domain3d domain, int nx, int ny, int nz, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
+            : base(domain, nx, ny, nz, wrapModeX, wrapModeY, wrapModeZ)
+        {
+            _values = new T[Count];
+            SampleMode = sampleMode;
         }
 
 
@@ -120,6 +129,16 @@ namespace SpatialSlur.SlurField
         public T[] Values
         {
             get { return _values; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SampleMode SampleMode
+        {
+            get { return _sampleMode; }
+            set { _sampleMode = value; }
         }
 
 

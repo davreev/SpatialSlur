@@ -422,6 +422,21 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns a unitized copy of this vector.
+        /// Returns the zero vector if this vector is zero length.
+        /// </summary>
+        /// <returns></returns>
+        public Vec4d Unitized
+        {
+            get
+            {
+                double d = SquareLength;
+                return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
+            }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         public double Length
@@ -639,18 +654,6 @@ namespace SpatialSlur.SlurCore
             }
 
             return false;
-        }
-
-
-        /// <summary>
-        /// Returns a unitized copy of this vector.
-        /// Returns the zero vector if this vector is zero length.
-        /// </summary>
-        /// <returns></returns>
-        public Vec4d Unitized()
-        {
-            double d = SquareLength;
-            return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
         }
 
 

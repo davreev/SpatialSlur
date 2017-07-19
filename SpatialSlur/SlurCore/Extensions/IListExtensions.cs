@@ -53,8 +53,8 @@ namespace SpatialSlur.SlurCore
 
             for(int i = 0; i < list.Count; i++)
             {
-                list[i] = itr.Current;
                 itr.MoveNext();
+                list[i] = itr.Current;
             }
         }
 
@@ -115,8 +115,8 @@ namespace SpatialSlur.SlurCore
 
             for (int i = 0; i < count; i++)
             {
-                list[index + i] = itr.Current;
                 itr.MoveNext();
+                list[index + i] = itr.Current;
             }
         }
 

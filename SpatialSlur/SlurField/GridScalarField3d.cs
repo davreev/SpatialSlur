@@ -65,7 +65,7 @@ namespace SpatialSlur.SlurField
         /// <param name="sampleMode"></param>
         /// <param name="wrapMode"></param>
         public GridScalarField3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapMode)
-            : base(domain, countX, countY, countZ, sampleMode, wrapMode)
+            : base(domain, countX, countY, countZ, wrapMode, sampleMode)
         {
         }
 
@@ -82,7 +82,7 @@ namespace SpatialSlur.SlurField
         /// <param name="wrapModeY"></param>
         /// <param name="wrapModeZ"></param>
         public GridScalarField3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ)
-            : base(domain, countX, countY, countZ, sampleMode, wrapModeX, wrapModeY, wrapModeZ)
+            : base(domain, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ, sampleMode)
         {
         }
 
