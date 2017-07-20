@@ -2,7 +2,7 @@
 SpatialSlur is an open source library of geometric data structures and algorithms for the development of novel computational design methods. It is written in C# and compiled against .NET 4.5.
 
 ### Dependencies
-While the core library (SpatialSlur.dll) has no dependencies outside of the .NET framework, the repository also includes separate projects for interfacing with various 3d modeling applications that support scripting in .NET such as Rhino and Unity. Each of these "interface libraries" has its own set of dependencies, so if you don't have access to the corresponding software, you'll need to unload it from the the solution before compiling.
+While the core library (SpatialSlur.dll) has no dependencies outside of the .NET framework, the repository also includes separate projects for interfacing with various 3d modeling applications that support scripting in .NET such as Rhino and Unity. Each of these interface libraries has its own set of dependencies, so if you don't have access to the corresponding software, you'll need to unload it from the the solution before compiling.
 
 ### Overview
 Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](../blob/master/) or dive into source files and poke around. If you have specific questions, comments, or suggestions, feel free to [contact me](http://spatialslur.com/contact/).
