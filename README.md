@@ -1,5 +1,5 @@
 # SpatialSlur
-SpatialSlur is an open source library of geometric data structures and algorithms for the development of novel computational design methods. It is written in C# and compiled against .NET 4.5.
+SpatialSlur is an open source library of geometric data structures and algorithms developed to facilitate the exploration of novel computational design methods. It is written in C# and compiled against .NET 4.5.
 
 <p align="center">
   <img width="600" height="450" src="https://github.com/daveReeves/SpatialSlur/blob/master/Examples/Gallery/170720_Relief_02.gif">
