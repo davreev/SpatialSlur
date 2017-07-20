@@ -60,8 +60,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Grasshopper\170712_HeMesh_Quad_Strips_01.gh" />
-    <None Include="Grasshopper\170717_Remesher_Example_01.3dm" />
-    <None Include="Grasshopper\170717_Remesher_Example_01.gh" />
+    <None Include="Grasshopper\170717_Dynamic_Remesher_01.3dm" />
+    <None Include="Grasshopper\170717_Dynamic_Remesher_01.gh" />
     <None Include="packages.config" />
     <None Include="Resources\chair_planar.obj" />
     <None Include="Resources\chair_smooth.obj" />
