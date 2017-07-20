@@ -71,12 +71,8 @@ $(function() {
 <li>LABtoXYZ()
 : <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_color_util.html#afc43c180440bbfb45d76670a73aea63b">SpatialSlur.SlurCore.ColorUtil</a>
 </li>
-<li>LaplacianFair()
-: <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_physics.html#aa60daa68104e0e8ef6b88dc4a373ac37">SpatialSlur.SlurMesh.HePhysics</a>
-</li>
 <li>LaplacianSmooth()
-: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_laplacian_smooth.html#a004831c21ef5c2e143155fe6e1b677ba">SpatialSlur.SlurDynamics.Constraints.LaplacianSmooth</a>
-, <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_physics.html#a51958764f86c714a57dac40ebcf14ed2">SpatialSlur.SlurMesh.HePhysics</a>
+: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_laplacian_smooth.html#ad737ce538a2bec11cbac4bf9513bad01">SpatialSlur.SlurDynamics.LaplacianSmooth</a>
 </li>
 <li>LCHtoLAB()
 : <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_color_util.html#ad48139bf849cfeb3e3e17d7a3a7ddbe2">SpatialSlur.SlurCore.ColorUtil</a>
@@ -85,7 +81,7 @@ $(function() {
 : <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_color_util.html#a6cef7a657f07b046838f88c6ad324c07">SpatialSlur.SlurCore.ColorUtil</a>
 </li>
 <li>Left
-: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_dihedral.html#ab500226bfa26a73d6b10c52265b52e3d">SpatialSlur.SlurDynamics.Constraints.Dihedral</a>
+: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_dihedral_constraint.html#aa65fd456994606b1e7d5e4c9cfd2bec7">SpatialSlur.SlurDynamics.DihedralConstraint</a>
 </li>
 <li>Length
 : <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec2d.html#a1123909c5f030393c33e1b5278e7e789">SpatialSlur.SlurCore.Vec2d</a>
@@ -93,11 +89,13 @@ $(function() {
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec3d.html#a8eeeb53b9cf1ac39592036aaa2bd1a2d">SpatialSlur.SlurCore.Vec3d</a>
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec3i.html#ac6502d9b775fbda39eb20682c9020c08">SpatialSlur.SlurCore.Vec3i</a>
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec4d.html#aaee511c7c74edd1c9da5086f642d6dc4">SpatialSlur.SlurCore.Vec4d</a>
-, <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_length.html#a728c47eb977eec25c5b54d9543828f93">SpatialSlur.SlurDynamics.Constraints.Length</a>
+</li>
+<li>LengthConstraint()
+: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_length_constraint.html#af4b82da6a2f1c3a43ef724c0e776e1b2">SpatialSlur.SlurDynamics.LengthConstraint</a>
 </li>
 <li>Lerp()
 : <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_array_extensions.html#a4faf74d8ec182ec1654cd39b8256d029">SpatialSlur.SlurCore.ArrayExtensions</a>
-, <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_array_math.html#a5b046f6d1f5c258cf76cc4f1384232a5">SpatialSlur.SlurCore.ArrayMath</a>
+, <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_array_math.html#a5f375b7791f53ead43459238c6914b02">SpatialSlur.SlurCore.ArrayMath</a>
 , <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_i_read_only_list_extensions.html#a079f8adfe174a7819bb23854a4b87783">SpatialSlur.SlurCore.IReadOnlyListExtensions</a>
 , <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_slur_math.html#af1861e27d5e4d09c1f296babd89840b0">SpatialSlur.SlurCore.SlurMath</a>
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec2d.html#ad90d2562a2c41e3db740a39676a0b72e">SpatialSlur.SlurCore.Vec2d</a>
@@ -105,24 +103,24 @@ $(function() {
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec4d.html#ad577cd235c45b1c0c92a29e8686f75aa">SpatialSlur.SlurCore.Vec4d</a>
 </li>
 <li>Lerp&lt; V, E &gt;()
-: <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_i_halfedge_extensions.html#a6e221b1b1975acb14b5c422eba756daf">SpatialSlur.SlurMesh.IHalfedgeExtensions</a>
+: <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_i_halfedge_extensions.html#a843ffb6febb2dabc46f33cf1174e5947">SpatialSlur.SlurMesh.IHalfedgeExtensions</a>
 </li>
 <li>LerpParallel()
-: <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_array_extensions.html#a5c5a2e5c598b485be08a5059bf4c7029">SpatialSlur.SlurCore.ArrayExtensions</a>
-, <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_array_math.html#a5ae1c262f86d2917477b2d5560a676f1">SpatialSlur.SlurCore.ArrayMath</a>
+: <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_array_extensions.html#a9fc73a9271f7a223542260fded504a17">SpatialSlur.SlurCore.ArrayExtensions</a>
+, <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_array_math.html#afd5f6d3d50965e1066001ba16f3578d1">SpatialSlur.SlurCore.ArrayMath</a>
 </li>
 <li>LerpTo()
 : <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_color_extensions.html#a4ac2ae27cff6cd80de0cc1bd5e7d71e6">SpatialSlur.SlurCore.ColorExtensions</a>
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec2d.html#ab4010fdb2b14c9595e256336f89251cc">SpatialSlur.SlurCore.Vec2d</a>
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec3d.html#a497dd1ad10500ae04d301626d43608e3">SpatialSlur.SlurCore.Vec3d</a>
 , <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec4d.html#a1572a9ccfef26bebd1d1c65792fae079">SpatialSlur.SlurCore.Vec4d</a>
-, <a class="el" href="class_spatial_slur_1_1_slur_field_1_1_i_discrete_field_extensions.html#a397e70e9da41204e4ce9b7d2dfb7da34">SpatialSlur.SlurField.IDiscreteFieldExtensions</a>
+, <a class="el" href="class_spatial_slur_1_1_slur_field_1_1_i_discrete_field_extensions.html#ac9f5a40e86efe990a7efeddb7f1c3d1e">SpatialSlur.SlurField.IDiscreteFieldExtensions</a>
 </li>
 <li>LinearWeight()
-: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_linear_weight.html#a4b720690ecdf06640ad0d184d33a3f3f">SpatialSlur.SlurDynamics.Constraints.LinearWeight</a>
+: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_linear_weight.html#a03a505f788207ac1d175e2f20fb15c6e">SpatialSlur.SlurDynamics.LinearWeight</a>
 </li>
 <li>LineCollide()
-: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_line_collide.html#ae16ddadda6238e2769b59ff18868cea9">SpatialSlur.SlurDynamics.Constraints.LineCollide</a>
+: <a class="el" href="class_spatial_slur_1_1_slur_dynamics_1_1_line_collide.html#a5d48eb7e8f145c580427c4e263ad7a8f">SpatialSlur.SlurDynamics.LineCollide</a>
 </li>
 <li>LineLineClosestPoints()
 : <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_geometry_util.html#ae5c0a80e7687363869c64ee88cdf6db6">SpatialSlur.SlurCore.GeometryUtil</a>
@@ -135,9 +133,6 @@ $(function() {
 </li>
 <li>LineLineShortestVector2()
 : <a class="el" href="class_spatial_slur_1_1_slur_core_1_1_geometry_util.html#a1805803a592c4e69b4914a1568fdd9c1">SpatialSlur.SlurCore.GeometryUtil</a>
-</li>
-<li>Loop()
-: <a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_he_mesh_subdivide.html#a07b345057007f35a408bc3d4142c14f7">SpatialSlur.SlurMesh.HeMeshSubdivide</a>
 </li>
 </ul>
 </div><!-- contents -->

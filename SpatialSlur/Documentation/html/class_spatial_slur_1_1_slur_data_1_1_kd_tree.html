@@ -97,7 +97,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a22651d886d96442f8d70171f79c99f51"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a22651d886d96442f8d70171f79c99f51">Insert</a> (double[] point, T value)</td></tr>
 <tr class="separator:a22651d886d96442f8d70171f79c99f51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abec7172fff086b351e1bab62d5088cd8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#abec7172fff086b351e1bab62d5088cd8">Remove</a> (double[] point)</td></tr>
-<tr class="memdesc:abec7172fff086b351e1bab62d5088cd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the first point in the tree which is equal to the given point. Note that repeated node removal can result in unbalanced trees which degrades performance.  <a href="#abec7172fff086b351e1bab62d5088cd8">More...</a><br /></td></tr>
+<tr class="memdesc:abec7172fff086b351e1bab62d5088cd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the first point in the tree which is equal to the given point. Note that repeated node removal can result in unbalanced trees which degrades search performance.  <a href="#abec7172fff086b351e1bab62d5088cd8">More...</a><br /></td></tr>
 <tr class="separator:abec7172fff086b351e1bab62d5088cd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24c5a5d45f3a3b9be5adf5747f59cc7a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a24c5a5d45f3a3b9be5adf5747f59cc7a">BoxSearch</a> (double[] point, double[] range, Func&lt; T, bool &gt; callback)</td></tr>
 <tr class="memdesc:a24c5a5d45f3a3b9be5adf5747f59cc7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls the given delegate on each found value. Returns false if the search was aborted which occurs if the delegate return false.  <a href="#a24c5a5d45f3a3b9be5adf5747f59cc7a">More...</a><br /></td></tr>
@@ -137,18 +137,15 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:ad2181253104abff1460873bb000b0b51"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#ad2181253104abff1460873bb000b0b51">CreateBalanced</a> (IList&lt; double[]&gt; points, IList&lt; T &gt; values)</td></tr>
-<tr class="memdesc:ad2181253104abff1460873bb000b0b51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts point value pairs in a way that produces a balanced tree.  <a href="#ad2181253104abff1460873bb000b0b51">More...</a><br /></td></tr>
-<tr class="separator:ad2181253104abff1460873bb000b0b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33f8c6cbbdd9cdf5a4a400b64583fc50"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a33f8c6cbbdd9cdf5a4a400b64583fc50">CreateBalanced</a> (double[][] points, T[] values)</td></tr>
 <tr class="memdesc:a33f8c6cbbdd9cdf5a4a400b64583fc50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts point value pairs in a way that produces a balanced tree.  <a href="#a33f8c6cbbdd9cdf5a4a400b64583fc50">More...</a><br /></td></tr>
 <tr class="separator:a33f8c6cbbdd9cdf5a4a400b64583fc50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f66431456da965f2b0f76f2aa01bba2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a9f66431456da965f2b0f76f2aa01bba2">CreateBalanced2</a> (IReadOnlyList&lt; double[]&gt; points, IReadOnlyList&lt; T &gt; values)</td></tr>
-<tr class="memdesc:a9f66431456da965f2b0f76f2aa01bba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts point value pairs in a way that produces a balanced tree.  <a href="#a9f66431456da965f2b0f76f2aa01bba2">More...</a><br /></td></tr>
-<tr class="separator:a9f66431456da965f2b0f76f2aa01bba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4055d96161a3cd6f00cf66a9c4872233"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a4055d96161a3cd6f00cf66a9c4872233">CreateBalanced2</a> (IReadOnlyList&lt; <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec3d.html">Vec3d</a> &gt; points, IReadOnlyList&lt; T &gt; values)</td></tr>
-<tr class="memdesc:a4055d96161a3cd6f00cf66a9c4872233"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts point value pairs in a way that produces a balanced tree.  <a href="#a4055d96161a3cd6f00cf66a9c4872233">More...</a><br /></td></tr>
-<tr class="separator:a4055d96161a3cd6f00cf66a9c4872233"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2181253104abff1460873bb000b0b51"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#ad2181253104abff1460873bb000b0b51">CreateBalanced</a> (IList&lt; double[]&gt; points, IList&lt; T &gt; values)</td></tr>
+<tr class="memdesc:ad2181253104abff1460873bb000b0b51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts point value pairs in a way that produces a balanced tree.  <a href="#ad2181253104abff1460873bb000b0b51">More...</a><br /></td></tr>
+<tr class="separator:ad2181253104abff1460873bb000b0b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1127b841c3fc21f45911553a18892764"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a1127b841c3fc21f45911553a18892764">CreateBalanced</a> (IEnumerable&lt; double[]&gt; points, IEnumerable&lt; T &gt; values)</td></tr>
+<tr class="memdesc:a1127b841c3fc21f45911553a18892764"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts point value pairs in a way that produces a balanced tree.  <a href="#a1127b841c3fc21f45911553a18892764">More...</a><br /></td></tr>
+<tr class="separator:a1127b841c3fc21f45911553a18892764"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -158,9 +155,9 @@ Properties</h2></td></tr>
 <tr class="memitem:a5514c9cc381f296f7ed4b66e3e06dc1f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a5514c9cc381f296f7ed4b66e3e06dc1f">Count</a><code> [get]</code></td></tr>
 <tr class="memdesc:a5514c9cc381f296f7ed4b66e3e06dc1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of nodes in the tree.  <a href="#a5514c9cc381f296f7ed4b66e3e06dc1f">More...</a><br /></td></tr>
 <tr class="separator:a5514c9cc381f296f7ed4b66e3e06dc1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea14bb4fda800a69246666868169a5fd"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#aea14bb4fda800a69246666868169a5fd">Epsilon</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:aea14bb4fda800a69246666868169a5fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the tolerance used for finding equal points in the tree. By default, this is set to 1.0e-8.  <a href="#aea14bb4fda800a69246666868169a5fd">More...</a><br /></td></tr>
-<tr class="separator:aea14bb4fda800a69246666868169a5fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3beb51cad3bbe6871999561f899075e2"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a3beb51cad3bbe6871999561f899075e2">Tolerance</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a3beb51cad3bbe6871999561f899075e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the tolerance used for finding equal points in the tree. By default, this is set to 1.0e-8.  <a href="#a3beb51cad3bbe6871999561f899075e2">More...</a><br /></td></tr>
+<tr class="separator:a3beb51cad3bbe6871999561f899075e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84030adf31d02050d7eba9bfd4e65404"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html#a84030adf31d02050d7eba9bfd4e65404">IsEmpty</a><code> [get]</code></td></tr>
 <tr class="separator:a84030adf31d02050d7eba9bfd4e65404"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -231,9 +228,11 @@ Properties</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">point</td><td></td></tr>
     <tr><td class="paramname">range</td><td></td></tr>
+    <tr><td class="paramname">callback</td><td></td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd></dd></dl>
 
 </div>
 </div>
@@ -274,6 +273,7 @@ Properties</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">point</td><td></td></tr>
     <tr><td class="paramname">range</td><td></td></tr>
+    <tr><td class="paramname">result</td><td></td></tr>
   </table>
   </dd>
 </dl>
@@ -345,46 +345,8 @@ Properties</h2></td></tr>
 
 </div>
 </div>
-<a id="ad2181253104abff1460873bb000b0b51"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2181253104abff1460873bb000b0b51">&#9670;&nbsp;</a></span>CreateBalanced() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt;T&gt; <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">SpatialSlur.SlurData.KdTree</a>&lt; T &gt;.CreateBalanced </td>
-          <td>(</td>
-          <td class="paramtype">IList&lt; double[]&gt;&#160;</td>
-          <td class="paramname"><em>points</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">IList&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>values</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Inserts point value pairs in a way that produces a balanced tree. </p>
-
-</div>
-</div>
 <a id="a33f8c6cbbdd9cdf5a4a400b64583fc50"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33f8c6cbbdd9cdf5a4a400b64583fc50">&#9670;&nbsp;</a></span>CreateBalanced() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a33f8c6cbbdd9cdf5a4a400b64583fc50">&#9670;&nbsp;</a></span>CreateBalanced() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -421,8 +383,8 @@ Properties</h2></td></tr>
 
 </div>
 </div>
-<a id="a9f66431456da965f2b0f76f2aa01bba2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f66431456da965f2b0f76f2aa01bba2">&#9670;&nbsp;</a></span>CreateBalanced2() <span class="overload">[1/2]</span></h2>
+<a id="ad2181253104abff1460873bb000b0b51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2181253104abff1460873bb000b0b51">&#9670;&nbsp;</a></span>CreateBalanced() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -431,15 +393,15 @@ Properties</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt;T&gt; <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">SpatialSlur.SlurData.KdTree</a>&lt; T &gt;.CreateBalanced2 </td>
+          <td class="memname">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt;T&gt; <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">SpatialSlur.SlurData.KdTree</a>&lt; T &gt;.CreateBalanced </td>
           <td>(</td>
-          <td class="paramtype">IReadOnlyList&lt; double[]&gt;&#160;</td>
+          <td class="paramtype">IList&lt; double[]&gt;&#160;</td>
           <td class="paramname"><em>points</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IReadOnlyList&lt; T &gt;&#160;</td>
+          <td class="paramtype">IList&lt; T &gt;&#160;</td>
           <td class="paramname"><em>values</em>&#160;</td>
         </tr>
         <tr>
@@ -459,8 +421,8 @@ Properties</h2></td></tr>
 
 </div>
 </div>
-<a id="a4055d96161a3cd6f00cf66a9c4872233"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4055d96161a3cd6f00cf66a9c4872233">&#9670;&nbsp;</a></span>CreateBalanced2() <span class="overload">[2/2]</span></h2>
+<a id="a1127b841c3fc21f45911553a18892764"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1127b841c3fc21f45911553a18892764">&#9670;&nbsp;</a></span>CreateBalanced() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -469,15 +431,15 @@ Properties</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt;T&gt; <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">SpatialSlur.SlurData.KdTree</a>&lt; T &gt;.CreateBalanced2 </td>
+          <td class="memname">static <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">KdTree</a>&lt;T&gt; <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">SpatialSlur.SlurData.KdTree</a>&lt; T &gt;.CreateBalanced </td>
           <td>(</td>
-          <td class="paramtype">IReadOnlyList&lt; <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec3d.html">Vec3d</a> &gt;&#160;</td>
+          <td class="paramtype">IEnumerable&lt; double[]&gt;&#160;</td>
           <td class="paramname"><em>points</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IReadOnlyList&lt; T &gt;&#160;</td>
+          <td class="paramtype">IEnumerable&lt; T &gt;&#160;</td>
           <td class="paramname"><em>values</em>&#160;</td>
         </tr>
         <tr>
@@ -879,6 +841,7 @@ Properties</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">point</td><td></td></tr>
     <tr><td class="paramname">range</td><td></td></tr>
+    <tr><td class="paramname">result</td><td></td></tr>
   </table>
   </dd>
 </dl>
@@ -966,6 +929,7 @@ Properties</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">point</td><td></td></tr>
     <tr><td class="paramname">range</td><td></td></tr>
+    <tr><td class="paramname">result</td><td></td></tr>
   </table>
   </dd>
 </dl>
@@ -988,7 +952,7 @@ Properties</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Removes the first point in the tree which is equal to the given point. Note that repeated node removal can result in unbalanced trees which degrades performance. </p>
+<p>Removes the first point in the tree which is equal to the given point. Note that repeated node removal can result in unbalanced trees which degrades search performance. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">point</td><td></td></tr>
@@ -1020,30 +984,6 @@ Properties</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns the number of nodes in the tree. </p>
-
-</div>
-</div>
-<a id="aea14bb4fda800a69246666868169a5fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aea14bb4fda800a69246666868169a5fd">&#9670;&nbsp;</a></span>Epsilon</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">double <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">SpatialSlur.SlurData.KdTree</a>&lt; T &gt;.Epsilon</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Sets the tolerance used for finding equal points in the tree. By default, this is set to 1.0e-8. </p>
 
 </div>
 </div>
@@ -1095,8 +1035,32 @@ Properties</h2></td></tr>
 
 </div>
 </div>
+<a id="a3beb51cad3bbe6871999561f899075e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3beb51cad3bbe6871999561f899075e2">&#9670;&nbsp;</a></span>Tolerance</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double <a class="el" href="class_spatial_slur_1_1_slur_data_1_1_kd_tree.html">SpatialSlur.SlurData.KdTree</a>&lt; T &gt;.Tolerance</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the tolerance used for finding equal points in the tree. By default, this is set to 1.0e-8. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/Users/david.re/Google Drive/Visual Studio/Repos/SpatialSlur/SpatialSlur/SlurData/<a class="el" href="_kd_tree_8cs.html">KdTree.cs</a></li>
+<li>C:/Users/David/Google Drive/Visual Studio/Repos/SpatialSlur/SpatialSlur/SlurData/<a class="el" href="_kd_tree_8cs.html">KdTree.cs</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['oncircle',['OnCircle',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_on_circle.html',1,'SpatialSlur::SlurDynamics::Constraints']]],
-  ['online',['OnLine',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_on_line.html',1,'SpatialSlur::SlurDynamics::Constraints']]],
-  ['onplane',['OnPlane',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_on_plane.html',1,'SpatialSlur::SlurDynamics::Constraints']]],
-  ['onpoint',['OnPoint',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_on_point.html',1,'SpatialSlur::SlurDynamics::Constraints']]],
-  ['ontarget',['OnTarget',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_on_target.html',1,'SpatialSlur::SlurDynamics::Constraints']]]
+  ['meshutil',['MeshUtil',['../class_spatial_slur_1_1_slur_mesh_1_1_mesh_util.html',1,'SpatialSlur::SlurMesh']]],
+  ['minimizearea',['MinimizeArea',['../class_spatial_slur_1_1_slur_dynamics_1_1_minimize_area.html',1,'SpatialSlur::SlurDynamics']]],
+  ['minimizelength',['MinimizeLength',['../class_spatial_slur_1_1_slur_dynamics_1_1_minimize_length.html',1,'SpatialSlur::SlurDynamics']]]
 ];

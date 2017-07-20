@@ -97,6 +97,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a56e8f0aacb3564ef1581bffc9614bd6f"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_i_halfedge_extensions.html#a56e8f0aacb3564ef1581bffc9614bd6f">GetLength&lt; V, E &gt;</a> (this <a class="el" href="interface_spatial_slur_1_1_slur_mesh_1_1_i_halfedge.html">IHalfedge</a>&lt; V, E &gt; hedge, Func&lt; V, <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec2d.html">Vec2d</a> &gt; getPosition)</td></tr>
 <tr class="memdesc:a56e8f0aacb3564ef1581bffc9614bd6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Euclidean length of the halfedge.  <a href="#a56e8f0aacb3564ef1581bffc9614bd6f">More...</a><br /></td></tr>
 <tr class="separator:a56e8f0aacb3564ef1581bffc9614bd6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf5d3de13eda73fa625dbfbd4b01b442"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_i_halfedge_extensions.html#aaf5d3de13eda73fa625dbfbd4b01b442">GetLength&lt; V, E &gt;</a> (this <a class="el" href="interface_spatial_slur_1_1_slur_mesh_1_1_i_halfedge.html">IHalfedge</a>&lt; V, E &gt; hedge)</td></tr>
+<tr class="memdesc:aaf5d3de13eda73fa625dbfbd4b01b442"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Euclidean length of the halfedge.  <a href="#aaf5d3de13eda73fa625dbfbd4b01b442">More...</a><br /></td></tr>
+<tr class="separator:aaf5d3de13eda73fa625dbfbd4b01b442"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cc551afaba98f481f0dc064967797a3"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_spatial_slur_1_1_slur_mesh_1_1_i_halfedge_extensions.html#a9cc551afaba98f481f0dc064967797a3">GetLength&lt; V, E &gt;</a> (this <a class="el" href="interface_spatial_slur_1_1_slur_mesh_1_1_i_halfedge.html">IHalfedge</a>&lt; V, E &gt; hedge, Func&lt; V, <a class="el" href="struct_spatial_slur_1_1_slur_core_1_1_vec3d.html">Vec3d</a> &gt; getPosition)</td></tr>
 <tr class="memdesc:a9cc551afaba98f481f0dc064967797a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Euclidean length of the halfedge.  <a href="#a9cc551afaba98f481f0dc064967797a3">More...</a><br /></td></tr>
 <tr class="separator:a9cc551afaba98f481f0dc064967797a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -629,7 +632,7 @@ Static Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="a56e8f0aacb3564ef1581bffc9614bd6f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56e8f0aacb3564ef1581bffc9614bd6f">&#9670;&nbsp;</a></span>GetLength< V, E >() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a56e8f0aacb3564ef1581bffc9614bd6f">&#9670;&nbsp;</a></span>GetLength< V, E >() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -679,8 +682,50 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aaf5d3de13eda73fa625dbfbd4b01b442"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf5d3de13eda73fa625dbfbd4b01b442">&#9670;&nbsp;</a></span>GetLength< V, E >() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static double SpatialSlur.SlurMesh.IHalfedgeExtensions.GetLength&lt; V, E &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="interface_spatial_slur_1_1_slur_mesh_1_1_i_halfedge.html">IHalfedge</a>&lt; V, E &gt;&#160;</td>
+          <td class="paramname"><em>hedge</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the Euclidean length of the halfedge. </p>
+<div class="typeconstraint">
+<dl><dt><b>Type Constraints</b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>V</em></td><td>&#160;:</td><td valign="top"><em>IHeVertex</em></td><td>&#160;</td></tr>
+<tr><td valign="top"><em>V</em></td><td>&#160;:</td><td valign="top"><em>V</em></td><td>&#160;</td></tr>
+<tr><td valign="top"><em>V</em></td><td>&#160;:</td><td valign="top"><em>E</em></td><td>&#160;</td></tr>
+<tr><td valign="top"><em>V</em></td><td>&#160;:</td><td valign="top"><em>IVertex3d</em></td><td>&#160;</td></tr>
+<tr><td valign="top"><em>E</em></td><td>&#160;:</td><td valign="top"><em>IHalfedge</em></td><td>&#160;</td></tr>
+<tr><td valign="top"><em>E</em></td><td>&#160;:</td><td valign="top"><em>V</em></td><td>&#160;</td></tr>
+<tr><td valign="top"><em>E</em></td><td>&#160;:</td><td valign="top"><em>E</em></td><td>&#160;</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+
+</div>
+</div>
 <a id="a9cc551afaba98f481f0dc064967797a3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9cc551afaba98f481f0dc064967797a3">&#9670;&nbsp;</a></span>GetLength< V, E >() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cc551afaba98f481f0dc064967797a3">&#9670;&nbsp;</a></span>GetLength< V, E >() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -960,7 +1005,7 @@ Static Public Member Functions</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/Users/david.re/Google Drive/Visual Studio/Repos/SpatialSlur/SpatialSlur/SlurMesh/Interfaces/<a class="el" href="_i_halfedge_8cs.html">IHalfedge.cs</a></li>
+<li>C:/Users/David/Google Drive/Visual Studio/Repos/SpatialSlur/SpatialSlur/SlurMesh/Extensions/<a class="el" href="_i_halfedge_extensions_8cs.html">IHalfedgeExtensions.cs</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

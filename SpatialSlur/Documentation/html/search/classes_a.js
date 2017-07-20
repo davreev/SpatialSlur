@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['meshutil',['MeshUtil',['../class_spatial_slur_1_1_slur_mesh_1_1_mesh_util.html',1,'SpatialSlur::SlurMesh']]],
-  ['minimizearea',['MinimizeArea',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_minimize_area.html',1,'SpatialSlur::SlurDynamics::Constraints']]],
-  ['minimizelength',['MinimizeLength',['../class_spatial_slur_1_1_slur_dynamics_1_1_constraints_1_1_minimize_length.html',1,'SpatialSlur::SlurDynamics::Constraints']]]
+  ['laplaciansmooth',['LaplacianSmooth',['../class_spatial_slur_1_1_slur_dynamics_1_1_laplacian_smooth.html',1,'SpatialSlur::SlurDynamics']]],
+  ['lengthconstraint',['LengthConstraint',['../class_spatial_slur_1_1_slur_dynamics_1_1_length_constraint.html',1,'SpatialSlur::SlurDynamics']]],
+  ['linearweight',['LinearWeight',['../class_spatial_slur_1_1_slur_dynamics_1_1_linear_weight.html',1,'SpatialSlur::SlurDynamics']]],
+  ['linecollide',['LineCollide',['../class_spatial_slur_1_1_slur_dynamics_1_1_line_collide.html',1,'SpatialSlur::SlurDynamics']]],
+  ['listextensions',['ListExtensions',['../class_spatial_slur_1_1_slur_core_1_1_list_extensions.html',1,'SpatialSlur::SlurCore']]]
 ];
