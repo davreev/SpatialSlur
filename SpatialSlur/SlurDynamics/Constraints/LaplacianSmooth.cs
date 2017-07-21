@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurDynamics
     using H = ParticleHandle;
 
     /// <summary>
-    /// 
+    /// The first handle represents the central vertex, remaining handles represent neighbours.
     /// </summary>
     [Serializable]
     public class LaplacianSmooth : DynamicPositionConstraint<H>
@@ -25,7 +25,6 @@ namespace SpatialSlur.SlurDynamics
         public LaplacianSmooth(double weight = 1.0)
             : base(weight)
         {
-            Handles.Add(new H()); // add central vertex
         }
 
 
@@ -37,7 +36,17 @@ namespace SpatialSlur.SlurDynamics
         public LaplacianSmooth(int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
-            Handles.Add(new H()); // add central vertex
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weight"></param>
+        public LaplacianSmooth(IEnumerable<int> indices, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
+        {
         }
 
 
@@ -58,6 +67,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
+            if (Handles.Count < 2) return; // no neighbours defined
+
             Vec3d sum = new Vec3d();
             double nInv = 1.0 / (Handles.Count - 1);
 

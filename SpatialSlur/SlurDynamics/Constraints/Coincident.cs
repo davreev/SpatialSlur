@@ -41,6 +41,17 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="weight"></param>
+        public Coincident(IEnumerable<int> indices, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="handles"></param>
         /// <param name="weight"></param>
         public Coincident(IEnumerable<H> handles, double weight = 1.0)

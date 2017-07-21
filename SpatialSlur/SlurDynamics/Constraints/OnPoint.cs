@@ -25,10 +25,35 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="point"></param>
+        /// <param name="weight"></param>
+        public OnPoint(Vec3d point, double weight = 1.0)
+            : base(weight)
+        {
+            Position = point;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
         public OnPoint(Vec3d point, int capacity, double weight = 1.0)
             : base(capacity, weight)
+        {
+            Position = point;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="point"></param>
+        /// <param name="weight"></param>
+        public OnPoint(IEnumerable<int> indices, Vec3d point, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
         {
             Position = point;
         }

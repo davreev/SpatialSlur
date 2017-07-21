@@ -47,10 +47,43 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="origin"></param>
         /// <param name="normal"></param>
         /// <param name="radius"></param>
+        /// <param name="weight"></param>
+        public OnCircle(Vec3d origin, Vec3d normal, double radius, double weight = 1.0)
+            : base(weight)
+        {
+            Origin = origin;
+            Normal = normal;
+            Radius = radius;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="normal"></param>
+        /// <param name="radius"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
         public OnCircle(Vec3d origin, Vec3d normal, double radius, int capacity, double weight = 1.0)
             : base(capacity, weight)
+        {
+            Origin = origin;
+            Normal = normal;
+            Radius = radius;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="origin"></param>
+        /// <param name="normal"></param>
+        /// <param name="radius"></param>
+        /// <param name="weight"></param>
+        public OnCircle(IEnumerable<int> indices, Vec3d origin, Vec3d normal, double radius, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
         {
             Origin = origin;
             Normal = normal;

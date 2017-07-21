@@ -22,6 +22,27 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="weight"></param>
+        public PlanarNgon(double weight = 1.0)
+         : base(weight)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="capacity"></param>
+        /// <param name="weight"></param>
+        public PlanarNgon(int capacity, double weight = 1.0)
+            :base(capacity,weight)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
         public PlanarNgon(IEnumerable<int> indices, double weight = 1.0)

@@ -19,7 +19,20 @@ namespace SpatialSlur.SlurDynamics
     {
         /// <summary></summary>
         public Vec3d Direction;
-        
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <param name="capacity"></param>
+        /// <param name="weight"></param>
+        public CustomWeight(Vec3d direction, double weight = 1.0)
+            : base(weight)
+        {
+            Direction = direction;
+        }
+
 
         /// <summary>
         /// 
@@ -29,6 +42,19 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         public CustomWeight(Vec3d direction, int capacity, double weight = 1.0)
             : base(capacity, weight)
+        {
+            Direction = direction;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="direction"></param>
+        /// <param name="weight"></param>
+        public CustomWeight(IEnumerable<int> indices, Vec3d direction, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
         {
             Direction = direction;
         }

@@ -44,10 +44,39 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="target"></param>
         /// <param name="closestPoint"></param>
+        /// <param name="weight"></param>
+        public OnTarget(T target, Func<T, Vec3d, Vec3d> closestPoint, double weight = 1.0)
+            : base(weight)
+        {
+            Target = target;
+            _closestPoint = closestPoint;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="closestPoint"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
         public OnTarget(T target, Func<T, Vec3d, Vec3d> closestPoint, int capacity, double weight = 1.0)
             : base(capacity, weight)
+        {
+            Target = target;
+            _closestPoint = closestPoint;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="target"></param>
+        /// <param name="closestPoint"></param>
+        /// <param name="weight"></param>
+        public OnTarget(IEnumerable<int> indices, T target, Func<T, Vec3d, Vec3d> closestPoint, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
         {
             Target = target;
             _closestPoint = closestPoint;

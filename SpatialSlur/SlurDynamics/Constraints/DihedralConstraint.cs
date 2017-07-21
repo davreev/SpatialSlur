@@ -114,9 +114,9 @@ namespace SpatialSlur.SlurDynamics
             // TODO revise implementation
             throw new NotImplementedException();
 
-            // TODO fix angle range
-            // currently becoming unstable @ 0/2PI restAngle
-            // TODO revise with new dihedral angle calculation
+            // TODO
+            // cache local Rotation3ds for the target angle
+            // avoids need to explicitly measure angle deviation
 
             Vec3d p0 = particles[_h0].Position;
             Vec3d p1 = particles[_h1].Position;

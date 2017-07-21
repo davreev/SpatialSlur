@@ -12,6 +12,9 @@ using static SpatialSlur.SlurCore.SlurMath;
 
 /*
  * Notes
+ * 
+ *  TODO
+ *  Automated grid resize can cause size of bin array to exceed the supported range
  */
 
 namespace SpatialSlur.SlurDynamics
@@ -24,10 +27,11 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class SphereCollide : DynamicPositionConstraint<H>
     {
-        private const double TargetBinScale = 4.0;
+        private const double TargetBinScale = 4.0; // as a factor of object size
 
         private SpatialGrid3d<H> _grid;
         private double _radius = 1.0;
+        private bool _adapt = true;
 
 
         /// <summary>
@@ -45,15 +49,40 @@ namespace SpatialSlur.SlurDynamics
             }
         }
 
+     
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="radius"></param>
+        /// <param name="weight"></param>
+        public SphereCollide(double radius, double weight = 1.0)
+            : base(weight)
+        {
+            Radius = radius;
+        }
+
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="radius"></param>
         /// <param name="capacity"></param>
+        /// <param name="weight"></param>
+        public SphereCollide(double radius, int capacity, double weight = 1.0)
+            : base(capacity, weight)
+        {
+            Radius = radius;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
         /// <param name="radius"></param>
         /// <param name="weight"></param>
-        public SphereCollide(int capacity, double radius, double weight = 1.0)
-            : base(capacity, weight)
+        public SphereCollide(IEnumerable<int> indices, double radius, double weight = 1.0)
+            : base(indices.Select(i => new H(i)), weight)
         {
             Radius = radius;
         }
@@ -124,25 +153,38 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         private void UpdateGrid(IReadOnlyList<IBody> particles)
         {
-            // recalculate domain
-            Domain3d d = new Domain3d(particles.Select(p => p.Position));
-            d.Expand(_radius);
-
-            // lazy instantiation
+            Domain3d d0 = new Domain3d(particles.Select(p => p.Position));
+            d0.Expand(_radius);
+    
             if (_grid == null)
             {
-                _grid = new SpatialGrid3d<H>(d, _radius * TargetBinScale);
+                _grid = new SpatialGrid3d<H>(d0, _radius * TargetBinScale);
                 return;
             }
 
-            // rebuild grid if bins are too large or too small in any one dimension
-            _grid.Domain = d;
-            double maxScale = _radius * TargetBinScale * 2.0;
-            double minScale = _radius * TargetBinScale * 0.5;
+            var d1 = _grid.Domain;
+            d1.Translate(d0.Mid - d1.Mid);
+            UpdateGridDomain(Domain3d.Union(d0, d1));
+        }
 
-            // if bin scale is out of range, rebuild
-            if (!Contains(_grid.BinScaleX, minScale, maxScale) || !Contains(_grid.BinScaleY, minScale, maxScale) || !Contains(_grid.BinScaleZ, minScale, maxScale))
-                _grid = new SpatialGrid3d<H>(d, _radius * TargetBinScale);
+
+        /// <summary>
+        /// Sets the domain of the grid and resizes if necessary.
+        /// </summary>
+        /// <param name="domain"></param>
+        private void UpdateGridDomain(Domain3d domain)
+        {
+            _grid.Domain = domain;
+            var dx = _grid.BinScaleX;
+            var dy = _grid.BinScaleY;
+            var dz = _grid.BinScaleZ;
+
+            // resize grid if bins are too large or small in any one dimension
+            double min = _radius * TargetBinScale * 0.5;
+            double max = _radius * TargetBinScale * 4.0;
+ 
+            if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
+                _grid = new SpatialGrid3d<H>(domain, _radius * TargetBinScale);
         }
     }
 }
