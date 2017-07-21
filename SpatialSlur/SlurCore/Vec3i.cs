@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Vec3i Zero = new Vec3i(0);
+        public static readonly Vec3i Zero = new Vec3i();
         /// <summary></summary>
         public static readonly Vec3i UnitX = new Vec3i(1, 0, 0);
         /// <summary></summary>

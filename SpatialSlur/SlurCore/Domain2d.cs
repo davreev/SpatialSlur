@@ -16,13 +16,80 @@ namespace SpatialSlur.SlurCore
     {
         #region Static
 
+        /// <summary></summary>
+        public static readonly Domain2d Zero = new Domain2d();
+        /// <summary></summary>
+        public static readonly Domain2d Unit = new Domain2d(0.0, 1.0, 0.0, 1.0);
+
+
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
-        public static Domain2d Unit
+        public static Domain2d operator +(Domain2d d, Vec2d v)
         {
-            get { return new Domain2d(Domain.Unit, Domain.Unit); }
+            d.X.Translate(v.X);
+            d.Y.Translate(v.Y);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain2d operator -(Domain2d d, Vec2d v)
+        {
+            d.X.Translate(-v.X);
+            d.Y.Translate(-v.Y);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain2d operator *(Domain2d d, double t)
+        {
+            d.X.Scale(t);
+            d.Y.Scale(t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain2d operator *(double t, Domain2d d)
+        {
+            d.X.Scale(t);
+            d.Y.Scale(t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain2d operator /(Domain2d d, double t)
+        {
+            t = 1.0 / t;
+            d.X.Scale(t);
+            d.Y.Scale(t);
+            return d;
         }
 
 

@@ -15,19 +15,76 @@ namespace SpatialSlur.SlurCore
     public struct Domain
     {
         #region Static
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public static readonly Domain Zero = new Domain(0.0, 0.0);
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        
+        /// <summary></summary>
+        public static readonly Domain Zero = new Domain();
+        /// <summary></summary>
         public static readonly Domain Unit = new Domain(0.0, 1.0);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain operator +(Domain d, double t)
+        {
+            d.Translate(t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain operator -(Domain d, double t)
+        {
+            d.Translate(-t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain operator *(Domain d, double t)
+        {
+            d.Scale(t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain operator *(double t, Domain d)
+        {
+            d.Scale(t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain operator /(Domain d, double t)
+        {
+            d.Scale(1.0 / t);
+            return d;
+        }
 
 
         /// <summary>
@@ -349,6 +406,17 @@ namespace SpatialSlur.SlurCore
                 return SlurMath.ContainsIncl(t, T1, T0);
             else
                 return SlurMath.ContainsIncl(t, T0, T1);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        public void Scale(double t)
+        {
+            T0 *= t;
+            T1 *= t;
         }
 
 

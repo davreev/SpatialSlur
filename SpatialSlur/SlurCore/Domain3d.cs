@@ -16,13 +16,85 @@ namespace SpatialSlur.SlurCore
     {
         #region Static
 
+        /// <summary></summary>
+        public static readonly Domain3d Zero = new Domain3d();
+        /// <summary></summary>
+        public static readonly Domain3d Unit = new Domain3d(0.0, 1.0, 0.0, 1.0, 0.0, 1.0);
+
+
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
         /// <returns></returns>
-        public static Domain3d Unit
+        public static Domain3d operator +(Domain3d d, Vec3d v)
         {
-            get { return new Domain3d(Domain.Unit, Domain.Unit, Domain.Unit); }
+            d.X.Translate(v.X);
+            d.Y.Translate(v.Y);
+            d.Z.Translate(v.Z);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain3d operator -(Domain3d d, Vec3d v)
+        {
+            d.X.Translate(-v.X);
+            d.Y.Translate(-v.Y);
+            d.Z.Translate(-v.Z);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain3d operator *(Domain3d d, double t)
+        {
+            d.X.Scale(t);
+            d.Y.Scale(t);
+            d.Z.Scale(t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain3d operator *(double t, Domain3d d)
+        {
+            d.X.Scale(t);
+            d.Y.Scale(t);
+            d.Z.Scale(t);
+            return d;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Domain3d operator /(Domain3d d, double t)
+        {
+            t = 1.0 / t;
+            d.X.Scale(t);
+            d.Y.Scale(t);
+            d.Z.Scale(t);
+            return d;
         }
 
 
