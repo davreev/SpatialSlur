@@ -348,7 +348,9 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 {
                     var v0 = _verts[i];
                     var p0 = v0.Position;
+
                     var moveSum = new Vec3d();
+                    var w = 0.0;
 
                     _grid.Search(new Domain3d(p0, rad2), v1 =>
                     {
@@ -358,13 +360,16 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                         var d = move.SquareLength;
 
                         if (d < rad2Sqr && d > 0.0)
+                        {
                             moveSum += move * ((1.0 - rad2 / Math.Sqrt(d)) * 0.5);
+                            w = weight;
+                        }
 
                         return true;
                     });
 
-                    v0.MoveSum += moveSum * weight;
-                    v0.WeightSum += weight;
+                    v0.MoveSum += moveSum * w;
+                    v0.WeightSum += w;
                 }
             });
 
@@ -375,32 +380,62 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="radius"></param>
         private void UpdateGrid(double radius)
         {
             // recalculate domain
-            Domain3d d = new Domain3d(_verts.Select(v => v.Position));
-            d.Expand(radius);
+            Domain3d d0 = new Domain3d(_verts.Select(v => v.Position));
+            d0.Expand(radius);
 
             // lazy instantiation
             if (_grid == null)
             {
-                _grid = new SpatialGrid3d<V>(d, radius * TargetBinScale);
+                _grid = new SpatialGrid3d<V>(d0, radius * TargetBinScale);
                 return;
             }
 
-            // resize grid if bins are too large or small in any one dimension
-            _grid.Domain = d;
+            // align previous domain and union with new
+            var d1 = _grid.Domain;
+            UpdateGridDomain(Domain3d.Union(d0, d1 + (d0.Mid - d1.Mid)), radius);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateGridDomain(Domain3d domain, double radius)
+        {
+            _grid.Domain = domain;
             var dx = _grid.BinScaleX;
             var dy = _grid.BinScaleY;
             var dz = _grid.BinScaleZ;
 
-            double min = radius * TargetBinScale * 0.5;
+            // rebuild grid if bins are too large in any one dimension
             double max = radius * TargetBinScale * 4.0;
 
-            if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
-                _grid = new SpatialGrid3d<V>(d, radius * TargetBinScale);
+            if (dx > max || dy > max || dz > max)
+                _grid = new SpatialGrid3d<V>(domain, radius * TargetBinScale);
         }
+
+
+        /*
+        /// <summary>
+
+        /// </summary>
+        private void UpdateGridDomain(Domain3d domain, double radius)
+        {
+            _grid.Domain = domain;
+            var dx = _grid.BinScaleX;
+            var dy = _grid.BinScaleY;
+            var dz = _grid.BinScaleZ;
+
+            // rebuild grid if bins are too large or small in any one dimension
+            double min = radius * TargetBinScale * 0.25;
+            double max = radius * TargetBinScale * 4.0;
+ 
+            if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
+                _grid = new SpatialGrid3d<V>(domain, radius * TargetBinScale);
+        }
+        */
 
 
         /// <summary>
@@ -553,7 +588,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 var v1 = he.End;
                 
                 var fi = GetSplitFeature(v0.FeatureIndex, v1.FeatureIndex);
-                if (fi == -2) continue; // don't split if different features
+                if (fi < -1) continue; // don't split if different features
                 
                 var p0 = v0.Position;
                 var p1 = v1.Position;

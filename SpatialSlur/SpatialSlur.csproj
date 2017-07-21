@@ -69,6 +69,7 @@
     <Compile Include="SlurDynamics\Constraints\AreaWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\Coincident.cs" />
     <Compile Include="SlurDynamics\Constraints\Colinear.cs" />
+    <Compile Include="SlurDynamics\Constraints\InsideDomain.cs" />
     <Compile Include="SlurDynamics\Constraints\OnTarget.cs" />
     <Compile Include="SlurDynamics\Constraints\PositionConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\Coplanar.cs" />
