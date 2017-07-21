@@ -14,7 +14,7 @@ using SpatialSlur.SlurField;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Field type that uses inverse distance weighting to interpolate between known spatial values.
+    /// Field type that uses inverse distance weighting to interpolate between known values with spatial coordinates.
     /// https://en.wikipedia.org/wiki/Inverse_distance_weighting
     /// </summary>
     [Serializable]

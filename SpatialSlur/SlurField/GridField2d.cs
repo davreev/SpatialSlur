@@ -351,33 +351,22 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="func"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionXY(Func<Vec2d, T> func, bool parallel = false)
+        public void SpatialFunctionXY(Func<double, double, T> func, bool parallel = false)
         {
-            Action<Tuple<int, int>> func2 = range =>
-            {
-                (int i, int j) = IndicesAt(range.Item1);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    _values[index] = func(CoordinateAt(i, j));
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func2);
-            else
-                func2(Tuple.Create(0, Count));
+            SpatialFunctionXY(func, this, parallel);
         }
 
 
         /// <summary>
-        /// Sets this field to some function of its coordinates.
+        /// Sets the given field to some function of this field's coordinates.
         /// </summary>
         /// <param name="func"></param>
+        /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionXY(Func<double, double, T> func, bool parallel = false)
+        public void SpatialFunctionXY(Func<double, double, T> func, IDiscreteField<T> result, bool parallel = false)
         {
+            var values = result.Values;
+
             double x0 = Domain.X.T0;
             double y0 = Domain.Y.T0;
 
@@ -388,35 +377,7 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-                    _values[index] = func(i * ScaleX + x0, j * ScaleY + y0);
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func2);
-            else
-                func2(Tuple.Create(0, Count));
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of its normalized coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunctionUV(Func<Vec2d, T> func, bool parallel = false)
-        {
-            double ti = 1.0 / (CountX - 1);
-            double tj = 1.0 / (CountY - 1);
-
-            Action<Tuple<int, int>> func2 = range =>
-            {
-                (int i, int j) = IndicesAt(range.Item1);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == CountX) { j++; i = 0; }
-                    _values[index] = func(new Vec2d(i * ti, j * tj));
+                    values[index] = func(i * ScaleX + x0, j * ScaleY + y0);
                 }
             };
 
@@ -434,6 +395,20 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void SpatialFunctionUV(Func<double, double, T> func, bool parallel = false)
         {
+            SpatialFunctionUV(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's normalized coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionUV(Func<double, double, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            var values = result.Values;
+
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
 
@@ -444,7 +419,7 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-                    _values[index] = func(i * ti, j * tj);
+                    values[index] = func(i * ti, j * tj);
                 }
             };
 
@@ -463,6 +438,20 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void SpatialFunctionIJ(Func<int, int, T> func, bool parallel = false)
         {
+            SpatialFunctionIJ(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's indices.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionIJ(Func<int, int, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            var values = result.Values;
+
             Action<Tuple<int, int>> func2 = range =>
             {
                 (int i, int j) = IndicesAt(range.Item1);
@@ -470,7 +459,7 @@ namespace SpatialSlur.SlurField
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
-                    _values[index] = func(i, j);
+                    values[index] = func(i, j);
                 }
             };
 
