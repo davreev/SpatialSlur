@@ -135,6 +135,8 @@ namespace SpatialSlur.SlurDynamics
             _h1.Delta = v1 - v0;
             _h2.Delta = v2 - v1;
             _h3.Delta = v3 - v2;
+
+            _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
         }
 
 

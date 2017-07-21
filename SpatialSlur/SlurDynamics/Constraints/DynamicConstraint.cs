@@ -29,6 +29,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -45,6 +46,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -88,7 +90,7 @@ namespace SpatialSlur.SlurDynamics
             Weight = weight;
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -96,6 +98,7 @@ namespace SpatialSlur.SlurDynamics
         public abstract void Calculate(IReadOnlyList<IBody> bodies);
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -105,12 +108,13 @@ namespace SpatialSlur.SlurDynamics
             foreach (var h in _handles)
             {
                 var p = bodies[h];
-                p.ApplyMove(h.Delta, Weight);
-                p.ApplyRotate(h.AngleDelta, Weight);
+                p.ApplyMove(h.Delta, h.Weight);
+                p.ApplyRotate(h.AngleDelta, h.AngleWeight);
             }
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>

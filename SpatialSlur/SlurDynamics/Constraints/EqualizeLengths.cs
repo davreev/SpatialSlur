@@ -92,6 +92,7 @@ namespace SpatialSlur.SlurDynamics
                 
                 h0.Delta *= (1.0 - meanLength / h1.Delta.X) * 0.5;
                 h1.Delta = -h0.Delta;
+                h0.Weight = h1.Weight = Weight;
             }
         }
     }

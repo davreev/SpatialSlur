@@ -108,6 +108,7 @@ namespace SpatialSlur.SlurDynamics
             {
                 var p = particles[h].Position;
                 h.Delta = _closestPoint(_target, p) - p;
+                h.Weight = Weight;
             }
         }
     }

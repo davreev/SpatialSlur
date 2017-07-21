@@ -93,9 +93,14 @@ namespace SpatialSlur.SlurDynamics
                 double d = (Origin - particles[h].Position) * Normal;
 
                 if (d > 0.0)
+                {
                     h.Delta = (d / Normal.SquareLength * Normal);
+                    h.Weight = Weight;
+                }
                 else
-                    h.Delta = new Vec3d();
+                {
+                    h.Weight = 0.0;
+                }
             }
         }
     }

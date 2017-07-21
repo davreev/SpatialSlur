@@ -88,8 +88,11 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
-            foreach(var h in Handles)
+            foreach (var h in Handles)
+            {
                 h.Delta = Vec3d.Reject(Start - particles[h].Position, Direction);
+                h.Weight = Weight;
+            }
         }
     }
 }

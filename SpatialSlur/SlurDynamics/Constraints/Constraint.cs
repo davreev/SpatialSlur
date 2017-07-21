@@ -28,6 +28,7 @@ namespace SpatialSlur.SlurDynamics
         public abstract IEnumerable<H> Handles { get; }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -44,6 +45,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -53,6 +55,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -60,6 +63,7 @@ namespace SpatialSlur.SlurDynamics
         public abstract void Calculate(IReadOnlyList<IBody> bodies);
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -69,12 +73,13 @@ namespace SpatialSlur.SlurDynamics
             foreach (var h in Handles)
             {
                 var p = bodies[h];
-                p.ApplyMove(h.Delta, Weight);
-                p.ApplyRotate(h.AngleDelta, Weight);
+                p.ApplyMove(h.Delta, h.Weight);
+                p.ApplyRotate(h.AngleDelta, h.AngleWeight);
             }
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>

@@ -95,6 +95,7 @@ namespace SpatialSlur.SlurDynamics
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             _h0.Delta = _h1.Delta = Direction * (particles[_h0].Position.DistanceTo(particles[_h1].Position) * _massPerLength * 0.5);
+            _h0.Weight = _h1.Weight = Weight;
         }
 
 

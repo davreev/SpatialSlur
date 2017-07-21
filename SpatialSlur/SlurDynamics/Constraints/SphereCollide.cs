@@ -12,9 +12,6 @@ using static SpatialSlur.SlurCore.SlurMath;
 
 /*
  * Notes
- * 
- *  TODO
- *  Automated grid resize can cause size of bin array to exceed the supported range
  */
 
 namespace SpatialSlur.SlurDynamics
@@ -27,11 +24,10 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class SphereCollide : DynamicPositionConstraint<H>
     {
-        private const double TargetBinScale = 4.0; // as a factor of object size
+        private const double TargetBinScale = 4.0; // as a factor of radius
 
         private SpatialGrid3d<H> _grid;
         private double _radius = 1.0;
-        private bool _adapt = true;
 
 
         /// <summary>
@@ -124,22 +120,27 @@ namespace SpatialSlur.SlurDynamics
                     var h0 = Handles[i];
                     var p0 = particles[h0].Position;
 
-                    var deltaSum = new Vec3d();
+                    var delta = new Vec3d();
+                    var weight = 0.0;
 
                     _grid.Search(new Domain3d(p0, rad2), h1 =>
                     {
                         if (h0.Index == h1.Index) return true;
                         
-                        var delta = particles[h1].Position - p0;
-                        var m = delta.SquareLength;
+                        var d = particles[h1].Position - p0;
+                        var m = d.SquareLength;
 
                         if (m < rad2Sqr && m > 0.0)
-                            deltaSum += delta * ((1.0 - rad2 / Math.Sqrt(m)) * 0.5);
+                        {
+                            delta += d * ((1.0 - rad2 / Math.Sqrt(m)) * 0.5);
+                            weight = Weight;
+                        }
 
                         return true;
                     });
 
-                    h0.Delta += deltaSum;
+                    h0.Delta = delta;
+                    h0.Weight = weight;
                 }
             });
             
@@ -163,8 +164,7 @@ namespace SpatialSlur.SlurDynamics
             }
 
             var d1 = _grid.Domain;
-            d1.Translate(d0.Mid - d1.Mid);
-            UpdateGridDomain(Domain3d.Union(d0, d1));
+            UpdateGridDomain(Domain3d.Union(d0, d1 + (d0.Mid - d1.Mid)));
         }
 
 
@@ -179,12 +179,33 @@ namespace SpatialSlur.SlurDynamics
             var dy = _grid.BinScaleY;
             var dz = _grid.BinScaleZ;
 
-            // resize grid if bins are too large or small in any one dimension
-            double min = _radius * TargetBinScale * 0.5;
+            // rebuild grid if bins are too large in any one dimension
+            double max = _radius * TargetBinScale * 4.0;
+
+            if (dx > max || dy > max || dz > max)
+                _grid = new SpatialGrid3d<H>(domain, _radius * TargetBinScale);
+        }
+
+
+        /*
+        /// <summary>
+        /// Sets the domain of the grid and resizes if necessary.
+        /// </summary>
+        /// <param name="domain"></param>
+        private void UpdateGridDomain(Domain3d domain)
+        {
+            _grid.Domain = domain;
+            var dx = _grid.BinScaleX;
+            var dy = _grid.BinScaleY;
+            var dz = _grid.BinScaleZ;
+
+            // rebuild grid if bins are too large or small in any one dimension
+            double min = _radius * TargetBinScale * 0.25;
             double max = _radius * TargetBinScale * 4.0;
  
             if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
                 _grid = new SpatialGrid3d<H>(domain, _radius * TargetBinScale);
         }
+        */
     }
 }

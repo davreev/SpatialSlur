@@ -112,6 +112,7 @@ namespace SpatialSlur.SlurDynamics
 
             const double inv6 = 1.0 / 6.0;
             _h0.Delta = _h1.Delta = _h2.Delta = Direction * (Vec3d.Cross(p1 - p0, p2 - p1).Length * _massPerArea * inv6);
+            _h0.Weight = _h1.Weight = _h2.Weight = Weight;
         }
 
        

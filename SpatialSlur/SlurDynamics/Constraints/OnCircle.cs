@@ -122,6 +122,7 @@ namespace SpatialSlur.SlurDynamics
                 d *= _radius / d.Length;
 
                 h.Delta = ((Origin + d) - p);
+                h.Weight = Weight;
             }
         }
     }

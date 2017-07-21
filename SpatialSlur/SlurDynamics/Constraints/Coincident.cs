@@ -73,8 +73,11 @@ namespace SpatialSlur.SlurDynamics
 
             mean /= Handles.Count;
 
-            foreach(var h in Handles)
+            foreach (var h in Handles)
+            {
                 h.Delta = mean - particles[h].Position;
+                h.Weight = Weight;
+            }
         }
     }
 }

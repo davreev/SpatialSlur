@@ -34,9 +34,10 @@ namespace SpatialSlur.SlurDynamics
 
         /// <summary></summary>
         public int Index = -1;
-
         /// <summary></summary>
         public Vec3d Delta;
+        /// <summary></summary>
+        public double Weight;
 
 
         /// <summary>
@@ -65,6 +66,8 @@ namespace SpatialSlur.SlurDynamics
     {
         /// <summary></summary>
         public Vec3d AngleDelta;
+        /// <summary></summary>
+        public double AngleWeight;
 
 
         /// <summary>

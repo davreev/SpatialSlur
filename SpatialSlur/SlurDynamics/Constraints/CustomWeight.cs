@@ -25,7 +25,6 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="direction"></param>
-        /// <param name="capacity"></param>
         /// <param name="weight"></param>
         public CustomWeight(Vec3d direction, double weight = 1.0)
             : base(weight)
@@ -80,7 +79,10 @@ namespace SpatialSlur.SlurDynamics
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             foreach (var h in Handles)
+            {
                 h.Delta = Direction * h.Mass;
+                h.Weight = Weight;
+            }
         }
 
 

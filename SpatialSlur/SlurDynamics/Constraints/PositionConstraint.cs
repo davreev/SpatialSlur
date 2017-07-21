@@ -28,6 +28,7 @@ namespace SpatialSlur.SlurDynamics
         public abstract IEnumerable<H> Handles { get; }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -44,6 +45,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -53,6 +55,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -60,6 +63,7 @@ namespace SpatialSlur.SlurDynamics
         public abstract void Calculate(IReadOnlyList<IBody> particles);
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -67,10 +71,11 @@ namespace SpatialSlur.SlurDynamics
         public void Apply(IReadOnlyList<IBody> particles)
         {
             foreach (var h in Handles)
-                particles[h].ApplyMove(h.Delta, Weight);
+                particles[h].ApplyMove(h.Delta, h.Weight);
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>

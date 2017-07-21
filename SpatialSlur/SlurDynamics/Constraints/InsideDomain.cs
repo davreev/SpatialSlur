@@ -5,7 +5,7 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics
 {
@@ -15,34 +15,34 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class OnPoint : DynamicPositionConstraint<H>
+    public class InsideDomain : DynamicPositionConstraint<H>
     {
         /// <summary></summary>
-        public Vec3d Position;
+        public Domain3d Domain;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="domain"></param>
         /// <param name="weight"></param>
-        public OnPoint(Vec3d point, double weight = 1.0)
+        public InsideDomain(Domain3d domain, double weight = 1.0)
             : base(weight)
         {
-            Position = point;
+            Domain = domain;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="domain"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnPoint(Vec3d point, int capacity, double weight = 1.0)
+        public InsideDomain(Domain3d domain, int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
-            Position = point;
+            Domain = domain;
         }
 
 
@@ -50,12 +50,12 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="indices"></param>
-        /// <param name="point"></param>
+        /// <param name="domain"></param>
         /// <param name="weight"></param>
-        public OnPoint(IEnumerable<int> indices, Vec3d point, double weight = 1.0)
+        public InsideDomain(IEnumerable<int> indices, Domain3d domain, double weight = 1.0)
             : base(indices.Select(i => new H(i)), weight)
         {
-            Position = point;
+            Domain = domain;
         }
 
 
@@ -63,12 +63,12 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="handles"></param>
-        /// <param name="point"></param>
+        /// <param name="domain"></param>
         /// <param name="weight"></param>
-        public OnPoint(IEnumerable<H> handles, Vec3d point, double weight = 1.0)
+        public InsideDomain(IEnumerable<H> handles, Domain3d domain, double weight = 1.0)
             : base(handles, weight)
         {
-            Position = point;
+            Domain = domain;
         }
 
 
@@ -80,8 +80,17 @@ namespace SpatialSlur.SlurDynamics
         {
             foreach (var h in Handles)
             {
-                h.Delta = Position - particles[h].Position;
-                h.Weight = Weight;
+                var p = particles[h].Position;
+
+                if (Domain.Contains(p))
+                {
+                    h.Weight = 0.0;
+                }
+                else
+                {
+                    h.Delta += Domain.Clamp(p) - p;
+                    h.Weight = Weight;
+                }
             }
         }
     }

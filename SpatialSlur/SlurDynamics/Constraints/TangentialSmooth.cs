@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurDynamics
     using H = ParticleHandle;
 
     /// <summary>
-    /// 
+    /// The first handle represents the central vertex, remaining handles represent neighbours.
     /// </summary>
     [Serializable]
     public class TangentialSmooth : DynamicPositionConstraint<H>
@@ -26,7 +26,6 @@ namespace SpatialSlur.SlurDynamics
         public TangentialSmooth(Vec3d normal, int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
-            Handles.Add(new H()); // add central vertex
         }
 
 
@@ -38,7 +37,6 @@ namespace SpatialSlur.SlurDynamics
         public TangentialSmooth(IEnumerable<H> handles, double weight = 1.0)
             :base(handles,weight)
         {
-            Handles.Add(new H()); // add central vertex
         }
 
 
@@ -48,23 +46,33 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
-            Vec3d sum = new Vec3d();
-            double nInv = 1.0 / (Handles.Count - 1);
+            int n = Handles.Count;
+            if (n < 2)
+            {
+                if (n > 0) Handles[0].Weight = 0.0;
+                return;
+            }
 
-            for (int i = 1; i < Handles.Count; i++)
-                sum += particles[Handles[i]].Position;
+            Vec3d sum = new Vec3d();
+            double nInv = 1.0 / (n - 1);
+
+            foreach(var h in Handles.Skip(1))
+                sum += particles[h].Position;
      
             var h0 = Handles[0];
-            var n = ComputeNormal(particles);
-            var d = Vec3d.Reject((sum * nInv - particles[h0].Position) * 0.5, n);
+            var d = Vec3d.Reject((sum * nInv - particles[h0].Position) * 0.5, ComputeNormal(particles));
 
             // apply to central particle
             h0.Delta = d;
+            h0.Weight = Weight;
 
             // distribute reverse among neighbours
             d *= -nInv;
-            for (int i = 1; i < Handles.Count; i++)
-                Handles[i].Delta = d;
+            foreach(var h in Handles.Skip(1))
+            {
+                h.Delta = d;
+                h.Weight = Weight;
+            }
         }
 
 

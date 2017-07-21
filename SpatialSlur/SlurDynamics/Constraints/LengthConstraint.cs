@@ -96,6 +96,7 @@ namespace SpatialSlur.SlurDynamics
             var d = particles[_h1].Position - particles[_h0].Position;
             _h0.Delta = d * (1.0 - _targetLength / d.Length) * 0.5;
             _h1.Delta = -_h0.Delta;
+            _h0.Weight = _h1.Weight = Weight;
         }
 
 

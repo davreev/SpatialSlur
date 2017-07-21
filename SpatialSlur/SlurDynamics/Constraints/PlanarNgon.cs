@@ -70,11 +70,12 @@ namespace SpatialSlur.SlurDynamics
         {
             int n = Handles.Count;
 
-            if(n < 4)
+            if (n < 4)
             {
-                foreach (var h in Handles) h.Delta = new Vec3d();
+                foreach (var h in Handles)
+                    h.Weight = 0.0;
             }
-            else if(n == 4)
+            else if (n == 4)
             {
                 var h0 = Handles[0];
                 var h1 = Handles[1];
@@ -89,10 +90,15 @@ namespace SpatialSlur.SlurDynamics
 
                 h0.Delta = h2.Delta = d;
                 h1.Delta = h3.Delta = -d;
+                h0.Weight = h1.Weight = h2.Weight = h3.Weight;
             }
             else
             {
-                foreach (var h in Handles) h.Delta = new Vec3d();
+                foreach (var h in Handles)
+                {
+                    h.Delta = new Vec3d();
+                    h.Weight = Weight;
+                }
 
                 for (int i = 0; i < n; i++)
                 {
@@ -100,7 +106,6 @@ namespace SpatialSlur.SlurDynamics
                     var h1 = Handles[(i + 1) % n];
                     var h2 = Handles[(i + 2) % n];
                     var h3 = Handles[(i + 3) % n];
-
 
                     var d = GeometryUtil.LineLineShortestVector(
                         particles[h0].Position,
@@ -110,7 +115,6 @@ namespace SpatialSlur.SlurDynamics
 
                     h0.Delta += d;
                     h2.Delta += d;
-
                     h1.Delta -= d;
                     h3.Delta -= d;
                 }

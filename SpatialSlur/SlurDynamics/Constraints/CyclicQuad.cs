@@ -120,6 +120,8 @@ namespace SpatialSlur.SlurDynamics
             _h1.Delta = (cen - p1) * (1.0 - rad / d1);
             _h2.Delta = (cen - p2) * (1.0 - rad / d2);
             _h3.Delta = (cen - p3) * (1.0 - rad / d3);
+
+            _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
         }
 
 

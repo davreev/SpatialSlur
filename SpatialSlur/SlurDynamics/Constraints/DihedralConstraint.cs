@@ -157,9 +157,11 @@ namespace SpatialSlur.SlurDynamics
             _h1.Delta = n0 * (m * c0) + n1 * (m * c2);
             _h2.Delta = n0 * -(m * (c0 + c1));
             _h3.Delta = n1 * -(m * (c2 + c3));
+
+            _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>
