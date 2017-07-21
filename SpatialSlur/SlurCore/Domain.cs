@@ -53,7 +53,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Domain Union(Domain a, Domain b)
         {
-            throw new NotImplementedException();
+            a.Include(b.T0);
+            a.Include(b.T1);
+            return a;
         }
 
 
@@ -362,7 +364,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// expands the domain on both sides by t
+        /// Epands the domain on both sides by the given value
         /// </summary>
         /// <param name="t"></param>
         public void Expand(double t)
@@ -381,7 +383,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// expands the domain to include t
+        /// Expands the domain to include the given value.
         /// </summary>
         /// <param name="t"></param>
         public void Include(double t)
@@ -396,6 +398,17 @@ namespace SpatialSlur.SlurCore
                 if (t > T1) T1 = t;
                 else if (t < T0) T0 = t;
             }
+        }
+
+
+        /// <summary>
+        /// Expands this domain to include another
+        /// </summary>
+        /// <param name="other"></param>
+        public void Include(Domain other)
+        {
+            Include(other.T0);
+            Include(other.T1);
         }
 
 
@@ -441,8 +454,16 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public void MakeIncreasing()
         {
-            if (IsDecreasing)
-                Reverse();
+            if (IsDecreasing) Reverse();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void MakeDecreasing()
+        {
+            if (IsIncreasing) Reverse();
         }
     }
 }

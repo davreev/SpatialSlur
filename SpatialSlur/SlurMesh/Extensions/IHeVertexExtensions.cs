@@ -18,6 +18,78 @@ namespace SpatialSlur.SlurMesh
     public static class IHeVertexExtensions
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static V NearestMin<V, E, K>(this V start, Func<V, K> getKey)
+            where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
+            where K : IComparable<K>
+        {
+            return start.NearestMin(v => v.ConnectedVertices, getKey);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static V NearestMax<V, E, K>(this V start, Func<V, K> getKey)
+            where V : HeElement, IHeVertex<V, E>
+            where E : HeElement, IHalfedge<V, E>
+            where K : IComparable<K>
+        {
+            return start.NearestMax(v => v.ConnectedVertices, getKey);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static IEnumerable<V> WalkToMin<V, E, K>(this V start, Func<V, K> getKey)
+            where V : IHeVertex<V, E>
+            where E : IHalfedge<V, E>
+            where K : IComparable<K>
+        {
+            return start.WalkToMin(v => v.ConnectedVertices, getKey);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static IEnumerable<V> WalkToMax<V, E, K>(this V start, Func<V, K> getKey)
+            where V : HeElement, IHeVertex<V, E>
+            where E : HeElement, IHalfedge<V, E>
+            where K : IComparable<K>
+        {
+            return start.WalkToMax(v => v.ConnectedVertices, getKey);
+        }
+
+
+        /// <summary>
         /// Returns the unitized sum of halfedge normals around the vertex.
         /// </summary>
         /// <returns></returns>

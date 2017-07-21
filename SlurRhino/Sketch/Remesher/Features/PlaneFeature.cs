@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Rhino.Geometry;
 using SpatialSlur.SlurCore;
-using SpatialSlur.SlurRhino;
 
 /*
  * Notes
@@ -18,21 +16,23 @@ namespace SpatialSlur.SlurRhino.Remesher
     /// 
     /// </summary>
     [Serializable]
-    public class MeshNormalFeature : IFeature
+    public class PlaneFeature : IFeature
     {
-        private Mesh _mesh;
-        
+        private Vec3d _origin;
+        private Vec3d _normal;
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mesh"></param>
-        public MeshNormalFeature(Mesh mesh)
+        /// <param name="origin"></param>
+        /// <param name="normal"></param>
+        public PlaneFeature(Vec3d origin, Vec3d normal)
         {
-            _mesh = mesh;
-            _mesh.Normals.ComputeNormals();
+            _origin = origin;
+            _normal = normal.Unitized;
         }
-        
+
 
         /// <summary>
         /// 
@@ -41,10 +41,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <returns></returns>
         public Vec3d ClosestPoint(Vec3d point)
         {
-            var mp = _mesh.ClosestMeshPoint(point.ToPoint3d(), 0.0);
-            var cp = _mesh.PointAt(mp).ToVec3d();
-            var cn = _mesh.NormalAt(mp).ToVec3d();
-            return point + Vec3d.Project(cp - point, cn);
+            return point + ((_origin - point) * _normal) * _normal;
         }
     }
 }

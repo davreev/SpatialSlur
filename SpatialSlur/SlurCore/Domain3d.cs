@@ -435,6 +435,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="other"></param>
+        public void Include(Domain3d other)
+        {
+            X.Include(other.X);
+            Y.Include(other.Y);
+            Z.Include(other.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="points"></param>
         public void Include(IEnumerable<Vec3d> points)
         {
@@ -463,6 +475,17 @@ namespace SpatialSlur.SlurCore
             X.MakeIncreasing();
             Y.MakeIncreasing();
             Z.MakeIncreasing();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void MakeDecreasing()
+        {
+            X.MakeDecreasing();
+            Y.MakeDecreasing();
+            Z.MakeDecreasing();
         }
     }
 }

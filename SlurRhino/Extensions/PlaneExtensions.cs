@@ -18,11 +18,11 @@ namespace SpatialSlur.SlurRhino
     public static class PlaneExtensions
     {
         /// <summary>
-        /// Returns the transform matrix described by this plane.
+        /// Returns the transform matrix given by this plane.
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
-        public static Transform ToWorld(this Plane plane)
+        public static Transform ToTransform(this Plane plane)
         {
             Point3d o = plane.Origin;
             Vector3d x = plane.XAxis;
@@ -53,11 +53,11 @@ namespace SpatialSlur.SlurRhino
 
 
         /// <summary>
-        /// Returns the inverse transformation matrix described by this plane.
+        /// Returns the inverse transformation matrix given by this plane.
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
-        public static Transform ToLocal(this Plane plane)
+        public static Transform ToInverseTransform(this Plane plane)
         {
             Vector3d d = new Vector3d(plane.Origin);
             Vector3d x = plane.XAxis;
@@ -84,6 +84,30 @@ namespace SpatialSlur.SlurRhino
             m[3, 3] = 1.0;
 
             return m;
+        }
+
+
+        /// <summary>
+        /// Returns the transform matrix given by this plane.
+        /// </summary>
+        /// <param name="plane"></param>
+        /// <returns></returns>
+        [Obsolete("")]
+        public static Transform ToWorld(this Plane plane)
+        {
+            return ToTransform(plane);
+        }
+
+
+        /// <summary>
+        /// Returns the inverse transformation matrix given by this plane.
+        /// </summary>
+        /// <param name="plane"></param>
+        /// <returns></returns>
+        [Obsolete("")]
+        public static Transform ToLocal(this Plane plane)
+        {
+            return ToInverseTransform(plane);
         }
     }
 }

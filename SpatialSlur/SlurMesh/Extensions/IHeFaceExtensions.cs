@@ -18,6 +18,86 @@ namespace SpatialSlur.SlurMesh
     public static class IHeFaceExtensions
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static F NearestMin<V, E, F, K>(this F start, Func<F, K> getKey)
+            where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
+            where F : IHeFace<V, E, F>
+            where K : IComparable<K>
+        {
+            return start.NearestMin(f => f.AdjacentFaces, getKey);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static F NearestMax<V, E, F, K>(this F start, Func<F, K> getKey)
+            where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
+            where F : IHeFace<V, E, F>
+            where K : IComparable<K>
+        {
+            return start.NearestMax(f => f.AdjacentFaces, getKey);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static IEnumerable<F> WalkToMin<V, E, F, K>(this F start, Func<F, K> getKey)
+            where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
+            where F : IHeFace<V, E, F>
+            where K : IComparable<K>
+        {
+            return start.WalkToMin(f => f.AdjacentFaces, getKey);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="start"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static IEnumerable<F> WalkToMax<V, E, F, K>(this F start, Func<F, K> getKey)
+            where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
+            where F : IHeFace<V, E, F>
+            where K : IComparable<K>
+        {
+            return start.WalkToMax(f => f.AdjacentFaces, getKey);
+        }
+
+
+        /// <summary>
         /// Returns the average position of vertices in the face.
         /// </summary>
         /// <returns></returns>

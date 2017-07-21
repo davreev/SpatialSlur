@@ -12,14 +12,13 @@ using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
 using SpatialSlur.SlurRhino.Remesher;
 
-
 /*
  * Notes
  * 
- * Curvature adaptive dynamic remeshing based on implemetation described in
+ * Dynamic remeshing based on implemetation described in
  * https://nccastaff.bournemouth.ac.uk/jmacey/MastersProjects/MSc15/08Tanja/report.pdf
  * 
- * References
+ * Other references
  * http://graphics.stanford.edu/courses/cs468-12-spring/LectureSlides/13_Remeshing1.pdf
  */
 

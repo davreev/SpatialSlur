@@ -69,6 +69,7 @@
     <Compile Include="SlurDynamics\Constraints\AreaWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\Coincident.cs" />
     <Compile Include="SlurDynamics\Constraints\Colinear.cs" />
+    <Compile Include="SlurDynamics\Constraints\OnTarget.cs" />
     <Compile Include="SlurDynamics\Constraints\PositionConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\Coplanar.cs" />
     <Compile Include="SlurDynamics\Constraints\Cospherical.cs" />
@@ -87,7 +88,6 @@
     <Compile Include="SlurDynamics\Constraints\OnLine.cs" />
     <Compile Include="SlurDynamics\Constraints\OnPlane.cs" />
     <Compile Include="SlurDynamics\Constraints\OnPoint.cs" />
-    <Compile Include="SlurDynamics\Constraints\OnTargetT.cs" />
     <Compile Include="SlurDynamics\Constraints\PlanarNgon.cs" />
     <Compile Include="SlurDynamics\Constraints\PlanarQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\Pressure.cs" />
@@ -109,6 +109,7 @@
     <Compile Include="SlurCore\Rotation3d.cs" />
     <Compile Include="SlurField\Enums\SampleMode.cs" />
     <Compile Include="SlurField\Extensions\ArrayExtensions.cs" />
+    <Compile Include="SlurField\Extensions\IDiscreteFieldExtensions.cs" />
     <Compile Include="SlurField\Grid2d.cs" />
     <Compile Include="SlurField\Grid3d.cs" />
     <Compile Include="SlurField\IDWField3d.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="SlurCore\Extensions\ListExtensions.cs" />
     <Compile Include="SlurCore\IOUtil.cs" />
     <Compile Include="SlurMesh\Extensions\IHalfedgeExtensions.cs" />
+    <Compile Include="SlurMesh\Extensions\TExtensions.cs" />
     <Compile Include="SlurMesh\Extensions\IHeFaceExtensions.cs" />
     <Compile Include="SlurMesh\Extensions\IHeStructureExtensions.cs" />
     <Compile Include="SlurMesh\Extensions\IHeVertexExtensions.cs" />

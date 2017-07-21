@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Drawing;
-using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -54,56 +50,162 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="K"></typeparam>
         /// <param name="sequence"></param>
-        /// <param name="selector"></param>
+        /// <param name="getKey"></param>
         /// <returns></returns>
-        public static T SelectMin<T, U>(this IEnumerable<T> sequence, Func<T, U> selector)
-            where U : IComparable<U>
+        public static T SelectMin<T, K>(this IEnumerable<T> sequence, Func<T, K> getKey)
+            where K : IComparable<K>
         {
-            T tMin = sequence.First();
-            U uMin = selector(tMin);
+            var t0 = sequence.First();
+            var k0 = getKey(t0);
 
             foreach (T t in sequence.Skip(1))
             {
-                var u = selector(t);
+                var k = getKey(t);
 
-                if (u.CompareTo(uMin) < 0)
+                if (k.CompareTo(k0) < 0)
                 {
-                    tMin = t;
-                    uMin = u;
+                    t0 = t;
+                    k0 = k;
                 }
             }
 
-            return tMin;
+            return t0;
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
         /// <param name="sequence"></param>
-        /// <param name="selector"></param>
+        /// <param name="getValue"></param>
         /// <returns></returns>
-        public static T SelectMax<T, U>(this IEnumerable<T> sequence, Func<T, U> selector)
-            where U : IComparable<U>
+        public static T SelectMin<T>(this IEnumerable<T> sequence, Func<T, double> getValue)
         {
-            T tMax = sequence.First();
-            U uMax = selector(tMax);
+            var t0 = sequence.First();
+            var k0 = getValue(t0);
 
             foreach (T t in sequence.Skip(1))
             {
-                var u = selector(t);
-                if (u.CompareTo(uMax) > 0)
+                var k = getValue(t);
+
+                if (k.CompareTo(k0) < 0)
                 {
-                    tMax = t;
-                    uMax = u;
+                    t0 = t;
+                    k0 = k;
                 }
             }
 
-            return tMax;
+            return t0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sequence"></param>
+        /// <param name="getValue"></param>
+        /// <returns></returns>
+        public static T SelectMin<T>(this IEnumerable<T> sequence, Func<T, int> getValue)
+        {
+            var t0 = sequence.First();
+            var k0 = getValue(t0);
+
+            foreach (T t in sequence.Skip(1))
+            {
+                var k = getValue(t);
+
+                if (k.CompareTo(k0) < 0)
+                {
+                    t0 = t;
+                    k0 = k;
+                }
+            }
+
+            return t0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="sequence"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public static T SelectMax<T, K>(this IEnumerable<T> sequence, Func<T, K> getKey)
+            where K : IComparable<K>
+        {
+            var t0 = sequence.First();
+            var k0 = getKey(t0);
+
+            foreach (T t in sequence.Skip(1))
+            {
+                var k = getKey(t);
+                if (k.CompareTo(k0) > 0)
+                {
+                    t0 = t;
+                    k0 = k;
+                }
+            }
+
+            return t0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sequence"></param>
+        /// <param name="getValue"></param>
+        /// <returns></returns>
+        public static T SelectMax<T>(this IEnumerable<T> sequence, Func<T, double> getValue)
+        {
+            var t0 = sequence.First();
+            var k0 = getValue(t0);
+
+            foreach (T t in sequence.Skip(1))
+            {
+                var k = getValue(t);
+                if (k.CompareTo(k0) > 0)
+                {
+                    t0 = t;
+                    k0 = k;
+                }
+            }
+
+            return t0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sequence"></param>
+        /// <param name="getValue"></param>
+        /// <returns></returns>
+        public static T SelectMax<T>(this IEnumerable<T> sequence, Func<T, int> getValue)
+        {
+            var t0 = sequence.First();
+            var k0 = getValue(t0);
+
+            foreach (T t in sequence.Skip(1))
+            {
+                var k = getValue(t);
+                if (k.CompareTo(k0) > 0)
+                {
+                    t0 = t;
+                    k0 = k;
+                }
+            }
+
+            return t0;
         }
 
 

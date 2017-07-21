@@ -20,12 +20,6 @@ using static SpatialSlur.SlurCore.SlurMath;
 
 /*
  * Notes
- * 
- * Curvature adaptive dynamic remeshing based on implemetation described in
- * https://nccastaff.bournemouth.ac.uk/jmacey/MastersProjects/MSc15/08Tanja/report.pdf
- * 
- * References
- * http://graphics.stanford.edu/courses/cs468-12-spring/LectureSlides/13_Remeshing1.pdf
  */
 
 namespace SpatialSlur.SlurRhino.LoopGrowth
@@ -53,13 +47,13 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static LoopGrower Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public static LoopGrower Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
             where TV : HeVertex<TV, TE, TF>, IVertex3d
             where TE : Halfedge<TV, TE, TF>
             where TF : HeFace<TV, TE, TF>
         {
             var copy = HeMeshLG.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
-            return new LoopGrower(copy, features, tolerance);
+            return new LoopGrower(copy, target, features, tolerance);
         }
 
         #endregion
@@ -80,7 +74,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         // constraint objects
         //
 
-        private IFeature _target;
+        private MeshFeature _target;
         private List<IFeature> _features;
         private IField3d<double> _lengthField;
 
@@ -96,18 +90,21 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="graph"></param>
+        /// <param name="mesh"></param>
+        /// <param name="target"></param>
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
-        public LoopGrower(HeMesh<V, E, F> graph, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public LoopGrower(HeMesh<V, E, F> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
-            _mesh = graph;
+            _mesh = mesh;
             _verts = _mesh.Vertices;
             _hedges = _mesh.Halfedges;
-            
-            InitFeatures(features, tolerance);
             _settings = new LoopGrowerSettings();
             _stepCount = 0;
+
+            Target = target;
+            InitFeatures(features, tolerance);
+            ProjectToFeatures();
         }
 
 
@@ -128,9 +125,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 // if vertex is close enough, assign feature
                 foreach (var v in _verts)
                 {
-                    // skip verts which have already assigned
-                    if (v.FeatureIndex > -1)
-                        continue;
+                    if (v.FeatureIndex > -1) continue; // skip if already assigned
 
                     var p = v.Position;
                     if (p.SquareDistanceTo(f.ClosestPoint(p)) < tolSqr)
@@ -152,7 +147,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        public IFeature Target
+        public MeshFeature Target
         {
             get { return _target; }
             set { _target = value; }
@@ -211,6 +206,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
   
                 CalculateForces();
                 UpdateVertices();
+                ProjectToFeatures();
             }
         }
 
@@ -227,31 +223,6 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
             //LaplacianFair(_settings.SmoothWeight);
             LaplacianFairBoundary(_settings.SmoothWeight);
             SphereCollide(_settings.CollideRadius, _settings.CollideWeight);
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="weight"></param>
-        /// <returns></returns>
-        private void PullToFeatures(double weight)
-        {
-            Parallel.ForEach(Partitioner.Create(0, _verts.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var v = _verts[i];
-                    if (v.IsRemoved || v.FeatureIndex == -1) continue;
-
-                    var p = v.Position;
-                    int fi = v.FeatureIndex;
-
-                    if (fi == -1) continue;
-                    v.MoveSum += (_features[fi].ClosestPoint(p) - p) * weight;
-                    v.WeightSum += weight;
-                }
-            });
         }
 
 
@@ -418,13 +389,16 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 return;
             }
 
-            // rebuild grid if bins are too large or too small in any one dimension
+            // resize grid if bins are too large or small in any one dimension
             _grid.Domain = d;
-            double maxScale = radius * TargetBinScale * 2.0;
-            double minScale = radius * TargetBinScale * 0.5;
+            var dx = _grid.BinScaleX;
+            var dy = _grid.BinScaleY;
+            var dz = _grid.BinScaleZ;
 
-            // if bin scale is out of range, rebuild
-            if (!Contains(_grid.BinScaleX, minScale, maxScale) || !Contains(_grid.BinScaleY, minScale, maxScale) || !Contains(_grid.BinScaleZ, minScale, maxScale))
+            double min = radius * TargetBinScale * 0.5;
+            double max = radius * TargetBinScale * 4.0;
+
+            if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
                 _grid = new SpatialGrid3d<V>(d, radius * TargetBinScale);
         }
 
@@ -449,14 +423,59 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                     if (w > 0.0) v.Velocity += v.MoveSum * (timeStep / w);
                     v.Position += v.Velocity * timeStep;
 
-                    // snap to feature/target
-                    if (v.FeatureIndex != -1)
-                        v.Position = _features[v.FeatureIndex].ClosestPoint(v.Position);
-                    else if (_target != null)
-                        v.Position = _target.ClosestPoint(v.Position);
-  
                     v.MoveSum = new Vec3d();
                     v.WeightSum = 0.0;
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ProjectToFeatures()
+        {
+            Parallel.ForEach(Partitioner.Create(0, _verts.Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var v = _verts[i];
+
+                    var p = v.Position;
+                    int fi = v.FeatureIndex;
+
+                    // snap to feature if one exists
+                    if (fi != -1)
+                        v.Position = _features[v.FeatureIndex].ClosestPoint(v.Position);
+
+                    // snap to target if one exists
+                    if (_target != null)
+                        v.Position = _target.ClosestPoint(v.Position);
+                }
+            });
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="weight"></param>
+        /// <returns></returns>
+        private void PullToFeatures(double weight)
+        {
+            Parallel.ForEach(Partitioner.Create(0, _verts.Count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var v = _verts[i];
+                    if (v.IsRemoved || v.FeatureIndex == -1) continue;
+
+                    var p = v.Position;
+                    int fi = v.FeatureIndex;
+
+                    if (fi == -1) continue;
+                    v.MoveSum += (_features[fi].ClosestPoint(p) - p) * weight;
+                    v.WeightSum += weight;
                 }
             });
         }
@@ -477,6 +496,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         }
 
 
+        /*
         /// <summary>
         /// Splits long edges
         /// </summary>
@@ -495,7 +515,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 // don't split edge that spans between 2 different features
                 var fi0 = v0.FeatureIndex;
                 var fi1 = v1.FeatureIndex;
-                if (fi0 > -1 && fi1 > -1 && fi0 != fi1) continue;
+                // if (fi0 > -1 && fi1 > -1 && fi0 != fi1) continue;
                 
                 var p0 = v0.Position;
                 var p1 = v1.Position;
@@ -507,9 +527,61 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
 
                     // set attributes of new vertex
                     v2.Position = (v0.Position + v1.Position) * 0.5;
-                    v2.FeatureIndex = Math.Min(fi0, fi1);
+                    // v2.FeatureIndex = Math.Min(fi0, fi1);
+
+                    // if same feature
+                    v2.FeatureIndex = (fi0 == fi1) ? -1 : Math.Min(fi0, fi1);
                 }
             }
+        }
+        */
+
+
+        /// <summary>
+        /// Splits long edges
+        /// </summary>
+        private void SplitEdges(int count)
+        {
+            _vertTag++;
+
+            for (int i = 0; i < count; i += 2)
+            {
+                var he = _hedges[i];
+                if (he.IsRemoved) continue;
+
+                var v0 = he.Start;
+                var v1 = he.End;
+                
+                var fi = GetSplitFeature(v0.FeatureIndex, v1.FeatureIndex);
+                if (fi == -2) continue; // don't split if different features
+                
+                var p0 = v0.Position;
+                var p1 = v1.Position;
+
+                // split edge if length exceeds max
+                if (p0.SquareDistanceTo(p1) > he.MaxLength * he.MaxLength)
+                {
+                    var v2 = _mesh.SplitEdge(he).Start;
+
+                    // set attributes of new vertex
+                    v2.Position = (v0.Position + v1.Position) * 0.5;
+                    v2.FeatureIndex = fi;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="featureA"></param>
+        /// <param name="featureB"></param>
+        /// <returns></returns>
+        int GetSplitFeature(int featureA, int featureB)
+        {
+            if (featureA == -1 || featureB == -1) return -1; // only one on feature
+            if (featureA == featureB) return featureA; // both on same feature
+            return -2; // on different features
         }
 
         #endregion

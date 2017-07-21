@@ -1,12 +1,14 @@
 {
   "ExpandedNodes": [
     "",
-    "\\SpatialSlur\\Properties",
+    "\\SpatialSlur",
     "\\SpatialSlur\\Sketch",
-    "\\SpatialSlur\\SlurField",
-    "\\SpatialSlur\\SlurMesh",
-    "\\SpatialSlur\\SlurMesh\\Interfaces"
+    "\\SpatialSlur\\SlurData",
+    "\\SpatialSlur\\SlurDynamics",
+    "\\SpatialSlur\\SlurDynamics\\Constraints",
+    "\\SpatialSlur\\SlurDynamics\\Interfaces",
+    "\\SpatialSlur\\SlurField"
   ],
-  "SelectedNode": "\\SpatialSlur",
+  "SelectedNode": "\\SpatialSlur\\SlurDynamics\\Constraints\\OnTarget.cs",
   "PreviewInSolutionExplorer": false
 }

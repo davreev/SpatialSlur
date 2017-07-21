@@ -21,7 +21,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     public class MeshFeature : IFeature
     {
         private Mesh _mesh;
-
+        
 
         /// <summary>
         /// 
@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         {
             _mesh = mesh;
         }
-        
+
 
         /// <summary>
         /// 

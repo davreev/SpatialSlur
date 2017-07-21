@@ -74,6 +74,7 @@
     <Compile Include="Sketch\Remesher\Features\IFeature.cs" />
     <Compile Include="Sketch\Remesher\Features\MeshNormalFeature.cs" />
     <Compile Include="Sketch\Remesher\Features\MeshFeature.cs" />
+    <Compile Include="Sketch\Remesher\Features\PlaneFeature.cs" />
     <Compile Include="Sketch\Remesher\Features\PointFeature.cs" />
     <Compile Include="Sketch\LoopGrowth\HeMeshLG.cs" />
     <Compile Include="Sketch\Remesher\HeMeshDM.cs" />
