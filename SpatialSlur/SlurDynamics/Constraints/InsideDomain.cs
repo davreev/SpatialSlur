@@ -78,19 +78,20 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
+            var d = Domain;
+
             foreach (var h in Handles)
             {
                 var p = particles[h].Position;
 
-                if (Domain.Contains(p))
+                if (d.Contains(p))
                 {
                     h.Weight = 0.0;
+                    continue;
                 }
-                else
-                {
-                    h.Delta += Domain.Clamp(p) - p;
-                    h.Weight = Weight;
-                }
+
+                h.Delta = Domain.Clamp(p) - p;
+                h.Weight = Weight;
             }
         }
     }

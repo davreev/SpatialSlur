@@ -88,6 +88,29 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
+            foreach (var h in Handles)
+            {
+                double d = (Origin - particles[h].Position) * Normal;
+
+                if (d <= 0.0)
+                {
+                    h.Delta = Vec3d.Zero;
+                    continue;
+                }
+
+                h.Delta = (d / Normal.SquareLength * Normal);
+                h.Weight = Weight;
+            }
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="particles"></param>
+        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        {
             foreach(var h in Handles)
             {
                 double d = (Origin - particles[h].Position) * Normal;
@@ -103,5 +126,6 @@ namespace SpatialSlur.SlurDynamics
                 }
             }
         }
+        */
     }
 }
