@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         double Weight { get; set; }
-
+        
 
         /// <summary>
         /// Returns true if this constraint acts on the orientation of particles.
@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         void Apply(IReadOnlyList<IBody> particles);
 
-
+        
         /// <summary>
         /// 
         /// </summary>

@@ -724,7 +724,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var hash = new SpatialHash2d<int>(points.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid2d<int>(points.Count << 1, tolerance * 2.0);
             return RemoveDuplicates(points, hash, out indexMap, tolerance);
         }
 
@@ -737,7 +737,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="hash"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, SpatialHash2d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, InfiniteGrid2d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
         {
             List<Vec2d> result = new List<Vec2d>();
             var map = new int[points.Count];
@@ -778,7 +778,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash2d<int>(points.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid2d<int>(points.Count << 1, tolerance * 2.0);
             return GetFirstCoincident(points, hash, tolerance, parallel);
         }
 
@@ -791,7 +791,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, SpatialHash2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, InfiniteGrid2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[points.Count];
             hash.Clear();
@@ -837,7 +837,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash2d<int>(pointsB.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid2d<int>(pointsB.Count << 1, tolerance * 2.0);
             return GetFirstCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
@@ -851,7 +851,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, SpatialHash2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, InfiniteGrid2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[pointsA.Count];
             hash.Clear();
@@ -897,7 +897,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash2d<int>(pointsB.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid2d<int>(pointsB.Count << 1, tolerance * 2.0);
             return GetAllCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
@@ -911,7 +911,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, SpatialHash2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, InfiniteGrid2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             List<int>[] result = new List<int>[pointsA.Count];
             hash.Clear();
@@ -992,7 +992,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var hash = new SpatialHash3d<int>(points.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid3d<int>(points.Count << 2, tolerance * 2.0);
             return RemoveDuplicates(points, hash, out indexMap, tolerance);
         }
 
@@ -1005,7 +1005,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="hash"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, SpatialHash3d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, InfiniteGrid3d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
         {
             var result = new List<Vec3d>();
             var map = new int[points.Count];
@@ -1046,7 +1046,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash3d<int>(points.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid3d<int>(points.Count << 2, tolerance * 2.0);
             return GetFirstCoincident(points, hash, tolerance, parallel);
         }
 
@@ -1059,7 +1059,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, SpatialHash3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, InfiniteGrid3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[points.Count];
             hash.Clear();
@@ -1105,7 +1105,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash3d<int>(pointsB.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid3d<int>(pointsB.Count << 2, tolerance * 2.0);
             return GetFirstCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
@@ -1119,7 +1119,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, SpatialHash3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, InfiniteGrid3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             int[] result = new int[pointsA.Count];
             hash.Clear();
@@ -1165,7 +1165,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
         {
-            var hash = new SpatialHash3d<int>(pointsB.Count << 2, tolerance * 2.0);
+            var hash = new InfiniteGrid3d<int>(pointsB.Count << 2, tolerance * 2.0);
             return GetAllCoincident(pointsA, pointsB, hash, tolerance, parallel);
         }
 
@@ -1179,7 +1179,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="hash"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, SpatialHash3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, InfiniteGrid3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
         {
             List<int>[] result = new List<int>[pointsA.Count];
             hash.Clear();

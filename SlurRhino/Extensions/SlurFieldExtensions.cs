@@ -29,7 +29,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="selection"></param>
         /// <returns></returns>
-        static Mesh MeshSelection(this Grid2d field, IEnumerable<int> selection)
+        static Mesh MeshSelection(this GridField2d field, IEnumerable<int> selection)
         {
             var mesh = new Mesh();
             var verts = mesh.Vertices;
@@ -66,7 +66,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="selection"></param>
         /// <returns></returns>
-        static Mesh MeshSelection(this Grid3d field, IEnumerable<int> selection)
+        static Mesh MeshSelection(this GridField3d field, IEnumerable<int> selection)
         {
             var mesh = new Mesh();
             var verts = mesh.Vertices;

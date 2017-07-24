@@ -666,6 +666,32 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Inserts the specified number of vertices along the given edge.
+        /// </summary>
+        /// <param name="hedge"></param>
+        public TE DivideEdge(TE hedge, int count)
+        {
+            _hedges.ContainsCheck(hedge);
+            hedge.RemovedCheck();
+
+            return DivideEdgeImpl(hedge, count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hedge"></param>
+        private TE DivideEdgeImpl(TE hedge, int count)
+        {
+            for (int i = 0; i < count; i++)
+                hedge = SplitEdgeImpl(hedge);
+
+            return hedge;
+        }
+
+
+        /// <summary>
         /// Returns the new halfedge starting at the new vertex.
         /// </summary>
         /// <param name="he0"></param>

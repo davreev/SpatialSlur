@@ -477,14 +477,9 @@ namespace SpatialSlur.SlurRhino.Remesher
 
                 var v0 = he.Start;
                 var v1 = he.End;
-
-                // don't split edge that spans between 2 different features
-                var fi0 = v0.FeatureIndex;
-                var fi1 = v1.FeatureIndex;
-                if (fi0 > -1 && fi1 > -1 && fi0 != fi1) continue;
-
-                // or allow split bw different features
-                // but don't assign either feature to the new vertex
+                
+                var fi = GetSplitFeature(v0.FeatureIndex, v1.FeatureIndex);
+                if (fi < -1) continue; // don't split between different features
 
                 var p0 = v0.Position;
                 var p1 = v1.Position;
@@ -499,10 +494,24 @@ namespace SpatialSlur.SlurRhino.Remesher
 
                     // set attributes of new vertex
                     v2.Position = (p0 + p1) * 0.5;
-                    v2.FeatureIndex = Math.Min(fi0, fi1);
+                    v2.FeatureIndex = fi;
                     v2.RefineTag = _vertTag;
                 }
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fi0"></param>
+        /// <param name="fi1"></param>
+        /// <returns></returns>
+        private static int GetSplitFeature(int fi0, int fi1)
+        {
+            if (fi0 == -1 || fi1 == -1) return -1; // only one on feature
+            if (fi0 == fi1) return fi0; // both on same feature
+            return -2; // on different features
         }
 
 

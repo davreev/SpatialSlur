@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics
 {
@@ -33,11 +33,11 @@ namespace SpatialSlur.SlurDynamics
 
 
         /// <summary></summary>
-        public int Index = -1;
-        /// <summary></summary>
         public Vec3d Delta;
         /// <summary></summary>
         public double Weight;
+        /// <summary></summary>
+        public int Index = -1;
 
 
         /// <summary>
@@ -62,6 +62,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class BodyHandle : ParticleHandle
     {
         /// <summary></summary>

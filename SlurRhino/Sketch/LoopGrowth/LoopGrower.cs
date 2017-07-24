@@ -17,7 +17,6 @@ using SpatialSlur.SlurRhino.Remesher;
 
 using static SpatialSlur.SlurCore.SlurMath;
 
-
 /*
  * Notes
  */
@@ -68,7 +67,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         private HeMesh<V, E, F> _mesh;
         private HeElementList<V> _verts;
         private HeElementList<E> _hedges;
-        private SpatialGrid3d<V> _grid;
+        private FiniteGrid3d<V> _grid;
 
         //
         // constraint objects
@@ -389,51 +388,49 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
             // lazy instantiation
             if (_grid == null)
             {
-                _grid = new SpatialGrid3d<V>(d0, radius * TargetBinScale);
+                _grid = new FiniteGrid3d<V>(d0, radius * TargetBinScale);
                 return;
             }
 
             // align previous domain and union with new
-            var d1 = _grid.Domain;
-            UpdateGridDomain(Domain3d.Union(d0, d1 + (d0.Mid - d1.Mid)), radius);
+            //var d1 = _grid.Domain;
+            //_grid.Domain = Domain3d.Union(d0, d1 + (d0.Mid - d1.Mid));
+
+            _grid.Domain = d0;
+            CheckBinScale(radius);
         }
 
 
         /// <summary>
-        /// 
+        /// Rebuilds the grid if the bins are too large or too small in any one dimension.
         /// </summary>
-        private void UpdateGridDomain(Domain3d domain, double radius)
+        private void CheckBinScale(double radius)
         {
-            _grid.Domain = domain;
             var dx = _grid.BinScaleX;
             var dy = _grid.BinScaleY;
             var dz = _grid.BinScaleZ;
 
-            // rebuild grid if bins are too large in any one dimension
+            double min = radius * TargetBinScale * 0.25;
             double max = radius * TargetBinScale * 4.0;
-
-            if (dx > max || dy > max || dz > max)
-                _grid = new SpatialGrid3d<V>(domain, radius * TargetBinScale);
+ 
+            if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
+                _grid = new FiniteGrid3d<V>(_grid.Domain, radius * TargetBinScale);
         }
 
 
         /*
         /// <summary>
-
+        /// Rebuilds the grid if the bins are too large in any one dimension.
         /// </summary>
-        private void UpdateGridDomain(Domain3d domain, double radius)
+        private void CheckBinScale(double radius)
         {
-            _grid.Domain = domain;
             var dx = _grid.BinScaleX;
             var dy = _grid.BinScaleY;
             var dz = _grid.BinScaleZ;
-
-            // rebuild grid if bins are too large or small in any one dimension
-            double min = radius * TargetBinScale * 0.25;
             double max = radius * TargetBinScale * 4.0;
- 
-            if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
-                _grid = new SpatialGrid3d<V>(domain, radius * TargetBinScale);
+
+            if (dx > max || dy > max || dz > max)
+                _grid = new SpatialGrid3d<V>(_grid.Domain, radius * TargetBinScale);
         }
         */
 
@@ -588,7 +585,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 var v1 = he.End;
                 
                 var fi = GetSplitFeature(v0.FeatureIndex, v1.FeatureIndex);
-                if (fi < -1) continue; // don't split if different features
+                if (fi < -1) continue; // don't split between different features
                 
                 var p0 = v0.Position;
                 var p1 = v1.Position;
@@ -609,13 +606,13 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="featureA"></param>
-        /// <param name="featureB"></param>
+        /// <param name="fi0"></param>
+        /// <param name="fi1"></param>
         /// <returns></returns>
-        int GetSplitFeature(int featureA, int featureB)
+        private static int GetSplitFeature(int fi0, int fi1)
         {
-            if (featureA == -1 || featureB == -1) return -1; // only one on feature
-            if (featureA == featureB) return featureA; // both on same feature
+            if (fi0 == -1 || fi1 == -1) return -1; // only one on feature
+            if (fi0 == fi1) return fi0; // both on same feature
             return -2; // on different features
         }
 

@@ -26,11 +26,10 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
         /// <param name="origin"></param>
         /// <param name="normal"></param>
         /// <param name="weight"></param>
-        public OnPlane(int index, Vec3d origin, Vec3d normal, double weight = 1.0)
+        public OnPlane(Vec3d origin, Vec3d normal, double weight = 1.0)
             :base(weight)
         {
             Origin = origin;
@@ -41,12 +40,11 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
         /// <param name="origin"></param>
         /// <param name="normal"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnPlane(int index, Vec3d origin, Vec3d normal, int capacity, double weight = 1.0)
+        public OnPlane(Vec3d origin, Vec3d normal, int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
             Origin = origin;

@@ -119,7 +119,7 @@ namespace SpatialSlur.SlurDynamics
         {
             var itr = indices.GetEnumerator();
 
-            foreach(var h in _handles)
+            foreach (var h in _handles)
             {
                 itr.MoveNext();
                 h.Index = itr.Current;

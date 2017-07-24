@@ -96,12 +96,12 @@ namespace SpatialSlur.SlurMesh
 
             while (true)
             {
+                yield return t0;
+
                 var t1 = getNeighbours(t0).SelectMin(getKey);
                 var k1 = getKey(t1);
 
-                if (k1.CompareTo(k0) < 0)
-                    yield return t1;
-                else
+                if (k1.CompareTo(k0) >= 0)
                     yield break;
 
                 t0 = t1;
@@ -127,12 +127,12 @@ namespace SpatialSlur.SlurMesh
 
             while (true)
             {
+                yield return t0;
+
                 var v1 = getNeighbours(t0).SelectMin(getKey);
                 var k1 = getKey(v1);
 
-                if (k1.CompareTo(k0) > 0)
-                    yield return v1;
-                else
+                if (k1.CompareTo(k0) <= 0)
                     yield break;
 
                 t0 = v1;

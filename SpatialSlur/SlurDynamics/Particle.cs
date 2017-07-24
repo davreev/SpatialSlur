@@ -79,7 +79,7 @@ namespace SpatialSlur.SlurDynamics
             _position = position;
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>

@@ -47,9 +47,11 @@ namespace SpatialSlur.SlurDynamics
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             int n = Handles.Count;
-            if (n < 2)
+
+            // need at least 3 handles to define projection
+            if (n < 3)
             {
-                if (n > 0) Handles[0].Weight = 0.0;
+                ClearHandles();
                 return;
             }
 
@@ -83,6 +85,7 @@ namespace SpatialSlur.SlurDynamics
         private Vec3d ComputeNormal(IReadOnlyList<IBody> particles)
         {
             var p = particles[Handles[0]].Position;
+
             var sum = new Vec3d();
             var n = Handles.Count - 1;
 
@@ -95,6 +98,19 @@ namespace SpatialSlur.SlurDynamics
             }
 
             return sum;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ClearHandles()
+        {
+            foreach (var h in Handles)
+            {
+                h.Delta = Vec3d.Zero;
+                h.Weight = 0.0;
+            }
         }
     }
 }

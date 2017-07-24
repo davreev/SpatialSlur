@@ -68,9 +68,18 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
+            int n = Handles.Count;
+
+            // need at least 4 handles to define projections
+            if(n < 4)
+            {
+                ClearHandles();
+                return;
+            }
+
             double meanLength = 0.0;
 
-            for(int i = 0; i < Handles.Count; i+=2)
+            for(int i = 0; i < n; i+=2)
             {
                 var h0 = Handles[i];
                 var h1 = Handles[i + 1];
@@ -83,9 +92,9 @@ namespace SpatialSlur.SlurDynamics
                 h1.Delta = new Vec3d(m); // cache length temporarily
             }
        
-            meanLength /= Handles.Count;
+            meanLength /= n;
 
-            for (int i = 0; i < Handles.Count; i += 2)
+            for (int i = 0; i < n; i += 2)
             {
                 var h0 = Handles[i];
                 var h1 = Handles[i + 1];
@@ -93,6 +102,19 @@ namespace SpatialSlur.SlurDynamics
                 h0.Delta *= (1.0 - meanLength / h1.Delta.X) * 0.5;
                 h1.Delta = -h0.Delta;
                 h0.Weight = h1.Weight = Weight;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ClearHandles()
+        {
+            foreach (var h in Handles)
+            {
+                h.Delta = Vec3d.Zero;
+                h.Weight = 0.0;
             }
         }
     }

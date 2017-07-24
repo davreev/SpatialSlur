@@ -1,14 +1,15 @@
 {
   "ExpandedNodes": [
     "",
+    "\\Examples",
+    "\\Examples\\Grasshopper",
     "\\SpatialSlur",
     "\\SpatialSlur\\Sketch",
-    "\\SpatialSlur\\SlurData",
+    "\\SpatialSlur\\SlurCore",
     "\\SpatialSlur\\SlurDynamics",
     "\\SpatialSlur\\SlurDynamics\\Constraints",
-    "\\SpatialSlur\\SlurDynamics\\Interfaces",
     "\\SpatialSlur\\SlurField"
   ],
-  "SelectedNode": "\\SpatialSlur\\SlurDynamics\\Constraints\\OnTarget.cs",
+  "SelectedNode": "\\SpatialSlur\\SlurDynamics\\Particle.cs",
   "PreviewInSolutionExplorer": false
 }

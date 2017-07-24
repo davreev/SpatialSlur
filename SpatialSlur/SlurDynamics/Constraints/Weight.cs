@@ -9,13 +9,13 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics
 {
-    using H = CustomWeight.Handle;
+    using H = ParticleHandle;
 
     /// <summary>
-    /// Applies a force proportional to the mass stored on each handle.
+    /// Applies a force proportional to the mass of each particle.
     /// </summary>
     [Serializable]
-    public class CustomWeight : DynamicPositionConstraint<H>
+    public class Weight : DynamicPositionConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Direction;
@@ -26,7 +26,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="direction"></param>
         /// <param name="weight"></param>
-        public CustomWeight(Vec3d direction, double weight = 1.0)
+        public Weight(Vec3d direction, double weight = 1.0)
             : base(weight)
         {
             Direction = direction;
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="direction"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public CustomWeight(Vec3d direction, int capacity, double weight = 1.0)
+        public Weight(Vec3d direction, int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
             Direction = direction;
@@ -52,7 +52,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="direction"></param>
         /// <param name="weight"></param>
-        public CustomWeight(IEnumerable<int> indices, Vec3d direction, double weight = 1.0)
+        public Weight(IEnumerable<int> indices, Vec3d direction, double weight = 1.0)
             : base(indices.Select(i => new H(i)), weight)
         {
             Direction = direction;
@@ -65,7 +65,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="handles"></param>
         /// <param name="direction"></param>
         /// <param name="weight"></param>
-        public CustomWeight(IEnumerable<H> handles, Vec3d direction, double weight = 1.0)
+        public Weight(IEnumerable<H> handles, Vec3d direction, double weight = 1.0)
             : base(handles, weight)
         {
             Direction = direction;
@@ -80,54 +80,8 @@ namespace SpatialSlur.SlurDynamics
         {
             foreach (var h in Handles)
             {
-                h.Delta = Direction * h.Mass;
+                h.Delta = Direction * particles[h].Mass;
                 h.Weight = Weight;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Serializable]
-        public class Handle : ParticleHandle
-        {
-            private double _mass;
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double Mass
-            {
-                get { return _mass; }
-                set
-                {
-                    if (value < 0.0)
-                        throw new ArgumentOutOfRangeException("The value can not be negative.");
-
-                    _mass = value;
-                }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public Handle()
-            {
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="index"></param>
-            /// <param name="mass"></param>
-            public Handle(int index, double mass = 1.0)
-                :base(index)
-            {
-                Mass = mass;
             }
         }
     }
