@@ -14,10 +14,10 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Spatial hash for broad phase collision detection between dynamic objects.
+    /// Hash based infinite grid for broad phase collision detection between dynamic objects.
     /// </summary>
     [Serializable]
-    public class SpatialHash2d<T> : SpatialMap2d<T>
+    public class InfiniteGrid2d<T> : Grid2d<T>
     {
         private const int P1 = 73856093; // used in hash function
         private const int P2 = 19349663; // used in hash function
@@ -27,7 +27,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         ///
         /// </summary>
-        public SpatialHash2d(int binCount, double binScale)
+        public InfiniteGrid2d(int binCount, double binScale)
         {
             Init(binCount);
             BinScale = binScale;
@@ -36,7 +36,7 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Gets or sets the scale of the implicit grid used to discretize coordinates.
-        /// Note that setting the scale clears the map.
+        /// Note that setting also clears the grid.
         /// </summary>
         public double BinScale
         {
@@ -44,12 +44,24 @@ namespace SpatialSlur.SlurData
             set
             {
                 if (value <= 0.0)
-                    throw new ArgumentOutOfRangeException("The value must be larger than zero.");
+                    throw new ArgumentOutOfRangeException("The value must be larger than 0.");
 
                 _scale = value;
                 _scaleInv = 1.0 / _scale;
                 Clear();
             }
+        }
+
+
+        /// <summary>
+        /// Resizes the underlying array.
+        /// Note that this also clears the grid.
+        /// </summary>
+        /// <param name="binCount"></param>
+        public void Resize(int binCount)
+        {
+            ResizeImpl(binCount);
+            Clear();
         }
 
 

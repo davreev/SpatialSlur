@@ -20,11 +20,29 @@ namespace SpatialSlur.SlurData
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class SpatialMap2d<T>
+    public abstract class Grid2d<T>
     {
         private Bin[] _bins;
         private int _count;
         private int _currTag;
+
+
+        /// <summary>
+        /// Returns the number of values currently in the grid.
+        /// </summary>
+        public int Count
+        {
+            get { return _count; }
+        }
+
+
+        /// <summary>
+        /// Returns the number of bins in the grid.
+        /// </summary>
+        public int BinCount
+        {
+            get { return _bins.Length; }
+        }
 
 
         /// <summary>
@@ -34,32 +52,32 @@ namespace SpatialSlur.SlurData
         protected void Init(int binCount)
         {
             if (binCount < 1)
-                throw new System.ArgumentOutOfRangeException("There must be at least 1 bin in the map.");
+                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
 
             _bins = new Bin[binCount];
             _currTag = int.MinValue;
 
             // init bins
             for (int i = 0; i < binCount; i++)
-                _bins[i] = new Bin();
+                _bins[i] = new Bin(_currTag);
         }
 
 
         /// <summary>
-        /// Returns the number of values in the map.
+        /// 
         /// </summary>
-        public int Count
+        /// <param name="binCount"></param>
+        protected void ResizeImpl(int binCount)
         {
-            get { return _count; }
-        }
+            if (binCount < 1)
+                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
 
+            int count = _bins.Length;
+            Array.Resize(ref _bins, binCount);
 
-        /// <summary>
-        /// Returns the number of bins in the map.
-        /// </summary>
-        public int BinCount
-        {
-            get { return _bins.Length; }
+            // init any new bins
+            for (int i = count; i < binCount; i++)
+                _bins[i] = new Bin(_currTag);
         }
 
 
@@ -252,6 +270,16 @@ namespace SpatialSlur.SlurData
         {
             /// <summary></summary>
             public int Tag = int.MinValue;
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="tag"></param>
+            public Bin(int tag)
+            {
+                Tag = tag;
+            }
         }
     }
 }

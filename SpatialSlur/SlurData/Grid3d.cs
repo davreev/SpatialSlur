@@ -20,33 +20,15 @@ namespace SpatialSlur.SlurData
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class SpatialMap3d<T>
+    public abstract class Grid3d<T>
     {
         private Bin[] _bins;
         private int _count;
         private int _currTag;
 
-  
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="binCount"></param>
-        protected void Init(int binCount)
-        {
-            if (binCount < 1)
-                throw new System.ArgumentOutOfRangeException("There must be at least 1 bin in the map.");
-
-            _bins = new Bin[binCount];
-            _currTag = int.MinValue;
-
-            // init bins
-            for (int i = 0; i < binCount; i++)
-                _bins[i] = new Bin();
-        }
-
 
         /// <summary>
-        /// Returns the number of values in the map.
+        /// Returns the number of values currently in the grid.
         /// </summary>
         public int Count
         {
@@ -55,11 +37,47 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Returns the number of bins in the map.
+        /// Returns the number of bins in the grid.
         /// </summary>
         public int BinCount
         {
             get { return _bins.Length; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="binCount"></param>
+        protected void Init(int binCount)
+        {
+            if (binCount < 1)
+                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
+
+            _bins = new Bin[binCount];
+            _currTag = int.MinValue;
+
+            // init bins
+            for (int i = 0; i < binCount; i++)
+                _bins[i] = new Bin(_currTag);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="binCount"></param>
+        protected void ResizeImpl(int binCount)
+        {
+            if (binCount < 1)
+                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
+
+            int count = _bins.Length;
+            Array.Resize(ref _bins, binCount);
+
+            // init any new bins
+            for (int i = count; i < binCount; i++)
+                _bins[i] = new Bin(_currTag);
         }
 
 
@@ -261,6 +279,16 @@ namespace SpatialSlur.SlurData
         private class Bin : List<T>
         {
             public int Tag = int.MinValue;
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="tag"></param>
+            public Bin(int tag)
+            {
+                Tag = tag;
+            }
         }
     }
 }
