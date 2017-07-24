@@ -84,7 +84,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public GridVectorField2d(Grid2d other)
+        public GridVectorField2d(GridField2d other)
             : base(other)
         {
         }
@@ -326,7 +326,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public GridScalarField2d GetCurl(bool parallel = false)
         {
-            GridScalarField2d result = new GridScalarField2d((Grid2d)this);
+            GridScalarField2d result = new GridScalarField2d((GridField2d)this);
             GetCurl(result.Values, parallel);
             return result;
         }

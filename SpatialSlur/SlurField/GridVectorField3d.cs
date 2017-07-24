@@ -144,7 +144,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public GridVectorField3d(Grid3d other)
+        public GridVectorField3d(GridField3d other)
             : base(other)
         {
         }
@@ -277,7 +277,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public GridVectorField3d GetLaplacian(bool parallel = false)
         {
-            GridVectorField3d result = new GridVectorField3d((Grid3d)this);
+            GridVectorField3d result = new GridVectorField3d((GridField3d)this);
             GetLaplacian(result.Values, parallel);
             return result;
         }
@@ -418,7 +418,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public GridVectorField3d GetCurl(bool parallel = false)
         {
-            GridVectorField3d result = new GridVectorField3d((Grid3d)this);
+            GridVectorField3d result = new GridVectorField3d((GridField3d)this);
             GetCurl(result.Values, parallel);
             return result;
         }

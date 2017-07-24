@@ -91,7 +91,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public GridScalarField3d(Grid3d other)
+        public GridScalarField3d(GridField3d other)
             : base(other)
         {
         }
@@ -223,7 +223,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public GridScalarField3d GetLaplacian(bool parallel = false)
         {
-            GridScalarField3d result = new GridScalarField3d((Grid3d)this);
+            GridScalarField3d result = new GridScalarField3d((GridField3d)this);
             GetLaplacian(result.Values, parallel);
             return result;
         }
