@@ -11,9 +11,11 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Utility class for stray methods.
+    /// Utility class for stray constants and static methods.
     /// </summary>
     public static class DataUtil
     {
+        /// <summary></summary>
+        public const double BinScaleFactor = 1.75;
     }
 }

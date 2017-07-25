@@ -134,7 +134,6 @@ namespace SpatialSlur.SlurCore
         }
 
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -146,7 +145,6 @@ namespace SpatialSlur.SlurCore
             for (int i = 0; i < indices.Count; i++)
                 list[indices[i]] = other[i];
         }
-
 
 
         /// <summary>

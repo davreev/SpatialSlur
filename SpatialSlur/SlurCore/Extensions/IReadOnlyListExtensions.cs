@@ -4,7 +4,10 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Drawing;
+
 using SpatialSlur.SlurData;
+
+using static SpatialSlur.SlurData.DataUtil;
 
 /*
  * Notes
@@ -724,8 +727,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid2d<int>(points.Count << 1, tolerance * 2.0);
-            return RemoveDuplicates(points, hash, out indexMap, tolerance);
+            var grid = new Grid2d<int>(points.Count << 1);
+            return RemoveDuplicates(points, grid, out indexMap, tolerance);
         }
 
 
@@ -735,25 +738,24 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
-        /// <param name="hash"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, InfiniteGrid2d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, Grid2d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
         {
             List<Vec2d> result = new List<Vec2d>();
             var map = new int[points.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // add points to result if no duplicates are found
             for (int i = 0; i < points.Count; i++)
             {
                 var p = points[i];
-                var d = new Domain2d(p, tolerance, tolerance);
 
                 // if search was aborted, then a duplicate was found
-                if (hash.Search(d, Callback))
+                if (grid.Search(new Domain2d(p, tolerance), Callback))
                 {
                     map[i] = result.Count;
-                    hash.Insert(p, result.Count);
+                    grid.Insert(p, result.Count);
                     result.Add(p);
                 }
 
@@ -774,12 +776,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
-        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid2d<int>(points.Count << 1, tolerance * 2.0);
-            return GetFirstCoincident(points, hash, tolerance, parallel);
+            var grid = new Grid2d<int>(points.Count << 1);
+            return GetFirstCoincident(points, grid, tolerance);
         }
 
 
@@ -788,41 +789,31 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
-        /// <param name="hash"></param>
-        /// <param name="parallel"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, InfiniteGrid2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, Grid2d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[points.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // insert
             for (int i = 0; i < points.Count; i++)
-                hash.Insert(points[i], i);
+                grid.Insert(points[i], i);
 
             // search
-            Action<Tuple<int, int>> func = range =>
+            for (int i = 0; i < points.Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                var p = points[i];
+                result[i] = -1; // set to default
+
+                grid.Search(new Domain2d(p, tolerance), j =>
                 {
-                    var p = points[i];
-                    var d = new Domain2d(p, tolerance, tolerance);
-                    result[i] = -1; // set to default
+                    if (j == i) return true; // skip self
+                    if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
+                    return true;
+                });
+            }
 
-                    hash.Search(d, j =>
-                    {
-                        if (j == i) return true; // skip self
-                        if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
-                        return true;
-                    });
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, points.Count), func);
-            else
-                func(Tuple.Create(0, points.Count));
-            
             return result;
         }
 
@@ -833,12 +824,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid2d<int>(pointsB.Count << 1, tolerance * 2.0);
-            return GetFirstCoincident(pointsA, pointsB, hash, tolerance, parallel);
+            var grid = new Grid2d<int>(pointsB.Count << 1);
+            return GetFirstCoincident(pointsA, pointsB, grid, tolerance);
         }
 
 
@@ -848,39 +838,29 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="hash"></param>
-        /// <param name="parallel"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, InfiniteGrid2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, Grid2d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[pointsA.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // insert B
             for (int i = 0; i < pointsB.Count; i++)
-                hash.Insert(pointsB[i], i);
+                grid.Insert(pointsB[i], i);
 
             // search from A
-            Action<Tuple<int, int>> func = range =>
+            for (int i = 0; i < pointsA.Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                var p = pointsA[i];
+                result[i] = -1; // set to default
+
+                grid.Search(new Domain2d(p, tolerance), j =>
                 {
-                    var p = pointsA[i];
-                    var d = new Domain2d(p, tolerance, tolerance);
-                    result[i] = -1; // set to default
-
-                    hash.Search(d, j =>
-                    {
-                        if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
-                        return true;
-                    });
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, pointsA.Count), func);
-            else
-                func(Tuple.Create(0, pointsA.Count));
+                    if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
+                    return true;
+                });
+            }
 
             return result;
         }
@@ -888,17 +868,15 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// For each point in A, returns the index of all coincident points in B.
-        /// Note that the resulting lists may contain duplicate entries.
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid2d<int>(pointsB.Count << 1, tolerance * 2.0);
-            return GetAllCoincident(pointsA, pointsB, hash, tolerance, parallel);
+            var grid = new Grid2d<int>(pointsB.Count << 1);
+            return GetAllCoincident(pointsA, pointsB, grid, tolerance);
         }
 
 
@@ -908,41 +886,31 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="hash"></param>
-        /// <param name="parallel"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, InfiniteGrid2d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, Grid2d<int> grid, double tolerance = 1.0e-8)
         {
             List<int>[] result = new List<int>[pointsA.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // insert B
             for (int i = 0; i < pointsB.Count; i++)
-                hash.Insert(pointsB[i], i);
+                grid.Insert(pointsB[i], i);
 
             // search from A
-            Action<Tuple<int, int>> func = range =>
+            for (int i = 0; i < pointsA.Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                var p = pointsA[i];
+                var ids = new List<int>();
+
+                grid.Search(new Domain2d(p, tolerance), j =>
                 {
-                    var p = pointsA[i];
-                    var d = new Domain2d(p, tolerance, tolerance);
-                    var ids = new List<int>();
+                    if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
+                    return true;
+                });
 
-                    hash.Search(d, j =>
-                    {
-                        if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
-                        return true;
-                    });
-
-                    result[i] = ids;
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, pointsA.Count), func);
-            else
-                func(Tuple.Create(0, pointsA.Count));
+                result[i] = ids;
+            }
 
             return result;
         }
@@ -992,8 +960,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid3d<int>(points.Count << 2, tolerance * 2.0);
-            return RemoveDuplicates(points, hash, out indexMap, tolerance);
+            var grid = new Grid3d<int>(points.Count << 2);
+            return RemoveDuplicates(points, grid, out indexMap, tolerance);
         }
 
 
@@ -1003,25 +971,24 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
-        /// <param name="hash"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, InfiniteGrid3d<int> hash, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, Grid3d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
         {
             var result = new List<Vec3d>();
             var map = new int[points.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // add points to result if no duplicates are found in the hash
             for (int i = 0; i < points.Count; i++)
             {
                 var p = points[i];
-                var d = new Domain3d(p, tolerance, tolerance, tolerance);
 
                 // if search was aborted, then a duplicate was found
-                if (hash.Search(d, Callback))
+                if (grid.Search(new Domain3d(p, tolerance), Callback))
                 {
                     map[i] = result.Count;
-                    hash.Insert(p, result.Count);
+                    grid.Insert(p, result.Count);
                     result.Add(p);
                 }
 
@@ -1042,12 +1009,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
-        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid3d<int>(points.Count << 2, tolerance * 2.0);
-            return GetFirstCoincident(points, hash, tolerance, parallel);
+            var grid = new Grid3d<int>(points.Count << 2);
+            return GetFirstCoincident(points, grid, tolerance);
         }
 
 
@@ -1056,41 +1022,31 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
-        /// <param name="hash"></param>
-        /// <param name="parallel"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, InfiniteGrid3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, Grid3d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[points.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // insert
             for (int i = 0; i < points.Count; i++)
-                hash.Insert(points[i], i);
+                grid.Insert(points[i], i);
 
             // search
-            Action<Tuple<int, int>> func = range =>
+            for (int i = 0; i < points.Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                var p = points[i];
+                result[i] = -1; // set to default
+
+                grid.Search(new Domain3d(p, tolerance), j =>
                 {
-                    var p = points[i];
-                    var d = new Domain3d(p, tolerance, tolerance, tolerance);
-                    result[i] = -1; // set to default
-
-                    hash.Search(d, j =>
-                    {
-                        if (j == i) return true; // skip self
-                        if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
-                        return true;
-                    });
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, points.Count), func);
-            else
-                func(Tuple.Create(0, points.Count));
-
+                    if (j == i) return true; // skip self
+                    if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
+                    return true;
+                });
+            }
+           
             return result;
         }
 
@@ -1101,12 +1057,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid3d<int>(pointsB.Count << 2, tolerance * 2.0);
-            return GetFirstCoincident(pointsA, pointsB, hash, tolerance, parallel);
+            var grid = new Grid3d<int>(pointsB.Count << 2);
+            return GetFirstCoincident(pointsA, pointsB, grid, tolerance);
         }
 
 
@@ -1116,39 +1071,29 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="hash"></param>
-        /// <param name="parallel"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, InfiniteGrid3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, Grid3d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[pointsA.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // insert B
             for (int i = 0; i < pointsB.Count; i++)
-                hash.Insert(pointsB[i], i);
+                grid.Insert(pointsB[i], i);
 
             // search from A
-            Action<Tuple<int, int>> func = range =>
+            for (int i = 0; i < pointsA.Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var p = pointsA[i];
-                    var d = new Domain3d(p, tolerance, tolerance, tolerance);
-                    result[i] = -1; // set to default
+                var p = pointsA[i];
+                result[i] = -1; // set to default
 
-                    hash.Search(d, j =>
-                    {
-                        if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
-                        return true;
-                    });
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, pointsA.Count), func);
-            else
-                func(Tuple.Create(0, pointsA.Count));
+                grid.Search(new Domain3d(p, tolerance), j =>
+                 {
+                     if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
+                     return true;
+                 });
+            }
 
             return result;
         }
@@ -1156,17 +1101,15 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// For each point in A, returns the index of all coincident points in B.
-        /// Note that the resulting lists may contain duplicate entries.
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
         {
-            var hash = new InfiniteGrid3d<int>(pointsB.Count << 2, tolerance * 2.0);
-            return GetAllCoincident(pointsA, pointsB, hash, tolerance, parallel);
+            var grid = new Grid3d<int>(pointsB.Count << 2);
+            return GetAllCoincident(pointsA, pointsB, grid, tolerance);
         }
 
 
@@ -1176,45 +1119,35 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
-        /// <param name="hash"></param>
+        /// <param name="grid"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, InfiniteGrid3d<int> hash, double tolerance = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, Grid3d<int> grid, double tolerance = 1.0e-8, bool parallel = false)
         {
             List<int>[] result = new List<int>[pointsA.Count];
-            hash.Clear();
+            grid.BinScale = tolerance * BinScaleFactor * 2.0;
 
             // insert B
             for (int i = 0; i < pointsB.Count; i++)
-                hash.Insert(pointsB[i], i);
+                grid.Insert(pointsB[i], i);
 
             // search from A
-            Action<Tuple<int, int>> func = range =>
+            for (int i = 0; i < pointsA.Count; i++)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                var p = pointsA[i];
+                var ids = new List<int>();
+
+                grid.Search(new Domain3d(p,tolerance), j =>
                 {
-                    var p = pointsA[i];
-                    var d = new Domain3d(p, tolerance, tolerance, tolerance);
-                    var ids = new List<int>();
+                    if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
+                    return true;
+                });
 
-                    hash.Search(d, j =>
-                    {
-                        if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
-                        return true;
-                    });
-
-                    result[i] = ids;
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, pointsA.Count), func);
-            else
-                func(Tuple.Create(0, pointsA.Count));
-
+                result[i] = ids;
+            }
+         
             return result;
         }
-
         
         #endregion
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 using SpatialSlur.SlurCore;
 
@@ -11,26 +12,62 @@ using static SpatialSlur.SlurCore.CoreUtil;
  * 
  * TODO
  * Line insert/search based on https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+ *
+ * For parallel query
+ * provide search method that collects bin indices
+ * provide method that enumerates bin contents by index
+ * 
+ * pre-collect all bins in serial
+ * process collisions in parallel
+ * 
+ * or 
+ * 
+ * lock
+ * gather bins
+ * unlock
+ * process collisions
  */
 
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Data structure for handling broad-phase collision checks between 2d objects.
+    /// Hash based uniform grid for broad phase collision detection between dynamic objects.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class Grid2d<T>
+    public class Grid2d<T>
     {
+        private const int P1 = 73856093; // used in hash function
+        private const int P2 = 19349663; // used in hash function
+
         private Bin[] _bins;
+        private double _scale, _invScale; // scale of implicit grid
+
+        private int _currVersion = int.MinValue;
+        private int _currQuery = int.MinValue;
         private int _count;
-        private int _currTag;
 
 
         /// <summary>
-        /// Returns the number of values currently in the grid.
+        /// 
         /// </summary>
-        public int Count
+        public Grid2d(int binCount, double binScale = 1.0)
+        {
+            if (binCount < 1)
+                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
+
+            BinScale = binScale;
+            _bins = new Bin[binCount];
+
+            for (int i = 0; i < binCount; i++)
+                _bins[i] = new Bin(int.MinValue);
+        }
+
+
+        /// <summary>
+        /// Returns the number of objects currently in the grid.
+        /// </summary>
+        public int ObjectCount
         {
             get { return _count; }
         }
@@ -46,38 +83,96 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// Gets or sets the scale of the implicit grid used to discretize coordinates.
+        /// Note that setting this property also clears the grid.
         /// </summary>
-        /// <param name="binCount"></param>
-        protected void Init(int binCount)
+        public double BinScale
         {
-            if (binCount < 1)
-                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
+            get { return _scale; }
+            set
+            {
+                if (value <= 0.0)
+                    throw new ArgumentOutOfRangeException("The value must be larger than 0.");
 
-            _bins = new Bin[binCount];
-            _currTag = int.MinValue;
+                _scale = value;
+                _invScale = 1.0 / _scale;
 
-            // init bins
-            for (int i = 0; i < binCount; i++)
-                _bins[i] = new Bin(_currTag);
+                Clear();
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
+        private int NextQuery
+        {
+            get
+            {
+                if (_currQuery == int.MaxValue)
+                    ResetBinQueryTags();
+
+                return ++_currQuery;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ResetBinQueryTags()
+        {
+            _currQuery = int.MinValue;
+
+            foreach (var bin in _bins)
+                bin.LastQuery = int.MinValue;
+        }
+
+
+        /// <summary>
+        /// Resizes the underlying array.
+        /// Note that this also clears the grid.
+        /// </summary>
         /// <param name="binCount"></param>
-        protected void ResizeImpl(int binCount)
+        public void Resize(int binCount)
         {
             if (binCount < 1)
                 throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
+
+            Clear(); // expire old bins
 
             int count = _bins.Length;
             Array.Resize(ref _bins, binCount);
 
             // init any new bins
             for (int i = count; i < binCount; i++)
-                _bins[i] = new Bin(_currTag);
+                _bins[i] = new Bin(_currVersion);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Clear()
+        {
+            _count = 0;
+
+            if (_currVersion == int.MaxValue)
+                ResetBinVersionTags();
+
+            _currVersion++;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ResetBinVersionTags()
+        {
+            _currVersion = int.MinValue;
+
+            foreach (var bin in _bins)
+                bin.Version = int.MinValue;
         }
 
 
@@ -85,16 +180,25 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="point"></param>
-        protected abstract (int, int) Discretize(Vec2d point);
+        /// <returns></returns>
+        private (int, int) Discretize(Vec2d point)
+        {
+            return (
+                (int)Math.Floor(point.X * _invScale),
+                (int)Math.Floor(point.Y * _invScale));
+        }
 
 
         /// <summary>
-        /// 
+        /// http://cybertron.cg.tu-berlin.de/eitz/pdf/2007_hsh.pdf
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        protected abstract int ToIndex(int i, int j);
+        private int ToIndex(int i, int j)
+        {
+            return SlurMath.Mod2(i * P1 ^ j * P2, BinCount);
+        }
 
 
         /// <summary>
@@ -110,16 +214,20 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// Inserts the given value into the intersecting bin.
         /// </summary>
-        /// <param name="bin"></param>
+        /// <param name="point"></param>
         /// <param name="value"></param>
-        private void Insert(Bin bin, T value)
+        public void Insert(Vec2d point, T value)
         {
-            if (bin.Tag != _currTag)
+            (int i, int j) = Discretize(point);
+            var bin = GetBin(i, j);
+
+            // sync bin if necessary
+            if (bin.Version != _currVersion)
             {
+                bin.Version = _currVersion;
                 bin.Clear();
-                bin.Tag = _currTag;
             }
 
             bin.Add(value);
@@ -128,51 +236,71 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="value"></param>
-        public void Insert(Vec2d point, T value)
-        {
-            (int i, int j) = Discretize(point);
-            Insert(GetBin(i, j), value);
-        }
-
-
-        /// <summary>
-        /// 
+        /// Inserts the given value into each intersecting bin.
         /// </summary>
         /// <param name="domain"></param>
         /// <param name="value"></param>
         public void Insert(Domain2d domain, T value)
         {
+            domain.MakeIncreasing();
+
             (int i0, int j0) = Discretize(domain.From);
             (int i1, int j1) = Discretize(domain.To);
-
-            if (i1 < i0) Swap(ref i0, ref i1);
-            if (j1 < j0) Swap(ref j0, ref j1);
+            var currQuery = NextQuery;
 
             for (int j = j0; j <= j1; j++)
             {
                 for (int i = i0; i <= i1; i++)
                 {
-                    Insert(GetBin(i, j), value);
+                    var bin = GetBin(i, j);
+
+                    // skip bin if already visited
+                    if (bin.LastQuery == currQuery) continue;
+                    bin.LastQuery = currQuery;
+
+                    // sync bin if necessary
+                    if (bin.Version != _currVersion)
+                    {
+                        bin.Version = _currVersion;
+                        bin.Clear();
+                    }
+
+                    bin.Add(value);
+                    _count++;
                 }
             }
         }
 
 
         /// <summary>
+        /// Returns the contents of the intersecting bin.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public IEnumerable<T> Search(Vec2d point)
+        {
+            (int i, int j) = Discretize(point);
+            var bin = GetBin(i, j);
+
+            // skip bin if not synced
+            if (bin.Version != _currVersion)
+                return Enumerable.Empty<T>();
+
+            return bin.Skip(0);
+        }
+
+
+        /// <summary>
         /// Calls the given delegate on each value within the intersecting bin.
         /// The search can be aborted by returning false from the given callback. If this occurs, this function will also return false.
-        /// Note the delegate may be called on the same value mutliple times.
         /// </summary>
         public bool Search(Vec2d point, Func<T, bool> callback)
         {
             (int i, int j) = Discretize(point);
             var bin = GetBin(i, j);
 
-            if (bin.Tag == _currTag)
+            // skip bin if not synced
+            if (bin.Version == _currVersion)
             {
                 foreach (var t in bin)
                     if (!callback(t)) return false;
@@ -185,22 +313,26 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Calls the given delegate on each value within each intersecting bin.
         /// The search can be aborted by returning false from the given callback. If this occurs, this function will also return false.
-        /// Note the delegate may be called on the same value mutliple times.
+        /// This method is technically not threadsafe as concurrent calls could result in the same bin being processed multiple times within a single search.
+        /// For some applications, this isn't an issue however.
         /// </summary>
         public bool Search(Domain2d domain, Func<T, bool> callback)
         {
+            domain.MakeIncreasing();
+
             (int i0, int j0) = Discretize(domain.From);
             (int i1, int j1) = Discretize(domain.To);
-
-            if (i1 < i0) Swap(ref i0, ref i1);
-            if (j1 < j0) Swap(ref j0, ref j1);
+            var currQuery = NextQuery;
 
             for (int j = j0; j <= j1; j++)
             {
                 for (int i = i0; i <= i1; i++)
                 {
                     var bin = GetBin(i, j);
-                    if (bin.Tag != _currTag) continue;
+
+                    // skip bin if not synced or already visited
+                    if (bin.Version != _currVersion || bin.LastQuery == currQuery) continue; 
+                    bin.LastQuery = currQuery;
 
                     foreach (var t in bin)
                         if (!callback(t)) return false;
@@ -212,55 +344,63 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Returns the contents of all intersecting bins by appending them to the given list.
-        /// Note this may contain duplicates.
+        /// Adds the contents of each intersecting bin to the given stack.
+        /// This separates the task of collecting bins (not threadsafe) from processing their contents (potentially threadsafe) making it more suitable for concurrent applications.
         /// </summary>
-        public void Search(Vec2d point, List<T> result)
+        public void Search(Domain2d domain, Stack<IEnumerable<T>> result)
         {
-            Search(point, t =>
+            domain.MakeIncreasing();
+
+            (int i0, int j0) = Discretize(domain.From);
+            (int i1, int j1) = Discretize(domain.To);
+            var currQuery = NextQuery;
+
+            for (int j = j0; j <= j1; j++)
             {
-                result.Add(t);
-                return true;
-            });
+                for (int i = i0; i <= i1; i++)
+                {
+                    var bin = GetBin(i, j);
+
+                    // skip bin if not synced or already visited
+                    if (bin.Version != _currVersion || bin.LastQuery == currQuery)
+                        continue;
+
+                    bin.LastQuery = currQuery;
+                    result.Push(bin.Skip(0));
+                }
+            }
         }
 
 
+        /*
         /// <summary>
-        /// Returns the contents of all intersecting bins by appending them to the given list.
-        /// Note this may contain duplicates.
+        /// Calls the given delegate on each value within each intersecting bin.
+        /// The search can be aborted by returning false from the given callback. If this occurs, this function will also return false.
+        /// Note the delegate may be called multiple times on the same bin.
+        /// This implementation is threadsafe.
         /// </summary>
-        public void Search(Domain2d domain, List<T> result)
+        public bool Search(Domain2d domain, Func<T, bool> callback)
         {
-            Search(domain, t =>
+            domain.MakeIncreasing();
+
+            (int i0, int j0) = Discretize(domain.From);
+            (int i1, int j1) = Discretize(domain.To);
+
+            for (int j = j0; j <= j1; j++)
             {
-                result.Add(t);
-                return true;
-            });
+                for (int i = i0; i <= i1; i++)
+                {
+                    var bin = GetBin(i, j);
+                    if (bin.Version != _currVersion) continue;
+
+                    foreach (var t in bin)
+                        if (!callback(t)) return false;
+                }
+            }
+
+            return true;
         }
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Clear()
-        {
-            _count = 0;
-
-            if (_currTag == int.MaxValue)
-                ResetTags();
-
-            _currTag++;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void ResetTags()
-        {
-            foreach (var bin in _bins) bin.Tag = int.MinValue;
-            _currTag = int.MinValue;
-        }
+        */
 
 
         /// <summary>
@@ -269,16 +409,17 @@ namespace SpatialSlur.SlurData
         private class Bin : List<T>
         {
             /// <summary></summary>
-            public int Tag = int.MinValue;
+            public int Version = int.MinValue;
+            public int LastQuery = int.MinValue;
 
 
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="tag"></param>
-            public Bin(int tag)
+            /// <param name="version"></param>
+            public Bin(int version)
             {
-                Tag = tag;
+                Version = version;
             }
         }
     }
