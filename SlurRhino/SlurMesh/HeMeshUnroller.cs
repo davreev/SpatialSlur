@@ -86,6 +86,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="first"></param>
         /// <param name="getPosition"></param>
         /// <param name="setPosition"></param>
+        /// <param name="setHandle"></param>
         public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition, Action<E, int> setHandle)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>

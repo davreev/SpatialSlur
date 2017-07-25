@@ -149,7 +149,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns true if this halfedge has a null face reference.
         /// </summary>
         /// <returns></returns>
-        bool IsInHole { get; }
+        bool IsHole { get; }
 
 
         /// <summary>

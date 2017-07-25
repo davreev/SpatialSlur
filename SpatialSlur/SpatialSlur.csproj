@@ -59,8 +59,12 @@
     <Compile Include="SlurCore\Extensions\RandomExtensions.cs" />
     <Compile Include="SlurCore\Extensions\TExtensions.cs" />
     <Compile Include="SlurCore\Interfaces\IProperty.cs" />
+    <Compile Include="SlurCore\Interfaces\IReadOnlyProperty.cs" />
     <Compile Include="SlurData\DataUtil.cs" />
     <Compile Include="SlurData\KMeans.cs" />
+    <Compile Include="SlurData\Grid2d.cs" />
+    <Compile Include="SlurData\Grid3d.cs" />
+    <Compile Include="SlurData\WIP\MultiGrid3d.cs" />
     <Compile Include="SlurDynamics\Constraints\Constraint.cs" />
     <Compile Include="SlurDynamics\ConstraintSolver.cs" />
     <Compile Include="SlurDynamics\ConstraintSolverSettings.cs" />
@@ -69,6 +73,7 @@
     <Compile Include="SlurDynamics\Constraints\AreaWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\Coincident.cs" />
     <Compile Include="SlurDynamics\Constraints\Colinear.cs" />
+    <Compile Include="SlurDynamics\Constraints\ForceField.cs" />
     <Compile Include="SlurDynamics\Constraints\InsideDomain.cs" />
     <Compile Include="SlurDynamics\Constraints\OnTarget.cs" />
     <Compile Include="SlurDynamics\Constraints\SphereCollide.cs" />
@@ -109,9 +114,10 @@
     <Compile Include="SlurDynamics\HandleTypes.cs" />
     <Compile Include="SlurDynamics\Body.cs" />
     <Compile Include="SlurCore\Rotation3d.cs" />
+    <Compile Include="SlurDynamics\Constraints\OnThreshold.cs" />
     <Compile Include="SlurField\Enums\SampleMode.cs" />
-    <Compile Include="SlurField\Extensions\ArrayExtensions.cs" />
     <Compile Include="SlurField\Extensions\IDiscreteFieldExtensions.cs" />
+    <Compile Include="SlurField\FieldUtil.cs" />
     <Compile Include="SlurField\IDWField3d.cs" />
     <Compile Include="SlurField\IDWPoint3d.cs" />
     <Compile Include="SlurField\IDWScalarField3d.cs" />
@@ -152,14 +158,8 @@
     <Compile Include="SlurCore\Vec3i.cs" />
     <Compile Include="SlurCore\Vec4d.cs" />
     <Compile Include="SlurData\ProbabilitySelector.cs" />
-    <Compile Include="SlurData\Grid2d.cs" />
-    <Compile Include="SlurData\Grid3d.cs" />
-    <Compile Include="SlurData\FiniteGrid2d.cs" />
-    <Compile Include="SlurData\FiniteGrid3d.cs" />
     <Compile Include="SlurData\PriorityQueue.cs" />
     <Compile Include="SlurData\KdTree.cs" />
-    <Compile Include="SlurData\InfiniteGrid2d.cs" />
-    <Compile Include="SlurData\InfiniteGrid3d.cs" />
     <Compile Include="SlurData\ReadOnlySubArray.cs" />
     <Compile Include="SlurData\ReadOnlySubList.cs" />
     <Compile Include="SlurData\SubArray.cs" />
@@ -214,6 +214,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Sketch\" />
+    <Folder Include="SlurCore\Obsolete\" />
+    <Folder Include="SlurField\Obsolete\" />
+    <Folder Include="SlurMesh\Obsolete\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

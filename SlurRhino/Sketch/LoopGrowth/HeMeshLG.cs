@@ -50,21 +50,24 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
             public Vec3d Velocity;
             /// <summary></summary>
             public Vec3d MoveSum;
+
             /// <summary></summary>
             public double WeightSum;
-
             /// <summary></summary>
             public int FeatureIndex = -1;
 
+            /// <summary></summary>
+            public double CollideWeight; // TESTING
+            /// <summary></summary>
+            public int LastCollision = -1; // TESTING
+
             #region Explicit interface implementations
 
-            
             Vec2d IVertex3d.Texture
             {
                 get { return new Vec2d(); }
                 set { throw new NotImplementedException(); }
             }
-
 
             #endregion
         }

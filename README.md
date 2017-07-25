@@ -5,10 +5,9 @@ SpatialSlur is an open source library of geometric data structures and algorithm
   <img src="https://github.com/daveReeves/SpatialSlur/blob/master/Examples/Gallery/170720_Relief_02.gif" alt="Banner">
 </p>
 
-## Dependencies
-While the core library has no dependencies aside from the .NET framework, the repository also includes a number of separate libraries for interfacing with 3d modeling applications that support scripting in .NET such as Rhino and Unity. Each interface library references assemblies from its target application, so if these dependencies can't be resolved, the library will need to be removed from the solution before compiling.
+### Overview
+This repository consists of a standalone core library along with a number of extension libraries for interfacing with .NET APIs of other applications such as Rhino and Unity.
 
-## Overview
 Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](https://github.com/daveReeves/SpatialSlur/tree/master/SpatialSlur/Documentation) or dive into source files and poke around. If you have specific questions, comments, or suggestions, feel free to [contact me](http://spatialslur.com/contact/).
 
 + __SlurCore__ contains base geometric data types and utility methods as well as extension methods for .NET Framework types.
@@ -20,6 +19,9 @@ Below is a brief outline of the core library by namespace. For further detail, t
 + __SlurField__ contains generic data structures for discrete and continuous tensor field representations along with various algorithms for processing, sampling, and visualization.
 
 + __SlurMesh__ contains half-edge data structures for discrete representations of networks and surfaces along with various algorithms for geometry processing, topological traversal, segmentation, and subdivision.
+
+### Dependencies
+While the core library has no dependencies outside of the .NET framework, each extension library references external assemblies from its target application. If these dependencies can't be resolved for a particular extension library, simply remove its project folder from the solution before compiling.
 
 ## Setup
 To get started, either download precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases) or clone/download the repo and compile locally. Note that .dll files may be blocked by default when downloaded from the web so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to unblock.

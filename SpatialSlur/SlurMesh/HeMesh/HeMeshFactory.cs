@@ -109,7 +109,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Action delegates specify how attributes of original elements are mapped to attributes of copied elements.
         /// </summary>
         /// <typeparam name="UV"></typeparam>
         /// <typeparam name="UE"></typeparam>
@@ -132,6 +132,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns the dual of the given mesh.
+        /// Action delegates specify how attributes of primal elements are mapped to attributes of dual elements.
         /// Note this method preserves indexical correspondance between primal and dual elements.
         /// </summary>
         /// <typeparam name="UV"></typeparam>
@@ -154,7 +155,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Action delegates specify how attributes of parent elements are mapped to attributes of component elements.
         /// </summary>
         /// <typeparam name="UV"></typeparam>
         /// <typeparam name="UE"></typeparam>

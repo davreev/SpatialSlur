@@ -57,8 +57,9 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
 
         #endregion
 
-        
-        private const double TargetBinScale = 4.0;
+
+        private const double TargetBinScale = 3.5; // as a factor of radius
+        private const double TargetLoadFactor = 3.0;
 
         //
         // simulation mesh
@@ -67,7 +68,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         private HeMesh<V, E, F> _mesh;
         private HeElementList<V> _verts;
         private HeElementList<E> _hedges;
-        private FiniteGrid3d<V> _grid;
+        private Grid3d<V> _grid;
 
         //
         // constraint objects
@@ -220,8 +221,11 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         {
             //PullToFeatures(_settings.FeatureWeight);
             //LaplacianFair(_settings.SmoothWeight);
+
+            if (_stepCount % _settings.CollideFrequency == 0)
+                SphereCollide(_settings.CollideRadius, 1.0);
+
             LaplacianFairBoundary(_settings.SmoothWeight);
-            SphereCollide(_settings.CollideRadius, _settings.CollideWeight);
         }
 
 
@@ -349,26 +353,26 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                     var p0 = v0.Position;
 
                     var moveSum = new Vec3d();
-                    var w = 0.0;
+                    int count = 0;
 
                     _grid.Search(new Domain3d(p0, rad2), v1 =>
                     {
-                        if (v0 == v1) return true;
-
                         var move = v1.Position - p0;
                         var d = move.SquareLength;
 
                         if (d < rad2Sqr && d > 0.0)
                         {
                             moveSum += move * ((1.0 - rad2 / Math.Sqrt(d)) * 0.5);
-                            w = weight;
+                            count++;
                         }
 
                         return true;
                     });
-
-                    v0.MoveSum += moveSum * w;
-                    v0.WeightSum += w;
+                    
+                    if (count == 0) continue;
+              
+                    v0.MoveSum += moveSum * weight;
+                    v0.WeightSum += weight;
                 }
             });
 
@@ -381,58 +385,18 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// </summary>
         private void UpdateGrid(double radius)
         {
-            // recalculate domain
-            Domain3d d0 = new Domain3d(_verts.Select(v => v.Position));
-            d0.Expand(radius);
-
-            // lazy instantiation
             if (_grid == null)
             {
-                _grid = new FiniteGrid3d<V>(d0, radius * TargetBinScale);
+                _grid = new Grid3d<V>((int)(_verts.Count * TargetLoadFactor), radius * TargetBinScale);
                 return;
             }
 
-            // align previous domain and union with new
-            //var d1 = _grid.Domain;
-            //_grid.Domain = Domain3d.Union(d0, d1 + (d0.Mid - d1.Mid));
+            int minCount = (int)(_verts.Count * TargetLoadFactor * 0.5);
+            if (_grid.BinCount < minCount)
+                _grid.Resize((int)(_verts.Count * TargetLoadFactor));
 
-            _grid.Domain = d0;
-            CheckBinScale(radius);
+            _grid.BinScale = radius * TargetBinScale;
         }
-
-
-        /// <summary>
-        /// Rebuilds the grid if the bins are too large or too small in any one dimension.
-        /// </summary>
-        private void CheckBinScale(double radius)
-        {
-            var dx = _grid.BinScaleX;
-            var dy = _grid.BinScaleY;
-            var dz = _grid.BinScaleZ;
-
-            double min = radius * TargetBinScale * 0.25;
-            double max = radius * TargetBinScale * 4.0;
- 
-            if (dx < min || dy < min || dz < min || dx > max || dy > max || dz > max)
-                _grid = new FiniteGrid3d<V>(_grid.Domain, radius * TargetBinScale);
-        }
-
-
-        /*
-        /// <summary>
-        /// Rebuilds the grid if the bins are too large in any one dimension.
-        /// </summary>
-        private void CheckBinScale(double radius)
-        {
-            var dx = _grid.BinScaleX;
-            var dy = _grid.BinScaleY;
-            var dz = _grid.BinScaleZ;
-            double max = radius * TargetBinScale * 4.0;
-
-            if (dx > max || dy > max || dz > max)
-                _grid = new SpatialGrid3d<V>(_grid.Domain, radius * TargetBinScale);
-        }
-        */
 
 
         /// <summary>

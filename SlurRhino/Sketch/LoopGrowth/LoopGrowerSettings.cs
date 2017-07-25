@@ -22,13 +22,12 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         private double _radFactor = 0.75;
         
         private double _smoothWeight = 5.0;
-        private double _collideWeight = 1.0;
-
         private double _timeStep = 1.0;
         private double _damping = 0.1;
 
         private int _subSteps = 10;
         private int _refineFreq = 10;
+        private int _collideFreq = 5;
 
 
         /// <summary>
@@ -64,7 +63,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         {
             get { return _lengthRange.Max * _radFactor * 0.5; }
         }
-        
+
 
         /// <summary>
         /// 
@@ -73,16 +72,6 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         {
             get { return _smoothWeight; }
             set { _smoothWeight = Math.Max(value, 0.0); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double CollideWeight
-        {
-            get { return _collideWeight; }
-            set { _collideWeight = Math.Max(value, 0.0); }
         }
 
 
@@ -123,6 +112,16 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         {
             get { return _refineFreq; }
             set { _refineFreq = Math.Max(value, 1); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int CollideFrequency
+        {
+            get { return _collideFreq; }
+            set { _collideFreq = Math.Max(value, 1); }
         }
     }
 }

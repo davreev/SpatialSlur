@@ -2179,7 +2179,7 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < n; i++)
             {
-                if (!he.IsInHole) RemoveFaceImpl(he.Face);
+                if (!he.IsHole) RemoveFaceImpl(he.Face);
                 he = he.Twin.NextInFace;
             }
         }
@@ -2700,9 +2700,9 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         private bool MergeFacesImpl(TE hedge)
         {
-            if (hedge.IsInHole)
+            if (hedge.IsHole)
                 return MergeHoleToFace(hedge);
-            else if (hedge.Twin.IsInHole)
+            else if (hedge.Twin.IsHole)
                 return MergeFaceToHole(hedge);
             else
                 return MergeFaceToFace(hedge);
@@ -2862,7 +2862,7 @@ namespace SpatialSlur.SlurMesh
             hedge.RemovedCheck();
 
             // halfedge must be in a hole with at least 3 edges
-            if (!hedge.IsInHole && hedge.IsInDegree2)
+            if (!hedge.IsHole && hedge.IsInDegree2)
                 return null;
 
             return FillHoleImpl(hedge);
@@ -2970,14 +2970,16 @@ namespace SpatialSlur.SlurMesh
             {
                 case TriangulateMode.Fan:
                     TriangulateFaceFan(face.First);
-                    break;
+                    return;
                 case TriangulateMode.Strip:
                     TriangulateFaceStrip(face.First);
-                    break;
+                    return;
                 case TriangulateMode.Poke:
                     TriangulateFacePoke(face.First);
-                    break;
+                    return;
             }
+
+            throw new NotSupportedException();
         }
 
 
@@ -2998,14 +3000,16 @@ namespace SpatialSlur.SlurMesh
             {
                 case TriangulateMode.Fan:
                     TriangulateFaceFan(face.Halfedges.SelectMin(selector));
-                    break;
+                    return;
                 case TriangulateMode.Strip:
                     TriangulateFaceStrip(face.Halfedges.SelectMin(selector));
-                    break;
+                    return;
                 case TriangulateMode.Poke:
                     TriangulateFacePoke(face.First);
-                    break;
+                    return;
             }
+
+            throw new NotSupportedException();
         }
 
 
@@ -3110,14 +3114,16 @@ namespace SpatialSlur.SlurMesh
             {
                 case QuadrangulateMode.Fan:
                     QuadrangulateFaceFan(face.First);
-                    break;
+                    return;
                 case QuadrangulateMode.Strip:
                     QuadrangulateFaceStrip(face.First);
-                    break;
+                    return;
                 case QuadrangulateMode.Poke:
                     QuadrangulateFacePoke(face.First);
-                    break;
+                    return;
             }
+
+            throw new NotSupportedException();
         }
 
 
@@ -3138,14 +3144,16 @@ namespace SpatialSlur.SlurMesh
             {
                 case QuadrangulateMode.Fan:
                     QuadrangulateFaceFan(face.Halfedges.SelectMin(selector));
-                    break;
+                    return;
                 case QuadrangulateMode.Strip:
                     QuadrangulateFaceStrip(face.Halfedges.SelectMin(selector));
-                    break;
+                    return;
                 case QuadrangulateMode.Poke:
                     QuadrangulateFacePoke(face.First);
-                    break;
+                    return;
             }
+
+            throw new NotSupportedException();
         }
 
 

@@ -229,7 +229,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public bool IsInHole
+        public bool IsHole
         {
             get { return _face == null; }
         }
