@@ -42,7 +42,7 @@ namespace SpatialSlur.Examples
 
             // create solver
             var solver = new ConstraintSolver();
-
+     
             // wait for keypress to start the solver
             Console.WriteLine("Press return to start the solver.");
             Console.ReadLine();

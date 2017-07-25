@@ -50,7 +50,7 @@ namespace SpatialSlur.Examples
             // step the solver until converged
             while (!solver.IsConverged)
             {
-                solver.Step(particles, constraints);
+                solver.StepParallel(particles, constraints);
                 Console.WriteLine($"    step {solver.StepCount}");
             }
             Console.WriteLine("\nSolver converged! Press return to exit.");

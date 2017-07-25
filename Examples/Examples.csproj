@@ -59,15 +59,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Grasshopper\170712_HeMesh_Quad_Strips_01.gh" />
-    <None Include="Grasshopper\170717_Dynamic_Remesher_01.3dm" />
-    <None Include="Grasshopper\170717_Dynamic_Remesher_01.gh" />
     <None Include="packages.config" />
     <None Include="Resources\chair_planar.obj" />
     <None Include="Resources\chair_smooth.obj" />
     <None Include="Resources\face.obj" />
     <None Include="Resources\face_mapped.obj" />
-    <None Include="Grasshopper\170718_HeMesh_Unroll_01.gh" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
