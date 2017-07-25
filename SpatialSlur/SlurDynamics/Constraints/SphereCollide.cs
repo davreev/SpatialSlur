@@ -29,7 +29,7 @@ namespace SpatialSlur.SlurDynamics
         private const double TargetBinScale = 3.5; // as a factor of radius
         private const double TargetLoadFactor = 3.0;
 
-        public InfiniteGrid3d<H> _grid; // DEBUG public
+        private Grid3d<H> _grid;
         private double _radius = 1.0;
 
 
@@ -108,8 +108,8 @@ namespace SpatialSlur.SlurDynamics
         {
             UpdateGrid(particles);
 
-            var rad2 = _radius * 2.0;
-            var rad2Sqr = rad2 * rad2;
+            var diam = _radius * 2.0;
+            var diamSqr = diam * diam;
 
             // insert particles
             foreach (var h in Handles)
@@ -126,14 +126,14 @@ namespace SpatialSlur.SlurDynamics
                     var deltaSum = new Vec3d();
                     int count = 0;
 
-                    _grid.Search(new Domain3d(p0, rad2), h1 =>
+                    _grid.Search(new Domain3d(p0, diam), h1 =>
                     {
                         var d = particles[h1].Position - p0;
                         var m = d.SquareLength;
 
-                        if (m < rad2Sqr && m > 0.0)
+                        if (m < diamSqr && m > 0.0)
                         {
-                            deltaSum += d * (1.0 - rad2 / Math.Sqrt(m));
+                            deltaSum += d * (1.0 - diam / Math.Sqrt(m));
                             count++;
                         }
 
@@ -163,13 +163,15 @@ namespace SpatialSlur.SlurDynamics
         {
             if (_grid == null)
             {
-                _grid = new InfiniteGrid3d<H>((int)(particles.Count * TargetLoadFactor), Radius * TargetBinScale);
+                _grid = new Grid3d<H>((int)(particles.Count * TargetLoadFactor), Radius * TargetBinScale);
                 return;
             }
 
             _grid.BinScale = Radius * TargetBinScale;
+
             int minCount = (int)(particles.Count * TargetLoadFactor * 0.5);
-            if (_grid.BinCount < minCount) _grid.Resize((int)(particles.Count * TargetLoadFactor));
+            if (_grid.BinCount < minCount)
+                _grid.Resize((int)(particles.Count * TargetLoadFactor));
         }
     }
 

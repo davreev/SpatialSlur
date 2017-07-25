@@ -21,7 +21,7 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class LineCollide : DynamicPositionConstraint<H>
     {
-        private FiniteGrid3d<H> _grid;
+        private Grid3d<H> _grid;
         private double _radius;
 
 

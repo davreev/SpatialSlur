@@ -19,8 +19,8 @@ namespace SpatialSlur.SlurDynamics
         private H _h0 = new H();
         private H _h1 = new H();
 
-        /// <summary></summary>
-        public Vec3d Direction;
+        /// <summary>Describes the direction and magnitude of the applied weight</summary>
+        public Vec3d Vector;
         private double _massPerLength;
 
 
@@ -76,13 +76,13 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        /// <param name="direction"></param>
+        /// <param name="vector"></param>
         /// <param name="massPerLength"></param>
         /// <param name="weight"></param>
-        public LinearWeight(int start, int end, Vec3d direction, double massPerLength = 1.0, double weight = 1.0)
+        public LinearWeight(int start, int end, Vec3d vector, double massPerLength = 1.0, double weight = 1.0)
         {
             SetHandles(start, end);
-            Direction = direction;
+            Vector = vector;
             MassPerLength = massPerLength;
             Weight = weight;
         }
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
-            _h0.Delta = _h1.Delta = Direction * (particles[_h0].Position.DistanceTo(particles[_h1].Position) * _massPerLength * 0.5);
+            _h0.Delta = _h1.Delta = Vector * (particles[_h0].Position.DistanceTo(particles[_h1].Position) * _massPerLength * 0.5);
             _h0.Weight = _h1.Weight = Weight;
         }
 

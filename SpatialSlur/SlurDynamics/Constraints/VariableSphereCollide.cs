@@ -21,7 +21,7 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class VariableSphereCollide : DynamicPositionConstraint<H>
     {
-        private FiniteGrid3d<H> _grid;
+        private Grid3d<H> _grid;
 
 
         /// <summary>
@@ -52,22 +52,6 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
-            _grid.Clear();
-            var r0 = double.MaxValue;
-            var r1 = double.MinValue;
-
-            // insert particles
-            foreach(var h in Handles)
-            {
-                _grid.Insert(particles[h].Position, h);
-              
-                var r = h.Radius;
-                r0 = Math.Min(r, r0);
-                r1 = Math.Max(r, r1);
-            }
-
-            // search from particles
-
             // TODO
             throw new NotImplementedException();
         }
@@ -91,7 +75,7 @@ namespace SpatialSlur.SlurDynamics
                 set
                 {
                     if (value < 0.0)
-                        throw new ArgumentOutOfRangeException("The value can not be negative");
+                        throw new ArgumentOutOfRangeException("The value can not be negative.");
 
                     _radius = value;
                 }

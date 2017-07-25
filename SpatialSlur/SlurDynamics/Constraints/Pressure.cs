@@ -24,7 +24,7 @@ namespace SpatialSlur.SlurDynamics
         private H _h2 = new H();
 
         /// <summary></summary>
-        public double ForcePerArea;
+        public double ForcePerArea = 1.0;
 
 
         /// <summary>

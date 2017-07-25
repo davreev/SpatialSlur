@@ -17,32 +17,32 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class Weight : DynamicPositionConstraint<H>
     {
-        /// <summary></summary>
-        public Vec3d Direction;
+        /// <summary>Describes the direction and magnitude of the applied weight</summary>
+        public Vec3d Vector;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="vector"></param>
         /// <param name="weight"></param>
-        public Weight(Vec3d direction, double weight = 1.0)
+        public Weight(Vec3d vector, double weight = 1.0)
             : base(weight)
         {
-            Direction = direction;
+            Vector = vector;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="vector"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public Weight(Vec3d direction, int capacity, double weight = 1.0)
+        public Weight(Vec3d vector, int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
-            Direction = direction;
+            Vector = vector;
         }
 
 
@@ -50,12 +50,12 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="indices"></param>
-        /// <param name="direction"></param>
+        /// <param name="vector"></param>
         /// <param name="weight"></param>
-        public Weight(IEnumerable<int> indices, Vec3d direction, double weight = 1.0)
+        public Weight(IEnumerable<int> indices, Vec3d vector, double weight = 1.0)
             : base(indices.Select(i => new H(i)), weight)
         {
-            Direction = direction;
+            Vector = vector;
         }
 
 
@@ -63,12 +63,12 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="handles"></param>
-        /// <param name="direction"></param>
+        /// <param name="vector"></param>
         /// <param name="weight"></param>
-        public Weight(IEnumerable<H> handles, Vec3d direction, double weight = 1.0)
+        public Weight(IEnumerable<H> handles, Vec3d vector, double weight = 1.0)
             : base(handles, weight)
         {
-            Direction = direction;
+            Vector = vector;
         }
 
 
@@ -80,7 +80,7 @@ namespace SpatialSlur.SlurDynamics
         {
             foreach (var h in Handles)
             {
-                h.Delta = Direction * particles[h].Mass;
+                h.Delta = Vector * particles[h].Mass;
                 h.Weight = Weight;
             }
         }

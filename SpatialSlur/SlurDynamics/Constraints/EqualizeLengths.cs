@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurDynamics
             // need at least 4 handles to define projections
             if(n < 4)
             {
-                ClearHandles();
+                foreach (var h in Handles) h.Weight = 0.0;
                 return;
             }
 
@@ -102,19 +102,6 @@ namespace SpatialSlur.SlurDynamics
                 h0.Delta *= (1.0 - meanLength / h1.Delta.X) * 0.5;
                 h1.Delta = -h0.Delta;
                 h0.Weight = h1.Weight = Weight;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void ClearHandles()
-        {
-            foreach (var h in Handles)
-            {
-                h.Delta = Vec3d.Zero;
-                h.Weight = 0.0;
             }
         }
     }
