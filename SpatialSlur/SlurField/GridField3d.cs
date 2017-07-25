@@ -605,6 +605,20 @@ namespace SpatialSlur.SlurField
             SlurMath.Fract((point.Z - _z0) * _dzInv, out k)
             );
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal (int, int, int) GetBoundaryOffsets()
+        {
+            return (
+                WrapModeX == WrapMode.Repeat ? CountX - 1 : 0,
+                WrapModeY == WrapMode.Repeat ? CountXY - CountX : 0,
+                WrapModeZ == WrapMode.Repeat ? Count - CountXY : 0
+                );
+        }
     }
 
 

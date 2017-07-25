@@ -166,7 +166,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public override Vec2d ValueAt(GridPoint2d point)
         {
-            return Values.ValueAt(point.Corners, point.Weights);
+            return FieldUtil.ValueAt(Values, point.Corners, point.Weights);
         }
 
 
@@ -177,7 +177,7 @@ namespace SpatialSlur.SlurField
         /// <param name="value"></param>
         public void SetAt(GridPoint2d point, Vec2d value)
         {
-            Values.SetAt(point.Corners, point.Weights, value);
+            FieldUtil.SetAt(Values, point.Corners, point.Weights, value);
         }
 
 
@@ -188,7 +188,7 @@ namespace SpatialSlur.SlurField
         /// <param name="amount"></param>
         public void IncrementAt(GridPoint2d point, Vec2d amount)
         {
-            Values.IncrementAt(point.Corners, point.Weights, amount);
+            FieldUtil.IncrementAt(Values, point.Corners, point.Weights, amount);
         }
 
 
@@ -228,7 +228,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
-            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -292,7 +292,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -355,7 +355,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {

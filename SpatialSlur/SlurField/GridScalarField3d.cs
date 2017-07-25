@@ -189,7 +189,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public override double ValueAt(GridPoint3d point)
         {
-            return Values.ValueAt(point.Corners, point.Weights);
+            return FieldUtil.ValueAt(Values, point.Corners, point.Weights);
         }
 
 
@@ -200,7 +200,7 @@ namespace SpatialSlur.SlurField
         /// <param name="value"></param>
         public void SetAt(GridPoint3d point, double value)
         {
-            Values.SetAt(point.Corners, point.Weights, value);
+            FieldUtil.SetAt(Values, point.Corners, point.Weights, value);
         }
 
 
@@ -212,7 +212,7 @@ namespace SpatialSlur.SlurField
         /// <param name="amount"></param>
         public void IncrementAt(GridPoint3d point, double amount)
         {
-            Values.IncrementAt(point.Corners, point.Weights, amount);
+            FieldUtil.IncrementAt(Values, point.Corners, point.Weights, amount);
         }
 
 
@@ -257,7 +257,7 @@ namespace SpatialSlur.SlurField
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
 
-            (int di, int dj, int dk) = GridUtil.GetBoundaryOffsets(this);
+            (int di, int dj, int dk) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -318,7 +318,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void GetGradient(Vec3d[] result, bool parallel)
+        public void GetGradient(Vec3d[] result, bool parallel = false)
         {
             var vals = Values;
             int nx = CountX;
@@ -330,7 +330,7 @@ namespace SpatialSlur.SlurField
             double dy = 1.0 / (2.0 * ScaleY);
             double dz = 1.0 / (2.0 * ScaleZ);
 
-            (int di, int dj, int dk) = GridUtil.GetBoundaryOffsets(this);
+            (int di, int dj, int dk) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {

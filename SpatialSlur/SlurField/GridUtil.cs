@@ -13,7 +13,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Utility class for stray methods.
+    /// Utility class for stray constants and static methods.
     /// </summary>
     public static class GridUtil
     {
@@ -130,35 +130,6 @@ namespace SpatialSlur.SlurField
             index -= z * nxy;
             int y = index / nx;
             return (index - y * nx, y, z);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <returns></returns>
-        internal static (int, int) GetBoundaryOffsets(GridField2d field)
-        {
-            return (
-                field.WrapModeX == WrapMode.Repeat ? field.CountX - 1 : 0,
-                field.WrapModeY == WrapMode.Repeat ? field.Count - field.CountX : 0
-                );
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <returns></returns>
-        internal static (int, int, int) GetBoundaryOffsets(GridField3d field)
-        {
-            return (
-                field.WrapModeX == WrapMode.Repeat ? field.CountX - 1 : 0, 
-                field.WrapModeY == WrapMode.Repeat ? field.CountXY - field.CountX : 0, 
-                field.WrapModeZ == WrapMode.Repeat ? field.Count - field.CountXY : 0
-                );
         }
     }
 }

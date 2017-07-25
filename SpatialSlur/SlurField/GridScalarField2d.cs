@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Threading.Tasks;
+
 using SpatialSlur.SlurCore;
 
 /*
@@ -166,7 +167,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public override double ValueAt(GridPoint2d point)
         {
-            return Values.ValueAt(point.Corners, point.Weights);
+            return FieldUtil.ValueAt(Values, point.Corners, point.Weights);
         }
         
 
@@ -177,7 +178,7 @@ namespace SpatialSlur.SlurField
         /// <param name="value"></param>
         public void SetAt(GridPoint2d point, double value)
         {
-            Values.SetAt(point.Corners, point.Weights, value);
+            FieldUtil.SetAt(Values, point.Corners, point.Weights, value);
         }
 
 
@@ -188,7 +189,7 @@ namespace SpatialSlur.SlurField
         /// <param name="amount"></param>
         public void IncrementAt(GridPoint2d point, double amount)
         {
-            Values.IncrementAt(point.Corners, point.Weights, amount);
+            FieldUtil.IncrementAt(Values, point.Corners, point.Weights, amount);
         }
 
 
@@ -230,7 +231,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
-            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
@@ -287,7 +288,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void GetGradient(Vec2d[] result, bool parallel)
+        public void GetGradient(Vec2d[] result, bool parallel = false)
         {
             var vals = Values;
             int nx = CountX;
@@ -296,7 +297,7 @@ namespace SpatialSlur.SlurField
             double dx = 1.0 / (2.0 * ScaleX);
             double dy = 1.0 / (2.0 * ScaleY);
 
-            (int di, int dj) = GridUtil.GetBoundaryOffsets(this);
+            (int di, int dj) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> func = range =>
             {
