@@ -1047,7 +1047,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="parallel"></param>
         public void SortOutgoingHalfedges(Comparison<TE> compare, bool parallel = false)
         {
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1058,9 +1058,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _vertices.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, _vertices.Count), body);
             else
-                func(Tuple.Create(0, _vertices.Count));
+                body(Tuple.Create(0, _vertices.Count));
         }
 
 

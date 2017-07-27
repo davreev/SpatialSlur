@@ -8,6 +8,8 @@ using SpatialSlur.SlurField;
 
 using Rhino.Geometry;
 
+using static SpatialSlur.SlurField.GridUtil;
+
 /*
  * Notes
  */
@@ -989,7 +991,7 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                (int x, int y, int z) = GridUtil.ExpandIndex(range.Item1, nx, nxy);
+                (int x, int y, int z) = ExpandIndex(range.Item1, nx, nxy);
            
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)
@@ -1064,7 +1066,7 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                (int x, int y, int z) = GridUtil.ExpandIndex(range.Item1, nx, nxy);
+                (int x, int y, int z) = ExpandIndex(range.Item1, nx, nxy);
 
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)
@@ -1247,7 +1249,7 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                (int x, int y, int z) = GridUtil.ExpandIndex(range.Item1, nx, nxy);
+                (int x, int y, int z) = ExpandIndex(range.Item1, nx, nxy);
 
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)

@@ -13,7 +13,7 @@ using Rhino.Geometry;
 namespace SpatialSlur.SlurRhino
 {
     /// <summary>
-    /// 
+    /// Utility class for stray constants and static methods.
     /// </summary>
     public static class MeshUtil
     {

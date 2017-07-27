@@ -42,10 +42,11 @@ namespace SpatialSlur.SlurRhino.Constraints
         /// 
         /// </summary>
         /// <param name="surface"></param>
+        /// <param name="parallel"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnSurface(Surface surface, int capacity, double weight = 1.0)
-            : base(surface, ClosestPoint, capacity, weight)
+        public OnSurface(Surface surface, bool parallel, int capacity, double weight = 1.0)
+            : base(surface, ClosestPoint, parallel, capacity, weight)
         {
         }
     }

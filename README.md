@@ -6,7 +6,7 @@ SpatialSlur is an open source library of geometric data structures and algorithm
 </p>
 
 ### Overview
-This repository consists of a standalone core library along with a number of extension libraries for interfacing with .NET APIs of other applications such as Rhino and Unity.
+This repository consists of a core library along with a number of extension libraries for interfacing with .NET APIs from other applications such as Rhino and Unity.
 
 Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](https://github.com/daveReeves/SpatialSlur/tree/master/SpatialSlur/Documentation) or dive into source files and poke around. If you have specific questions, comments, or suggestions, feel free to [contact me](http://spatialslur.com/contact/).
 
@@ -21,7 +21,7 @@ Below is a brief outline of the core library by namespace. For further detail, t
 + __SlurMesh__ contains half-edge data structures for discrete representations of networks and surfaces along with various algorithms for geometry processing, topological traversal, segmentation, and subdivision.
 
 ### Dependencies
-While the core library has no dependencies outside of the .NET framework, each extension library references external assemblies from its target application. If these dependencies can't be resolved for a particular extension library, simply remove its project folder from the solution before compiling.
+While the core library has no dependencies outside of the .NET framework, each extension library references assemblies from its target application. If these dependencies can't be resolved for a particular extension library, simply remove its project folder from the solution before compiling.
 
 ## Setup
 To get started, either download precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases) or clone/download the repo and compile locally. Note that .dll files may be blocked by default when downloaded from the web so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to unblock.

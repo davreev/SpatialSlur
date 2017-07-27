@@ -101,16 +101,16 @@ namespace SpatialSlur.SlurRhino
             var colors = mesh.VertexColors;
             colors.Count = values.Count;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                     colors[i] = mapper(values[i]);
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, values.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, values.Count), body);
             else
-                func(Tuple.Create(0, values.Count));
+                body(Tuple.Create(0, values.Count));
         }
 
 
@@ -126,16 +126,16 @@ namespace SpatialSlur.SlurRhino
             var colors = mesh.VertexColors;
             colors.Count = verts.Count;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                     colors[i] = mapper(verts[i]);
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -151,16 +151,16 @@ namespace SpatialSlur.SlurRhino
             var colors = mesh.VertexColors;
             colors.Count = norms.Count;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                     colors[i] = mapper(norms[i]);
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, norms.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, norms.Count), body);
             else
-                func(Tuple.Create(0, norms.Count));
+                body(Tuple.Create(0, norms.Count));
         }
 
 
@@ -178,7 +178,7 @@ namespace SpatialSlur.SlurRhino
             var colors = mesh.VertexColors;
             colors.Count = mesh.Vertices.Count;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -192,9 +192,9 @@ namespace SpatialSlur.SlurRhino
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 

@@ -636,12 +636,10 @@ namespace SpatialSlur.SlurCore
             }
         }
 
-
         #endregion
 
 
         #region IReadOnlyList<Color>
-
 
         /// <summary>
         /// 
@@ -659,12 +657,10 @@ namespace SpatialSlur.SlurCore
             return colors[i].LerpTo(colors[i + 1], t);
         }
 
-
         #endregion
 
 
         #region IReadOnlyList<double>
-
 
         /// <summary>
         /// 
@@ -682,12 +678,10 @@ namespace SpatialSlur.SlurCore
             return SlurMath.Lerp(vector[i], vector[i + 1], t);
         }
 
-
         #endregion
 
 
         #region IReadOnlyList<Vec2d>
-
 
         /// <summary>
         /// 
@@ -707,7 +701,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Removes duplicate points from the same list
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
@@ -727,7 +721,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var grid = new Grid2d<int>(points.Count << 1);
+            var grid = new HashGrid2d<int>(points.Count << 1);
             return RemoveDuplicates(points, grid, out indexMap, tolerance);
         }
 
@@ -740,7 +734,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, Grid2d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
         {
             List<Vec2d> result = new List<Vec2d>();
             var map = new int[points.Count];
@@ -772,26 +766,26 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// For each point, returns the index of the first coincident point within the list. If no coincident point is found, -1 is returned.
+        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
         {
-            var grid = new Grid2d<int>(points.Count << 1);
+            var grid = new HashGrid2d<int>(points.Count << 1);
             return GetFirstCoincident(points, grid, tolerance);
         }
 
 
         /// <summary>
-        /// 
+        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, Grid2d<int> grid, double tolerance = 1.0e-8)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[points.Count];
             grid.BinScale = tolerance * BinScaleFactor * 2.0;
@@ -827,7 +821,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new Grid2d<int>(pointsB.Count << 1);
+            var grid = new HashGrid2d<int>(pointsB.Count << 1);
             return GetFirstCoincident(pointsA, pointsB, grid, tolerance);
         }
 
@@ -840,7 +834,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, Grid2d<int> grid, double tolerance = 1.0e-8)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[pointsA.Count];
             grid.BinScale = tolerance * BinScaleFactor * 2.0;
@@ -875,20 +869,20 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new Grid2d<int>(pointsB.Count << 1);
+            var grid = new HashGrid2d<int>(pointsB.Count << 1);
             return GetAllCoincident(pointsA, pointsB, grid, tolerance);
         }
 
 
         /// <summary>
-        /// 
+        /// For each point in A, returns the index of all coincident points in B.
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, Grid2d<int> grid, double tolerance = 1.0e-8)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
         {
             List<int>[] result = new List<int>[pointsA.Count];
             grid.BinScale = tolerance * BinScaleFactor * 2.0;
@@ -915,12 +909,10 @@ namespace SpatialSlur.SlurCore
             return result;
         }
 
-
         #endregion
 
 
         #region IReadOnlyList<Vec3d>
-
 
         /// <summary>
         /// 
@@ -960,7 +952,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var grid = new Grid3d<int>(points.Count << 2);
+            var grid = new HashGrid3d<int>(points.Count << 2);
             return RemoveDuplicates(points, grid, out indexMap, tolerance);
         }
 
@@ -973,7 +965,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, Grid3d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
         {
             var result = new List<Vec3d>();
             var map = new int[points.Count];
@@ -1005,26 +997,26 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// For each point, returns the index of the first coincident point within the list. If no coincident point is found, -1 is returned.
+        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
         {
-            var grid = new Grid3d<int>(points.Count << 2);
+            var grid = new HashGrid3d<int>(points.Count << 2);
             return GetFirstCoincident(points, grid, tolerance);
         }
 
 
         /// <summary>
-        /// 
+        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, Grid3d<int> grid, double tolerance = 1.0e-8)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[points.Count];
             grid.BinScale = tolerance * BinScaleFactor * 2.0;
@@ -1060,7 +1052,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new Grid3d<int>(pointsB.Count << 2);
+            var grid = new HashGrid3d<int>(pointsB.Count << 2);
             return GetFirstCoincident(pointsA, pointsB, grid, tolerance);
         }
 
@@ -1073,7 +1065,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, Grid3d<int> grid, double tolerance = 1.0e-8)
+        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8)
         {
             int[] result = new int[pointsA.Count];
             grid.BinScale = tolerance * BinScaleFactor * 2.0;
@@ -1108,13 +1100,13 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new Grid3d<int>(pointsB.Count << 2);
+            var grid = new HashGrid3d<int>(pointsB.Count << 2);
             return GetAllCoincident(pointsA, pointsB, grid, tolerance);
         }
 
 
         /// <summary>
-        /// 
+        /// For each point in A, returns the index of all coincident points in B.
         /// </summary>
         /// <param name="pointsA"></param>
         /// <param name="pointsB"></param>
@@ -1122,7 +1114,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="grid"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, Grid3d<int> grid, double tolerance = 1.0e-8, bool parallel = false)
+        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8, bool parallel = false)
         {
             List<int>[] result = new List<int>[pointsA.Count];
             grid.BinScale = tolerance * BinScaleFactor * 2.0;

@@ -280,7 +280,7 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetCoordinates(Vec3d[] result, bool parallel = false)
         {
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = IndicesAt(range.Item1);
 
@@ -293,9 +293,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _n), func);
+                Parallel.ForEach(Partitioner.Create(0, _n), body);
             else
-                func(Tuple.Create(0, _n));
+                body(Tuple.Create(0, _n));
         }
 
 
@@ -486,7 +486,8 @@ namespace SpatialSlur.SlurField
             return (
                 (int)Math.Round((point.X - _x0) * _dxInv),
                 (int)Math.Round((point.Y - _y0) * _dyInv),
-                (int)Math.Round((point.Z - _z0) * _dzInv));
+                (int)Math.Round((point.Z - _z0) * _dzInv)
+                );
         }
 
 
@@ -1040,6 +1041,7 @@ namespace SpatialSlur.SlurField
         /// Sets the given field to some function of this field's coordinates.
         /// </summary>
         /// <param name="func"></param>
+        /// <param name="result"></param>
         /// <param name="parallel"></param>
         public void SpatialFunctionXYZ(Func<double, double, double, T> func, IDiscreteField<T> result, bool parallel = false)
         {
@@ -1049,7 +1051,7 @@ namespace SpatialSlur.SlurField
             double y0 = Domain.Y.T0;
             double z0 = Domain.Z.T0;
 
-            Action<Tuple<int, int>> func2 = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = IndicesAt(range.Item1);
 
@@ -1062,9 +1064,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+                Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
-                func2(Tuple.Create(0, Count));
+                body(Tuple.Create(0, Count));
         }
 
 
@@ -1092,7 +1094,7 @@ namespace SpatialSlur.SlurField
             double tj = 1.0 / (CountY - 1);
             double tk = 1.0 / (CountZ - 1);
 
-            Action<Tuple<int, int>> func2 = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = IndicesAt(range.Item1);
 
@@ -1106,9 +1108,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+                Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
-                func2(Tuple.Create(0, Count));
+                body(Tuple.Create(0, Count));
         }
 
 
@@ -1132,7 +1134,7 @@ namespace SpatialSlur.SlurField
         {
             var values = result.Values;
 
-            Action<Tuple<int, int>> func2 = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = IndicesAt(range.Item1);
 
@@ -1145,9 +1147,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func2);
+                Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
-                func2(Tuple.Create(0, Count));
+                body(Tuple.Create(0, Count));
         }
 
 
@@ -1195,7 +1197,7 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void Sample(IField3d<T> other, bool parallel = false)
         {
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = IndicesAt(range.Item1);
 
@@ -1208,9 +1210,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func);
+                Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
-                func(Tuple.Create(0, Count));
+                body(Tuple.Create(0, Count));
         }
 
 
@@ -1223,7 +1225,7 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void Sample<U>(IField3d<U> other, Func<U, T> converter, bool parallel = false)
         {
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = IndicesAt(range.Item1);
 
@@ -1236,9 +1238,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func);
+                Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
-                func(Tuple.Create(0, Count));
+                body(Tuple.Create(0, Count));
         }
 
 

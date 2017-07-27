@@ -139,7 +139,7 @@ namespace SpatialSlur.SlurRhino
         {
             var hedges = structure.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -150,9 +150,9 @@ namespace SpatialSlur.SlurRhino
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -173,7 +173,7 @@ namespace SpatialSlur.SlurRhino
         {
             var faces = structure.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -185,9 +185,9 @@ namespace SpatialSlur.SlurRhino
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -208,7 +208,7 @@ namespace SpatialSlur.SlurRhino
         {
             var faces = structure.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -219,9 +219,9 @@ namespace SpatialSlur.SlurRhino
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
         #endregion
@@ -242,8 +242,8 @@ namespace SpatialSlur.SlurRhino
             where E : HeElement, IHalfedge<V, E>
         {
             var verts = structure.Vertices;
-
-            Action<Tuple<int, int>> func = range =>
+            
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -253,9 +253,9 @@ namespace SpatialSlur.SlurRhino
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -273,7 +273,7 @@ namespace SpatialSlur.SlurRhino
         {
             var verts = structure.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -283,9 +283,9 @@ namespace SpatialSlur.SlurRhino
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
         #endregion

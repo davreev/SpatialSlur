@@ -233,7 +233,7 @@ namespace SpatialSlur.SlurField
 
             (int di, int dj) = GetBoundaryOffsets();
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j) = IndicesAt(range.Item1);
 
@@ -253,9 +253,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func);
+                Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
-                func(Tuple.Create(0, Count));
+                body(Tuple.Create(0, Count));
         }
 
 
@@ -294,12 +294,12 @@ namespace SpatialSlur.SlurField
             int nx = CountX;
             int ny = CountY;
 
-            double dx = 1.0 / (2.0 * ScaleX);
-            double dy = 1.0 / (2.0 * ScaleY);
+            double dx = 0.5 / ScaleX;
+            double dy = 0.5 / ScaleY;
 
             (int di, int dj) = GetBoundaryOffsets();
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j) = IndicesAt(range.Item1);
 
@@ -318,9 +318,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), func);
+                Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
-                func(Tuple.Create(0, Count));
+                body(Tuple.Create(0, Count));
         }
 
 

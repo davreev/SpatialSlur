@@ -9,7 +9,7 @@ using System.Linq;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// General purpose static geometry methods.
+    /// Utility class for stray constants and static methods.
     /// </summary>
     public static class GeometryUtil
     {

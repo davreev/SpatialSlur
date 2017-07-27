@@ -68,7 +68,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         private HeMesh<V, E, F> _mesh;
         private HeElementList<V> _verts;
         private HeElementList<E> _hedges;
-        private Grid3d<V> _grid;
+        private HashGrid3d<V> _grid;
 
         //
         // constraint objects
@@ -387,7 +387,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         {
             if (_grid == null)
             {
-                _grid = new Grid3d<V>((int)(_verts.Count * TargetLoadFactor), radius * TargetBinScale);
+                _grid = new HashGrid3d<V>((int)(_verts.Count * TargetLoadFactor), radius * TargetBinScale);
                 return;
             }
 

@@ -3226,7 +3226,7 @@ namespace SpatialSlur.SlurMesh
         public void OrientFacesToMin<T>(Func<TE, T> selector, bool parallel = false)
             where T : IComparable<T>
         {
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -3237,9 +3237,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, _faces.Count), body);
             else
-                func(Tuple.Create(0, _faces.Count));
+                body(Tuple.Create(0, _faces.Count));
         }
 
 
@@ -3250,7 +3250,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="parallel"></param>
         public void OrientFacesToMin(Func<TE, double> selector, bool parallel = false)
         {
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -3261,9 +3261,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, _faces.Count), body);
             else
-                func(Tuple.Create(0, _faces.Count));
+                body(Tuple.Create(0, _faces.Count));
         }
 
 
@@ -3273,7 +3273,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="parallel"></param>
         public void OrientFacesToBoundary(bool parallel = false)
         {
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -3284,9 +3284,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, _faces.Count), body);
             else
-                func(Tuple.Create(0, _faces.Count));
+                body(Tuple.Create(0, _faces.Count));
         }
 
 

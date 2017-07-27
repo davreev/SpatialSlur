@@ -8,12 +8,12 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Utility class for stray constants and static methods.
+    /// Utility class for related constants and static methods.
     /// </summary>
     public static class GridUtil
     {
@@ -24,7 +24,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static Func<int, int, int> SelectWrapFunction(WrapMode wrapMode)
         {
-            switch(wrapMode)
+            switch (wrapMode)
             {
                 case WrapMode.Clamp:
                     return Clamp;
@@ -44,7 +44,7 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static int Clamp(int i, int n)
+        internal static int Clamp(int i, int n)
         {
             return (i < 0) ? 0 : (i < n) ? i : n - 1;
         }
@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static int Repeat(int i, int n)
+        internal static int Repeat(int i, int n)
         {
             i %= n;
             return (i < 0) ? i + n : i;
@@ -69,7 +69,7 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static int MirrorRepeat(int i, int n)
+        internal static int MirrorRepeat(int i, int n)
         {
             i = Repeat(i, n + n);
             return (i < n) ? i : n + n - i - 1;

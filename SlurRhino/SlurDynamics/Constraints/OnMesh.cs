@@ -41,10 +41,11 @@ namespace SpatialSlur.SlurRhino.Constraints
         /// 
         /// </summary>
         /// <param name="mesh"></param>
+        /// <param name="parallel"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnMesh(Mesh mesh, int capacity, double weight = 1.0)
-            :base(mesh, ClosestPoint, capacity, weight)
+        public OnMesh(Mesh mesh, bool parallel, int capacity, double weight = 1.0)
+            :base(mesh, ClosestPoint, parallel, capacity, weight)
         {
         }
     }

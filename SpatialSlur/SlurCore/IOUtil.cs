@@ -8,7 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// 
+    /// Utility class for stray constants and static methods.
     /// </summary>
     public static class IOUtil
     {

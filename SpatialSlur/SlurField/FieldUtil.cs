@@ -13,7 +13,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Utility class for stray constants and static methods.
+    /// Utility class for related constants and static methods.
     /// </summary>
     public static class FieldUtil
     {

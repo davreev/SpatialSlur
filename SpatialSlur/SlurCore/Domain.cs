@@ -25,8 +25,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
         public static Domain operator +(Domain d, double t)
         {
@@ -38,8 +38,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
         public static Domain operator -(Domain d, double t)
         {
@@ -51,8 +51,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
         public static Domain operator *(Domain d, double t)
         {
@@ -64,8 +64,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="t"></param>
+        /// <param name="d"></param>
         /// <returns></returns>
         public static Domain operator *(double t, Domain d)
         {
@@ -77,8 +77,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
         public static Domain operator /(Domain d, double t)
         {

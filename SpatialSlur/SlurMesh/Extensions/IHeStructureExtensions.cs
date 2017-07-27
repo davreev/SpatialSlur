@@ -644,7 +644,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = graph.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -655,9 +655,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count), body);
             else
-                func(Tuple.Create(0, hedges.Count));
+                body(Tuple.Create(0, hedges.Count));
         }
 
 
@@ -670,7 +670,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = graph.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -694,9 +694,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count), body);
             else
-                func(Tuple.Create(0, hedges.Count));
+                body(Tuple.Create(0, hedges.Count));
         }
 
         #endregion
@@ -713,7 +713,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = graph.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -724,9 +724,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -739,7 +739,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = graph.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -750,9 +750,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -765,7 +765,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = graph.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -776,9 +776,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -818,7 +818,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = graph.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -829,9 +829,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -844,7 +844,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = graph.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -859,9 +859,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -975,7 +975,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -986,9 +986,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1002,7 +1002,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1024,9 +1024,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1040,7 +1040,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1062,9 +1062,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1078,7 +1078,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1100,9 +1100,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1116,7 +1116,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1134,9 +1134,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1150,7 +1150,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1168,9 +1168,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1184,7 +1184,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1202,9 +1202,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1218,7 +1218,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1229,9 +1229,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1245,7 +1245,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = graph.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1297,9 +1297,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -1848,7 +1848,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1859,9 +1859,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count), body);
             else
-                func(Tuple.Create(0, hedges.Count));
+                body(Tuple.Create(0, hedges.Count));
         }
 
 
@@ -1875,7 +1875,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1886,9 +1886,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count), body);
             else
-                func(Tuple.Create(0, hedges.Count));
+                body(Tuple.Create(0, hedges.Count));
         }
 
 
@@ -1902,7 +1902,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1917,9 +1917,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count), body);
             else
-                func(Tuple.Create(0, hedges.Count));
+                body(Tuple.Create(0, hedges.Count));
         }
 
 
@@ -1935,7 +1935,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1946,9 +1946,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -1964,7 +1964,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -1975,9 +1975,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count), body);
             else
-                func(Tuple.Create(0, hedges.Count));
+                body(Tuple.Create(0, hedges.Count));
         }
 
 
@@ -1993,7 +1993,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2014,9 +2014,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -2143,7 +2143,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2162,9 +2162,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -2180,7 +2180,7 @@ namespace SpatialSlur.SlurMesh
         {
             var hedges = mesh.Halfedges;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2200,9 +2200,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), func);
+                Parallel.ForEach(Partitioner.Create(0, hedges.Count >> 1), body);
             else
-                func(Tuple.Create(0, hedges.Count >> 1));
+                body(Tuple.Create(0, hedges.Count >> 1));
         }
 
 
@@ -2280,7 +2280,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2299,9 +2299,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2315,7 +2315,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2326,9 +2326,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2406,7 +2406,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2428,9 +2428,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2445,7 +2445,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2460,9 +2460,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2477,7 +2477,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2497,9 +2497,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2513,7 +2513,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2536,9 +2536,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2552,7 +2552,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2575,9 +2575,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2593,7 +2593,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2604,9 +2604,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
 
@@ -2622,7 +2622,7 @@ namespace SpatialSlur.SlurMesh
         {
             var verts = mesh.Vertices;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2633,9 +2633,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
             else
-                func(Tuple.Create(0, verts.Count));
+                body(Tuple.Create(0, verts.Count));
         }
 
         #endregion
@@ -2653,7 +2653,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2664,9 +2664,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2681,7 +2681,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2692,9 +2692,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2708,7 +2708,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2719,9 +2719,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2736,7 +2736,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2747,9 +2747,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2764,7 +2764,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2775,9 +2775,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2792,7 +2792,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2803,9 +2803,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2820,7 +2820,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2831,9 +2831,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2848,7 +2848,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2859,9 +2859,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2877,7 +2877,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2892,9 +2892,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2908,7 +2908,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2937,9 +2937,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2954,7 +2954,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -2965,9 +2965,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
@@ -2981,7 +2981,7 @@ namespace SpatialSlur.SlurMesh
         {
             var faces = mesh.Faces;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -3032,9 +3032,9 @@ namespace SpatialSlur.SlurMesh
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
             else
-                func(Tuple.Create(0, faces.Count));
+                body(Tuple.Create(0, faces.Count));
         }
 
 
