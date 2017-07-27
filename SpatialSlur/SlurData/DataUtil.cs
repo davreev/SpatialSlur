@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Utility class for stray constants and static methods.
+    /// Utility class for related constants and static methods.
     /// </summary>
     public static class DataUtil
     {

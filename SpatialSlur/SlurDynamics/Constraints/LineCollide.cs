@@ -21,7 +21,7 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class LineCollide : MultiParticleConstraint<H>
     {
-        private Grid3d<H> _grid;
+        private HashGrid3d<H> _grid;
         private double _radius;
 
 

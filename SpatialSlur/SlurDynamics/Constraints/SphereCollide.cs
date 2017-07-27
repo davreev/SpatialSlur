@@ -32,7 +32,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>If set to true, collisions are calculated in parallel</summary>
         public bool Parallel;
 
-        private Grid3d<H> _grid;
+        private HashGrid3d<H> _grid;
         private double _radius = 1.0;
 
 
@@ -212,7 +212,7 @@ namespace SpatialSlur.SlurDynamics
         {
             if (_grid == null)
             {
-                _grid = new Grid3d<H>((int)(particles.Count * TargetLoadFactor), Radius * TargetBinScale);
+                _grid = new HashGrid3d<H>((int)(particles.Count * TargetLoadFactor), Radius * TargetBinScale);
                 return;
             }
 
