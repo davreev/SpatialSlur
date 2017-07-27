@@ -23,6 +23,154 @@ namespace SpatialSlur.SlurField
     public static class FieldSim
     {
         /// <summary>
+        /// Returns a streamline through the given field as an infinite sequence of points.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="stepSize"></param>
+        /// <param name="stepCount"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vec2d> IntegrateFrom(GridVectorField2d field, Vec2d point, double stepSize, IntegrationMode mode = IntegrationMode.Euler)
+        {
+            switch (mode)
+            {
+                case IntegrationMode.Euler:
+                    return IntegrateFromEuler(field, point, stepSize);
+                case IntegrationMode.RK2:
+                    return IntegrateFromRK2(field, point, stepSize);
+                case IntegrationMode.RK4:
+                    return IntegrateFromRK4(field, point, stepSize);
+            }
+
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static IEnumerable<Vec2d> IntegrateFromEuler(GridVectorField2d field, Vec2d point, double stepSize)
+        {
+            while (true)
+            {
+                point += field.ValueAt(point) * stepSize;
+                yield return point;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static IEnumerable<Vec2d> IntegrateFromRK2(GridVectorField2d field, Vec2d point, double stepSize)
+        {
+            while (true)
+            {
+                var v0 = field.ValueAt(point);
+                var v1 = field.ValueAt(point + v0 * stepSize);
+
+                point += (v0 + v1) * 0.5 * stepSize;
+                yield return point;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static IEnumerable<Vec2d> IntegrateFromRK4(GridVectorField2d field, Vec2d point, double stepSize)
+        {
+            double dt2 = stepSize * 0.5;
+            double dt6 = stepSize / 6.0;
+
+            while (true)
+            {
+                var v0 = field.ValueAt(point);
+                var v1 = field.ValueAt(point + v0 * dt2);
+                var v2 = field.ValueAt(point + v1 * dt2);
+                var v3 = field.ValueAt(point + v2 * stepSize);
+
+                point += (v0 + 2.0 * v1 + 2.0 * v2 + v3) * dt6;
+                yield return point;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a streamline through the given field as an infinite sequence of points.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="stepSize"></param>
+        /// <param name="stepCount"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vec3d> IntegrateFrom(GridVectorField3d field, Vec3d point, double stepSize, IntegrationMode mode = IntegrationMode.Euler)
+        {
+            switch (mode)
+            {
+                case IntegrationMode.Euler:
+                    return IntegrateFromEuler(field, point, stepSize);
+                case IntegrationMode.RK2:
+                    return IntegrateFromRK2(field, point, stepSize);
+                case IntegrationMode.RK4:
+                    return IntegrateFromRK4(field, point, stepSize);
+            }
+
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static IEnumerable<Vec3d> IntegrateFromEuler(GridVectorField3d field, Vec3d point, double stepSize)
+        {
+            while(true)
+            {
+                point += field.ValueAt(point) * stepSize;
+                yield return point;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static IEnumerable<Vec3d> IntegrateFromRK2(GridVectorField3d field, Vec3d point, double stepSize)
+        {
+            while (true)
+            {
+                var v0 = field.ValueAt(point);
+                var v1 = field.ValueAt(point + v0 * stepSize);
+
+                point += (v0 + v1) * 0.5 * stepSize;
+                yield return point;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static IEnumerable<Vec3d> IntegrateFromRK4(GridVectorField3d field, Vec3d point, double stepSize)
+        {
+            double dt2 = stepSize * 0.5;
+            double dt6 = stepSize / 6.0;
+
+            while (true)
+            {
+                var v0 = field.ValueAt(point);
+                var v1 = field.ValueAt(point + v0 * dt2);
+                var v2 = field.ValueAt(point + v1 * dt2);
+                var v3 = field.ValueAt(point + v2 * stepSize);
+                
+                point += (v0 + 2.0 * v1 + 2.0 * v2 + v3) * dt6;
+                yield return point;
+            }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="field"></param>
@@ -150,7 +298,7 @@ namespace SpatialSlur.SlurField
         {
             var vals = field.Values;
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
@@ -162,9 +310,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
             else
-                func(Tuple.Create(0, field.Count));
+                body(Tuple.Create(0, field.Count));
         }
 
 
@@ -198,10 +346,10 @@ namespace SpatialSlur.SlurField
 
             double dx = 1.0 / (field.ScaleX * field.ScaleX);
             double dy = 1.0 / (field.ScaleY * field.ScaleY);
-            
+
             (int di, int dj) = field.GetBoundaryOffsets();
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i , int j) = field.IndicesAt(range.Item1);
 
@@ -221,9 +369,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
             else
-                func(Tuple.Create(0, field.Count));
+                body(Tuple.Create(0, field.Count));
         }
 
 
@@ -263,7 +411,7 @@ namespace SpatialSlur.SlurField
 
             (int di, int dj, int dk) = field.GetBoundaryOffsets();
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = field.IndicesAt(range.Item1);
 
@@ -287,9 +435,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
             else
-                func(Tuple.Create(0, field.Count));
+                body(Tuple.Create(0, field.Count));
         }
 
 
@@ -431,7 +579,7 @@ namespace SpatialSlur.SlurField
 
             (int di, int dj) = field.GetBoundaryOffsets();
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j) = field.IndicesAt(range.Item1);
 
@@ -472,9 +620,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
             else
-                func(Tuple.Create(0, field.Count));
+                body(Tuple.Create(0, field.Count));
         }
 
 
@@ -514,7 +662,7 @@ namespace SpatialSlur.SlurField
 
             (int di, int dj, int dk) = field.GetBoundaryOffsets();
 
-            Action<Tuple<int, int>> func = range =>
+            Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = field.IndicesAt(range.Item1);
 
@@ -562,9 +710,9 @@ namespace SpatialSlur.SlurField
             };
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), func);
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
             else
-                func(Tuple.Create(0, field.Count));
+                body(Tuple.Create(0, field.Count));
         }
 
 
