@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    public class ForceField : DynamicPositionConstraint<H>
+    public class ForceField : MultiParticleConstraint<H>
     {
         private GridVectorField3d _field;
 
@@ -69,21 +69,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="strength"></param>
         /// <param name="weight"></param>
         public ForceField(IEnumerable<int> indices, GridVectorField3d field, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-            Field = field;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="field"></param>
-        /// <param name="weight"></param>
-        public ForceField(IEnumerable<H> handles, GridVectorField3d field,double weight = 1.0)
-            : base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Field = field;
         }
 

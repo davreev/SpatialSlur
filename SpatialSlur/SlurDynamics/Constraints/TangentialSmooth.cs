@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// The first handle represents the central vertex, remaining handles represent neighbours.
     /// </summary>
     [Serializable]
-    public class TangentialSmooth : DynamicPositionConstraint<H>
+    public class TangentialSmooth : MultiParticleConstraint<H>
     {
         /// <summary>
         /// 
@@ -32,11 +32,12 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="handles"></param>
+        /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public TangentialSmooth(IEnumerable<H> handles, double weight = 1.0)
-            :base(handles,weight)
+        public TangentialSmooth(IEnumerable<int> indices, double weight = 1.0)
+            :base(weight)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
         }
 
 
@@ -51,7 +52,7 @@ namespace SpatialSlur.SlurDynamics
             // need at least 3 handles to define projection
             if (n < 3)
             {
-                ClearHandles();
+                foreach (var h in Handles) h.Weight = 0.0;
                 return;
             }
 
@@ -98,19 +99,6 @@ namespace SpatialSlur.SlurDynamics
             }
 
             return sum;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void ClearHandles()
-        {
-            foreach (var h in Handles)
-            {
-                h.Delta = Vec3d.Zero;
-                h.Weight = 0.0;
-            }
         }
     }
 }

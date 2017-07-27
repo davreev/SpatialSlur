@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class OnLine : DynamicPositionConstraint<H>
+    public class OnLine : MultiParticleConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Start;
@@ -60,26 +60,14 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="direction"></param>
         /// <param name="weight"></param>
         public OnLine(IEnumerable<int> indices, Vec3d start, Vec3d direction, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Start = start;
             Direction = direction;
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="start"></param>
-        /// <param name="direction"></param>
-        /// <param name="weight"></param>
-        public OnLine(IEnumerable<H> handles, Vec3d start, Vec3d direction, double weight = 1.0)
-            : base(handles, weight)
-        {
-            Start = start;
-            Direction = direction;
-        }
 
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurDynamics
     /// Applies a force along the normal of the triangle between 3 particles with a magnitude proportional to the area.
     /// </summary>
     [Serializable]
-    public class Pressure : PositionConstraint<H>
+    public class Pressure : ParticleConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();

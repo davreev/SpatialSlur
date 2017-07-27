@@ -14,7 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class CyclicQuad : PositionConstraint<H>
+    public class CyclicQuad : ParticleConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();

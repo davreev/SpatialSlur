@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// Applies a force proportional to the mass defined on each handle.
     /// </summary>
     [Serializable]
-    public class FalseWeight : DynamicPositionConstraint<H>
+    public class FalseWeight : MultiParticleConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Direction;
@@ -53,21 +53,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="direction"></param>
         /// <param name="weight"></param>
         public FalseWeight(IEnumerable<int> indices, Vec3d direction, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-            Direction = direction;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="direction"></param>
-        /// <param name="weight"></param>
-        public FalseWeight(IEnumerable<H> handles, Vec3d direction, double weight = 1.0)
-            : base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Direction = direction;
         }
 

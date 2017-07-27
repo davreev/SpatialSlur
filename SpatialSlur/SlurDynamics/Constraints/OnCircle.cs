@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class OnCircle : DynamicPositionConstraint<H>
+    public class OnCircle : MultiParticleConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Origin;
@@ -83,30 +83,14 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="radius"></param>
         /// <param name="weight"></param>
         public OnCircle(IEnumerable<int> indices, Vec3d origin, Vec3d normal, double radius, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Origin = origin;
             Normal = normal;
             Radius = radius;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
-        /// <param name="radius"></param>
-        /// <param name="weight"></param>
-        public OnCircle(IEnumerable<H> handles, Vec3d origin, Vec3d normal, double radius, double weight = 1.0)
-            :base(handles, weight)
-        {
-            Origin = origin;
-            Normal = normal;
-            Radius = radius;
-        }
-
+        
 
         /// <summary>
         /// 

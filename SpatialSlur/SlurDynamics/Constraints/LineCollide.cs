@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class LineCollide : DynamicPositionConstraint<H>
+    public class LineCollide : MultiParticleConstraint<H>
     {
         private Grid3d<H> _grid;
         private double _radius;
@@ -58,21 +58,11 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="weight"></param>
         public LineCollide(IEnumerable<int> indices, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="weight"></param>
-        public LineCollide(IEnumerable<H> handles, double weight = 1.0)
-            : base(handles, weight)
-        {
-        }
-
+        
 
         /// <summary>
         /// 

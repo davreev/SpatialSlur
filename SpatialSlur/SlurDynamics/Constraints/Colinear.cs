@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class Colinear : DynamicPositionConstraint<H>
+    public class Colinear : MultiParticleConstraint<H>
     {
         /// <summary>
         /// 
@@ -44,19 +44,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="weight"></param>
         public Colinear(IEnumerable<int> indices, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="weight"></param>
-        public Colinear(IEnumerable<H> handles, double weight = 1.0)
-            : base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
         }
 
 

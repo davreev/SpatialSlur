@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class Cospherical : DynamicPositionConstraint<H>
+    public class Cospherical : MultiParticleConstraint<H>
     {
         /// <summary>
         /// 
@@ -44,21 +44,11 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="weight"></param>
         public Cospherical(IEnumerable<int> indices, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="weight"></param>
-        public Cospherical(IEnumerable<H> handles, double weight = 1.0)
-            : base(handles, weight)
-        {
-        }
-
+        
 
         /// <summary>
         /// 

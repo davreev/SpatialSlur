@@ -1,31 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// Base class for position-only constraints.
+    /// Base class for position-only constraints on a dynamic collection of particles.
     /// </summary>
     [Serializable]
-    public abstract class PositionConstraint<H> : IConstraint
+    public abstract class MultiParticleConstraint<H> : IConstraint
         where H : ParticleHandle
     {
+        private List<H> _handles;
         private double _weight;
 
 
         /// <summary>
-        /// All handles used by this constraint.
+        /// 
         /// </summary>
-        public abstract IEnumerable<H> Handles { get; }
+        public List<H> Handles
+        {
+            get { return _handles; }
+        }
 
 
         /// <inheritdoc/>
@@ -55,7 +56,29 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="weight"></param>
+        public MultiParticleConstraint(double weight = 1.0)
+        {
+            _handles = new List<H>();
+            Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="capacity"></param>
+        /// <param name="weight"></param>
+        public MultiParticleConstraint(int capacity, double weight = 1.0)
+        {
+            _handles = new List<H>(capacity);
+            Weight = weight;
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -70,7 +93,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public void Apply(IReadOnlyList<IBody> particles)
         {
-            foreach (var h in Handles)
+            foreach (var h in _handles)
                 particles[h].ApplyMove(h.Delta, h.Weight);
         }
 
@@ -84,7 +107,7 @@ namespace SpatialSlur.SlurDynamics
         {
             var itr = indices.GetEnumerator();
 
-            foreach (var h in Handles)
+            foreach (var h in _handles)
             {
                 itr.MoveNext();
                 h.Index = itr.Current;

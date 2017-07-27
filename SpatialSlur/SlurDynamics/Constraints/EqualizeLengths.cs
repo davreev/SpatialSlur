@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurDynamics
     /// Each successive pair of handles represents a line segment.
     /// </summary>
     [Serializable]
-    public class EqualizeLengths : DynamicPositionConstraint<H>
+    public class EqualizeLengths : MultiParticleConstraint<H>
     {
         /// <summary>
         /// 
@@ -46,22 +46,12 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="weight"></param>
         public EqualizeLengths(IEnumerable<int> indices, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base( weight)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="weight"></param>
-        public EqualizeLengths(IEnumerable<H> handles, double weight = 1.0)
-            : base(handles, weight)
-        {
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>

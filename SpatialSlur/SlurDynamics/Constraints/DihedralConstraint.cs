@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurDynamics
     /// http://www.tsg.ne.jp/TT/cg/ElasticOrigami_Tachi_IASS2013.pdf
     /// </summary>
     [Serializable]
-    public class DihedralConstraint : PositionConstraint<H>
+    public class DihedralConstraint : ParticleConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();

@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class OnPoint : DynamicPositionConstraint<H>
+    public class OnPoint : MultiParticleConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Position;
@@ -53,21 +53,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="point"></param>
         /// <param name="weight"></param>
         public OnPoint(IEnumerable<int> indices, Vec3d point, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-            Position = point;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="point"></param>
-        /// <param name="weight"></param>
-        public OnPoint(IEnumerable<H> handles, Vec3d point, double weight = 1.0)
-            : base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Position = point;
         }
 

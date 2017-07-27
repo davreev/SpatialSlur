@@ -14,7 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// Applies a force proportional to the distance between 2 particles.
     /// </summary>
     [Serializable]
-    public class LinearWeight : PositionConstraint<H>
+    public class LinearWeight : ParticleConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();

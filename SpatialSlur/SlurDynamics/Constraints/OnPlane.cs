@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class OnPlane : DynamicPositionConstraint<H>
+    public class OnPlane : MultiParticleConstraint<H>
     {
         /// <summary></summary>
         public Vec3d Origin;
@@ -60,23 +60,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="normal"></param>
         /// <param name="weight"></param>
         public OnPlane(IEnumerable<int> indices, Vec3d origin, Vec3d normal, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-            Origin = origin;
-            Normal = normal;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
-        /// <param name="weight"></param>
-        public OnPlane(IEnumerable<H> handles, Vec3d origin, Vec3d normal, double weight = 1.0)
-            :base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Origin = origin;
             Normal = normal;
         }

@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// 
     /// </summary>
-    public class OnThreshold : DynamicPositionConstraint<H>
+    public class OnThreshold : MultiParticleConstraint<H>
     {
         /// <summary></summary>
         public double Threshold;
@@ -87,23 +87,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="threshold"></param>
         /// <param name="weight"></param>
         public OnThreshold(IEnumerable<int> indices, GridScalarField3d field, double threshold, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-            Field = field;
-            Threshold = threshold;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="field"></param>
-        /// <param name="threshold"></param>
-        /// <param name="weight"></param>
-        public OnThreshold(IEnumerable<H> handles, GridScalarField3d field, double threshold, double weight = 1.0)
-            :base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Field = field;
             Threshold = threshold;
         }

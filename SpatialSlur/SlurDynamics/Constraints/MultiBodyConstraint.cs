@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurDynamics
     /// Base class for constraints on a dynamic collection of particles.
     /// </summary>
     [Serializable]
-    public abstract class DynamicConstraint<H> : IConstraint
+    public abstract class MultiBodyConstraint<H> : IConstraint
         where H : BodyHandle
     {
         private List<H> _handles;
@@ -60,7 +60,7 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="weight"></param>
-        public DynamicConstraint(double weight = 1.0)
+        public MultiBodyConstraint(double weight = 1.0)
         {
             _handles = new List<H>();
             Weight = weight;
@@ -72,24 +72,12 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public DynamicConstraint(int capacity, double weight = 1.0)
+        public MultiBodyConstraint(int capacity, double weight = 1.0)
         {
             _handles = new List<H>(capacity);
             Weight = weight;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="weight"></param>
-        public DynamicConstraint(IEnumerable<H> handles, double weight = 1.0)
-        {
-            _handles = new List<H>(handles);
-            Weight = weight;
-        }
-
+        
         
         /// <summary>
         /// 

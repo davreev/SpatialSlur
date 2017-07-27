@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// Applies a force proportional to the mass of each particle.
     /// </summary>
     [Serializable]
-    public class Weight : DynamicPositionConstraint<H>
+    public class Weight : MultiParticleConstraint<H>
     {
         /// <summary>Describes the direction and magnitude of the applied weight</summary>
         public Vec3d Vector;
@@ -53,21 +53,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="vector"></param>
         /// <param name="weight"></param>
         public Weight(IEnumerable<int> indices, Vec3d vector, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-            Vector = vector;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="vector"></param>
-        /// <param name="weight"></param>
-        public Weight(IEnumerable<H> handles, Vec3d vector, double weight = 1.0)
-            : base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Vector = vector;
         }
 

@@ -14,7 +14,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class MinimizeArea : PositionConstraint<H>
+    public class MinimizeArea : ParticleConstraint<H>
     {
         private H _h0 = new H();
         private H _h1 = new H();

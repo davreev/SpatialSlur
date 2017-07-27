@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class InsideDomain : DynamicPositionConstraint<H>
+    public class InsideDomain : MultiParticleConstraint<H>
     {
         /// <summary></summary>
         public Domain3d Domain;
@@ -53,25 +53,13 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="domain"></param>
         /// <param name="weight"></param>
         public InsideDomain(IEnumerable<int> indices, Domain3d domain, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
             Domain = domain;
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="domain"></param>
-        /// <param name="weight"></param>
-        public InsideDomain(IEnumerable<H> handles, Domain3d domain, double weight = 1.0)
-            : base(handles, weight)
-        {
-            Domain = domain;
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>

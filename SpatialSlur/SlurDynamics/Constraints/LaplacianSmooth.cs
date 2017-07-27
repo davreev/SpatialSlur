@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurDynamics
     /// The first handle represents the central vertex, remaining handles represent neighbours.
     /// </summary>
     [Serializable]
-    public class LaplacianSmooth : DynamicPositionConstraint<H>
+    public class LaplacianSmooth : MultiParticleConstraint<H>
     {
         /// <summary>
         /// 
@@ -45,19 +45,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="weight"></param>
         public LaplacianSmooth(IEnumerable<int> indices, double weight = 1.0)
-            : base(indices.Select(i => new H(i)), weight)
+            : base(weight)
         {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="weight"></param>
-        public LaplacianSmooth(IEnumerable<H> handles, double weight = 1.0)
-            : base(handles, weight)
-        {
+            Handles.AddRange(indices.Select(i => new H(i)));
         }
 
 

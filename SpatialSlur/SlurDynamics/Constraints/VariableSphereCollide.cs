@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class VariableSphereCollide : DynamicPositionConstraint<H>
+    public class VariableSphereCollide : MultiParticleConstraint<H>
     {
         private Grid3d<H> _grid;
 
@@ -40,8 +40,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="handles"></param>
         /// <param name="weight"></param>
-        public VariableSphereCollide(IEnumerable<H> handles, double weight = 1.0)
-            : base(handles, weight)
+        public VariableSphereCollide(IEnumerable<int> indices, double weight = 1.0)
+            : base(weight)
         {
         }
 
