@@ -328,5 +328,117 @@ namespace SpatialSlur.SlurField
         {
             return _grad3[index] * x + _grad3[index + 1] * y + _grad3[index + 2] * z;
         }
+
+
+        /// <summary>
+        /// Returns the gradient of noise values.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static Vec2d GradientAt(Vec2d point, double delta)
+        {
+            return GradientAt(point.X, point.Y, delta);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static Vec2d GradientAt(double x, double y, double delta)
+        {
+            var gx = (ValueAt(x + delta, y) - ValueAt(x - delta, y));
+            var gy = (ValueAt(x, y + delta) - ValueAt(x, y - delta));
+            return new Vec2d(gx, gy) / (delta * 2.0);
+        }
+
+
+        /// <summary>
+        /// Returns the gradient of noise values.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static Vec3d GradientAt(Vec3d point, double delta)
+        {
+            return GradientAt(point.X, point.Y, delta);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static Vec3d GradientAt(double x, double y, double z, double delta)
+        {
+            var gx = (ValueAt(x + delta, y, z) - ValueAt(x - delta, y, z));
+            var gy = (ValueAt(x, y + delta, z) - ValueAt(x, y - delta, z));
+            var gz = (ValueAt(x, y, z + delta) - ValueAt(x, y, z - delta));
+            return new Vec3d(gx, gy, gz) / (delta * 2.0);
+        }
+
+
+        /// <summary>
+        /// Returns the curl of noise vectors i.e. vectors whose components equal the noise value at the given location.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static double CurlAt(Vec2d point, double delta)
+        {
+            return CurlAt(point.X, point.Y, delta);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static double CurlAt(double x, double y, double delta)
+        {
+            var dx = (ValueAt(x + delta, y) - ValueAt(x - delta, y));
+            var dy = (ValueAt(x, y + delta) - ValueAt(x, y - delta));
+            return (dx - dy) / (delta * 2.0);
+        }
+
+
+        /// <summary>
+        /// Returns the curl of noise vectors i.e. vectors whose components equal the noise value at the given location.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static Vec3d CurlAt(Vec3d point, double delta)
+        {
+            return GradientAt(point.X, point.Y, delta);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <param name="delta"></param>
+        /// <returns></returns>
+        public static Vec3d CurlAt(double x, double y, double z, double delta)
+        {
+            var dx = ValueAt(x + delta, y, z) - ValueAt(x - delta, y, z);
+            var dy = ValueAt(x, y + delta, z) - ValueAt(x, y - delta, z);
+            var dz = ValueAt(x, y, z + delta) - ValueAt(x, y, z - delta);
+            return new Vec3d(dy - dz, dz - dx, dx - dy) / (2.0 * delta);
+        }
     }
 }
