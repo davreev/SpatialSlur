@@ -6,9 +6,9 @@ SpatialSlur is an open source library of geometric data structures and algorithm
 </p>
 
 ### Overview
-This repository consists of a core library along with a number of extension libraries for interfacing with .NET APIs from other applications such as Rhino and Unity.
+This repository consists of a core library along with a number of extension libraries for interfacing with .NET APIs from other 3d modeling applications such as Rhino and Unity.
 
-Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](https://github.com/daveReeves/SpatialSlur/tree/master/SpatialSlur/Documentation) or dive into source files and poke around. If you have specific questions, comments, or suggestions, feel free to [contact me](http://spatialslur.com/contact/).
+Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](https://github.com/daveReeves/SpatialSlur/tree/master/SpatialSlur/Documentation) or dive into source files and poke around. If you have specific questions, comments, or suggestions, feel free to [get in touch](http://spatialslur.com/contact/).
 
 + __SlurCore__ contains base geometric data types and utility methods as well as extension methods for .NET Framework types.
 
@@ -23,13 +23,13 @@ Below is a brief outline of the core library by namespace. For further detail, t
 ### Dependencies
 While the core library has no dependencies outside of the .NET framework, each extension library references assemblies from its target application. If these dependencies can't be resolved for a particular extension library, simply remove its project folder from the solution before compiling.
 
-## Setup
+### Setup
 To get started, either download precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases) or clone/download the repo and compile locally. Note that .dll files may be blocked by default when downloaded from the web so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to unblock.
 
-### Grasshopper
+#### Grasshopper
 To use within Grasshopper, drop a C#/VB scripting component on the canvas, right click on the component icon/name, and go to “Manage Assemblies”. Add SpatialSlur.dll and SlurRhino.dll to the list of referenced assemblies and click “OK” to confirm. You should now be able to access all SpatialSlur types within this component.
 
-### Unity
+#### Unity
 Coming soon.
 
 ___
