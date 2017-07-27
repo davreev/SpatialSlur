@@ -12,20 +12,6 @@ using static SpatialSlur.SlurCore.CoreUtil;
  * 
  * TODO
  * Line insert/search based on https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
- *
- * For parallel query
- * provide search method that collects bin indices
- * provide method that enumerates bin contents by index
- * 
- * pre-collect all bins in serial
- * process collisions in parallel
- * 
- * or 
- * 
- * lock
- * gather bins
- * unlock
- * process collisions
  */
 
 namespace SpatialSlur.SlurData
