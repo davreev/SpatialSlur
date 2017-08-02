@@ -156,7 +156,7 @@ namespace SpatialSlur.SlurData
             _currVersion = int.MinValue;
 
             foreach (var bin in _bins)
-                bin.Version = int.MinValue;
+                bin.LastVersion = int.MinValue;
         }
 
 
@@ -210,9 +210,9 @@ namespace SpatialSlur.SlurData
             var bin = GetBin(i, j);
 
             // sync bin if necessary
-            if (bin.Version != _currVersion)
+            if (bin.LastVersion != _currVersion)
             {
-                bin.Version = _currVersion;
+                bin.LastVersion = _currVersion;
                 bin.Clear();
             }
 
@@ -245,9 +245,9 @@ namespace SpatialSlur.SlurData
                     bin.LastQuery = currQuery;
 
                     // sync bin if necessary
-                    if (bin.Version != _currVersion)
+                    if (bin.LastVersion != _currVersion)
                     {
-                        bin.Version = _currVersion;
+                        bin.LastVersion = _currVersion;
                         bin.Clear();
                     }
 
@@ -268,7 +268,7 @@ namespace SpatialSlur.SlurData
             var bin = GetBin(i, j);
 
             // skip bin if not synced
-            if (bin.Version == _currVersion)
+            if (bin.LastVersion == _currVersion)
             {
                 foreach (var t in bin)
                     if (!callback(t)) return false;
@@ -286,25 +286,10 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public bool Search(Domain2d domain, Func<T, bool> callback)
         {
-            domain.MakeIncreasing();
-
-            (int i0, int j0) = IndicesAt(domain.From);
-            (int i1, int j1) = IndicesAt(domain.To);
-            var currQuery = NextQuery;
-
-            for (int j = j0; j <= j1; j++)
+            foreach (var bin in SearchImpl(domain))
             {
-                for (int i = i0; i <= i1; i++)
-                {
-                    var bin = GetBin(i, j);
-
-                    // skip bin if not synced or already visited
-                    if (bin.Version != _currVersion || bin.LastQuery == currQuery) continue;
-                    bin.LastQuery = currQuery;
-
-                    foreach (var t in bin)
-                        if (!callback(t)) return false;
-                }
+                foreach (var t in bin)
+                    if (!callback(t)) return false;
             }
 
             return true;
@@ -322,18 +307,39 @@ namespace SpatialSlur.SlurData
             var bin = GetBin(i, j);
 
             // skip bin if not synced
-            if (bin.Version != _currVersion)
+            if (bin.LastVersion != _currVersion)
                 return Enumerable.Empty<T>();
 
-            return bin.Skip(0);
+            return bin;
+        }
+
+
+        /// <summary>
+        /// Returns the contents of all intersecting bins.
+        /// </summary>
+        public IEnumerable<T> Search(Domain2d domain)
+        {
+            return SearchImpl(domain).SelectMany(x => x);
         }
 
 
         /// <summary>
         /// Adds the contents of each intersecting bin to the given stack.
-        /// This separates the task of collecting bins (not threadsafe) from processing their contents (potentially threadsafe) making it more suitable for concurrent applications.
+        /// This implementation separates the the collection of bins (not threadsafe) from the processing of their contents (potentially threadsafe) making it better suited to concurrent applications.
         /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="result"></param>
         public void Search(Domain2d domain, Stack<IEnumerable<T>> result)
+        {
+            foreach (var bin in SearchImpl(domain))
+                result.Push(bin);
+        }
+
+
+        /// <summary>
+        /// Returns each intersecting bin.
+        /// </summary>
+        private IEnumerable<Bin> SearchImpl(Domain2d domain)
         {
             domain.MakeIncreasing();
 
@@ -348,11 +354,11 @@ namespace SpatialSlur.SlurData
                     var bin = GetBin(i, j);
 
                     // skip bin if not synced or already visited
-                    if (bin.Version != _currVersion || bin.LastQuery == currQuery)
+                    if (bin.LastVersion != _currVersion || bin.LastQuery == currQuery)
                         continue;
 
                     bin.LastQuery = currQuery;
-                    result.Push(bin.Skip(0));
+                    yield return bin;
                 }
             }
         }
@@ -364,7 +370,7 @@ namespace SpatialSlur.SlurData
         private class Bin : List<T>
         {
             /// <summary></summary>
-            public int Version = int.MinValue;
+            public int LastVersion = int.MinValue;
             public int LastQuery = int.MinValue;
 
 
@@ -374,7 +380,7 @@ namespace SpatialSlur.SlurData
             /// <param name="version"></param>
             public Bin(int version)
             {
-                Version = version;
+                LastVersion = version;
             }
         }
     }
