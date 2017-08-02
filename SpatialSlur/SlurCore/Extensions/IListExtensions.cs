@@ -493,5 +493,42 @@ namespace SpatialSlur.SlurCore
         }
 
         #endregion
+
+
+        #region IList<Vec2d>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="radius"></param>
+        /// <param name="tolerance"></param>
+        /// <param name="maxSteps"></param>
+        /// <returns></returns>
+        public static bool Consolidate(this IList<Vec2d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 100)
+        {
+            return DataUtil.ConsolidatePoints(points, radius, tolerance, maxSteps);
+        }
+
+        #endregion
+
+
+        #region IList<Vec3d>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="radius"></param>
+        /// <param name="tolerance"></param>
+        /// <param name="maxSteps"></param>
+        /// <returns></returns>
+        public static bool Consolidate(this IList<Vec3d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 100)
+        {
+            return DataUtil.ConsolidatePoints(points, radius, tolerance, maxSteps);
+        }
+
+        #endregion
+
     }
 }

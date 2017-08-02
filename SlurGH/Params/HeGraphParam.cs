@@ -14,6 +14,9 @@ using SpatialSlur.SlurGH.Types;
 
 namespace SpatialSlur.SlurGH.Params
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HeGraphParam : GH_PersistentParam<GH_HeGraph>
     {
         /// <summary>

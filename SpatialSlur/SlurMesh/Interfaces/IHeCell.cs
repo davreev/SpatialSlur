@@ -10,6 +10,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     /// <typeparam name="V"></typeparam>
+    /// <typeparam name="E"></typeparam>
     /// <typeparam name="F"></typeparam>
     /// <typeparam name="C"></typeparam>
     public interface IHeCell<V, E, F, C> : IHeElement

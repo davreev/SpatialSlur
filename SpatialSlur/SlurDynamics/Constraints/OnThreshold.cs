@@ -110,7 +110,7 @@ namespace SpatialSlur.SlurDynamics
 
                 _field.GridPointAt(p, gp);
                 var t = _field.ValueAt(gp);
-                var g = _gradient.ValueAt(gp).Unitized;
+                var g = _gradient.ValueAt(gp).Direction;
 
                 h.Delta = g * (Threshold - t);
                 h.Weight = Weight;

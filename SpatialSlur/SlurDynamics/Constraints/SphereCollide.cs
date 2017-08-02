@@ -7,7 +7,7 @@ using System.Text;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
 
-using static SpatialSlur.SlurCore.SlurMath;
+using static SpatialSlur.SlurData.DataUtil;
 using static System.Threading.Tasks.Parallel;
 
 /*
@@ -26,7 +26,6 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class SphereCollide : MultiParticleConstraint<H>
     {
-        private const double TargetBinScale = 3.5; // as a factor of radius
         private const double TargetLoadFactor = 3.0;
 
         /// <summary>If set to true, collisions are calculated in parallel</summary>
@@ -56,6 +55,7 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="radius"></param>
+        /// <param name="parallel"></param>
         /// <param name="weight"></param>
         public SphereCollide(double radius, bool parallel, double weight = 1.0)
             : base(weight)
@@ -69,6 +69,7 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="radius"></param>
+        /// <param name="parallel"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
         public SphereCollide(double radius, bool parallel, int capacity, double weight = 1.0)
@@ -84,6 +85,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="radius"></param>
+        /// <param name="parallel"></param>
         /// <param name="weight"></param>
         public SphereCollide(IEnumerable<int> indices, double radius, bool parallel, double weight = 1.0)
             : base(weight)
@@ -168,24 +170,23 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         private void CalculateImpl(IReadOnlyList<IBody> particles)
         {
-            var offset = new Vec3d(Radius);
             var diam = _radius * 2.0;
             var diamSqr = diam * diam;
 
-            // clear handles and insert particles @ bottom corner of sphere bbox
-            foreach (var h in Handles)
+            // clear handles
+            foreach(var h in Handles)
             {
                 h.Delta = Vec3d.Zero;
                 h.Weight = 0.0;
-                _grid.Insert(particles[h].Position - offset, h);
             }
 
-            // forward-only search from each handle
-            foreach (var h0 in Handles)
+            // calculate collisions
+            foreach(var h0 in Handles)
             {
                 var p0 = particles[h0].Position;
 
-                _grid.Search(new Domain3d(p0, Radius), h1 =>
+                // search from h0
+                foreach (var h1 in _grid.Search(new Domain3d(p0, diam)))
                 {
                     var d = particles[h1].Position - p0;
                     var m = d.SquareLength;
@@ -197,12 +198,13 @@ namespace SpatialSlur.SlurDynamics
                         h1.Delta -= d;
                         h0.Weight = h1.Weight = Weight;
                     }
+                }
 
-                    return true;
-                });
+                // insert h0
+                _grid.Insert(p0, h0);
             }
         }
-        
+
 
         /// <summary>
         /// 
@@ -212,15 +214,14 @@ namespace SpatialSlur.SlurDynamics
         {
             if (_grid == null)
             {
-                _grid = new HashGrid3d<H>((int)(particles.Count * TargetLoadFactor), Radius * TargetBinScale);
+                _grid = new HashGrid3d<H>((int)(particles.Count * TargetLoadFactor), Radius * RadiusToBinScale);
                 return;
             }
 
-            _grid.BinScale = Radius * TargetBinScale;
+            _grid.BinScale = Radius * RadiusToBinScale;
 
             int minCount = (int)(particles.Count * TargetLoadFactor * 0.5);
-            if (_grid.BinCount < minCount)
-                _grid.Resize((int)(particles.Count * TargetLoadFactor));
+            if (_grid.BinCount < minCount) _grid.Resize((int)(particles.Count * TargetLoadFactor));
         }
     }
 

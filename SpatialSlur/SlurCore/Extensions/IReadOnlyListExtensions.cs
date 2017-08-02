@@ -23,7 +23,6 @@ namespace SpatialSlur.SlurCore
     {
         #region IReadOnlyList<T>
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -104,7 +103,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="action"></param>
         public static void Action<T>(this IReadOnlyList<T> source, Action<T> action)
         {
-            ModifyRange(source, 0, source.Count, action);
+            ActionRange(source, 0, source.Count, action);
         }
 
 
@@ -150,9 +149,9 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void ModifyParallel<T>(this IReadOnlyList<T> source, Action<T> action)
+        public static void ActionParallel<T>(this IReadOnlyList<T> source, Action<T> action)
         {
-            ModifyRangeParallel(source, 0, source.Count, action);
+            ActionRangeParallel(source, 0, source.Count, action);
         }
 
 
@@ -200,11 +199,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ModifyRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
+        public static void ActionRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
         {
             if (source is T[])
             {
-                ArrayExtensions.ModifyRange((T[])source, index, count, action);
+                ArrayExtensions.ActionRange((T[])source, index, count, action);
                 return;
             }
 
@@ -296,11 +295,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ModifyRangeParallel<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
+        public static void ActionRangeParallel<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
         {
             if (source is T[])
             {
-                ArrayExtensions.ModifyRangeParallel((T[])source, index, count, action);
+                ArrayExtensions.ActionRangeParallel((T[])source, index, count, action);
                 return;
             }
 
@@ -396,11 +395,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ModifySelection<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
+        public static void ActionSelection<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
         {
             if (source is T[] && indices is int[])
             {
-                ArrayExtensions.ModifySelection<T>((T[])source, (int[])indices, action);
+                ArrayExtensions.ActionSelection<T>((T[])source, (int[])indices, action);
                 return;
             }
 
@@ -487,11 +486,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ModifySelectionParallel<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
+        public static void ActionSelectionParallel<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
         {
             if (source is T[] && indices is int[])
             {
-                ArrayExtensions.ModifySelectionParallel<T>((T[])source, (int[])indices, action);
+                ArrayExtensions.ActionSelectionParallel<T>((T[])source, (int[])indices, action);
                 return;
             }
 
@@ -706,9 +705,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
         {
-            return RemoveDuplicates(points, out int[] indexMap, tolerance);
+            return DataUtil.RemoveCoincident(points, p => p, tolerance);
         }
 
 
@@ -719,10 +718,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid2d<int>(points.Count << 1);
-            return RemoveDuplicates(points, grid, out indexMap, tolerance);
+            return DataUtil.RemoveCoincident(points, p => p, out indexMap, tolerance);
         }
 
 
@@ -734,34 +732,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveDuplicates(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            List<Vec2d> result = new List<Vec2d>();
-            var map = new int[points.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
-
-            // add points to result if no duplicates are found
-            for (int i = 0; i < points.Count; i++)
-            {
-                var p = points[i];
-
-                // if search was aborted, then a duplicate was found
-                if (grid.Search(new Domain2d(p, tolerance), Callback))
-                {
-                    map[i] = result.Count;
-                    grid.Insert(p, result.Count);
-                    result.Add(p);
-                }
-
-                bool Callback(int j)
-                {
-                    if (p.ApproxEquals(result[j], tolerance)) { map[i] = j; return false; }
-                    return true;
-                }
-            }
-            
-            indexMap = map;
-            return result;
+            return DataUtil.RemoveCoincident(points, p => p, grid, out indexMap, tolerance);
         }
 
 
@@ -771,10 +744,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid2d<int>(points.Count << 1);
-            return GetFirstCoincident(points, grid, tolerance);
+            return DataUtil.GetFirstCoincident(points, p => p, tolerance);
         }
 
 
@@ -785,30 +757,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, double tolerance = 1.0e-8)
         {
-            int[] result = new int[points.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
-
-            // insert
-            for (int i = 0; i < points.Count; i++)
-                grid.Insert(points[i], i);
-
-            // search
-            for (int i = 0; i < points.Count; i++)
-            {
-                var p = points[i];
-                result[i] = -1; // set to default
-
-                grid.Search(new Domain2d(p, tolerance), j =>
-                {
-                    if (j == i) return true; // skip self
-                    if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
-                    return true;
-                });
-            }
-
-            return result;
+            return DataUtil.GetFirstCoincident(points, p => p, grid, tolerance);
         }
 
 
@@ -819,10 +770,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid2d<int>(pointsB.Count << 1);
-            return GetFirstCoincident(pointsA, pointsB, grid, tolerance);
+            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, tolerance);
         }
 
 
@@ -834,29 +784,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
         {
-            int[] result = new int[pointsA.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
-
-            // insert B
-            for (int i = 0; i < pointsB.Count; i++)
-                grid.Insert(pointsB[i], i);
-
-            // search from A
-            for (int i = 0; i < pointsA.Count; i++)
-            {
-                var p = pointsA[i];
-                result[i] = -1; // set to default
-
-                grid.Search(new Domain2d(p, tolerance), j =>
-                {
-                    if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
-                    return true;
-                });
-            }
-
-            return result;
+            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
 
 
@@ -867,10 +797,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid2d<int>(pointsB.Count << 1);
-            return GetAllCoincident(pointsA, pointsB, grid, tolerance);
+            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, tolerance);
         }
 
 
@@ -882,31 +811,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
         {
-            List<int>[] result = new List<int>[pointsA.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
-
-            // insert B
-            for (int i = 0; i < pointsB.Count; i++)
-                grid.Insert(pointsB[i], i);
-
-            // search from A
-            for (int i = 0; i < pointsA.Count; i++)
-            {
-                var p = pointsA[i];
-                var ids = new List<int>();
-
-                grid.Search(new Domain2d(p, tolerance), j =>
-                {
-                    if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
-                    return true;
-                });
-
-                result[i] = ids;
-            }
-
-            return result;
+            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
 
         #endregion
@@ -937,9 +844,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
         {
-            return RemoveDuplicates(points, out int[] indexMap, tolerance);
+            return DataUtil.RemoveCoincident(points, p => p, tolerance);
         }
 
 
@@ -950,10 +857,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid3d<int>(points.Count << 2);
-            return RemoveDuplicates(points, grid, out indexMap, tolerance);
+            return DataUtil.RemoveCoincident(points, p => p, out indexMap, tolerance);
         }
 
 
@@ -965,34 +871,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveDuplicates(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
         {
-            var result = new List<Vec3d>();
-            var map = new int[points.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
+            return DataUtil.RemoveCoincident(points, p => p, grid, out indexMap, tolerance);
 
-            // add points to result if no duplicates are found in the hash
-            for (int i = 0; i < points.Count; i++)
-            {
-                var p = points[i];
-
-                // if search was aborted, then a duplicate was found
-                if (grid.Search(new Domain3d(p, tolerance), Callback))
-                {
-                    map[i] = result.Count;
-                    grid.Insert(p, result.Count);
-                    result.Add(p);
-                }
-
-                bool Callback(int j)
-                {
-                    if (p.ApproxEquals(result[j], tolerance)) { map[i] = j; return false; }
-                    return true;
-                }
-            }
-
-            indexMap = map;
-            return result;
         }
 
 
@@ -1002,10 +884,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid3d<int>(points.Count << 2);
-            return GetFirstCoincident(points, grid, tolerance);
+            return DataUtil.GetFirstCoincident(points, p => p, tolerance);
+
         }
 
 
@@ -1016,30 +898,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, double tolerance = 1.0e-8)
         {
-            int[] result = new int[points.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
-
-            // insert
-            for (int i = 0; i < points.Count; i++)
-                grid.Insert(points[i], i);
-
-            // search
-            for (int i = 0; i < points.Count; i++)
-            {
-                var p = points[i];
-                result[i] = -1; // set to default
-
-                grid.Search(new Domain3d(p, tolerance), j =>
-                {
-                    if (j == i) return true; // skip self
-                    if (p.ApproxEquals(points[j], tolerance)) { result[i] = j; return false; }
-                    return true;
-                });
-            }
-           
-            return result;
+            return DataUtil.GetFirstCoincident(points, p => p, grid, tolerance);
         }
 
 
@@ -1050,10 +911,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid3d<int>(pointsB.Count << 2);
-            return GetFirstCoincident(pointsA, pointsB, grid, tolerance);
+            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, tolerance);
         }
 
 
@@ -1065,29 +925,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static int[] GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8)
         {
-            int[] result = new int[pointsA.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
-
-            // insert B
-            for (int i = 0; i < pointsB.Count; i++)
-                grid.Insert(pointsB[i], i);
-
-            // search from A
-            for (int i = 0; i < pointsA.Count; i++)
-            {
-                var p = pointsA[i];
-                result[i] = -1; // set to default
-
-                grid.Search(new Domain3d(p, tolerance), j =>
-                 {
-                     if (p.ApproxEquals(pointsB[j], tolerance)) { result[i] = j; return false; }
-                     return true;
-                 });
-            }
-
-            return result;
+            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
 
 
@@ -1098,10 +938,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
         {
-            var grid = new HashGrid3d<int>(pointsB.Count << 2);
-            return GetAllCoincident(pointsA, pointsB, grid, tolerance);
+            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, tolerance);
         }
 
 
@@ -1112,33 +951,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
-        /// <param name="parallel"></param>
         /// <returns></returns>
-        public static List<int>[] GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8, bool parallel = false)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8)
         {
-            List<int>[] result = new List<int>[pointsA.Count];
-            grid.BinScale = tolerance * BinScaleFactor * 2.0;
-
-            // insert B
-            for (int i = 0; i < pointsB.Count; i++)
-                grid.Insert(pointsB[i], i);
-
-            // search from A
-            for (int i = 0; i < pointsA.Count; i++)
-            {
-                var p = pointsA[i];
-                var ids = new List<int>();
-
-                grid.Search(new Domain3d(p,tolerance), j =>
-                {
-                    if (p.ApproxEquals(pointsB[j], tolerance)) ids.Add(j);
-                    return true;
-                });
-
-                result[i] = ids;
-            }
-         
-            return result;
+            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
         
         #endregion

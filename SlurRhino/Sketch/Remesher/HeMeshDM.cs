@@ -19,7 +19,17 @@ namespace SpatialSlur.SlurRhino.Remesher
     public static class HeMeshDM
     {
         /// <summary></summary>
-        public static readonly HeMeshFactory<V, E, F> Factory = HeMeshFactory.Create(() => new V(), () => new E(), () => new F());
+        public static readonly HeMeshFactory<V, E, F> Factory;
+
+
+        /// <summary>
+        /// Static constructor to initialize factory instance.
+        /// </summary>
+        static HeMeshDM()
+        {
+            var provider = HeElementProvider.Create(() => new V(), () => new E(), () => new F());
+            Factory = HeMeshFactory.Create(provider);
+        }
 
 
         /// <summary>

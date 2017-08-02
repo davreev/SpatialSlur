@@ -25,8 +25,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="v"></param>
         /// <returns></returns>
         public static Domain2d operator +(Domain2d d, Vec2d v)
         {
@@ -39,8 +39,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="v"></param>
         /// <returns></returns>
         public static Domain2d operator -(Domain2d d, Vec2d v)
         {
@@ -53,8 +53,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
         public static Domain2d operator *(Domain2d d, double t)
         {
@@ -67,8 +67,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="t"></param>
+        /// <param name="d"></param>
         /// <returns></returns>
         public static Domain2d operator *(double t, Domain2d d)
         {
@@ -81,8 +81,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
+        /// <param name="d"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
         public static Domain2d operator /(Domain2d d, double t)
         {

@@ -43,6 +43,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <typeparam name="TE"></typeparam>
         /// <typeparam name="TF"></typeparam>
         /// <param name="mesh"></param>
+        /// <param name="target"></param>
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
@@ -96,6 +97,8 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <param name="tolerance"></param>
         public LoopGrower(HeMesh<V, E, F> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
+            mesh.Compact();
+
             _mesh = mesh;
             _verts = _mesh.Vertices;
             _hedges = _mesh.Halfedges;
@@ -203,10 +206,12 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
             {
                 if (++_stepCount % _settings.RefineFrequency == 0)
                     Refine();
-  
+           
                 CalculateForces();
                 UpdateVertices();
+
                 ProjectToFeatures();
+                // UpdateVertices();
             }
         }
 
@@ -219,60 +224,22 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <returns></returns>
         private void CalculateForces()
         {
-            //PullToFeatures(_settings.FeatureWeight);
-            //LaplacianFair(_settings.SmoothWeight);
-
             if (_stepCount % _settings.CollideFrequency == 0)
-                SphereCollide(_settings.CollideRadius, 1.0);
-
-            LaplacianFairBoundary(_settings.SmoothWeight);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="weight"></param>
-        private void LaplacianFair(double weight)
-        {
-            for(int i = 0; i < _verts.Count; i++)
             {
-                var v0 = _verts[i];
-                if (v0.IsRemoved) continue;
-
-                // calculate graph laplacian
-                var sum = new Vec3d();
-                var count = 0;
-
-                foreach(var v1 in v0.ConnectedVertices)
-                {
-                    sum += v1.Position;
-                    count++;
-                }
-
-                double t = 1.0 / count;
-                var move = sum * t - v0.Position;
-
-                // apply to central vertex
-                v0.MoveSum += move * weight;
-                v0.WeightSum += weight;
-  
-                // distribute negated to neighbours
-                move *= -t;
-                foreach (var v1 in v0.ConnectedVertices)
-                {
-                    v1.MoveSum += move * weight;
-                    v1.WeightSum += weight;
-                }
+                SphereCollide(_settings.CollideRadius, 1.0);
+                //SphereCollideParallel(_settings.CollideRadius, 1.0);
             }
+
+            LaplacianFair(_settings.SmoothWeight, _settings.SmoothWeight);
+            // PullToFeatures(_settings.FeatureWeight);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="weight"></param>
-        private void LaplacianFairBoundary(double weight)
+        /// <param name="weightInterior"></param>
+        private void LaplacianFair(double weightInterior, double weightBoundary)
         {
             for (int i = 0; i < _verts.Count; i++)
             {
@@ -288,15 +255,15 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                     var move = (v1.Position + v2.Position) * 0.5 - v0.Position;
 
                     // apply to central vertex
-                    v0.MoveSum += move * weight;
-                    v0.WeightSum += weight;
+                    v0.MoveSum += move * weightInterior;
+                    v0.WeightSum += weightInterior;
 
                     // distribute negated to neighbours
                     move *= -0.5;
-                    v1.MoveSum += move * weight;
-                    v1.WeightSum += weight;
-                    v2.MoveSum += move * weight;
-                    v2.WeightSum += weight;
+                    v1.MoveSum += move * weightBoundary;
+                    v1.WeightSum += weightBoundary;
+                    v2.MoveSum += move * weightBoundary;
+                    v2.WeightSum += weightBoundary;
                 }
                 else
                 {
@@ -313,18 +280,99 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                     var move = sum * t - v0.Position;
 
                     // apply to central vertex
-                    v0.MoveSum += move * weight;
-                    v0.WeightSum += weight;
+                    v0.MoveSum += move * weightInterior;
+                    v0.WeightSum += weightInterior;
 
                     // distribute negated to neighbours
                     move *= -t;
                     foreach (var v1 in v0.ConnectedVertices)
                     {
-                        v1.MoveSum += move * weight;
-                        v1.WeightSum += weight;
+                        v1.MoveSum += move * weightInterior;
+                        v1.WeightSum += weightInterior;
                     }
                 }
             }
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="weight"></param>
+        private void LaplacianFair(double weight)
+        {
+            for (int i = 0; i < _verts.Count; i++)
+            {
+                var v0 = _verts[i];
+                if (v0.IsRemoved) continue;
+
+                // calculate graph laplacian
+                var sum = new Vec3d();
+                var count = 0;
+
+                foreach (var v1 in v0.ConnectedVertices)
+                {
+                    sum += v1.Position;
+                    count++;
+                }
+
+                double t = 1.0 / count;
+                var move = sum * t - v0.Position;
+
+                // apply to central vertex
+                v0.MoveSum += move * weight;
+                v0.WeightSum += weight;
+
+                // distribute negated to neighbours
+                move *= -t;
+                foreach (var v1 in v0.ConnectedVertices)
+                {
+                    v1.MoveSum += move * weight;
+                    v1.WeightSum += weight;
+                }
+            }
+        }
+        */
+
+
+        /// <summary>
+        /// Note this method assumes that vertex deltas and weights are clear
+        /// </summary>
+        /// <param name="radius"></param>
+        /// <param name="weight"></param>
+        private void SphereCollide(double radius, double weight)
+        {
+            UpdateGrid(radius);
+
+            var diam = radius * 2.0;
+            var diamSqr = diam * diam;
+      
+            // calculate collisions
+            foreach (var v0 in _verts)
+            {
+                var p0 = v0.Position;
+
+                // search from h0
+                foreach (var v1 in _grid.Search(new Domain3d(p0, diam)))
+                {
+                    var d = v1.Position - p0;
+                    var m = d.SquareLength;
+
+                    if (m < diamSqr && m > 0.0)
+                    {
+                        d *= (1.0 - diam / Math.Sqrt(m)) * 0.5 * weight;
+                        v0.MoveSum += d;
+                        v1.MoveSum -= d;
+                        v0.WeightSum = v1.WeightSum = weight;
+                    }
+                }
+
+                // insert h0
+                _grid.Insert(p0, v0);
+            }
+
+            _grid.Clear();
         }
 
 
@@ -333,7 +381,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// </summary>
         /// <param name="radius"></param>
         /// <param name="weight"></param>
-        private void SphereCollide(double radius, double weight)
+        private void SphereCollideParallel(double radius, double weight)
         {
             UpdateGrid(radius);
 
@@ -492,6 +540,39 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         }
 
 
+        /// <summary>
+        /// Splits long edges
+        /// </summary>
+        private void SplitEdges(int count)
+        {
+            _vertTag++;
+
+            for (int i = 0; i < count; i += 2)
+            {
+                var he = _hedges[i];
+
+                var v0 = he.Start;
+                var v1 = he.End;
+                
+                var fi = GetSplitFeature(v0.FeatureIndex, v1.FeatureIndex);
+                if (fi < -1) continue; // don't split between different features
+                
+                var p0 = v0.Position;
+                var p1 = v1.Position;
+
+                // split edge if length exceeds max
+                if (p0.SquareDistanceTo(p1) > he.MaxLength * he.MaxLength)
+                {
+                    var v2 = _mesh.SplitEdge(he).Start;
+
+                    // set attributes of new vertex
+                    v2.Position = (v0.Position + v1.Position) * 0.5;
+                    v2.FeatureIndex = fi;
+                }
+            }
+        }
+
+
         /*
         /// <summary>
         /// Splits long edges
@@ -531,40 +612,6 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
             }
         }
         */
-
-
-        /// <summary>
-        /// Splits long edges
-        /// </summary>
-        private void SplitEdges(int count)
-        {
-            _vertTag++;
-
-            for (int i = 0; i < count; i += 2)
-            {
-                var he = _hedges[i];
-                if (he.IsRemoved) continue;
-
-                var v0 = he.Start;
-                var v1 = he.End;
-                
-                var fi = GetSplitFeature(v0.FeatureIndex, v1.FeatureIndex);
-                if (fi < -1) continue; // don't split between different features
-                
-                var p0 = v0.Position;
-                var p1 = v1.Position;
-
-                // split edge if length exceeds max
-                if (p0.SquareDistanceTo(p1) > he.MaxLength * he.MaxLength)
-                {
-                    var v2 = _mesh.SplitEdge(he).Start;
-
-                    // set attributes of new vertex
-                    v2.Position = (v0.Position + v1.Position) * 0.5;
-                    v2.FeatureIndex = fi;
-                }
-            }
-        }
 
 
         /// <summary>

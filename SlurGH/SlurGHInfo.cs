@@ -4,6 +4,9 @@ using Grasshopper.Kernel;
 
 namespace SpatialSlur.SlurGH
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SlurGHInfo : GH_AssemblyInfo
     {
         /// <summary>

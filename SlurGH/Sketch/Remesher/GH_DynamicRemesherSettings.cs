@@ -20,6 +20,9 @@ using SpatialSlur.SlurGH.Params;
 
 namespace SpatialSlur.SlurGH.Remesher
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GH_DynamicRemesherSettings : GH_Component
     {
         /// <summary>

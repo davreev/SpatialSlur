@@ -116,6 +116,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="xform"></param>
         /// <param name="vector"></param>
+        /// <param name="isPosition"></param>
         /// <returns></returns>
         public static Vec3d Apply(this Transform xform, Vec3d vector, bool isPosition = false)
         {

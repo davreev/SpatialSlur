@@ -18,7 +18,6 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <typeparam name="P"></typeparam>
     [Serializable]
     public class OnTarget<T> : MultiParticleConstraint<H>
     {

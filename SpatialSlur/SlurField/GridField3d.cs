@@ -242,6 +242,25 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Enumerates over coordinates of the field.
+        /// </summary>
+        public IEnumerable<Vec3d> Coordinates
+        {
+            get
+            {
+                for (int k = 0; k < CountZ; k++)
+                {
+                    for (int j = 0; j < CountY; j++)
+                    {
+                        for (int i = 0; i < CountX; i++)
+                            yield return CoordinateAt(i, j, k);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
         /// This is called after any changes to the field's domain.
         /// </summary>
         protected void OnDomainChange()
@@ -1071,6 +1090,29 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets this field to some function of its coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionXYZ(Func<Vec3d, T> func, bool parallel = false)
+        {
+            SpatialFunctionXYZ(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionXYZ(Func<Vec3d, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            SpatialFunctionXYZ((x, y, z) => func(new Vec3d(x, y, z)), result, parallel);
+        }
+
+
+        /// <summary>
         /// Sets this field to some function of its normalized coordinates.
         /// </summary>
         /// <param name="func"></param>
@@ -1085,6 +1127,7 @@ namespace SpatialSlur.SlurField
         /// Sets the given field to some function of this field's normalized coordinates.
         /// </summary>
         /// <param name="func"></param>
+        /// <param name="result"></param>
         /// <param name="parallel"></param>
         public void SpatialFunctionUVW(Func<double, double, double, T> func, IDiscreteField<T> result, bool parallel = false)
         {
@@ -1115,6 +1158,29 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets this field to some function of its normalized coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionUVW(Func<Vec3d, T> func, bool parallel = false)
+        {
+            SpatialFunctionUVW(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's normalized coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionUVW(Func<Vec3d, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            SpatialFunctionUVW((u, v, w) => func(new Vec3d(u, v, w)), result, parallel);
+        }
+
+
+        /// <summary>
         /// Sets this field to some function of its indices.
         /// </summary>
         /// <param name="func"></param>
@@ -1129,6 +1195,7 @@ namespace SpatialSlur.SlurField
         /// Sets the given field to some function of this field's indices.
         /// </summary>
         /// <param name="func"></param>
+        /// <param name="result"></param>
         /// <param name="parallel"></param>
         public void SpatialFunctionIJK(Func<int, int, int, T> func, IDiscreteField<T> result, bool parallel = false)
         {
@@ -1150,6 +1217,29 @@ namespace SpatialSlur.SlurField
                 Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
                 body(Tuple.Create(0, Count));
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of its indices.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionIJK(Func<Vec3i, T> func, bool parallel = false)
+        {
+            SpatialFunctionIJK(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's indices.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionIJK(Func<Vec3i, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            SpatialFunctionIJK((i, j, k) => func(new Vec3i(i, j, k)), result, parallel);
         }
 
 

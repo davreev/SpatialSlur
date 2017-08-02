@@ -32,7 +32,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns this element's position within its parent list.
+        /// Returns the index of this element within its parent list.
         /// </summary>
         public int Index
         {

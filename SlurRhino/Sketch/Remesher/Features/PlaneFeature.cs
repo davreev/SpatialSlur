@@ -30,7 +30,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         public PlaneFeature(Vec3d origin, Vec3d normal)
         {
             _origin = origin;
-            _normal = normal.Unitized;
+            _normal = normal.Direction;
         }
 
 

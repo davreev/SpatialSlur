@@ -30,28 +30,32 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// The first halfedge in each pair is passed to the given delegate.
+        /// Halfedges are sorted in pairs where the key is taken from the first halfedge in each pair.
         /// </summary>
-        public sealed override void Sort<K>(Func<E, K> getKey)
+        public sealed override void Sort<K>(Func<E, K> getKey, IComparer<K> keyComparer)
         {
-            // sort 2nd halfedge from each pair
+            // sort first halfedge in each pair
+            int index = 0;
+            foreach (var he0 in this.TakeEveryNth(2).OrderBy(getKey, keyComparer))
             {
-                int i = 0;
-                foreach (var he0 in this.TakeEveryNth(2).OrderBy(getKey))
-                {
-                    var he1 = he0.Twin;
-                    this[++i] = he1;
-                    he1.Index = i++;
-                }
+                this[index] = he0;
+                index += 2;
             }
 
             // reset index of first halfedge in each pair
             for (int i = 0; i < Count; i += 2)
             {
-                var he0 = this[i + 1].Twin;
-                this[i] = he0;
+                var he0 = this[i];
+                var he1 = he0.Twin;
+
+                // re-index pair
                 he0.Index = i;
+                he1.Index = i + 1;
+
+                // set twin
+                this[i + 1] = he1;
             }
         }
     }

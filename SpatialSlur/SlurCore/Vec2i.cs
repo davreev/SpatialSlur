@@ -215,24 +215,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns the perpendicular vector rotated a quarter turn clockwise.
-        /// </summary>
-        public Vec2i PerpCW
-        {
-            get { return new Vec2i(Y, -X); }
-        }
-
-
-        /// <summary>
-        /// Returns the perpendicular vector rotated a quarter turn counter clockwise.
-        /// </summary>
-        public Vec2i PerpCCW
-        {
-            get { return new Vec2i(-Y, X); }
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
@@ -297,6 +279,24 @@ namespace SpatialSlur.SlurCore
         public int ComponentSum
         {
             get { return X + Y; }
+        }
+
+
+        /// <summary>
+        /// Returns the perpendicular vector rotated a quarter turn clockwise.
+        /// </summary>
+        public Vec2i PerpCW
+        {
+            get { return new Vec2i(Y, -X); }
+        }
+
+
+        /// <summary>
+        /// Returns the perpendicular vector rotated a quarter turn counter clockwise.
+        /// </summary>
+        public Vec2i PerpCCW
+        {
+            get { return new Vec2i(-Y, X); }
         }
 
 

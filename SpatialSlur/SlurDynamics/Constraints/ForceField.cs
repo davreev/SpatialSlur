@@ -38,7 +38,6 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="field"></param>
-        /// <param name="strength"></param>
         /// <param name="weight"></param>
         public ForceField(GridVectorField3d field, double weight = 1.0)
             : base(weight)
@@ -51,7 +50,6 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="field"></param>
-        /// <param name="strength"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
         public ForceField(GridVectorField3d field, int capacity, double weight = 1.0)
@@ -66,7 +64,6 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="field"></param>
-        /// <param name="strength"></param>
         /// <param name="weight"></param>
         public ForceField(IEnumerable<int> indices, GridVectorField3d field, double weight = 1.0)
             : base(weight)

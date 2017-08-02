@@ -38,7 +38,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="handles"></param>
+        /// <param name="indices"></param>
         /// <param name="weight"></param>
         public VariableSphereCollide(IEnumerable<int> indices, double weight = 1.0)
             : base(weight)

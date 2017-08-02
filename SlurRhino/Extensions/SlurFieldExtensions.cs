@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace SpatialSlur.SlurRhino
     /// </summary>
     public static class SlurFieldExtensions
     {
-        #region Grid2d
+        #region GridField2d
 
         /// <summary>
         /// 
@@ -58,7 +59,7 @@ namespace SpatialSlur.SlurRhino
         #endregion
 
 
-        #region Grid3d
+        #region GridField3d
 
         /// <summary>
         /// 
@@ -96,6 +97,35 @@ namespace SpatialSlur.SlurRhino
 
 
         #region GridField2d<T>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="mapper"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static PointCloud ToPointCloud<T>(this GridField2d<T> field, Func<T, Color> mapper, bool parallel = false)
+            where T : struct
+        {
+            var cloud = new PointCloud(field.Coordinates.Select(p => p.ToPoint3d()));
+            var vals = field.Values;
+
+            Action<Tuple<int, int>> body = range =>
+             {
+                 for (int i = range.Item1; i < range.Item2; i++)
+                     cloud[i].Color = mapper(vals[i]);
+             };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
+            else
+                body(Tuple.Create(0, field.Count));
+
+            return cloud;
+        }
+   
 
         /// <summary>
         /// 
@@ -226,6 +256,39 @@ namespace SpatialSlur.SlurRhino
                 faces.AddFace(i, i + 1, i + 3, i + 2);
 
             return mesh;
+        }
+
+        #endregion
+
+
+        #region GridField3d<T>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="mapper"></param>
+        /// <param name="parallel"></param>
+        /// <returns></returns>
+        public static PointCloud ToPointCloud<T>(this GridField3d<T> field, Func<T, Color> mapper, bool parallel = false)
+            where T : struct
+        {
+            var cloud = new PointCloud(field.Coordinates.Select(p => p.ToPoint3d()));
+            var vals = field.Values;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    cloud[i].Color = mapper(vals[i]);
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
+            else
+                body(Tuple.Create(0, field.Count));
+
+            return cloud;
         }
 
         #endregion

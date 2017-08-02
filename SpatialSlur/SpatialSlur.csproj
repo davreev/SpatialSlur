@@ -60,11 +60,11 @@
     <Compile Include="SlurCore\Extensions\TExtensions.cs" />
     <Compile Include="SlurCore\Interfaces\IProperty.cs" />
     <Compile Include="SlurCore\Interfaces\IReadOnlyProperty.cs" />
+    <Compile Include="SlurCore\Property.cs" />
     <Compile Include="SlurData\DataUtil.cs" />
     <Compile Include="SlurData\KMeans.cs" />
     <Compile Include="SlurData\HashGrid2d.cs" />
     <Compile Include="SlurData\HashGrid3d.cs" />
-    <Compile Include="SlurData\WIP\MultiHashGrid3d.cs" />
     <Compile Include="SlurDynamics\Constraints\BodyConstraint.cs" />
     <Compile Include="SlurDynamics\ConstraintSolver.cs" />
     <Compile Include="SlurDynamics\ConstraintSolverSettings.cs" />
@@ -141,15 +141,16 @@
     <Compile Include="SlurMesh\Extensions\IHeVertexExtensions.cs" />
     <Compile Include="SlurMesh\HalfedgeList.cs" />
     <Compile Include="SlurMesh\EdgeList.cs" />
+    <Compile Include="SlurMesh\HeElementProvider.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraph3dExtensions.cs" />
     <Compile Include="SlurMesh\HeGraph\Extensions\HeGraphExtensions.cs" />
     <Compile Include="SlurMesh\HeGraph\HeGraph3d.cs" />
     <Compile Include="SlurMesh\HeQuadStrip.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeElementList.cs" />
-    <Compile Include="SlurMesh\SharedHelperTypes.cs" />
     <Compile Include="SlurMesh\HeMesh\Enums\PrimitiveType.cs" />
     <Compile Include="SlurMesh\HeMesh\Extensions\HeMesh3dExtensions.cs" />
     <Compile Include="SlurMesh\HeMesh\Extensions\HeMeshExtensions.cs" />
+    <Compile Include="SlurMesh\HeSubdivide.cs" />
     <None Include="packages.config" />
     <Compile Include="SlurCore\Vec2i.cs" />
     <Compile Include="SlurCore\Domain.cs" />
@@ -192,9 +193,9 @@
     <Compile Include="SlurMesh\HeGraph\Halfedge.cs" />
     <Compile Include="SlurMesh\HeGraph\HeGraphIO.cs" />
     <Compile Include="SlurMesh\HeGraph\HeVertex.cs" />
-    <Compile Include="SlurMesh\HeMesh\Enums\QuadrangulateMode.cs" />
+    <Compile Include="SlurMesh\HeMesh\Enums\QuadrangulationMode.cs" />
     <Compile Include="SlurMesh\HeMesh\Enums\SmoothBoundaryType.cs" />
-    <Compile Include="SlurMesh\HeMesh\Enums\TriangulateMode.cs" />
+    <Compile Include="SlurMesh\HeMesh\Enums\TriangulationMode.cs" />
     <Compile Include="SlurMesh\HeMesh\HeMesh.cs" />
     <Compile Include="SlurMesh\HeMesh\HeMesh3d.cs" />
     <Compile Include="SlurMesh\HeMesh\HeMeshBRG.cs" />
@@ -215,9 +216,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Sketch\" />
-    <Folder Include="SlurCore\Obsolete\" />
-    <Folder Include="SlurField\Obsolete\" />
-    <Folder Include="SlurMesh\Obsolete\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

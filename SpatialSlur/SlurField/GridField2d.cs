@@ -191,6 +191,22 @@ namespace SpatialSlur.SlurField
             set { _wrapModeY = value; }
         }
 
+        
+        /// <summary>
+        /// Enumerates over coordinates of the field.
+        /// </summary>
+        public IEnumerable<Vec3d> Coordinates
+        {
+            get
+            {
+                for (int j = 0; j < CountY; j++)
+                {
+                    for (int i = 0; i < CountX; i++)
+                        yield return CoordinateAt(i, j);
+                }
+            }
+        }
+     
 
         /// <summary>
         /// 
@@ -567,6 +583,7 @@ namespace SpatialSlur.SlurField
         /// <param name="domain"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
+        /// <param name="sampleMode"></param>
         protected GridField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode = SampleMode.Linear)
             : base(domain, countX, countY)
         {
@@ -899,6 +916,30 @@ namespace SpatialSlur.SlurField
         }
 
 
+
+        /// <summary>
+        /// Sets this field to some function of its coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionXY(Func<Vec2d, T> func, bool parallel = false)
+        {
+            SpatialFunctionXY(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionXY(Func<Vec2d, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            SpatialFunctionXY((x, y) => func(new Vec2d(x, y)), result, parallel);
+        }
+
+
         /// <summary>
         /// Sets this field to some function of its normalized coordinates.
         /// </summary>
@@ -943,6 +984,29 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Sets this field to some function of its normalized coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionUV(Func<Vec2d, T> func, bool parallel = false)
+        {
+            SpatialFunctionUV(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's normalized coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionUV(Func<Vec2d, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            SpatialFunctionUV((u, v) => func(new Vec2d(u, v)), result, parallel);
+        }
+
+
+        /// <summary>
         /// Sets this field to some function of its indices.
         /// </summary>
         /// <param name="func"></param>
@@ -978,6 +1042,29 @@ namespace SpatialSlur.SlurField
                 Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
                 body(Tuple.Create(0, Count));
+        }
+
+
+        /// <summary>
+        /// Sets this field to some function of its indices.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionIJ(Func<Vec2i, T> func, bool parallel = false)
+        {
+            SpatialFunctionIJ(func, this, parallel);
+        }
+
+
+        /// <summary>
+        /// Sets the given field to some function of this field's indices.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunctionIJ(Func<Vec2i, T> func, IDiscreteField<T> result, bool parallel = false)
+        {
+            SpatialFunctionIJ((i, j) => func(new Vec2i(i, j)), result, parallel);
         }
 
 

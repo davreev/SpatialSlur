@@ -382,35 +382,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a unitized copy of this vector.
+        /// Returns a unit length copy of this vector.
         /// Returns the zero vector if this vector is zero length.
         /// </summary>
         /// <returns></returns>
-        public Vec2d Unitized
+        public Vec2d Direction
         {
             get
             {
                 double d = SquareLength;
                 return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
             }
-        }
-
-
-        /// <summary>
-        /// Returns the perpendicular vector rotated a quarter turn clockwise.
-        /// </summary>
-        public Vec2d PerpCW
-        {
-            get { return new Vec2d(Y, -X); }
-        }
-
-
-        /// <summary>
-        /// Returns the perpendicular vector rotated a quarter turn counter clockwise.
-        /// </summary>
-        public Vec2d PerpCCW
-        {
-            get { return new Vec2d(-Y, X); }
         }
 
 
@@ -492,6 +474,24 @@ namespace SpatialSlur.SlurCore
                 const double inv3 = 1.0 / 3.0;
                 return (X + Y) * inv3;
             }
+        }
+
+
+        /// <summary>
+        /// Returns the perpendicular vector rotated a quarter turn clockwise.
+        /// </summary>
+        public Vec2d PerpCW
+        {
+            get { return new Vec2d(Y, -X); }
+        }
+
+
+        /// <summary>
+        /// Returns the perpendicular vector rotated a quarter turn counter clockwise.
+        /// </summary>
+        public Vec2d PerpCCW
+        {
+            get { return new Vec2d(-Y, X); }
         }
 
 

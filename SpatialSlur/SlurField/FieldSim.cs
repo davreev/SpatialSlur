@@ -25,12 +25,12 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Returns a streamline through the given field as an infinite sequence of points.
         /// </summary>
+        /// <param name="field"></param>
         /// <param name="point"></param>
         /// <param name="stepSize"></param>
-        /// <param name="stepCount"></param>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public static IEnumerable<Vec2d> IntegrateFrom(GridVectorField2d field, Vec2d point, double stepSize, IntegrationMode mode = IntegrationMode.Euler)
+        public static IEnumerable<Vec2d> IntegrateFrom(IField2d<Vec2d> field, Vec2d point, double stepSize, IntegrationMode mode = IntegrationMode.Euler)
         {
             switch (mode)
             {
@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static IEnumerable<Vec2d> IntegrateFromEuler(GridVectorField2d field, Vec2d point, double stepSize)
+        private static IEnumerable<Vec2d> IntegrateFromEuler(IField2d<Vec2d> field, Vec2d point, double stepSize)
         {
             while (true)
             {
@@ -62,7 +62,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static IEnumerable<Vec2d> IntegrateFromRK2(GridVectorField2d field, Vec2d point, double stepSize)
+        private static IEnumerable<Vec2d> IntegrateFromRK2(IField2d<Vec2d> field, Vec2d point, double stepSize)
         {
             while (true)
             {
@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static IEnumerable<Vec2d> IntegrateFromRK4(GridVectorField2d field, Vec2d point, double stepSize)
+        private static IEnumerable<Vec2d> IntegrateFromRK4(IField2d<Vec2d> field, Vec2d point, double stepSize)
         {
             double dt2 = stepSize * 0.5;
             double dt6 = stepSize / 6.0;
@@ -99,12 +99,12 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Returns a streamline through the given field as an infinite sequence of points.
         /// </summary>
+        /// <param name="field"></param>
         /// <param name="point"></param>
         /// <param name="stepSize"></param>
-        /// <param name="stepCount"></param>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public static IEnumerable<Vec3d> IntegrateFrom(GridVectorField3d field, Vec3d point, double stepSize, IntegrationMode mode = IntegrationMode.Euler)
+        public static IEnumerable<Vec3d> IntegrateFrom(IField3d<Vec3d> field, Vec3d point, double stepSize, IntegrationMode mode = IntegrationMode.Euler)
         {
             switch (mode)
             {
@@ -123,7 +123,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static IEnumerable<Vec3d> IntegrateFromEuler(GridVectorField3d field, Vec3d point, double stepSize)
+        private static IEnumerable<Vec3d> IntegrateFromEuler(IField3d<Vec3d> field, Vec3d point, double stepSize)
         {
             while(true)
             {
@@ -136,7 +136,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static IEnumerable<Vec3d> IntegrateFromRK2(GridVectorField3d field, Vec3d point, double stepSize)
+        private static IEnumerable<Vec3d> IntegrateFromRK2(IField3d<Vec3d> field, Vec3d point, double stepSize)
         {
             while (true)
             {
@@ -152,7 +152,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static IEnumerable<Vec3d> IntegrateFromRK4(GridVectorField3d field, Vec3d point, double stepSize)
+        private static IEnumerable<Vec3d> IntegrateFromRK4(IField3d<Vec3d> field, Vec3d point, double stepSize)
         {
             double dt2 = stepSize * 0.5;
             double dt6 = stepSize / 6.0;
@@ -324,7 +324,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(GridScalarField2d field, GridScalarField2d delta, double rate, bool parallel = false)
+        public static void Diffuse(GridField2d<double> field, GridField2d<double> delta, double rate, bool parallel = false)
         {
             Diffuse(field, delta.Values, rate, parallel);
         }
@@ -338,7 +338,7 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(GridScalarField2d field, double[] deltas, double rate, bool parallel = false)
+        public static void Diffuse(GridField2d<double> field, double[] deltas, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -383,7 +383,7 @@ namespace SpatialSlur.SlurField
         /// <param name="delta"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(GridScalarField3d field, GridScalarField3d delta, double rate, bool parallel = false)
+        public static void Diffuse(GridField3d<double> field, GridField3d<double> delta, double rate, bool parallel = false)
         {
             Diffuse(field, delta.Values, rate, parallel);
         }
@@ -397,7 +397,7 @@ namespace SpatialSlur.SlurField
         /// <param name="deltas"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void Diffuse(GridScalarField3d field, double[] deltas, double rate, bool parallel = false)
+        public static void Diffuse(GridField3d<double> field, double[] deltas, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -554,7 +554,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(GridScalarField2d field, GridScalarField2d delta, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridField2d<double> field, GridField2d<double> delta, double slope, double rate, bool parallel = false)
         {
             ErodeThermal(field, delta.Values, slope, rate, parallel);
         }
@@ -568,7 +568,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(GridScalarField2d field, double[] deltas, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridField2d<double> field, double[] deltas, double slope, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -634,7 +634,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(GridScalarField3d field, GridScalarField3d delta, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridField3d<double> field, GridField3d<double> delta, double slope, double rate, bool parallel = false)
         {
             ErodeThermal(field, delta.Values, slope, rate, parallel);
         }
@@ -648,7 +648,7 @@ namespace SpatialSlur.SlurField
         /// <param name="slope"></param>
         /// <param name="rate"></param>
         /// <param name="parallel"></param>
-        public static void ErodeThermal(GridScalarField3d field, double[] deltas, double slope, double rate, bool parallel = false)
+        public static void ErodeThermal(GridField3d<double> field, double[] deltas, double slope, double rate, bool parallel = false)
         {
             var vals = field.Values;
             int nx = field.CountX;
@@ -723,7 +723,7 @@ namespace SpatialSlur.SlurField
         /// <param name="cost"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void GeodesicDistanceL1(GridScalarField2d cost, IEnumerable<int> sources, GridScalarField2d result)
+        public static void GeodesicDistanceL1(GridField2d<double> cost, IEnumerable<int> sources, GridField2d<double> result)
         {
             GeodesicDistanceL1(cost, sources, result.Values);
         }
@@ -736,7 +736,7 @@ namespace SpatialSlur.SlurField
         /// <param name="cost"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void GeodesicDistanceL1(GridScalarField2d cost, IEnumerable<int> sources, double[] result)
+        public static void GeodesicDistanceL1(GridField2d<double> cost, IEnumerable<int> sources, double[] result)
         {
             // TODO consider wrap modes
 
@@ -804,7 +804,7 @@ namespace SpatialSlur.SlurField
         /// <param name="cost"></param>
         /// <param name="sources"></param>
         /// <param name="result"></param>
-        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, GridScalarField2d result)
+        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, GridField2d<double> result)
         {
             var states = new bool[cost.Count];
             GeodesicDistanceL2Impl(cost, sources, states, result.Values);
@@ -819,7 +819,7 @@ namespace SpatialSlur.SlurField
         /// <param name="sources"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, double[] result)
+        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, double[] result)
         {
             var tags = new bool[cost.Count];
             GeodesicDistanceL2Impl(cost, sources, tags, result);
@@ -834,7 +834,7 @@ namespace SpatialSlur.SlurField
         /// <param name="sources"></param>
         /// <param name="tags"></param>
         /// <param name="result"></param>
-        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, bool[] tags, GridScalarField2d result)
+        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, GridField2d<double> result)
         {
             tags.Clear();
             GeodesicDistanceL2Impl(cost, sources, tags, result.Values);
@@ -849,7 +849,7 @@ namespace SpatialSlur.SlurField
         /// <param name="sources"></param>
         /// <param name="tags"></param>
         /// <param name="result"></param>
-        public static void GeodesicDistanceL2(GridScalarField2d cost, IEnumerable<int> sources, bool[] tags, double[] result)
+        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, double[] result)
         {
             tags.Clear();
             GeodesicDistanceL2Impl(cost, sources, tags, result);
@@ -863,7 +863,7 @@ namespace SpatialSlur.SlurField
        /// <param name="sources"></param>
        /// <param name="tags"></param>
        /// <param name="result"></param>
-        private static void GeodesicDistanceL2Impl(GridScalarField2d cost, IEnumerable<int> sources, bool[] tags, double[] result)
+        private static void GeodesicDistanceL2Impl(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, double[] result)
         {
             // TODO consider wrap modes
 

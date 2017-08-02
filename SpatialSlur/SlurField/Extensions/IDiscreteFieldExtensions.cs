@@ -66,39 +66,21 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="field"></param>
-        /// <param name="func"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void Convert<T, U>(this IDiscreteField<T> field, Func<T, U> func, IDiscreteField<U> result, bool parallel = false)
-        {
-            if (parallel)
-                field.Values.ConvertRangeParallel(0, field.Count, func, result.Values);
-            else
-                field.Values.ConvertRange(0, field.Count, func, result.Values);
-        }
-
-
-        /// <summary>
-        /// Sets the resulting field to some function of this field and its indices.
-        /// </summary>
-        public static void Function<T, U>(this IDiscreteField<T> field, Func<T, int, U> func, IDiscreteField<U> result, bool parallel = false)
-        {
-            if (parallel)
-                field.Values.ConvertRangeParallel(0, field.Count, func, result.Values);
-            else
-                field.Values.ConvertRange(0, field.Count, func, result.Values);
-        }
-
-
-        /// <summary>
         /// Sets the resulting field to some function of this field.
         /// </summary>
         public static void Function<T, U>(this IDiscreteField<T> field, Func<T, U> func, IDiscreteField<U> result, bool parallel = false)
+        {
+            if (parallel)
+                field.Values.ConvertRangeParallel(0, field.Count, func, result.Values);
+            else
+                field.Values.ConvertRange(0, field.Count, func, result.Values);
+        }
+
+
+        /// <summary>
+        /// Sets the resulting field to some function of its indices
+        /// </summary>
+        public static void Function<T, U>(this IDiscreteField<T> field, Func<T, int, U> func, IDiscreteField<U> result, bool parallel = false)
         {
             if (parallel)
                 field.Values.ConvertRangeParallel(0, field.Count, func, result.Values);

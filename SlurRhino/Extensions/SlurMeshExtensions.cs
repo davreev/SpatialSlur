@@ -772,7 +772,7 @@ namespace SpatialSlur.SlurRhino
                 sizes.Add(n);
             }
 
-            var vertPos = points.RemoveDuplicates(out int[] indexMap, tolerance);
+            var vertPos = points.RemoveCoincident(out int[] indexMap, tolerance);
             return factory.CreateFromFaceVertexData(vertPos, indexMap.Segment(sizes), setPosition);
         }
 
@@ -796,7 +796,6 @@ namespace SpatialSlur.SlurRhino
             where F : HeFace<V, E, F>
         {
             // TODO include normals and texCoords
-
             var mesh = new Mesh();
 
             var verts = mesh.Vertices;

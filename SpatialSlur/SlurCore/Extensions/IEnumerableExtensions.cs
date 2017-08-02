@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using SpatialSlur.SlurData;
+
+using static SpatialSlur.SlurData.DataUtil;
+
 /*
  * Notes
  */
@@ -404,19 +408,29 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        [Obsolete("Use other overload instead.")]
         public static void Normalize<T>(this IEnumerable<T> items, Func<T, double> getValue, Action<T, double> setValue)
+        {
+            Normalize(items, Property.Create(getValue, setValue));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Normalize<T>(this IEnumerable<T> items, Property<T, double> value)
         {
             double sum = 0.0;
 
             foreach (var t in items)
-                sum += getValue(t);
+                sum += value.Get(t);
 
             if (sum > 0.0)
             {
                 double inv = 1.0 / sum;
 
                 foreach (var t in items)
-                    setValue(t, getValue(t) * inv);
+                    value.Set(t, value.Get(t) * inv);
             }
         }
 
@@ -498,7 +512,6 @@ namespace SpatialSlur.SlurCore
             return sum / count;
         }
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -506,7 +519,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<Vec2d> vectors, double[] result)
         {
-            GetCovarianceMatrix(vectors, vectors.Mean(), result);
+            DataUtil.GetCovarianceMatrix(vectors, result);
         }
 
 
@@ -519,19 +532,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static void GetCovarianceMatrix(this IEnumerable<Vec2d> vectors, Vec2d mean, double[] result)
         {
-            Array.Clear(result, 0, 4);
-
-            // calculate covariance matrix
-            foreach (Vec2d v in vectors)
-            {
-                Vec3d d = v - mean;
-                result[0] += d.X * d.X;
-                result[1] += d.X * d.Y;
-                result[3] += d.Y * d.Y;
-            }
-
-            // set symmetric values
-            result[2] = result[1];
+            DataUtil.GetCovarianceMatrix(vectors, mean, result);
         }
 
         #endregion
@@ -581,7 +582,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<Vec3d> vectors, double[] result)
         {
-            GetCovarianceMatrix(vectors, vectors.Mean(), result);
+            DataUtil.GetCovarianceMatrix(vectors, result);
         }
 
 
@@ -593,24 +594,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="mean"></param>
         public static void GetCovarianceMatrix(this IEnumerable<Vec3d> vectors, Vec3d mean, double[] result)
         {
-            Array.Clear(result, 0, 9);
-
-            // calculate lower triangular covariance matrix
-            foreach (Vec3d v in vectors)
-            {
-                Vec3d d = v - mean;
-                result[0] += d.X * d.X;
-                result[1] += d.X * d.Y;
-                result[2] += d.X * d.Z;
-                result[4] += d.Y * d.Y;
-                result[5] += d.Y * d.Z;
-                result[8] += d.Z * d.Z;
-            }
-
-            // set symmetric values
-            result[3] = result[1];
-            result[6] = result[2];
-            result[7] = result[5];
+            DataUtil.GetCovarianceMatrix(vectors, mean, result);
         }
 
         #endregion
@@ -671,9 +655,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<double[]> vectors, double[] result)
         {
-            var mean = new double[vectors.First().Length];
-            vectors.Mean(mean);
-            GetCovarianceMatrix(vectors, mean, result);
+            DataUtil.GetCovarianceMatrix(vectors, result);
         }
 
 
@@ -685,28 +667,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="result"></param>
         public static void GetCovarianceMatrix(this IEnumerable<double[]> vectors, double[] mean, double[] result)
         {
-            int n = mean.Length;
-            Array.Clear(result, 0, n * n);
-
-            // calculate lower triangular covariance matrix
-            foreach (double[] v in vectors)
-            {
-                for (int j = 0; j < n; j++)
-                {
-                    double dj = v[j] - mean[j];
-                    result[j * n + j] += dj * dj; // diagonal entry
-
-                    for (int k = j + 1; k < n; k++)
-                        result[j * n + k] += dj * (v[k] - mean[k]);
-                }
-            }
-
-            // fill out upper triangular
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < i; j++)
-                    result[j * n + i] = result[i * n + j];
-            }
+            DataUtil.GetCovarianceMatrix(vectors, result);
         }
 
         #endregion

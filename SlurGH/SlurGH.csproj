@@ -64,12 +64,14 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\MeshExtrude.cs" />
-    <Compile Include="Components\MeshLoft.cs" />
-    <Compile Include="Components\MeshLoftPair.cs" />
-    <Compile Include="Components\MeshSeparate.cs" />
-    <Compile Include="Components\NormalShader.cs" />
-    <Compile Include="Components\SimplexNoise.cs" />
+    <Compile Include="Components\Mesh\AlignVertices.cs" />
+    <Compile Include="Components\Mesh\MeshExtrude.cs" />
+    <Compile Include="Components\Mesh\MeshLoft.cs" />
+    <Compile Include="Components\Mesh\MeshLoftPair.cs" />
+    <Compile Include="Components\Mesh\MeshFlip.cs" />
+    <Compile Include="Components\Mesh\MeshSeparate.cs" />
+    <Compile Include="Components\Display\NormalShader.cs" />
+    <Compile Include="Components\Field\SimplexNoise.cs" />
     <Compile Include="Types\GH_HeGraph.cs" />
     <Compile Include="Types\GH_HeMesh.cs" />
     <Compile Include="Params\HeGraphParam.cs" />
@@ -91,7 +93,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Components\WIP\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

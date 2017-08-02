@@ -422,11 +422,11 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a unitized copy of this vector.
+        /// Returns a unit length copy of this vector.
         /// Returns the zero vector if this vector is zero length.
         /// </summary>
         /// <returns></returns>
-        public Vec4d Unitized
+        public Vec4d Direction
         {
             get
             {

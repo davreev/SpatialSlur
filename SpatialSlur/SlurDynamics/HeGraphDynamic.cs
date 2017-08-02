@@ -20,7 +20,17 @@ namespace SpatialSlur.SlurDynamics
             where H : ParticleHandle
     {
         /// <summary></summary>
-        public static readonly HeGraphFactory<V, E> Factory = HeGraphFactory.Create(() => new V(), () => new E());
+        public static readonly HeGraphFactory<V, E> Factory;
+
+
+        /// <summary>
+        /// Static constructor to initialize factory instance.
+        /// </summary>
+        static HeGraphDynamic()
+        {
+            var provider = HeElementProvider.Create(() => new V(), () => new E());
+            Factory = HeGraphFactory.Create(provider);
+        }
 
 
         /// <summary>

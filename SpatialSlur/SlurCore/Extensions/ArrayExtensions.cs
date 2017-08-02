@@ -212,9 +212,9 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void Modify<T>(this T[] source, Action<T> action)
+        public static void Action<T>(this T[] source, Action<T> action)
         {
-            ModifyRange(source, 0, source.Length, action);
+            ActionRange(source, 0, source.Length, action);
         }
 
 
@@ -260,9 +260,9 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void ModifyParallel<T>(this T[] source, Action<T> action)
+        public static void ActionParallel<T>(this T[] source, Action<T> action)
         {
-            ModifyRangeParallel(source, 0, source.Length, action);
+            ActionRangeParallel(source, 0, source.Length, action);
         }
 
 
@@ -310,7 +310,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ModifyRange<T>(this T[] source, int index, int count, Action<T> action)
+        public static void ActionRange<T>(this T[] source, int index, int count, Action<T> action)
         {
             for (int i = 0; i < count; i++)
                 action(source[i + index]);
@@ -370,7 +370,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ModifyRangeParallel<T>(this T[] source, int index, int count, Action<T> action)
+        public static void ActionRangeParallel<T>(this T[] source, int index, int count, Action<T> action)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
@@ -434,7 +434,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ModifySelection<T>(this T[] source, int[] indices, Action<T> action)
+        public static void ActionSelection<T>(this T[] source, int[] indices, Action<T> action)
         {
             for (int i = 0; i < indices.Length; i++)
                 action(source[indices[i]]);
@@ -489,7 +489,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ModifySelectionParallel<T>(this T[] source, int[] indices, Action<T> action)
+        public static void ActionSelectionParallel<T>(this T[] source, int[] indices, Action<T> action)
         {
             Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
             {
@@ -920,24 +920,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Sets the result to some function of the given vector
-        /// </summary>
-        public static void Function<T, U>(this T[] v,  Func<T, U> func, U[] result)
-        {
-            v.Function(v.Length, func, result);
-        }
-
-
-        /// <summary>
-        /// Sets the result to some function of the given vector
-        /// </summary>
-        public static void Function<T, U>(this T[] v, int count, Func<T, U> func, U[] result)
-        {
-            v.ConvertRange(0, count, func, result);
-        }
-
-
-        /// <summary>
         /// Sets the result to some function of the 2 given vectors.
         /// </summary>
         public static void Function<T0, T1, U>(this T0[] v0, T1[] v1, Func<T0, T1, U> func, U[] result)
@@ -972,24 +954,6 @@ namespace SpatialSlur.SlurCore
         {
             for (int i = 0; i < count; i++)
                 result[i] = func(v0[i], v1[i], v2[i]);
-        }
-
-
-        /// <summary>
-        /// Sets the result to some function of a given vector.
-        /// </summary>
-        public static void FunctionParallel<T, U>(this T[] vector, Func<T, U> func, U[] result)
-        {
-            vector.FunctionParallel(vector.Length, func, result);
-        }
-
-
-        /// <summary>
-        /// Sets the result to some function of a given vector.
-        /// </summary>
-        public static void FunctionParallel<T, U>(this T[] vector, int count, Func<T, U> func, U[] result)
-        {
-            vector.ConvertRangeParallel(0, count, func, result);
         }
 
 
