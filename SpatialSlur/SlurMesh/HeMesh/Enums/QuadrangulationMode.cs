@@ -8,7 +8,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
-    public enum QuadrangulateMode
+    public enum QuadrangulationMode
     {
         /// <summary>Adds quads radially around the first vertex in the face</summary>
         Fan,

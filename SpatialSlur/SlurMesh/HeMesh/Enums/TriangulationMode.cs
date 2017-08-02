@@ -8,7 +8,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
-    public enum TriangulateMode
+    public enum TriangulationMode
     {
         /// <summary>Adds tris radially around the first vertex in the face</summary>
         Fan,
