@@ -9,26 +9,25 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurRhino;
-using SpatialSlur.SlurMesh;
-
-using SlurSketchGH.Grasshopper.Types;
-using SlurSketchGH.Grasshopper.Params;
 
 /*
  * Notes
  */
 
-namespace SlurSketchGH.Grasshopper.Components
+namespace SpatialSlur.SlurGH.Components
 {
-    public class FacePolylines : GH_Component
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MeshLoftPair : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public FacePolylines()
-          : base("Face Polylines", "FacePolys",
-              "Returns the boundary of each face in a given mesh as a closed polyline",
-              "SpatialSlur", "Mesh")
+        public MeshLoftPair()
+          : base("Mesh Loft Pair", "LoftPair",
+              "Creates a mesh between a pair of polylines",
+              "Mesh", "Util")
         {
         }
 
@@ -36,18 +35,19 @@ namespace SlurSketchGH.Grasshopper.Components
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddParameter(new HeMeshParam(), "heMesh", "heMesh", "Mesh to extract from", GH_ParamAccess.item);
+            pManager.AddCurveParameter("polyA", "polylineA", "", GH_ParamAccess.item);
+            pManager.AddCurveParameter("polyB", "polylineB", "", GH_ParamAccess.item);
         }
 
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddCurveParameter("result", "result", "Face polylines", GH_ParamAccess.list);
+            pManager.AddMeshParameter("result", "result", "Lofted mesh", GH_ParamAccess.item);
         }
 
 
@@ -58,14 +58,21 @@ namespace SlurSketchGH.Grasshopper.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            HeMesh3d mesh = null;
-            if (!DA.GetData(0, ref mesh)) return;
-            
-            var faces = mesh.Topology.Faces;
-            var polys = new Polyline[faces.Count];
-            faces.GetFacePolylines(mesh.VertexPositions, polys);
-            
-            DA.SetDataList(0, polys.Select(poly => new GH_Curve(new PolylineCurve(poly))));
+            Curve crvA = null;
+            Curve crvB = null;
+
+            if (!DA.GetData(0, ref crvA)) return;
+            if (!DA.GetData(1, ref crvB)) return;
+
+            if (!crvA.TryGetPolyline(out Polyline polyA))
+                throw new ArgumentException();
+
+            if (!crvB.TryGetPolyline(out Polyline polyB))
+                throw new ArgumentException();
+
+            var mesh = MeshUtil.Loft(polyA, polyB);
+
+            DA.SetData(0, new GH_Mesh(mesh));
         }
 
 
@@ -86,7 +93,7 @@ namespace SlurSketchGH.Grasshopper.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{70D2FDA2-4370-4F20-8745-5050698F2013}"); }
+            get { return new Guid("{C8AA832B-3A0C-4CF8-A63A-65414619BDF8}"); }
         }
     }
 }

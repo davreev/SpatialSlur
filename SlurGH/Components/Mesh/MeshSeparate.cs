@@ -8,6 +8,7 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
 
 /*
@@ -16,14 +17,17 @@ using SpatialSlur.SlurRhino;
 
 namespace SpatialSlur.SlurGH.Components
 {
-    public class MeshLoft : GH_Component
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MeshSeparate : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MeshLoft()
-          : base("Mesh Loft", "Loft",
-              "Creates a mesh through a list of polylines",
+        public MeshSeparate()
+          : base("Mesh Separate", "Separate",
+              "Separates all faces in a given mesh",
               "Mesh", "Util")
         {
         }
@@ -34,7 +38,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("polys", "polylines", "", GH_ParamAccess.list);
+            pManager.AddMeshParameter("mesh", "mesh", "Mesh to separate", GH_ParamAccess.item);
         }
 
 
@@ -43,7 +47,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("result", "result", "Lofted mesh", GH_ParamAccess.item);
+            pManager.AddMeshParameter("result", "result", "Separated mesh", GH_ParamAccess.item);
         }
 
 
@@ -54,19 +58,10 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Curve> curves = new List<Curve>();
+            Mesh mesh = null;
+            if (!DA.GetData(0, ref mesh)) return;
 
-            if (!DA.GetDataList(0, curves)) return;
-
-            var polys = curves.ConvertAll(crv =>
-            {
-                if (!crv.TryGetPolyline(out Polyline poly))
-                    throw new ArgumentException();
-
-                return poly;
-            });
-
-            var mesh = MeshUtil.Loft(polys);
+            mesh = mesh.ToPolySoup();
 
             DA.SetData(0, new GH_Mesh(mesh));
         }
@@ -89,7 +84,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{BCFCF1AE-046B-4164-AF5A-12E5EE9F71CD}"); }
+            get { return new Guid("{29FE6C46-B4B0-4BEE-95D6-549001490DE5}"); }
         }
     }
 }

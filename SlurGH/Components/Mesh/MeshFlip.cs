@@ -9,26 +9,25 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurRhino;
-using SpatialSlur.SlurMesh;
-
-using SlurSketchGH.Grasshopper.Types;
-using SlurSketchGH.Grasshopper.Params;
 
 /*
  * Notes
  */
 
-namespace SlurSketchGH.Grasshopper.Components
+namespace SpatialSlur.SlurGH.Components
 {
-    public class EdgeLines : GH_Component
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MeshFlip : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public EdgeLines()
-          : base("Edge Lines", "EdgeLns",
-              "Returns a line for each edge in a given mesh",
-              "SpatialSlur", "Mesh")
+        public MeshFlip()
+          : base("Mesh Flip", "Flip",
+              "Reverses the face windings of a mesh",
+              "Mesh", "Util")
         {
         }
 
@@ -36,18 +35,18 @@ namespace SlurSketchGH.Grasshopper.Components
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddParameter(new HeMeshParam(), "heMesh", "heMesh", "Mesh to extract from", GH_ParamAccess.item);
+            pManager.AddMeshParameter("mesh", "mesh", "Mesh to flip.", GH_ParamAccess.item);
         }
 
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddLineParameter("result", "result", "Edge lines", GH_ParamAccess.list);
+            pManager.AddMeshParameter("mesh", "mesh", "Flipped mesh", GH_ParamAccess.item);
         }
 
 
@@ -58,14 +57,12 @@ namespace SlurSketchGH.Grasshopper.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            HeMesh3d mesh = null;
+            Mesh mesh = null;
             if (!DA.GetData(0, ref mesh)) return;
+            
+            mesh.Flip(true, true, true);
 
-            var hedges = mesh.Topology.Halfedges;
-            var lines = new Line[hedges.Count >> 1];
-            hedges.GetEdgeLines(mesh.VertexPositions, lines);
-
-            DA.SetDataList(0, lines.Select(ln => new GH_Line(ln)));
+            DA.SetData(0, new GH_Mesh(mesh));
         }
 
 
@@ -86,8 +83,7 @@ namespace SlurSketchGH.Grasshopper.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{D3EBB8A8-08D5-47FB-AD7A-275C9A82C4BD}"); }
+            get { return new Guid("{1168132C-A1B4-45BA-9265-D61ACE445A1E}"); }
         }
     }
 }
-

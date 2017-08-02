@@ -17,6 +17,9 @@ using SpatialSlur.SlurRhino;
 
 namespace SpatialSlur.SlurGH.Components
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class NormalShader : GH_Component
     {
         /// <summary>
@@ -37,7 +40,7 @@ namespace SpatialSlur.SlurGH.Components
         {
             pManager.AddMeshParameter("mesh", "mesh", "Mesh to paint", GH_ParamAccess.item);
             pManager.AddColourParameter("colors", "colors", "", GH_ParamAccess.list);
-            pManager.AddVectorParameter("direction", "direction", "", GH_ParamAccess.item, new Vector3d(1,1,1));
+            pManager.AddVectorParameter("direction", "direction", "", GH_ParamAccess.item, Vector3d.ZAxis);
         }
 
 

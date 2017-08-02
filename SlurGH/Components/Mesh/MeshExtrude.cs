@@ -12,18 +12,21 @@ using SpatialSlur.SlurRhino;
 
 /*
  * Notes
- */
+ */ 
 
 namespace SpatialSlur.SlurGH.Components
 {
-    public class MeshLoftPair : GH_Component
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MeshExtrude : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MeshLoftPair()
-          : base("Mesh Loft Pair", "Loft2",
-              "Creates a mesh between a pair of polylines",
+        public MeshExtrude()
+          : base("Mesh Extrude", "Extrude",
+              "Extrudes a mesh from a polyline",
               "Mesh", "Util")
         {
         }
@@ -32,19 +35,19 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("polyA", "polylineA", "", GH_ParamAccess.item);
-            pManager.AddCurveParameter("polyB", "polylineB", "", GH_ParamAccess.item);
+            pManager.AddCurveParameter("poly", "polyline", "", GH_ParamAccess.item);
+            pManager.AddVectorParameter("dir", "direction", "", GH_ParamAccess.item, Vector3d.Zero);
         }
 
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("result", "result", "Lofted mesh", GH_ParamAccess.item);
+            pManager.AddMeshParameter("result", "result", "Extruded mesh", GH_ParamAccess.item);
         }
 
 
@@ -55,19 +58,17 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Curve crvA = null;
-            Curve crvB = null;
+            Curve crv = null;
+            Vector3d dir = new Vector3d();
 
-            if (!DA.GetData(0, ref crvA)) return;
-            if (!DA.GetData(1, ref crvB)) return;
+            if (!DA.GetData(0, ref crv)) return;
+            if (!DA.GetData(1, ref dir)) return;
 
-            if (!crvA.TryGetPolyline(out Polyline polyA))
+            Polyline poly;
+            if (!crv.TryGetPolyline(out poly))
                 throw new ArgumentException();
 
-            if (!crvB.TryGetPolyline(out Polyline polyB))
-                throw new ArgumentException();
-
-            var mesh = MeshUtil.Loft(polyA, polyB);
+            var mesh = MeshUtil.Extrude(poly, dir);
 
             DA.SetData(0, new GH_Mesh(mesh));
         }
@@ -90,8 +91,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{C8AA832B-3A0C-4CF8-A63A-65414619BDF8}"); }
+            get { return new Guid("{7A0D856D-7C43-42D1-AEEC-BACDDA1881A4}"); }
         }
     }
 }
-
