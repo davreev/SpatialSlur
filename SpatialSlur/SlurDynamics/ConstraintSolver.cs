@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Threading;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurDynamics;
@@ -182,20 +183,14 @@ namespace SpatialSlur.SlurDynamics
                     dpMax = Math.Max(dpMax, p.UpdatePosition(timeStep, damp));
                     daMax = Math.Max(daMax, p.UpdateRotation(timeStep, dampAng));
                 }
-
+                
                 // update max delta
                 if (dpMax > _maxDelta)
-                {
-                    lock (locker)
-                        _maxDelta = dpMax;
-                }
-
+                    Interlocked.Exchange(ref _maxDelta, dpMax);
+             
                 // update max angle delta
                 if(daMax > _maxAngleDelta)
-                {
-                    lock (locker)
-                        _maxAngleDelta = daMax;
-                }
+                    Interlocked.Exchange(ref _maxAngleDelta, daMax);
             });
         }
     }
