@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using SpatialSlur.SlurCore;
+
 using static SpatialSlur.SlurMesh.HeMesh;
 
 /*
@@ -64,12 +66,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
+        /// <param name="componentIndex"></param>
+        /// <param name="edgeIndex"></param>
         /// <returns></returns>
-        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, SplitDisjointHandle> getHandle, Action<E, SplitDisjointHandle> setHandle)
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Property<E, int> componentIndex, Property<E, int> edgeIndex)
         {
-            return mesh.SplitDisjoint(delegate { }, delegate { }, delegate { }, getHandle, setHandle);
+            return mesh.SplitDisjoint(delegate { }, delegate { }, delegate { }, componentIndex, edgeIndex);
         }
     }
 }

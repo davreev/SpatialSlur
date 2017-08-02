@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using SpatialSlur.SlurCore;
+
 using static SpatialSlur.SlurMesh.HeGraph;
 
 /*
@@ -42,12 +44,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="graph"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
+        /// <param name="componentIndex"></param>
+        /// <param name="edgeIndex"></param>
         /// <returns></returns>
-        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, Func<E, SplitDisjointHandle> getHandle, Action<E, SplitDisjointHandle> setHandle)
+        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, Property<E, int> componentIndex, Property<E, int> edgeIndex)
         {
-            return graph.SplitDisjoint(delegate { }, delegate { }, getHandle, setHandle);
+            return graph.SplitDisjoint(delegate { }, delegate { }, componentIndex, edgeIndex);
         }
 
 

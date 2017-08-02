@@ -14,14 +14,14 @@ namespace SpatialSlur.SlurCore
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <typeparam name="U"></typeparam>
-    public interface IProperty<T, U> : IReadOnlyProperty<T, U>
+    /// <typeparam name="V"></typeparam>
+    public interface IProperty<T, V> : IReadOnlyProperty<T, V>
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="item"></param>
         /// <param name="value"></param>
-        void Set(T item, U value);
+        void Set(T item, V value);
     }
 }

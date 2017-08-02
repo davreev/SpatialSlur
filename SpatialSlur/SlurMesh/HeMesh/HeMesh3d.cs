@@ -18,7 +18,17 @@ namespace SpatialSlur.SlurMesh
     public static class HeMesh3d
     {
         /// <summary></summary>
-        public static readonly HeMeshFactory<V, E, F> Factory = HeMeshFactory.Create(() => new V(), () => new E(), () => new F());
+        public static readonly HeMeshFactory<V, E, F> Factory;
+
+
+        /// <summary>
+        /// Static constructor to initialize factory instance.
+        /// </summary>
+        static HeMesh3d()
+        {
+            var provider = HeElementProvider.Create(() => new V(), () => new E(), () => new F());
+            Factory = HeMeshFactory.Create(provider);
+        }
 
 
         /// <summary>

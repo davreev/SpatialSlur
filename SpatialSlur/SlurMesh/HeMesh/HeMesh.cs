@@ -29,25 +29,22 @@ namespace SpatialSlur.SlurMesh
         private EdgeList<TE> _edges;
         private HeElementList<TF> _faces;
 
-        private Func<TV> _newTV;
-        private Func<TE> _newTE;
-        private Func<TF> _newTF;
+        private HeElementProvider<TV, TE, TF> _provider;
+        private Func<TV> _newV;
+        private Func<TE> _newE;
+        private Func<TF> _newF;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vertexProvider"></param>
-        /// <param name="hedgeProvider"></param>
-        /// <param name="faceProvider"></param>
+        /// <param name="provider"></param>
         /// <param name="vertexCapacity"></param>
         /// <param name="hedgeCapacity"></param>
         /// <param name="faceCapacity"></param>
-        public HeMesh(Func<TV> vertexProvider, Func<TE> hedgeProvider, Func<TF> faceProvider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
+        internal HeMesh(HeElementProvider<TV,TE,TF> provider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
         {
-            VertexProvider = vertexProvider;
-            HalfedgeProvider = hedgeProvider;
-            FaceProvider = faceProvider;
+            ElementProvider = provider;
 
             _vertices = new HeElementList<TV>(vertexCapacity);
             _hedges = new HalfedgeList<TE>(hedgeCapacity);
@@ -95,30 +92,16 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public Func<TV> VertexProvider
+        public HeElementProvider<TV, TE, TF> ElementProvider
         {
-            get { return _newTV; }
-            set { _newTV = value ?? throw new ArgumentNullException(); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Func<TE> HalfedgeProvider
-        {
-            get { return _newTE; }
-            set { _newTE = value ?? throw new ArgumentNullException(); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Func<TF> FaceProvider
-        {
-            get { return _newTF; }
-            set { _newTF = value ?? throw new ArgumentNullException(); }
+            get { return _provider; }
+            private set
+            {
+                _provider = value ?? throw new ArgumentNullException();
+                _newV = _provider.NewVertex;
+                _newE = _provider.NewHalfedge;
+                _newF = _provider.NewFace;
+            }
         }
 
 
@@ -338,7 +321,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeMesh<TV, TE, TF> Duplicate(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
         {
-            var copy = HeMesh.Create(_newTV, _newTE, _newTF, _vertices.Count, _hedges.Count, _faces.Count);
+            var copy = HeMesh.Create(_provider, _vertices.Count, _hedges.Count, _faces.Count);
             copy.Append(this, setVertex, setHedge, setFace);
             return copy;
         }
@@ -560,7 +543,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeMesh<TV, TE, TF> GetDual(Action<TV, TF> setVertex, Action<TE, TE> setHedge, Action<TF, TV> setFace)
         {
-            var dual = HeMesh.Create(_newTV, _newTE, _newTF, _faces.Count, _hedges.Count, _vertices.Count);
+            var dual = HeMesh.Create(_provider, _faces.Count, _hedges.Count, _vertices.Count);
             dual.AppendDual(this, setVertex, setHedge, setFace);
             return dual;
         }
@@ -868,12 +851,42 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace)
         {
-            return SplitDisjoint(HeMeshFactory.Create(this), setVertex, setHedge, setFace);
+            return SplitDisjoint(HeMeshFactory.Create(_provider), setVertex, setHedge, setFace);
         }
 
 
         /// <summary>
         /// 
+        /// </summary>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="componentIndices"></param>
+        /// <param name="edgeIndices"></param>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace, out int[] componentIndices, out int[] edgeIndices)
+        {
+            return SplitDisjoint(HeMeshFactory.Create(_provider), setVertex, setHedge, setFace, out componentIndices, out edgeIndices);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="setFace"></param>
+        /// <param name="componentIndex"></param>
+        /// <param name="edgeIndex"></param>
+        /// <returns></returns>
+        public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace, Property<TE, int> componentIndex, Property<TE, int> edgeIndex)
+        {
+            return SplitDisjoint(HeMeshFactory.Create(_provider), setVertex, setHedge, setFace, componentIndex, edgeIndex);
+        }
+
+
+        /// <summary>
+        /// Returns an array of connected components.
         /// </summary>
         /// <typeparam name="UV"></typeparam>
         /// <typeparam name="UE"></typeparam>
@@ -888,22 +901,7 @@ namespace SpatialSlur.SlurMesh
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            return SplitDisjoint(factory, setVertex, setHedge, setFace, out SplitDisjointHandle[] handles);
-        }
-
-
-        /// <summary>
-        /// Returns an array of connected components.
-        /// For each edge in this mesh, also returns a handle to the corresponding component edge.
-        /// </summary>
-        /// <param name="setVertex"></param>
-        /// <param name="setHedge"></param>
-        /// <param name="setFace"></param>
-        /// <param name="edgeHandles"></param>
-        /// <returns></returns>
-        public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace, out SplitDisjointHandle[] edgeHandles)
-        {
-            return SplitDisjoint(HeMeshFactory.Create(this), setVertex, setHedge, setFace, out edgeHandles);
+            return SplitDisjoint(factory, setVertex, setHedge, setFace, out int[] compIds, out int[] edgeIds);
         }
 
 
@@ -917,33 +915,22 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <param name="setFace"></param>
-        /// <param name="edgeHandles"></param>
+        /// <param name="componentIndices"></param>
+        /// <param name="edgeIndices"></param>
         /// <returns></returns>
-        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV, UE, UF> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace, out SplitDisjointHandle[] edgeHandles)
+        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV, UE, UF> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace, out int[] componentIndices, out int[] edgeIndices)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            edgeHandles = new SplitDisjointHandle[_hedges.Count >> 1];
+            componentIndices = new int[_hedges.Count >> 1];
+            edgeIndices = new int[_hedges.Count >> 1];
+            return SplitDisjoint(factory, setVertex, setHedge, setFace, ToProp(componentIndices), ToProp(edgeIndices));
 
-            var handles = edgeHandles; // for use in lambda below
-            return SplitDisjoint(factory, setVertex, setHedge, setFace, he => handles[he >> 1], (he, h) => handles[he >> 1] = h);
-        }
-    
-
-        /// <summary>
-        /// Returns an array of connected components.
-        /// For each edge in this mesh, also returns a handle to the corresponding component edge.
-        /// </summary>
-        /// <param name="setVertex"></param>
-        /// <param name="setHedge"></param>
-        /// <param name="setFace"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
-        /// <returns></returns>
-        public HeMesh<TV, TE, TF>[] SplitDisjoint(Action<TV, TV> setVertex, Action<TE, TE> setHedge, Action<TF, TF> setFace, Func<TE, SplitDisjointHandle> getHandle, Action<TE, SplitDisjointHandle> setHandle)
-        {
-            return SplitDisjoint(HeMeshFactory.Create(this), setVertex, setHedge, setFace, getHandle, setHandle);
+            Property<TE, V> ToProp<V>(V[] values)
+            {
+                return Property.Create<TE, V>(he => values[he >> 1], (he, i) => values[he >> 1] = i);
+            }
         }
 
 
@@ -957,15 +944,15 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <param name="setFace"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
+        /// <param name="componentIndex"></param>
+        /// <param name="edgeIndex"></param>
         /// <returns></returns>
-        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV, UE, UF> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace, Func<TE, SplitDisjointHandle> getHandle, Action<TE, SplitDisjointHandle> setHandle)
+        public HeMesh<UV, UE, UF>[] SplitDisjoint<UV, UE, UF>(HeMeshFactory<UV, UE, UF> factory, Action<UV, TV> setVertex, Action<UE, TE> setHedge, Action<UF, TF> setFace, Property<TE, int> componentIndex, Property<TE, int> edgeIndex)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            int ncomp = this.GetEdgeComponentIndices((he, i) => setHandle(he, new SplitDisjointHandle(i)));
+            int ncomp = this.GetEdgeComponentIndices(componentIndex.Set);
             var comps = new HeMesh<UV, UE, UF>[ncomp];
 
             // initialize components
@@ -978,12 +965,9 @@ namespace SpatialSlur.SlurMesh
                 var heA = _hedges[i];
                 if (heA.IsRemoved) continue;
 
-                var h = getHandle(heA);
-
-                var comp = comps[h.ComponentIndex];
-                h.EdgeIndex = comp.AddEdge().Index >> 1;
-
-                setHandle(heA, h);
+                var comp = comps[componentIndex.Get(heA)];
+                var heB = comp.AddEdge();
+                edgeIndex.Set(heA, heB.Index >> 1);
             }
 
             // set component halfedge->halfedge refs
@@ -992,16 +976,13 @@ namespace SpatialSlur.SlurMesh
                 var heA0 = _hedges[i];
                 if (heA0.IsRemoved) continue;
 
-                var heA1 = heA0.NextInFace;
-                var h0 = getHandle(heA0);
-                var h1 = getHandle(heA1);
-
                 // the component to which heA0 was copied
-                var compHedges = comps[h0.ComponentIndex]._hedges;
+                var compHedges = comps[componentIndex.Get(heA0)]._hedges;
+                var heA1 = heA0.NextAtStart;
 
-                // set hedge refs
-                var heB0 = compHedges[(h0.EdgeIndex << 1) + (i & 1)];
-                var heB1 = compHedges[(h1.EdgeIndex << 1) + (heA1.Index & 1)];
+                // set refs
+                var heB0 = compHedges[(edgeIndex.Get(heA0) << 1) + (i & 1)];
+                var heB1 = compHedges[(edgeIndex.Get(heA1) << 1) + (heA1.Index & 1)];
                 heB0.MakeConsecutive(heB1);
                 setHedge(heB0, heA0);
             }
@@ -1013,15 +994,16 @@ namespace SpatialSlur.SlurMesh
                 if (vA.IsRemoved) continue;
 
                 var heA = vA.FirstOut;
-                var h = getHandle(heA);
-
-                var comp = comps[h.ComponentIndex];
-                var vB = comp.AddVertex();
+                var comp = comps[componentIndex.Get(heA)];
+                var heB = comp._hedges[(edgeIndex.Get(heA) << 1) + (heA.Index & 1)];
 
                 // set vertex refs
-                var heB = comp._hedges[(h.EdgeIndex << 1) + (heA.Index & 1)];
+                var vB = comp.AddVertex();
                 vB.FirstOut = heB;
-                foreach (var he in heB.CirculateStart) he.Start = vB;
+
+                foreach (var he in heB.CirculateStart)
+                    he.Start = vB;
+
                 setVertex(vB, vA);
             }
 
@@ -1032,27 +1014,26 @@ namespace SpatialSlur.SlurMesh
                 if (fA.IsRemoved) continue;
 
                 var heA = fA.First;
-                var h = getHandle(heA);
-
-                var comp = comps[h.ComponentIndex];
-                var fB = comp.AddFace();
+                var comp = comps[componentIndex.Get(heA)];
+                var heB = comp._hedges[(edgeIndex.Get(heA) << 1) + (heA.Index & 1)];
 
                 // set face refs
-                var heB = comp._hedges[(h.EdgeIndex << 1) + (heA.Index & 1)];
+                var fB = comp.AddFace();
                 fB.First = heB;
-                foreach (var he in heB.CirculateFace) he.Face = fB;
+
+                foreach (var he in heB.CirculateFace)
+                    he.Face = fB;
+
                 setFace(fB, fA);
             }
 
             return comps;
         }
 
-
         #region Element Operators
 
 
         #region Edge Operators
-
 
         /// <summary>
         /// Creates a new pair of halfedges and adds them to the list.
@@ -1060,8 +1041,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal TE AddEdge()
         {
-            var he0 = _newTE();
-            var he1 = _newTE();
+            var he0 = _newE();
+            var he1 = _newE();
 
             he0.Twin = he1;
             he1.Twin = he0;
@@ -1117,16 +1098,27 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Assumes the given elements are valid for the operation.
+        /// 
         /// </summary>
         /// <param name="hedge"></param>
         /// <returns></returns>
         internal TE SplitEdgeImpl(TE hedge)
         {
+            return SplitEdgeImpl(hedge, AddVertex());
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hedge"></param>
+        /// <returns></returns>
+        internal TE SplitEdgeImpl(TE hedge, TV vertex)
+        {
             var he0 = hedge;
             var he1 = he0.Twin;
 
-            var v0 = AddVertex();
+            var v0 = vertex;
             var v1 = he1.Start;
 
             var he2 = AddEdge(v0, v1);
@@ -1157,6 +1149,36 @@ namespace SpatialSlur.SlurMesh
             he3.MakeConsecutive(he1);
 
             return he2;
+        }
+
+
+        /// <summary>
+        /// Inserts the specified number of vertices along the given edge.
+        /// </summary>
+        /// <param name="hedge"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public TE DivideEdge(TE hedge, int count)
+        {
+            _hedges.ContainsCheck(hedge);
+            hedge.RemovedCheck();
+
+            return DivideEdgeImpl(hedge, count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hedge"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        private TE DivideEdgeImpl(TE hedge, int count)
+        {
+            for (int i = 0; i < count; i++)
+                hedge = SplitEdgeImpl(hedge);
+
+            return hedge;
         }
 
 
@@ -2134,7 +2156,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public TV AddVertex()
         {
-            var v = _newTV();
+            var v = _newV();
             _vertices.Add(v);
             return v;
         }
@@ -2148,7 +2170,7 @@ namespace SpatialSlur.SlurMesh
         {
             for (int i = 0; i < quantity; i++)
             {
-                var v = _newTV();
+                var v = _newV();
                 _vertices.Add(v);
             }
         }
@@ -2369,7 +2391,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal TF AddFace()
         {
-            var f = _newTF();
+            var f = _newF();
             _faces.Add(f);
             return f;
         }
@@ -2961,20 +2983,20 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="face"></param>
         /// <param name="mode"></param>
-        public void TriangulateFace(TF face, TriangulateMode mode)
+        public void TriangulateFace(TF face, TriangulationMode mode)
         {
             _faces.ContainsCheck(face);
             face.RemovedCheck();
 
             switch (mode)
             {
-                case TriangulateMode.Fan:
+                case TriangulationMode.Fan:
                     TriangulateFaceFan(face.First);
                     return;
-                case TriangulateMode.Strip:
+                case TriangulationMode.Strip:
                     TriangulateFaceStrip(face.First);
                     return;
-                case TriangulateMode.Poke:
+                case TriangulationMode.Poke:
                     TriangulateFacePoke(face.First);
                     return;
             }
@@ -2990,7 +3012,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="face"></param>
         /// <param name="mode"></param>
         /// <param name="selector"></param>
-        public void TriangulateFace<T>(TF face, TriangulateMode mode, Func<TE, T> selector)
+        public void TriangulateFace<T>(TF face, TriangulationMode mode, Func<TE, T> selector)
             where T : IComparable<T>
         {
             _faces.ContainsCheck(face);
@@ -2998,13 +3020,13 @@ namespace SpatialSlur.SlurMesh
 
             switch (mode)
             {
-                case TriangulateMode.Fan:
+                case TriangulationMode.Fan:
                     TriangulateFaceFan(face.Halfedges.SelectMin(selector));
                     return;
-                case TriangulateMode.Strip:
+                case TriangulationMode.Strip:
                     TriangulateFaceStrip(face.Halfedges.SelectMin(selector));
                     return;
-                case TriangulateMode.Poke:
+                case TriangulationMode.Poke:
                     TriangulateFacePoke(face.First);
                     return;
             }
@@ -3055,24 +3077,32 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         private TV TriangulateFacePoke(TE first)
         {
+            var vc = AddVertex();
+            TriangulateFacePoke(first, vc);
+            return vc;
+        }
+
+        
+        /// <summary>
+        /// Assumes the given elements are valid for the operation.
+        /// </summary>
+        internal void TriangulateFacePoke(TE first, TV center)
+        {
             var he = first;
             var v = first.Start;
             var f = first.Face;
 
-            // add new vertex at face center
-            var vc = AddVertex();
-
             // create new halfedges and connect to existing ones
             do
             {
-                var he0 = AddEdge(he.Start, vc);
+                var he0 = AddEdge(he.Start, center);
                 he.PrevInFace.MakeConsecutive(he0);
                 he0.Twin.MakeConsecutive(he);
                 he = he.NextInFace;
             } while (he.Start != v);
 
             he = first; // reset to first halfedge in face
-            vc.FirstOut = he.PrevInFace; // set outgoing halfedge for the central vertex
+            center.FirstOut = he.PrevInFace; // set outgoing halfedge for the central vertex
 
             // connect new halfedges and create new faces where necessary
             do
@@ -3095,8 +3125,6 @@ namespace SpatialSlur.SlurMesh
 
                 he = he1.Twin.NextInFace;
             } while (he.Start != v);
-
-            return vc;
         }
 
 
@@ -3105,20 +3133,20 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="face"></param>
         /// <param name="mode"></param>
-        public void QuadrangulateFace(TF face, QuadrangulateMode mode)
+        internal void QuadrangulateFace(TF face, QuadrangulationMode mode)
         {
             _faces.ContainsCheck(face);
             face.RemovedCheck();
 
             switch (mode)
             {
-                case QuadrangulateMode.Fan:
+                case QuadrangulationMode.Fan:
                     QuadrangulateFaceFan(face.First);
                     return;
-                case QuadrangulateMode.Strip:
+                case QuadrangulationMode.Strip:
                     QuadrangulateFaceStrip(face.First);
                     return;
-                case QuadrangulateMode.Poke:
+                case QuadrangulationMode.Poke:
                     QuadrangulateFacePoke(face.First);
                     return;
             }
@@ -3134,7 +3162,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="face"></param>
         /// <param name="mode"></param>
         /// <param name="selector"></param>
-        public void QuadrangulateFace<T>(TF face, QuadrangulateMode mode, Func<TE, T> selector)
+        public void QuadrangulateFace<T>(TF face, QuadrangulationMode mode, Func<TE, T> selector)
             where T : IComparable<T>
         {
             _faces.ContainsCheck(face);
@@ -3142,13 +3170,13 @@ namespace SpatialSlur.SlurMesh
 
             switch (mode)
             {
-                case QuadrangulateMode.Fan:
+                case QuadrangulationMode.Fan:
                     QuadrangulateFaceFan(face.Halfedges.SelectMin(selector));
                     return;
-                case QuadrangulateMode.Strip:
+                case QuadrangulationMode.Strip:
                     QuadrangulateFaceStrip(face.Halfedges.SelectMin(selector));
                     return;
-                case QuadrangulateMode.Poke:
+                case QuadrangulationMode.Poke:
                     QuadrangulateFacePoke(face.First);
                     return;
             }
@@ -3198,8 +3226,73 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         private TV QuadrangulateFacePoke(TE first)
         {
+            var vc = AddVertex();
+            QuadrangulateFacePoke(first, vc);
+            return vc;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="first"></param>
+        /// <returns></returns>
+        internal void QuadrangulateFacePoke(TE first, TV center)
+        {
             // TODO
             throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// This method assumes an even number of halfedges in the face loop and that the given vertex is unused.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="center"></param>
+        internal void QuadSplitFace(TE first, TV center)
+        {
+            // create new halfedges to central vertex and connect to old halfedges
+            var he0 = first;
+            do
+            {
+                var he1 = he0.NextInFace;
+                var he2 = AddEdge(he1.Start, center);
+
+                he0.MakeConsecutive(he2);
+                he2.Twin.MakeConsecutive(he1);
+
+                he0 = he1.NextInFace;
+            } while (he0 != first);
+
+            // set outgoing halfedge from central vertex
+            center.FirstOut = he0.NextInFace.Twin;
+
+            // create new faces and connect new halfedges to eachother
+            {
+                var f = first.Face;
+                var he1 = he0.PrevInFace;
+
+                do
+                {
+                    var he2 = he0.NextInFace;
+                    var he3 = he1.PrevInFace;
+                    he2.MakeConsecutive(he3);
+
+                    if (f == null)
+                    {
+                        f = AddFace();
+                        he0.Face = he1.Face = f;
+                    }
+
+                    he2.Face = he3.Face = f; // set face refs for new halfedges
+                    f.First = he0; // set first halfedge in face
+
+                    f = null;
+                    he1 = he2.Twin.NextInFace;
+                    he0 = he1.NextInFace;
+
+                } while (he0 != first);
+            }
         }
 
 
@@ -3295,7 +3388,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public void TriangulateFaces(TriangulateMode mode = TriangulateMode.Strip)
+        public void TriangulateFaces(TriangulationMode mode = TriangulationMode.Strip)
         {
             int nf = _faces.Count;
 
@@ -3314,7 +3407,7 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="T"></typeparam>
         /// <param name="selector"></param>
         /// <param name="mode"></param>
-        public void TriangulateFaces<T>(Func<TE, T> selector, TriangulateMode mode = TriangulateMode.Strip)
+        public void TriangulateFaces<T>(Func<TE, T> selector, TriangulationMode mode = TriangulationMode.Strip)
             where T : IComparable<T>
         {
             int nf = _faces.Count;
@@ -3332,7 +3425,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public void QuadrangulateFaces(QuadrangulateMode mode = QuadrangulateMode.Strip)
+        public void QuadrangulateFaces(QuadrangulationMode mode = QuadrangulationMode.Strip)
         {
             int nf = _faces.Count;
 
@@ -3351,7 +3444,7 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="T"></typeparam>
         /// <param name="selector"></param>
         /// <param name="mode"></param>
-        public void QuadrangulateFaces<T>(Func<TE, T> selector, QuadrangulateMode mode = QuadrangulateMode.Strip)
+        public void QuadrangulateFaces<T>(Func<TE, T> selector, QuadrangulationMode mode = QuadrangulationMode.Strip)
             where T : IComparable<T>
         {
             int nf = _faces.Count;
@@ -3458,6 +3551,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="start"></param>
+        /// <param name="flip"></param>
         public void UnifyFaceOrientationQuad(TF start, bool flip)
         {
             foreach (var he in GetFacesOrientedQuad(start, flip))
@@ -3565,7 +3659,17 @@ namespace SpatialSlur.SlurMesh
     public static class HeMesh
     {
         /// <summary></summary>
-        public static readonly HeMeshFactory<V, E, F> Factory = HeMeshFactory.Create(() => new V(), () => new E(), () => new F());
+        public static readonly HeMeshFactory<V, E, F> Factory;
+
+
+        /// <summary>
+        /// Static constructor to initialize factory instance.
+        /// </summary>
+        static HeMesh()
+        {
+            var provider = HeElementProvider.Create(() => new V(), () => new E(), () => new F());
+            Factory = HeMeshFactory.Create(provider);
+        }
 
 
         /// <summary>
@@ -3574,19 +3678,17 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="TV"></typeparam>
         /// <typeparam name="TE"></typeparam>
         /// <typeparam name="TF"></typeparam>
-        /// <param name="vertexProvider"></param>
-        /// <param name="hedgeProvider"></param>
-        /// <param name="faceProvider"></param>
+        /// <param name="provider"></param>
         /// <param name="vertexCapacity"></param>
         /// <param name="hedgeCapacity"></param>
         /// <param name="faceCapacity"></param>
         /// <returns></returns>
-        public static HeMesh<TV, TE, TF> Create<TV, TE, TF>(Func<TV> vertexProvider, Func<TE> hedgeProvider, Func<TF> faceProvider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
+        public static HeMesh<TV, TE, TF> Create<TV, TE, TF>(HeElementProvider<TV, TE, TF> provider, int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
             where TV : HeVertex<TV, TE, TF>
             where TE : Halfedge<TV, TE, TF>
             where TF : HeFace<TV, TE, TF>
         {
-            return new HeMesh<TV, TE, TF>(vertexProvider, hedgeProvider, faceProvider, vertexCapacity, hedgeCapacity, faceCapacity);
+            return new HeMesh<TV, TE, TF>(provider, vertexCapacity, hedgeCapacity, faceCapacity);
         }
 
 

@@ -60,11 +60,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="graph"></param>
-        /// <param name="edgeHandles"></param>
+        /// <param name="componentIndices"></param>
+        /// <param name="edgeIndices"></param>
         /// <returns></returns>
-        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, out SplitDisjointHandle[] edgeHandles)
+        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, out int[] componentIndices, out int[] edgeIndices)
         {
-            return graph.SplitDisjoint(Set, Set, out edgeHandles);
+            return graph.SplitDisjoint(Set, Set, out componentIndices, out edgeIndices);
         }
 
 
@@ -72,12 +73,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="graph"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
+        /// <param name="componentIndex"></param>
+        /// <param name="edgeIndex"></param>
         /// <returns></returns>
-        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, Func<E, SplitDisjointHandle> getHandle, Action<E, SplitDisjointHandle> setHandle)
+        public static HeGraph<V, E>[] SplitDisjoint(this HeGraph<V, E> graph, Property<E, int> componentIndex, Property<E, int> edgeIndex)
         {
-            return graph.SplitDisjoint(Set, Set, getHandle, setHandle);
+            return graph.SplitDisjoint(Set, Set, componentIndex, edgeIndex);
         }
 
 

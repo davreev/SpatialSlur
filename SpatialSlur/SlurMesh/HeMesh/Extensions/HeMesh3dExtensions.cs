@@ -82,11 +82,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="edgeHandles"></param>
+        /// <param name="componentIndices"></param>
+        /// <param name="edgeIndices"></param>
         /// <returns></returns>
-        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, out SplitDisjointHandle[] edgeHandles)
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, out int[] componentIndices, out int[] edgeIndices)
         {
-            return mesh.SplitDisjoint(Set, Set, Set, out edgeHandles);
+            return mesh.SplitDisjoint(Set, Set, Set, out componentIndices, out edgeIndices);
         }
 
 
@@ -94,12 +95,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
+        /// <param name="componentIndex"></param>
+        /// <param name="edgeIndex"></param>
         /// <returns></returns>
-        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Func<E, SplitDisjointHandle> getHandle, Action<E, SplitDisjointHandle> setHandle)
+        public static HeMesh<V, E, F>[] SplitDisjoint(this HeMesh<V, E, F> mesh, Property<E, int> componentIndex, Property<E, int> edgeIndex)
         {
-            return mesh.SplitDisjoint(Set, Set, Set, getHandle, setHandle);
+            return mesh.SplitDisjoint(Set, Set, Set, componentIndex, edgeIndex);
         }
 
 

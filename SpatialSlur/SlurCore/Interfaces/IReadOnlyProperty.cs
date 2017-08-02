@@ -4,20 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ */ 
+
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <typeparam name="U"></typeparam>
-    public interface IReadOnlyProperty<T, U>
+    /// <typeparam name="V"></typeparam>
+    public interface IReadOnlyProperty<T, V>
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        U Get(T item);
+        V Get(T item);
     }
 }

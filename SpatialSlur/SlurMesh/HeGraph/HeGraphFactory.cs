@@ -18,6 +18,22 @@ namespace SpatialSlur.SlurMesh
     public static class HeGraphFactory
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
+        /// <param name="provider"></param>
+        /// <returns></returns>
+        public static HeGraphFactory<TV, TE> Create<TV, TE>(HeElementProvider<TV,TE> provider)
+            where TV : HeVertex<TV, TE>
+            where TE : Halfedge<TV, TE>
+        {
+            return new HeGraphFactory<TV, TE>(provider);
+        }
+
+
+        /*
+        /// <summary>
         ///
         /// </summary>
         /// <typeparam name="TV"></typeparam>
@@ -46,6 +62,7 @@ namespace SpatialSlur.SlurMesh
         {
             return new HeGraphFactory<TV, TE>(graph.VertexProvider, graph.HalfedgeProvider);
         }
+        */
     }
 
 
@@ -55,23 +72,20 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
     [Serializable]
-    public class HeGraphFactory<TV, TE> : IFactory<HeGraph<TV,TE>>
+    public class HeGraphFactory<TV, TE> : IFactory<HeGraph<TV, TE>>
         where TV : HeVertex<TV, TE>
         where TE : Halfedge<TV, TE>
     {
-        private Func<TV> _newTV;
-        private Func<TE> _newTE;
+        private HeElementProvider<TV, TE> _provider;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vertexProvider"></param>
-        /// <param name="hedgeProvider"></param>
-        public HeGraphFactory(Func<TV> vertexProvider, Func<TE> hedgeProvider)
+        /// <param name="provider"></param>
+        public HeGraphFactory(HeElementProvider<TV, TE> provider)
         {
-            _newTV = vertexProvider ?? throw new ArgumentNullException();
-            _newTE = hedgeProvider ?? throw new ArgumentNullException();
+            _provider = provider ?? throw new ArgumentNullException();
         }
 
 
@@ -93,7 +107,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeGraph<TV, TE> Create(int vertexCapacity, int hedgeCapacity)
         {
-            return HeGraph.Create(_newTV, _newTE, vertexCapacity, hedgeCapacity);
+            return HeGraph.Create(_provider, vertexCapacity, hedgeCapacity);
         }
 
 
@@ -124,14 +138,14 @@ namespace SpatialSlur.SlurMesh
         /// <param name="graph"></param>
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
-        /// <param name="getHandle"></param>
-        /// <param name="setHandle"></param>
+        /// <param name="componentIndex"></param>
+        /// <param name="edgeIndex"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Func<UE, SplitDisjointHandle> getHandle, Action<UE, SplitDisjointHandle> setHandle)
+        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Property<UE, int> componentIndex, Property<UE, int> edgeIndex)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            return graph.SplitDisjoint(this, setVertex, setHedge, getHandle, setHandle);
+            return graph.SplitDisjoint(this, setVertex, setHedge, componentIndex, edgeIndex);
         }
 
 
@@ -146,14 +160,14 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public HeGraph<TV, TE> CreateFromLineSegments(IReadOnlyList<Vec3d> endPoints, Action<TV, Vec3d> setPosition, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
         {
-            var vertPos = endPoints.RemoveDuplicates(out int[] indexMap, tolerance);
+            var vertPos = endPoints.RemoveCoincident(out int[] indexMap, tolerance);
 
             var result = Create(vertPos.Count, endPoints.Count >> 1);
             var verts = result.Vertices;
             var hedges = result.Halfedges;
 
             // add vertices
-            for(int i = 0; i < vertPos.Count; i++)
+            for (int i = 0; i < vertPos.Count; i++)
             {
                 var v = result.AddVertex();
                 setPosition(v, vertPos[i]);
