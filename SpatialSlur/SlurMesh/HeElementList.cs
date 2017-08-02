@@ -220,9 +220,22 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <typeparam name="K"></typeparam>
         /// <param name="getKey"></param>
-        public virtual void Sort<K>(Func<T, K> getKey)
+        public void Sort<K>(Func<T, K> getKey)
         {
-            Array.Sort(_items, 0, _count, Comparer<K>.Default);
+            Sort(getKey, Comparer<K>.Default);
+        }
+
+
+        /// <summary>
+        /// Performs an in-place stable sort of elements.
+        /// </summary>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="getKey"></param>
+        public virtual void Sort<K>(Func<T, K> getKey, IComparer<K> keyComparer)
+        {
+            int index = 0;
+            foreach (var t in this.OrderBy(getKey, keyComparer))
+                this[index++] = t;
 
             // reset indices
             for (int i = 0; i < _count; i++)
