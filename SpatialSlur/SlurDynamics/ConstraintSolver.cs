@@ -166,8 +166,7 @@ namespace SpatialSlur.SlurDynamics
         {
             _maxDelta = 0.0;
             _maxAngleDelta = 0.0;
-
-            var locker = new object();
+            
             var timeStep = _settings.TimeStep;
             var damp = _settings.Damping;
             var dampAng = _settings.AngularDamping;
