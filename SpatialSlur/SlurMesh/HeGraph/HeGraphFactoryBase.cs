@@ -15,85 +15,20 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
-    public static class HeGraphFactory
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public static HeGraphFactory<TV, TE> Create<TV, TE>(HeElementProvider<TV,TE> provider)
-            where TV : HeVertex<TV, TE>
-            where TE : Halfedge<TV, TE>
-        {
-            return new HeGraphFactory<TV, TE>(provider);
-        }
-
-
-        /*
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
-        /// <param name="vertexProvider"></param>
-        /// <param name="hedgeProvider"></param>
-        /// <returns></returns>
-        public static HeGraphFactory<TV, TE> Create<TV, TE>(Func<TV> vertexProvider, Func<TE> hedgeProvider)
-            where TV : HeVertex<TV, TE>
-            where TE : Halfedge<TV, TE>
-        {
-            return new HeGraphFactory<TV, TE>(vertexProvider, hedgeProvider);
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TV"></typeparam>
-        /// <typeparam name="TE"></typeparam>
-        /// <param name="graph"></param>
-        /// <returns></returns>
-        public static HeGraphFactory<TV, TE> Create<TV, TE>(HeGraph<TV, TE> graph)
-            where TV : HeVertex<TV, TE>
-            where TE : Halfedge<TV, TE>
-        {
-            return new HeGraphFactory<TV, TE>(graph.VertexProvider, graph.HalfedgeProvider);
-        }
-        */
-    }
-
-
-    /// <summary>
-    /// Class for creation of HeGraphs
-    /// </summary>
+    /// <typeparam name="TG"></typeparam>
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
     [Serializable]
-    public class HeGraphFactory<TV, TE> : IFactory<HeGraph<TV, TE>>
+    public abstract class HeGraphFactoryBase<TG, TV, TE> : IFactory<TG>
+        where TG : HeGraphBase<TV, TE>
         where TV : HeVertex<TV, TE>
         where TE : Halfedge<TV, TE>
     {
-        private HeElementProvider<TV, TE> _provider;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="provider"></param>
-        public HeGraphFactory(HeElementProvider<TV, TE> provider)
-        {
-            _provider = provider ?? throw new ArgumentNullException();
-        }
-
-
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public HeGraph<TV, TE> Create()
+        public TG Create()
         {
             return Create(4, 4);
         }
@@ -105,10 +40,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertexCapacity"></param>
         /// <param name="hedgeCapacity"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE> Create(int vertexCapacity, int hedgeCapacity)
-        {
-            return HeGraph.Create(_provider, vertexCapacity, hedgeCapacity);
-        }
+        public abstract TG Create(int vertexCapacity, int hedgeCapacity);
 
 
         /// <summary>
@@ -120,13 +52,58 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE> CreateCopy<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
+        public TG CreateCopy<UV, UE>(HeGraphBase<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
                where UV : HeVertex<UV, UE>
                where UE : Halfedge<UV, UE>
         {
             var copy = Create(graph.Vertices.Capacity, graph.Halfedges.Capacity);
             copy.Append(graph, setVertex, setHedge);
             return copy;
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <returns></returns>
+        public TG[] CreateConnectedComponents<UV, UE>(HeGraphBase<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
+            where UV : HeVertex<UV, UE>
+            where UE : Halfedge<UV, UE>
+        {
+            return CreateConnectedComponents(graph, setVertex, setHedge, out int[] compIds, out int[] edgeIds);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <param name="componentIndices"></param>
+        /// <param name="edgeIndices"></param>
+        /// <returns></returns>
+        public TG[] CreateConnectedComponents<UV, UE>(HeGraphBase<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge, out int[] componentIndices, out int[] edgeIndices)
+          where UV : HeVertex<UV, UE>
+          where UE : Halfedge<UV, UE>
+        {
+            int ne = graph.Edges.Count;
+            componentIndices = new int[ne];
+            edgeIndices = new int[ne];
+
+            return CreateConnectedComponents(graph, setVertex, setHedge, ToProp(componentIndices), ToProp(edgeIndices));
+
+            Property<UE, T> ToProp<T>(T[] values)
+            {
+                return Property.Create<UE, T>(he => values[he >> 1], (he, i) => values[he >> 1] = i);
+            }
         }
 
 
@@ -141,28 +118,86 @@ namespace SpatialSlur.SlurMesh
         /// <param name="componentIndex"></param>
         /// <param name="edgeIndex"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE>[] CreateConnectedComponents<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Property<UE, int> componentIndex, Property<UE, int> edgeIndex)
+        public TG[] CreateConnectedComponents<UV, UE>(HeGraphBase<UV, UE> graph, Action<TV, UV> setVertex, Action<TE, UE> setHedge, Property<UE, int> componentIndex, Property<UE, int> edgeIndex)
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            return graph.SplitDisjoint(this, setVertex, setHedge, componentIndex, edgeIndex);
+            var vertices = graph.Vertices;
+            var hedges = graph.Halfedges;
+
+            int ncomp = graph.GetEdgeComponentIndices(componentIndex.Set);
+            var comps = new TG[ncomp];
+
+            // initialize components
+            for (int i = 0; i < comps.Length; i++)
+                comps[i] = Create();
+
+            // create component halfedges
+            for (int i = 0; i < hedges.Count; i += 2)
+            {
+                var heA = hedges[i];
+                if (heA.IsRemoved) continue;
+
+                var comp = comps[componentIndex.Get(heA)];
+                var heB = comp.AddEdge();
+                edgeIndex.Set(heA, heB.Index >> 1);
+            }
+
+            // set component halfedge->halfedge refs
+            for (int i = 0; i < hedges.Count; i++)
+            {
+                var heA0 = hedges[i];
+                if (heA0.IsRemoved) continue;
+
+                // the component to which heA0 was copied
+                var compHedges = comps[componentIndex.Get(heA0)].Halfedges;
+                var heA1 = heA0.NextAtStart;
+
+                // set refs
+                var heB0 = compHedges[(edgeIndex.Get(heA0) << 1) + (i & 1)];
+                var heB1 = compHedges[(edgeIndex.Get(heA1) << 1) + (heA1.Index & 1)];
+                heB0.MakeConsecutive(heB1);
+                setHedge(heB0, heA0);
+            }
+
+            // create component vertices
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                var vA = vertices[i];
+                if (vA.IsRemoved) continue;
+
+                var heA = vA.FirstOut;
+                var comp = comps[componentIndex.Get(heA)];
+                var heB = comp.Halfedges[(edgeIndex.Get(heA) << 1) + (heA.Index & 1)];
+
+                // set vertex refs
+                var vB = comp.AddVertex();
+                vB.FirstOut = heB;
+
+                foreach (var he in heB.CirculateStart)
+                    he.Start = vB;
+
+                setVertex(vB, vA);
+            }
+
+            return comps;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="endPoints"></param>
+        /// <param name="points"></param>
         /// <param name="setPosition"></param>
         /// <param name="tolerance"></param>
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE> CreateFromLineSegments(IReadOnlyList<Vec3d> endPoints, Action<TV, Vec3d> setPosition, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
+        public TG CreateFromLineSegments(IReadOnlyList<Vec3d> points, Action<TV, Vec3d> setPosition, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
         {
-            var vertPos = endPoints.RemoveCoincident(out int[] indexMap, tolerance);
+            var vertPos = points.RemoveCoincident(out int[] indexMap, tolerance);
 
-            var result = Create(vertPos.Count, endPoints.Count >> 1);
+            var result = Create(vertPos.Count, points.Count >> 1);
             var verts = result.Vertices;
             var hedges = result.Halfedges;
 
@@ -240,7 +275,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setVertex"></param>
         /// <param name="setHedge"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE> CreateFromVertexTopology<UV, UE, UF>(HeMesh<UV, UE, UF> mesh, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
+        public TG CreateFromVertexTopology<UV, UE, UF>(HeMeshBase<UV, UE, UF> mesh, Action<TV, UV> setVertex, Action<TE, UE> setHedge)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
@@ -261,7 +296,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setHedge"></param>
         /// <param name="setVertex"></param>
         /// <returns></returns>
-        public HeGraph<TV, TE> CreateFromFaceTopology<UV, UE, UF>(HeMesh<UV, UE, UF> mesh, Action<TV, UF> setVertex, Action<TE, UE> setHedge)
+        public TG CreateFromFaceTopology<UV, UE, UF>(HeMeshBase<UV, UE, UF> mesh, Action<TV, UF> setVertex, Action<TE, UE> setHedge)
             where UV : HeVertex<UV, UE, UF>
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>

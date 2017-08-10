@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeVertex<TV, TE> : HeElement, IHeVertex<TV, TE>
+    public abstract class HeVertex<TV, TE> : HeElement, IHeVertex<TV, TE>
         where TV : HeVertex<TV, TE>
         where TE : Halfedge<TV, TE>
     {
@@ -95,6 +95,15 @@ namespace SpatialSlur.SlurMesh
         public bool IsDegree3
         {
             get { return _first.IsAtDegree3; }
+        }
+
+
+        /// <summary>
+        /// Returns true if the vertex has 4 outgoing halfedges.
+        /// </summary>
+        public bool IsDegree4
+        {
+            get { return _first.IsAtDegree4; }
         }
 
 

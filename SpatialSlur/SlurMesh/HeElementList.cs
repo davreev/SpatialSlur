@@ -20,7 +20,7 @@ namespace SpatialSlur.SlurMesh
     public class HeElementList<T> : IHeElementList<T>
         where T : HeElement
     {
-        private const int MinCapacity = 4;
+        private const int _minCapacity = 4;
 
         private T[] _items;
         private int _count;
@@ -33,7 +33,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="capacity"></param>
         internal HeElementList(int capacity)
         {
-            _items = new T[Math.Max(capacity, MinCapacity)];
+            _items = new T[Math.Max(capacity, _minCapacity)];
         }
 
 
@@ -208,7 +208,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public void TrimExcess()
         {
-            int max = Math.Max(_count << 1, MinCapacity);
+            int max = Math.Max(_count << 1, _minCapacity);
 
             if (_items.Length > max)
                 Array.Resize(ref _items, max);
@@ -231,6 +231,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <typeparam name="K"></typeparam>
         /// <param name="getKey"></param>
+        /// <param name="keyComparer"></param>
         public virtual void Sort<K>(Func<T, K> getKey, IComparer<K> keyComparer)
         {
             int index = 0;
@@ -298,8 +299,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns unique elements that appear in either of the two given collections.
+        /// 
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
@@ -310,8 +312,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns elements from the first collection which are not present in the second.
+        /// 
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
@@ -325,6 +328,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -345,8 +349,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns elements which are present in both of the given collections.
+        /// 
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
@@ -360,6 +365,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>

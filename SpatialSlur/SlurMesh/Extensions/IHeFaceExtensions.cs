@@ -121,7 +121,7 @@ namespace SpatialSlur.SlurMesh
         {
             Vec3d result;
 
-            if (face.IsTriangle)
+            if (face.IsDegree3)
             {
                 // simplified tri case
                 result = face.First.GetNormal(getPosition);
@@ -133,9 +133,8 @@ namespace SpatialSlur.SlurMesh
                 foreach (var he in face.Halfedges)
                     result += he.GetNormal(getPosition);
             }
-
-            result.Unitize();
-            return result;
+            
+            return result.Direction;
         }
 
 
@@ -150,13 +149,12 @@ namespace SpatialSlur.SlurMesh
         {
             Vec3d result;
 
-            if (face.IsTriangle)
+            if (face.IsDegree3)
                 result = getNormal(face.First); // simplified tri case
             else
                 result = face.Halfedges.Sum(getNormal); // general n-gon case
 
-            result.Unitize();
-            return result;
+            return result.Direction;
         }
 
 

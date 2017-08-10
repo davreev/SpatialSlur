@@ -41,7 +41,25 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        bool IsTriangle { get; }
+        bool IsDegree1 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsDegree2 {get;}
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsDegree3 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsDegree4 { get; }
 
 
         /// <summary>

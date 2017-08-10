@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Assumes quadrilateral faces.
         /// </summary>
-        public static IEnumerable<HeQuadStrip<V, E, F>> GetQuadStrips<V, E, F>(HeMesh<V, E, F> mesh, bool flip)
+        public static IEnumerable<HeQuadStrip<V, E, F>> GetQuadStrips<V, E, F>(HeMeshBase<V, E, F> mesh, bool flip)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -32,7 +32,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < faces.Count; i++)
             {
                 var f = faces[i];
-                if (f.IsRemoved || f.Tag == currTag) continue; // skip if unused or already visited
+                if (f.IsRemoved || f.Tag == currTag || !f.IsDegree4) continue; // skip if unused, visited, or non-quads
 
                 stack.Push((flip) ? f.First.NextInFace : f.First);
 
@@ -50,8 +50,10 @@ namespace SpatialSlur.SlurMesh
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            var faces = mesh.Faces;
+            if (!start.IsDegree4)
+                return Enumerable.Empty<HeQuadStrip<V, E, F>>();
 
+            var faces = mesh.Faces;
             faces.ContainsCheck(start);
             start.RemovedCheck();
 
@@ -84,7 +86,7 @@ namespace SpatialSlur.SlurMesh
                     foreach(var he1 in AdjacentQuads(he0))
                     {
                         var f = he1.Face;
-                        if (f != null && f.Tag != currTag) stack.Push(he1);
+                        if (f != null && f.Tag != currTag && f.IsDegree4) stack.Push(he1);
                     }
                 }
             }
@@ -106,7 +108,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="hedge"></param>
         /// <returns></returns>
-        public static HeQuadStrip<V, E, F> GetQuadStrip<V, E, F>(HeMesh<V, E, F> mesh, E hedge)
+        public static HeQuadStrip<V, E, F> GetQuadStrip<V, E, F>(HeMeshBase<V, E, F> mesh, E hedge)
           where V : HeVertex<V, E, F>
           where E : Halfedge<V, E, F>
           where F : HeFace<V, E, F>
@@ -134,12 +136,12 @@ namespace SpatialSlur.SlurMesh
             var he0 = Advance(hedge.Twin);
             return new HeQuadStrip<V, E, F>(he0.Twin, he1);
 
-            // advances the halfedge to the next boundary or visited face
+            // advances the halfedge to the next boundary, visited face, or non-quad
             E Advance(E he)
             {
                 var f = he.Face;
 
-                while (f != null && f.Tag != currTag)
+                while (f != null && f.Tag != currTag && f.IsDegree4)
                 {
                     f.Tag = currTag;
                     he = he.NextInFace.NextInFace.Twin;

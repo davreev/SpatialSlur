@@ -18,10 +18,8 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     /// <typeparam name="E"></typeparam>
-    /// <typeparam name="V"></typeparam>
-    public interface IHeStructure<V, E>
-        where V : HeElement, IHeVertex<V, E>
-        where E : HeElement, IHalfedge<V, E>
+    public interface IHeStructure<E>
+        where E : HeElement, IHalfedge<E>
     {
         /// <summary>
         /// 
@@ -32,9 +30,19 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        EdgeList<E> Edges { get; }
+        HeEdgeList<E> Edges { get; }
+    }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="E"></typeparam>
+    /// <typeparam name="V"></typeparam>
+    public interface IHeStructure<V, E> : IHeStructure<E>
+        where V : HeElement, IHeVertex<V, E>
+        where E : HeElement, IHalfedge<V, E>
+    {
         /// <summary>
         /// 
         /// </summary>

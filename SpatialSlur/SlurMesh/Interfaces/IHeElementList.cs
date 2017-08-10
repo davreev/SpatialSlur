@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public interface IHeElementList<T> : IReadOnlyList<T>
-        where T : HeElement
+        where T : IHeElement
     {
         /// <summary>
         /// Removes all attributes corresponding with elements which have been flagged for removal.
@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the set difference of the given sequences.
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
@@ -58,7 +58,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns distinct elements from the given sequence.
         /// </summary>
         /// <param name="elements"></param>
         /// <returns></returns>
@@ -66,7 +66,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the set intersection of the given sequences.
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the set union of the given sequences.
         /// </summary>
         /// <param name="elementsA"></param>
         /// <param name="elementsB"></param>

@@ -252,6 +252,26 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Calculates the unit length edge normal.
+        /// </summary>
+        public static Vec3d GetEdgeNormal<V, E, F>(this IHalfedge<V, E, F> hedge, Func<V, Vec3d> getPosition)
+            where V : IHeVertex<V, E, F>
+            where E : IHalfedge<V, E, F>
+            where F : IHeFace<V, E, F>
+        {
+            Vec3d p0 = getPosition(hedge.Start);
+            Vec3d d1 = (getPosition(hedge.PrevInFace.Start) + getPosition(hedge.NextInFace.End)) * 0.5 - p0;
+
+            hedge = hedge.Twin;
+
+            Vec3d d2 = getPosition(hedge.Start) - p0;
+            Vec3d d3 = (getPosition(hedge.PrevInFace.Start) + getPosition(hedge.NextInFace.End)) * 0.5 - p0;
+
+            return (Vec3d.Cross(d1, d2) + Vec3d.Cross(d2, d3)).Direction;
+        }
+
+
+        /// <summary>
         /// Returns the area of the quadrilateral formed between this halfedge, its previous, and the center of their adjacent face.
         /// See W in http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf.
         /// </summary>

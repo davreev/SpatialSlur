@@ -17,6 +17,8 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     public static class HeSubdivide
     {
+        #region Tri Split
+
         /// <summary>
         /// 
         /// </summary>
@@ -25,7 +27,7 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="position"></param>
-        public static void TriSplit<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position)
+        public static void TriSplit<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -33,6 +35,10 @@ namespace SpatialSlur.SlurMesh
             // TODO
         }
 
+        #endregion
+
+
+        #region Loop
 
         /// <summary>
         /// 
@@ -42,7 +48,7 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="position"></param>
-        public static void Loop<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position)
+        public static void Loop<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -51,18 +57,21 @@ namespace SpatialSlur.SlurMesh
             throw new NotImplementedException();
         }
 
+        #endregion
+
 
         #region Quad Split
 
         /// <summary>
-        /// 
+        /// Applies a single iteration of Catmull-Clark subdivision to the given mesh.
+        /// If using external buffers to store vertex attributes, the number of vertices after subdivision equals the sum of the number of vertices, edges, and faces in the initial mesh.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="position"></param>
-        public static void QuadSplit<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position)
+        public static void QuadSplit<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -80,7 +89,7 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="position"></param>
-        private static void QuadSplitGeometry<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position)
+        private static void QuadSplitGeometry<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -112,7 +121,7 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
-        private static void QuadSplitTopology<V, E, F>(HeMesh<V, E, F> mesh)
+        private static void QuadSplitTopology<V, E, F>(HeMeshBase<V, E, F> mesh)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -156,7 +165,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Applies a single iteration of Catmull-Clark subdivision to the given mesh.
-        /// If using external buffers to store vertex positions, the number of vertices after subdivision equals the sum of the number of vertices edges and faces in the given mesh.
+        /// If using external buffers to store vertex attributes, the number of vertices after subdivision equals the sum of the number of vertices edges and faces in the initial mesh.
         /// http://rosettacode.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
         /// http://w3.impa.br/~lcruz/courses/cma/surfaces.html
         /// </summary>
@@ -166,7 +175,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="position"></param>
         /// <param name="boundaryType"></param>
-        public static void CatmullClark<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
+        public static void CatmullClark<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -185,7 +194,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="position"></param>
         /// <param name="boundaryType"></param>
-        private static void CatmullClarkGeometry<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
+        private static void CatmullClarkGeometry<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
         where V : HeVertex<V, E, F>
         where E : Halfedge<V, E, F>
         where F : HeFace<V, E, F>
@@ -230,7 +239,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private static void CatmullClarkSmooth<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
+        private static void CatmullClarkSmooth<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -255,7 +264,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private static void CatmullClarkSmoothFixed<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position)
+        private static void CatmullClarkSmoothFixed<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -291,7 +300,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private static void CatmullClarkSmoothCornerFixed<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position)
+        private static void CatmullClarkSmoothCornerFixed<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -340,7 +349,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        private static void CatmullClarkSmoothFree<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position)
+        private static void CatmullClarkSmoothFree<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
@@ -515,166 +524,61 @@ namespace SpatialSlur.SlurMesh
         #endregion
 
 
-        #region Weave
-
         /// <summary>
-        /// The number of vertices 
-        /// Position property is responsible for getting vertex positions from the given mesh and setting them in the new one
-        /// If using external buffers to store vertex positions, the number of vertices in the resulting mesh equals 8 times the number of edges in the given mesh.
+        /// If using external buffers to store vertex attributes, the number of vertices after subdivision equals the sum of the number of vertices and faces in the initial mesh.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
-        /// <param name="getScale"></param>
-        /// <param name="getNormal"></param>
-        /// <param name="getCenter"></param>
         /// <param name="position"></param>
-        /// <returns></returns>
-        public static HeMesh<V, E, F> CreateWeave<V, E, F>(HeMesh<V, E, F> mesh, Func<E, double> getScale, Func<E, Vec3d> getNormal, Func<F, Vec3d> getCenter, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
-        {
-            int ne = mesh.Edges.Count;
-            var result = HeMesh.Create(mesh.ElementProvider, ne << 3, ne << 4, ne << 3);
-
-            CreateWeaveGeometry(mesh, result, getScale, getNormal, getCenter, position);
-            CreateWeaveTopology(mesh, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="V"></typeparam>
-        /// <typeparam name="E"></typeparam>
-        /// <typeparam name="F"></typeparam>
-        /// <param name="mesh"></param>
-        /// <param name="newMesh"></param>
-        /// <param name="getScale"></param>
-        /// <param name="getNormal"></param>
-        /// <param name="getCenter"></param>
-        /// <param name="position"></param>
-        private static void CreateWeaveGeometry<V, E, F>(HeMesh<V, E, F> mesh, HeMesh<V, E, F> newMesh, Func<E, double> getScale, Func<E, Vec3d> getNormal, Func<F, Vec3d> getCenter, Property<V, Vec3d> position)
+        /// <param name="skipBoundary"></param>
+        public static void Diagonalize<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, bool skipBoundary)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
             var edges = mesh.Edges;
+            var faces = mesh.Faces;
+
             int ne = edges.Count;
+            int nf = faces.Count;
 
-            // bulk add new vertices
-            newMesh.AddVertices(ne << 3);
-            var newVerts = newMesh.Vertices;
-
-            // add vertices (8 per halfedge pair in m0)
-            for (int i = 0; i < ne; i++)
+            // stellate faces
+            for (int i = 0; i < nf; i++)
             {
-                var he0 = edges[i];
-                var he1 = he0.Twin;
+                var f = faces[i];
+                if (f.IsRemoved) continue;
 
-                var f0 = he0.Face;
-                var f1 = he1.Face;
+                var v = mesh.AddVertex();
+                position.Set(v, f.GetBarycenter(position.Get));
+                mesh.TriangulateFacePoke(f.First, v);
+            }
 
-                // scale points to mid point of edge
-                Vec3d p0 = position.Get(he0.Start); 
-                Vec3d p1 = position.Get(he1.Start);
-     
-                Vec3d p = (p0 + p1) * 0.5;
-                var t = getScale(he0);
+            // merge faces
+            if (skipBoundary)
+            {
+                for (int i = 0; i < ne; i++)
+                {
+                    var he = edges[i];
+                    if (he.IsRemoved || he.IsBoundary) continue;
+                    mesh.MergeFaces(he);
+                }
 
-                p0 = Vec3d.Lerp(p, p0, t);
-                p1 = Vec3d.Lerp(p, p1, t);
-                Vec3d p2 = (f0 == null) ? new Vec3d() : Vec3d.Lerp(p, getCenter(f0), t);
-                Vec3d p3 = (f1 == null) ? new Vec3d() : Vec3d.Lerp(p, getCenter(f1), t);
-
-                // set vertex positions
-                Vec3d d = he0.IsBoundary ? Vec3d.Zero : getNormal(he0);
-                int j = i << 3;
-
-                position.Set(newVerts[j], p0 - d);
-                position.Set(newVerts[j + 1], p2 - d);
-                position.Set(newVerts[j + 2], p0 + d);
-                position.Set(newVerts[j + 3], p2 + d);
-
-                position.Set(newVerts[j + 4], p1 - d);
-                position.Set(newVerts[j + 5], p3 - d);
-                position.Set(newVerts[j + 6], p1 + d);
-                position.Set(newVerts[j + 7], p3 + d);
+            }
+            else
+            {
+                for (int i = 0; i < ne; i++)
+                {
+                    var he = edges[i];
+                    if (he.IsRemoved) continue;
+                    mesh.MergeFaces(he);
+                }
             }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="V"></typeparam>
-        /// <typeparam name="E"></typeparam>
-        /// <typeparam name="F"></typeparam>
-        /// <param name="mesh"></param>
-        /// <param name="newMesh"></param>
-        private static void CreateWeaveTopology<V, E, F>(HeMesh<V, E, F> mesh, HeMesh<V, E, F> newMesh)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
-        {
-            var hedges = mesh.Halfedges;
-            int nhe = hedges.Count;
-
-            // add node faces
-            for (int i = 0; i < nhe; i += 2)
-            {
-                var he0 = hedges[i];
-                var he1 = hedges[i + 1];
-                int j = i << 2;
-
-                if (he0.Face == null)
-                {
-                    newMesh.AddFace(j, j + 5, j + 4);
-                }
-                else if (he1.Face == null)
-                {
-                    newMesh.AddFace(j + 4, j + 1, j);
-                }
-                else
-                {
-                    newMesh.AddFace(j + 5, j + 4, j + 1, j);
-                    newMesh.AddFace(j + 7, j + 6, j + 3, j + 2);
-                }
-            }
-
-            // add edge faces
-            for (int i = 0; i < nhe; i++)
-            {
-                var he0 = hedges[i];
-                if (he0.Face == null) continue;
-
-                int j0 = i << 2;
-                int j1 = he0.NextInFace.Index << 2;
-
-                if (he0.IsBoundary)
-                {
-                    if ((i & 1) == 0)
-                        newMesh.AddFace(j0 + 1, j0 + 4, j1, j1 + 1); // even edges
-                    else
-                        newMesh.AddFace(j0 + 1, j0 - 4, j1, j1 + 1); // odd edges
-                }
-                else
-                {
-                    if ((i & 1) == 0)
-                        newMesh.AddFace(j0 + 3, j0 + 6, j1, j1 + 1);  // even edges
-                    else
-                        newMesh.AddFace(j0 + 3, j0 - 2, j1, j1 + 1); // odd edges
-                }
-            }
-        }
-
-        #endregion
-
-
-        #region Old implementations
+        #region Obsolete implementations
         // TODO update for compatibility with new datastructures
 
         /*
@@ -918,7 +822,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     var v = verts[i];
                     if (v.IsRemoved || v.IsBoundary) continue;
-               
+
                     // circulate vertex in reverse for consistent face windings
                     fv.Clear();
                     var he = v.FirstOut;
@@ -939,7 +843,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     var f = faces[i];
                     if (f.IsRemoved) continue;
-              
+
                     // collect indices of face halfedges
                     fv.Clear();
                     foreach (var he in f.Halfedges)
@@ -1111,7 +1015,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     var v = verts[i];
                     if (v.IsRemoved || v.IsBoundary) continue;
-       
+
                     // circulate vertex in reverse for consistent face windings
                     fv.Clear();
                     var he = v.FirstOut;
@@ -1198,7 +1102,7 @@ namespace SpatialSlur.SlurMesh
                 Vec3d p3 = (f1 == null) ? new Vec3d() : Vec3d.Lerp(cen, faceCenters[f1.Index], scaleFactor);
 
                 int j = i << 2;
-       
+
                 // add verts
                 if (he0.IsBoundary)
                 {

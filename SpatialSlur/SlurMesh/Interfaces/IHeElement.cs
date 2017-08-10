@@ -4,7 +4,6 @@
  * Notes
  */
 
-
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>

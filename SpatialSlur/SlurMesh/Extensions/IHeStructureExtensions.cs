@@ -2330,6 +2330,37 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        public static void GetEdgeNormals<V, E, F>(this IHeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<E, Vec3d> setNormal, bool parallel = false)
+            where V : HeElement, IHeVertex<V, E, F>
+            where E : HeElement, IHalfedge<V, E, F>
+            where F : HeElement, IHeFace<V, E, F>
+        {
+            var edges = mesh.Edges;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var he = edges[i];
+                    if (he.IsRemoved) continue;
+
+                    setNormal(he, he.GetEdgeNormal(getPosition));
+                }
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, edges.Count), body);
+            else
+                body(Tuple.Create(0, edges.Count));
+        }
+
         #endregion
 
 

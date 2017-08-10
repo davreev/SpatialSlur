@@ -23,6 +23,18 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        E Next { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        E Previous { get; }
+
+
+        /// <summary>
         /// Returns the first halfedge in the pair.
         /// </summary>
         E Older { get; }
@@ -66,6 +78,30 @@ namespace SpatialSlur.SlurMesh
         /// Returns the next halfedge at the start vertex of this halfedge.
         /// </summary>
         E NextAtStart { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsAtDegree1 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsAtDegree2 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsAtDegree3 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsAtDegree4 { get; }
 
 
         /// <summary>
@@ -157,6 +193,30 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         bool IsFirstInFace { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsInDegree1 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsInDegree2 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsInDegree3 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsInDegree4 { get; }
 
 
         /// <summary>

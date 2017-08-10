@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class Halfedge<TV, TE, TF> : HeElement, IHalfedge<TV, TE, TF>
+    public abstract class Halfedge<TV, TE, TF> : HeElement, IHalfedge<TV, TE, TF>
         where TV : HeVertex<TV, TE, TF>
         where TE : Halfedge<TV, TE, TF>
         where TF : HeFace<TV, TE, TF>
@@ -151,7 +151,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if this halfedge starts at a degree 1 vertex.
-        /// Note this should always return false in client side code.
+        /// Note this is an invalid state.
         /// </summary>
         internal bool IsAtDegree1
         {
@@ -161,6 +161,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if this halfedge starts at a degree 2 vertex.
+        /// Note this is an invalid state if the halfedge has a face.
         /// </summary>
         public bool IsAtDegree2
         {
@@ -178,8 +179,20 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if this halfedge is in a one-sided face/hole.
-        /// Note this should always return false in client side code.
+        /// Returns true if this halfedge starts at a degree 4 vertex.
+        /// </summary>
+        public bool IsAtDegree4
+        {
+            get
+            {
+                var he = NextAtStart.NextAtStart;
+                return this != he && this == he.NextAtStart.NextAtStart;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns true if this halfedge is in a 2 sided face or hole.
         /// </summary>
         internal bool IsInDegree1
         {
@@ -188,8 +201,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if this halfedge is in a two-sided face/hole.
-        /// Note this should always return false in client side code for halfedges with faces.
+        /// Returns true if this halfedge is in a 2 sided face or hole.
         /// </summary>
         public bool IsInDegree2
         {
@@ -198,11 +210,24 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if this halfedge is in a three-sided face/hole.
+        /// Returns true if this halfedge is in a 3 sided face or hole.
         /// </summary>
         public bool IsInDegree3
         {
             get { return this == _next._next._next; }
+        }
+
+
+        /// <summary>
+        /// Returns true if this halfedge is in a 4-sided face or hole.
+        /// </summary>
+        public bool IsInDegree4
+        {
+            get
+            {
+                var he = _next._next;
+                return this != he && this == he._next._next;
+            }
         }
 
 
@@ -507,5 +532,45 @@ namespace SpatialSlur.SlurMesh
 
             PrevInFace.MakeConsecutive(he);
         }
+
+
+        #region Explicit interface implementations
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IHalfedge<TV, TE>.IsAtDegree1
+        {
+            get { return IsAtDegree1; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IHalfedge<TV, TE, TF>.IsInDegree1
+        {
+            get { return IsInDegree1; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        TE IHalfedge<TE>.Next
+        {
+            get { return _next; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        TE IHalfedge<TE>.Previous
+        {
+            get { return _prev; }
+        }
+
+        #endregion
     }
 }

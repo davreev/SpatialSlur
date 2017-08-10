@@ -12,11 +12,11 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class Halfedge<TV, TE> : HeElement, IHalfedge<TV, TE>
+    public abstract class Halfedge<TV, TE> : HeElement, IHalfedge<TV, TE>
         where TV : HeVertex<TV, TE>
         where TE : Halfedge<TV, TE>
     {
-        private TE _self; // cached downcasted ref of this instance (TODO test impact)
+        private TE _self; // cached downcasted ref of this instance (TODO test performance impact)
         private TE _prev;
         private TE _next;
         private TE _twin;
@@ -136,6 +136,19 @@ namespace SpatialSlur.SlurMesh
             get
             {
                 var he = _next;
+                return this != he && this == he._next._next;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns true if this halfedge starts at a degree 4 vertex.
+        /// </summary>
+        public bool IsAtDegree4
+        {
+            get
+            {
+                var he = _next._next;
                 return this != he && this == he._next._next;
             }
         }
@@ -285,5 +298,27 @@ namespace SpatialSlur.SlurMesh
             if (IsFirstAtStart) _start.FirstOut = NextAtStart;
             PrevAtStart.MakeConsecutive(NextAtStart);
         }
+
+
+        #region Explicit interface implementation
+
+        /// <summary>
+        /// 
+        /// </summary>
+        TE IHalfedge<TE>.Next
+        {
+            get { return _next; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        TE IHalfedge<TE>.Previous
+        {
+            get { return _prev; }
+        }
+
+        #endregion
     }
 }

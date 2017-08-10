@@ -13,11 +13,11 @@ using SpatialSlur.SlurData;
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
-    /// Provides an alternate view of the halfedge list which allows access to the first halfedge in each pair.
+    /// Provides an alternate view of the halfedge list which exposes the first halfedge in each pair.
     /// </summary>
     /// <typeparam name="E"></typeparam>
     [Serializable]
-    public class EdgeList<E> : IHeElementList<E>
+    public class HeEdgeList<E> : IHeElementList<E>
         where E : HeElement, IHalfedge<E>
     {
         private HalfedgeList<E> _hedges;
@@ -27,12 +27,13 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="halfedges"></param>
-        internal EdgeList(HalfedgeList<E> halfedges)
+        internal HeEdgeList(HalfedgeList<E> halfedges)
         {
             _hedges = halfedges;
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -42,8 +43,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns the first halfedge in the pair.
+        /// Returns the first halfedge of the edge at the given index.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -64,8 +66,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns the number of edges that have been flagged for removal.
+        /// 
         /// </summary>
         /// <returns></returns>
         public int CountRemoved()
@@ -79,8 +82,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Removes all attributes corresponding with flagged halfedge pairs.
+        /// 
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
@@ -91,8 +95,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Moves attributes that correspond with unflagged halfedge pairs to the front of the given list.
+        /// 
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
@@ -110,6 +115,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -121,8 +127,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns unique elements from the given collection (no duplicates).
+        /// 
         /// </summary>
         /// <param name="hedges"></param>
         /// <returns></returns>
@@ -153,8 +160,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns unique elements that appear in either of the two given collections.
+        /// 
         /// </summary>
         /// <param name="hedgesA"></param>
         /// <param name="hedgesB"></param>
@@ -165,8 +173,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns elements from the first collection which are not present in the second.
+        /// 
         /// </summary>
         /// <param name="hedgesA"></param>
         /// <param name="hedgesB"></param>
@@ -191,8 +200,8 @@ namespace SpatialSlur.SlurMesh
             int currTag = _hedges.NextTag;
 
             // tag elements in A
-            foreach (var heB in hedgesB)
-                heB.Older.Tag = currTag;
+            foreach (var heB in hedgesB.Select(he => he.Older))
+                heB.Tag = currTag;
 
             // return untagged elements in B
             foreach (var heA in hedgesA.Select(he => he.Older))
@@ -200,8 +209,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
-        /// Returns elements which are present in both of the given collections.
+        /// 
         /// </summary>
         /// <param name="hedgesA"></param>
         /// <param name="hedgesB"></param>
@@ -226,8 +236,8 @@ namespace SpatialSlur.SlurMesh
             int currTag = _hedges.NextTag;
 
             // tag elements in A
-            foreach (var heA in hedgesA)
-                heA.Older.Tag = currTag;
+            foreach (var heA in hedgesA.Select(he => he.Older))
+                heA.Tag = currTag;
 
             // return tagged elements in B
             foreach (var heB in hedgesB.Select(he => he.Older))

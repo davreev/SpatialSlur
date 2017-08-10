@@ -37,6 +37,30 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        bool IsDegree1 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsDegree2 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsDegree3 { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsDegree4 { get; }
+
+
+        /// <summary>
         /// Forward circulates through all vertices connected to this one.
         /// </summary>
         IEnumerable<V> ConnectedVertices { get; }

@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeFace<TV, TE, TF> : HeElement, IHeFace<TV, TE, TF>
+    public abstract class HeFace<TV, TE, TF> : HeElement, IHeFace<TV, TE, TF>
         where TV : HeVertex<TV, TE, TF>
         where TE : Halfedge<TV, TE, TF>
         where TF : HeFace<TV, TE, TF>
@@ -43,7 +43,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if this face has 1 edge.
-        /// Note this is an invalid state and should always return false in client side code.
+        /// Note this is an invalid state.
         /// </summary>
         internal bool IsDegree1
         {
@@ -53,7 +53,6 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Returns true if this face has 2 edges.
-        /// Note this is an invalid state and should always return false in client side code.
         /// </summary>
         internal bool IsDegree2
         {
@@ -71,13 +70,13 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if this face has 3 edges. Same as IsDegree3.
+        /// Returns true if this face has 4 edges.
         /// </summary>
-        public bool IsTriangle
+        public bool IsDegree4
         {
-            get { return _first.IsInDegree3; }
+            get { return _first.IsInDegree4; }
         }
-        
+
 
         /// <inheritdoc/>
         /// <summary>
@@ -267,5 +266,27 @@ namespace SpatialSlur.SlurMesh
 
             return count;
         }
+
+
+        #region Explicit interface implementations
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IHeFace<TV,TE,TF>.IsDegree1
+        {
+            get { return IsDegree1; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IHeFace<TV, TE, TF>.IsDegree2
+        {
+            get { return IsDegree2; }
+        }
+
+        #endregion
     }
 }
