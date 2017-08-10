@@ -1,5 +1,5 @@
 # SpatialSlur
-SpatialSlur is an open source library of geometric data structures and algorithms intended to facilitate the exploration and development of novel computational design models. It is written in C# and compiled against .NET 4.5.
+SpatialSlur is an open source library of geometric data structures and algorithms intended to facilitate the development of novel computational design methods. It is written in C# and compiled against .NET 4.5.
 
 <p align="center">
   <img src="https://github.com/daveReeves/SpatialSlur/blob/master/Examples/Gallery/170720_Relief_02.gif" alt="Banner">
@@ -8,7 +8,7 @@ SpatialSlur is an open source library of geometric data structures and algorithm
 ## Overview
 This repository consists of a standalone core library along with a number of extension libraries for interfacing with .NET APIs from 3d modeling applications such as Rhino and Unity.
 
-Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](http://www.spatialslur.com/documentation/0_2_2/index.html) or dive into source files and poke around. If you have specific questions, comments, or suggestions, feel free to <a href="mailto:darthur.reeves@gmail.com">get in touch</a>.
+Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](http://www.spatialslur.com/documentation/0_2_2/index.html) or dive into the source files and poke around. If you have specific questions, comments, or suggestions, feel free to [get in touch](http://spatialslur.com/contact/).
 
 + __SlurCore__ contains base geometric data types and utility methods as well as extension methods for .NET Framework types.
 
