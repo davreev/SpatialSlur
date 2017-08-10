@@ -16,8 +16,6 @@ using SpatialSlur.SlurMesh;
 
 namespace SpatialSlur.SlurRhino
 {
-    using M = HeMesh<HeMesh3d.V, HeMesh3d.E, HeMesh3d.F>;
-
     /// <summary>
     /// 
     /// </summary>
@@ -147,6 +145,24 @@ namespace SpatialSlur.SlurRhino
         #endregion
 
 
+        #region IEnumerable<Line>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="tolerance"></param>
+        /// <param name="allowMultiEdges"></param>
+        /// <param name="allowLoops"></param>
+        /// <returns></returns>
+        public static HeGraph3d ToHeGraph(this IEnumerable<Line> lines, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
+        {
+            return HeGraph3d.Factory.CreateFromLineSegments(lines, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
+        }
+
+        #endregion
+
+
         #region IEnumerable<Polyline>
 
         /// <summary>
@@ -155,9 +171,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="polylines"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static M ToHeMesh(this IEnumerable<Polyline> polylines, double tolerance = 1.0e-8)
+        public static HeMesh3d ToHeMesh(this IEnumerable<Polyline> polylines, double tolerance = 1.0e-8)
         {
-            return HeMesh3d.Factory.CreateFromPolylines(polylines, (v, p) => v.Position = p, tolerance);
+            return HeMesh3d.Factory.CreateFromPolylines(polylines, tolerance);
         }
 
         #endregion

@@ -18,7 +18,7 @@ using Rhino.Geometry;
 namespace SpatialSlur.SlurRhino
 {
     /// <summary>
-    /// 
+    /// Extension methods for classes in the SpatialSlur.SlurField namespace
     /// </summary>
     public static class SlurFieldExtensions
     {
@@ -103,10 +103,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
-        /// <param name="mapper"></param>
+        /// <param name="getColor"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static PointCloud ToPointCloud<T>(this GridField2d<T> field, Func<T, Color> mapper, bool parallel = false)
+        public static PointCloud ToPointCloud<T>(this GridField2d<T> field, Func<T, Color> getColor, bool parallel = false)
             where T : struct
         {
             var cloud = new PointCloud(field.Coordinates.Select(p => p.ToPoint3d()));
@@ -115,7 +115,7 @@ namespace SpatialSlur.SlurRhino
             Action<Tuple<int, int>> body = range =>
              {
                  for (int i = range.Item1; i < range.Item2; i++)
-                     cloud[i].Color = mapper(vals[i]);
+                     cloud[i].Color = getColor(vals[i]);
              };
 
             if (parallel)
@@ -132,9 +132,24 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
-        /// <param name="mapper"></param>
+        /// <param name="getColor"></param>
         /// <returns></returns>
-        public static Mesh ToMesh<T>(this GridField2d<T> field, Func<T, Color> mapper)
+        public static Mesh ToMesh<T>(this GridField2d<T> field, Func<T, Color> getColor)
+            where T : struct
+        {
+            return ToMesh(field, getColor, t => 0.0);
+        }
+
+
+        /// <summary>
+        /// Converts the field to a colored heightfield mesh.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="getColor"></param>
+        /// <param name="getHeight"></param>
+        /// <returns></returns>
+        public static Mesh ToMesh<T>(this GridField2d<T> field, Func<T, Color> getColor, Func<T, double> getHeight)
             where T : struct
         {
             Mesh mesh = new Mesh();
@@ -145,13 +160,15 @@ namespace SpatialSlur.SlurRhino
             var values = field.Values;
             int index = 0;
 
-            for (int i = 0; i < field.CountY; i++)
+            for (int j = 0; j < field.CountY; j++)
             {
-                for (int j = 0; j < field.CountX; j++)
+                for (int i = 0; i < field.CountX; i++)
                 {
-                    Vec2d p = field.CoordinateAt(j, i);
-                    verts.Add(p.X, p.Y, 0.0);
-                    colors.Add(mapper(values[index++]));
+                    var t = values[index++];
+
+                    Vec2d p = field.CoordinateAt(i, j);
+                    verts.Add(p.X, p.Y, getHeight(t));
+                    colors.Add(getColor(t));
                 }
             }
 
@@ -171,14 +188,15 @@ namespace SpatialSlur.SlurRhino
         }
 
 
+
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
-        /// <param name="mapper"></param>
+        /// <param name="getColor"></param>
         /// <returns></returns>
-        public static Mesh ToPolySoup<T>(this GridField2d<T> field, Func<T, Color> mapper)
+        public static Mesh ToPolySoup<T>(this GridField2d<T> field, Func<T, Color> getColor)
             where T : struct
         {
             Mesh mesh = new Mesh();
@@ -203,7 +221,7 @@ namespace SpatialSlur.SlurRhino
                     verts.Add(p.X - dx, p.Y + dy, 0.0);
                     verts.Add(p.X + dx, p.Y + dy, 0.0);
 
-                    var c = mapper(values[index++]);
+                    var c = getColor(values[index++]);
                     for (int k = 0; k < 4; k++) colors.Add(c);
                 }
             }
@@ -221,10 +239,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
-        /// <param name="mapper"></param>
+        /// <param name="getColor"></param>
         /// <param name="selection"></param>
         /// <returns></returns>
-        static Mesh MeshSelection<T>(this GridField2d<T> field, Func<T, Color> mapper, IEnumerable<int> selection)
+        static Mesh MeshSelection<T>(this GridField2d<T> field, Func<T, Color> getColor, IEnumerable<int> selection)
             where T : struct
         {
             var mesh = new Mesh();
@@ -247,7 +265,7 @@ namespace SpatialSlur.SlurRhino
                 verts.Add(p.X - dx, p.Y + dy, 0.0);
                 verts.Add(p.X + dx, p.Y + dy, 0.0);
 
-                var c = mapper(values[index]);
+                var c = getColor(values[index]);
                 for (int k = 0; k < 4; k++) colors.Add(c);
             }
 
@@ -268,10 +286,10 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
-        /// <param name="mapper"></param>
+        /// <param name="getColor"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
-        public static PointCloud ToPointCloud<T>(this GridField3d<T> field, Func<T, Color> mapper, bool parallel = false)
+        public static PointCloud ToPointCloud<T>(this GridField3d<T> field, Func<T, Color> getColor, bool parallel = false)
             where T : struct
         {
             var cloud = new PointCloud(field.Coordinates.Select(p => p.ToPoint3d()));
@@ -280,7 +298,7 @@ namespace SpatialSlur.SlurRhino
             Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    cloud[i].Color = mapper(vals[i]);
+                    cloud[i].Color = getColor(vals[i]);
             };
 
             if (parallel)

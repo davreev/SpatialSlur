@@ -15,8 +15,6 @@ using SpatialSlur.SlurMesh;
 
 namespace SpatialSlur.SlurRhino
 {
-    using G = HeGraph<HeGraph3d.V, HeGraph3d.E>;
-
     /// <summary>
     /// 
     /// </summary>
@@ -88,24 +86,6 @@ namespace SpatialSlur.SlurRhino
             }
 
             return result;
-        }
-
-        #endregion
-
-
-        #region IReadOnlyList<Line>
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lines"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="allowMultiEdges"></param>
-        /// <param name="allowLoops"></param>
-        /// <returns></returns>
-        public static G ToHeGraph(this IReadOnlyList<Line> lines, double tolerance = 1.0e-8, bool allowMultiEdges = false, bool allowLoops = false)
-        {
-            return HeGraph3d.Factory.CreateFromLineSegments(lines, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
         }
 
         #endregion

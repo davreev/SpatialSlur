@@ -39,8 +39,7 @@
     <DocumentationFile>bin\Release\SlurRhino.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RhinoCommon, Version=5.1.30000.16, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="RhinoCommon">
       <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -58,11 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\GeometryExtensions.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\IReadOnlyListExtensions.cs" />
-    <Compile Include="Extensions\MeshExtensions.cs" />
-    <Compile Include="Extensions\PlaneExtensions.cs" />
-    <Compile Include="Extensions\Point3dExtensions.cs" />
     <Compile Include="MeshUtil.cs" />
     <Compile Include="Sketch\LoopGrowth\LoopGrower.cs" />
     <Compile Include="Sketch\LoopGrowth\LoopGrowerSettings.cs" />
@@ -76,8 +73,8 @@
     <Compile Include="Sketch\Remesher\Features\MeshFeature.cs" />
     <Compile Include="Sketch\Remesher\Features\PlaneFeature.cs" />
     <Compile Include="Sketch\Remesher\Features\PointFeature.cs" />
-    <Compile Include="Sketch\LoopGrowth\HeMeshLG.cs" />
-    <Compile Include="Sketch\Remesher\HeMeshDM.cs" />
+    <Compile Include="Sketch\LoopGrowth\HeMeshSim.cs" />
+    <Compile Include="Sketch\Remesher\HeMeshSim.cs" />
     <Compile Include="SlurDynamics\Constraints\OnMeshNormal.cs" />
     <Compile Include="SlurDynamics\Constraints\OnMesh.cs" />
     <Compile Include="SlurDynamics\Constraints\OnCurve.cs" />

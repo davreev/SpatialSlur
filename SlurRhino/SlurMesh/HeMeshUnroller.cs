@@ -30,30 +30,13 @@ namespace SpatialSlur.SlurRhino
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="first"></param>
-        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first)
-         where V : HeVertex<V, E, F>, IVertex3d
-         where E : Halfedge<V, E, F>
-         where F : HeFace<V, E, F>
-        {
-            Unroll(mesh, first, v => v.Position, (v, p) => v.Position = p, delegate { });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="V"></typeparam>
-        /// <typeparam name="E"></typeparam>
-        /// <typeparam name="F"></typeparam>
-        /// <param name="mesh"></param>
-        /// <param name="first"></param>
-        /// <param name="setHandle"></param>
-        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first, Action<E, int> setHandle)
+        public static void Unroll<V, E, F>(HeMeshBase<V, E, F> mesh, F first)
             where V : HeVertex<V, E, F>, IVertex3d
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            Unroll(mesh, first, v => v.Position, (v, p) => v.Position = p, setHandle);
+            var prop = Property.Create<V, Vec3d>(v => v.Position, (v, p) => v.Position = p);
+            Unroll(mesh, first, prop, delegate { });
         }
 
 
@@ -65,14 +48,14 @@ namespace SpatialSlur.SlurRhino
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="first"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="setPosition"></param>
-        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition)
-            where V : HeVertex<V, E, F>
+        /// <param name="setIndex"></param>
+        public static void Unroll<V, E, F>(HeMeshBase<V, E, F> mesh, F first, Action<E, int> setIndex)
+            where V : HeVertex<V, E, F>, IVertex3d
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            Unroll(mesh, first, getPosition, setPosition, delegate { });
+            var prop = Property.Create<V, Vec3d>(v => v.Position, (v, p) => v.Position = p);
+            Unroll(mesh, first, prop, setIndex);
         }
 
 
@@ -84,16 +67,33 @@ namespace SpatialSlur.SlurRhino
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="first"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="setPosition"></param>
-        /// <param name="setHandle"></param>
-        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition, Action<E, int> setHandle)
+        /// <param name="position"></param>
+        public static void Unroll<V, E, F>(HeMeshBase<V, E, F> mesh, F first, Property<V, Vec3d> position)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            var unroller = new HeMeshUnroller<V, E, F>(mesh, first, getPosition, setPosition, setHandle);
-            unroller.Unroll();
+            Unroll(mesh, first, position, delegate { });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="first"></param>
+        /// <param name="position"></param>
+        /// <param name="setIndex"></param>
+        public static void Unroll<V, E, F>(HeMeshBase<V, E, F> mesh, F first, Property<V, Vec3d> position, Action<E, int> setIndex)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            var unroller = new HeMeshUnroller<V, E, F>(mesh, first, position);
+            unroller.Unroll(setIndex);
         }
     }
 
@@ -109,17 +109,17 @@ namespace SpatialSlur.SlurRhino
         where E : Halfedge<V, E, F>
         where F : HeFace<V, E, F>
     {
-        private HeMesh<V, E, F> _mesh;
+        private HeMeshBase<V, E, F> _mesh;
         private F _first;
-
-        private Func<V, Vec3d> _getPosition;
-        private Action<V, Vec3d> _setPosition;
+        
+        private Func<V, Vec3d> _getPos;
+        private Action<V, Vec3d> _setPos;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public HeMeshUnroller(HeMesh<V, E, F> mesh, F first, Func<V, Vec3d> getPosition, Action<V, Vec3d> setPosition, Action<E, int> setHandle)
+        internal HeMeshUnroller(HeMeshBase<V, E, F> mesh, F first, Property<V, Vec3d> position)
         {
             mesh.Faces.ContainsCheck(first);
             first.RemovedCheck();
@@ -127,52 +127,18 @@ namespace SpatialSlur.SlurRhino
             _mesh = mesh;
             _first = first;
 
-            _getPosition = getPosition;
-            _setPosition = setPosition;
-      
-            DetachFaceCycles(setHandle);
+            _getPos = position.Get;
+            _setPos = position.Set;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public void DetachFaceCycles(Action<E, int> setHandle)
+        public void Unroll(Action<E, int> setIndex)
         {
-            var currTag = _mesh.Halfedges.NextTag;
+            DetachFaceCycles(setIndex);
 
-            // tag traversed edges during BFS
-            foreach (var he in _mesh.GetFacesBreadthFirst(_first.Yield()))
-                he.Older.Tag = currTag;
-
-            var edges = _mesh.Edges;
-            var ne = edges.Count;
-
-            // detach all untagged edges
-            for (int i = 0; i < ne; i++)
-            {
-                var he0 = edges[i];
-
-                if (he0.IsRemoved || he0.IsBoundary || he0.Tag == currTag)
-                {
-                    setHandle(he0, -1); // no child edge
-                    continue;
-                }
-
-                var he1 = _mesh.DetachEdgeImpl(he0);
-                setHandle(he0, he1);
-
-                _setPosition(he1.Start, _getPosition(he0.Start));
-                _setPosition(he1.End, _getPosition(he0.End));
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Unroll()
-        {
             var vertTags = new int[_mesh.Vertices.Count];
             int currTag = 0;
 
@@ -193,7 +159,7 @@ namespace SpatialSlur.SlurRhino
                 var xform = GetHalfedgeTransform(he0);
 
                 foreach (var v in DepthFirstFrom(he0, vertStack, vertTags, ++currTag))
-                    _setPosition(v, xform.Apply(_getPosition(v), true));
+                    _setPos(v, xform.Apply(_getPos(v), true));
 
                 // Push other interior edges
                 foreach (var he1 in he0.CirculateFace.Skip(1))
@@ -201,6 +167,40 @@ namespace SpatialSlur.SlurRhino
                     if (!he1.IsBoundary)
                         hedgeStack.Push(he1.Twin);
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void DetachFaceCycles(Action<E, int> setIndex)
+        {
+            var currTag = _mesh.Halfedges.NextTag;
+
+            // tag traversed edges during BFS
+            foreach (var he in _mesh.GetFacesBreadthFirst(_first.Yield()))
+                he.Older.Tag = currTag;
+
+            var edges = _mesh.Edges;
+            var ne = edges.Count;
+
+            // detach all untagged edges
+            for (int i = 0; i < ne; i++)
+            {
+                var he0 = edges[i];
+
+                if (he0.IsRemoved || he0.IsBoundary || he0.Tag == currTag)
+                {
+                    setIndex(he0, -1); // no child edge
+                    continue;
+                }
+
+                var he1 = _mesh.DetachEdgeImpl(he0);
+                setIndex(he0, he1);
+
+                _setPos(he1.Start, _getPos(he0.Start));
+                _setPos(he1.End, _getPos(he0.End));
             }
         }
 
@@ -259,11 +259,11 @@ namespace SpatialSlur.SlurRhino
             var he0 = hedge;
             var he1 = he0.Twin;
 
-            Vec3d p0 = _getPosition(he0.Start);
-            Vec3d p1 = _getPosition(he1.Start);
+            Vec3d p0 = _getPos(he0.Start);
+            Vec3d p1 = _getPos(he1.Start);
 
-            Vec3d p2 = (_getPosition(he0.PrevInFace.Start) + _getPosition(he0.NextInFace.End)) * 0.5;
-            Vec3d p3 = (_getPosition(he1.PrevInFace.Start) + _getPosition(he1.NextInFace.End)) * 0.5;
+            Vec3d p2 = (_getPos(he0.PrevInFace.Start) + _getPos(he0.NextInFace.End)) * 0.5;
+            Vec3d p3 = (_getPos(he1.PrevInFace.Start) + _getPos(he1.NextInFace.End)) * 0.5;
 
             Vec3d x = p1 - p0;
             Plane b0 = new Plane(p0.ToPoint3d(), x.ToVector3d(), (p2 - p0).ToVector3d());
