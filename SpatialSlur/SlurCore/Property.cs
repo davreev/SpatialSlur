@@ -33,7 +33,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// Compound delegate for getting/setting a value V via an instance of T.
     /// </summary>
-    public class Property<T, V>
+    public struct Property<T, V>
     {
         /// <summary></summary>
         public readonly Func<T, V> Get;

@@ -32,6 +32,18 @@ namespace SpatialSlur.SlurData
         /// <param name="points"></param>
         /// <param name="clusterCount"></param>
         /// <param name="seed"></param>
+        public KMeans(IEnumerable<double[]> points, int clusterCount, int seed = 1)
+            : this(points.ToArray(), clusterCount, seed)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="clusterCount"></param>
+        /// <param name="seed"></param>
         public KMeans(double[][] points, int clusterCount, int seed = 1)
         {
             _points = points;

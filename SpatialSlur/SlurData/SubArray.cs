@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 using SpatialSlur.SlurCore;
 
+using static SpatialSlur.SlurCore.CoreUtil;
+
 /*
 Notes
 */
@@ -41,14 +43,22 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Note that this does not perform an additional bounds check.
+        /// 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public T this[int index]
         {
-            get { return _source[index + _start]; }
-            set { _source[index + _start] = value; }
+            get
+            {
+                BoundsCheck(index, _count);
+                return _source[index + _start];
+            }
+            set
+            {
+                BoundsCheck(index, _count);
+                _source[index + _start] = value;
+            }
         }
 
 

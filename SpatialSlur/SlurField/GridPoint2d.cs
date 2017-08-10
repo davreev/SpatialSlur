@@ -7,7 +7,7 @@
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// 
+    /// Intermediate representation of a 2d grid query which stores the indices of the 4 nearest values along with weights used for interpolation.
     /// </summary>
     [Serializable]
     public class GridPoint2d

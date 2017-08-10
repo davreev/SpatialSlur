@@ -8,7 +8,7 @@ using System;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// 
+    /// Intermediate representation of a 3d grid query which stores the indices of the 8 nearest values along with weights used for interpolation.
     /// </summary>
     [Serializable]
     public class GridPoint3d

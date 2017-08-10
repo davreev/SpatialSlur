@@ -26,7 +26,7 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class SphereCollide : MultiParticleConstraint<H>
     {
-        private const double TargetLoadFactor = 3.0;
+        private const double _targetLoadFactor = 3.0;
 
         /// <summary>If set to true, collisions are calculated in parallel</summary>
         public bool Parallel;
@@ -214,14 +214,14 @@ namespace SpatialSlur.SlurDynamics
         {
             if (_grid == null)
             {
-                _grid = new HashGrid3d<H>((int)(particles.Count * TargetLoadFactor), Radius * RadiusToBinScale);
+                _grid = new HashGrid3d<H>((int)(particles.Count * _targetLoadFactor), Radius * RadiusToBinScale);
                 return;
             }
 
             _grid.BinScale = Radius * RadiusToBinScale;
 
-            int minCount = (int)(particles.Count * TargetLoadFactor * 0.5);
-            if (_grid.BinCount < minCount) _grid.Resize((int)(particles.Count * TargetLoadFactor));
+            int minCount = (int)(particles.Count * _targetLoadFactor * 0.5);
+            if (_grid.BinCount < minCount) _grid.Resize((int)(particles.Count * _targetLoadFactor));
         }
     }
 

@@ -364,17 +364,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapX(int i)
         {
-            switch (_wrapModeX)
-            {
-                case (WrapMode.Clamp):
-                    return Clamp(i, _nx);
-                case (WrapMode.Repeat):
-                    return Repeat(i, _nx);
-                case (WrapMode.MirrorRepeat):
-                    return MirrorRepeat(i, _nx);
-            }
-
-            throw new NotSupportedException();
+            return Wrap(i, _nx, _wrapModeX);
         }
 
 
@@ -385,17 +375,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapY(int j)
         {
-            switch (_wrapModeY)
-            {
-                case (WrapMode.Clamp):
-                    return Clamp(j, _ny);
-                case (WrapMode.Repeat):
-                    return Repeat(j, _ny);
-                case (WrapMode.MirrorRepeat):
-                    return MirrorRepeat(j, _ny);
-            }
-
-            throw new NotSupportedException();
+            return Wrap(j, _ny, _wrapModeY);
         }
 
 
@@ -406,17 +386,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapZ(int k)
         {
-            switch (_wrapModeZ)
-            {
-                case (WrapMode.Clamp):
-                    return Clamp(k, _nz);
-                case (WrapMode.Repeat):
-                    return Repeat(k, _nz);
-                case (WrapMode.MirrorRepeat):
-                    return MirrorRepeat(k, _nz);
-            }
-
-            throw new NotSupportedException();
+            return Wrap(k, _nz, _wrapModeZ);
         }
 
 
@@ -1354,111 +1324,6 @@ namespace SpatialSlur.SlurField
         IDiscreteField<T> IDiscreteField<T>.Duplicate()
         {
             return DuplicateBase();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="item"></param>
-        void IList<T>.Insert(int index, T item)
-        {
-            throw new NotSupportedException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        void IList<T>.RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        int IList<T>.IndexOf(T item)
-        {
-            for (int i = 0; i < Count; i++)
-                if (item.Equals(_values[i])) return i;
-
-            return -1;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool ICollection<T>.IsReadOnly
-        {
-            get { return false; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool ICollection<T>.Contains(T item)
-        {
-            for (int i = 0; i < Count; i++)
-                if (item.Equals(_values[i])) return true;
-
-            return false;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item"></param>
-        void ICollection<T>.Add(T item)
-        {
-            throw new NotSupportedException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool ICollection<T>.Remove(T item)
-        {
-            throw new NotSupportedException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void ICollection<T>.Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="array"></param>
-        /// <param name="index"></param>
-        void ICollection<T>.CopyTo(T[] array, int index)
-        {
-            array.SetRange(_values, index, 0, Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
 
         #endregion

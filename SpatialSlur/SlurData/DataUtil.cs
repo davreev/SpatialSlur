@@ -32,7 +32,7 @@ namespace SpatialSlur.SlurData
         /// <param name="tolerance"></param>
         /// <param name="maxSteps"></param>
         /// <returns></returns>
-        public static bool ConsolidatePoints(IList<Vec2d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 100)
+        public static bool ConsolidatePoints(IList<Vec2d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 10)
         {
             var grid = new HashGrid3d<Vec2d>(points.Count << 1, radius * RadiusToBinScale);
 
@@ -59,11 +59,10 @@ namespace SpatialSlur.SlurData
                         .Where(p => p0.SquareDistanceTo(p) < radSqr)
                         .Mean();
 
+                    points[i] = p1;
+
                     if (p0.SquareDistanceTo(p1) > tolSqr)
-                    {
-                        points[i] = p1;
                         converged = false;
-                    }
                 }
 
                 grid.Clear();
@@ -82,7 +81,7 @@ namespace SpatialSlur.SlurData
         /// <param name="tolerance"></param>
         /// <param name="maxSteps"></param>
         /// <returns></returns>
-        public static bool ConsolidatePoints(IList<Vec3d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 100)
+        public static bool ConsolidatePoints(IList<Vec3d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 10)
         {
             var grid = new HashGrid3d<Vec3d>(points.Count << 1, radius * RadiusToBinScale);
 
@@ -109,11 +108,10 @@ namespace SpatialSlur.SlurData
                         .Where(p => p0.SquareDistanceTo(p) < radSqr)
                         .Mean();
 
+                    points[i] = p1;
+
                     if (p0.SquareDistanceTo(p1) > tolSqr)
-                    {
-                        points[i] = p1;
                         converged = false;
-                    }
                 }
 
                 grid.Clear();

@@ -34,7 +34,7 @@ namespace SpatialSlur.SlurField
             int nz = bitmaps.Count;
 
             var result = new GridScalarField3d(domain, nx, ny, nz);
-            FieldIO.ReadFromImageStack(result, bitmaps, mapper);
+            FieldIO.ReadFromImageStack(bitmaps, result, mapper);
 
             return result;
         }
@@ -113,7 +113,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        protected override GridField3d<double> DuplicateBase()
+        protected sealed override GridField3d<double> DuplicateBase()
         {
             return Duplicate();
         }
@@ -125,7 +125,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        protected override double ValueAtLinear(Vec3d point)
+        protected sealed override double ValueAtLinear(Vec3d point)
         {
             (double u, double v, double w) = Fract(point, out int i0, out int j0, out int k0);
 
@@ -157,7 +157,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        protected override double ValueAtLinearUnchecked(Vec3d point)
+        protected sealed override double ValueAtLinearUnchecked(Vec3d point)
         {
             (double u, double v, double w) = Fract(point, out int i0, out int j0, out int k0);
 
@@ -187,7 +187,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public override double ValueAt(GridPoint3d point)
+        public sealed override double ValueAt(GridPoint3d point)
         {
             return FieldUtil.ValueAt(Values, point.Corners, point.Weights);
         }

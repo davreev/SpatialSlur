@@ -110,10 +110,10 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="field"></param>
         /// <param name="bitmaps"></param>
+        /// <param name="field"></param>
         /// <param name="mapper"></param>
-        public static void ReadFromImageStack<T>(GridField3d<T> field, IEnumerable<Bitmap> bitmaps, Func<Color, T> mapper)
+        public static void ReadFromImageStack<T>(IEnumerable<Bitmap> bitmaps, GridField3d<T> field, Func<Color, T> mapper)
             where T : struct
         {
             int nxy = field.CountXY;
@@ -121,7 +121,7 @@ namespace SpatialSlur.SlurField
 
             Parallel.ForEach(bitmaps, bitmap =>
             {
-                ReadFromImage(field.Values, count * nxy, bitmap, mapper);
+                ReadFromImage(bitmap, field.Values, count * nxy, mapper);
             });
         }
 
@@ -134,10 +134,10 @@ namespace SpatialSlur.SlurField
         /// <param name="layer"></param>
         /// <param name="mapper"></param>
         /// <param name="bitmap"></param>
-        public static void ReadFromImage<T>(GridField3d<T> field, int layer, Bitmap bitmap, Func<Color, T> mapper)
+        public static void ReadFromImage<T>(Bitmap bitmap, GridField3d<T> field, int layer, Func<Color, T> mapper)
             where T : struct
         {
-            ReadFromImage(field.Values, layer * field.CountXY, bitmap, mapper);
+            ReadFromImage(bitmap, field.Values, layer * field.CountXY, mapper);
         }
 
 
@@ -148,10 +148,10 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="mapper"></param>
         /// <param name="bitmap"></param>
-        public static void ReadFromImage<T>(GridField2d<T> field, Bitmap bitmap, Func<Color, T> mapper)
+        public static void ReadFromImage<T>(Bitmap bitmap, GridField2d<T> field, Func<Color, T> mapper)
             where T : struct
         {
-            ReadFromImage(field.Values, 0, bitmap, mapper);
+            ReadFromImage(bitmap, field.Values, 0, mapper);
         }
 
 
@@ -187,7 +187,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static void ReadFromImage<T>(T[] values, int index, Bitmap bitmap, Func<Color, T> mapper)
+        private static void ReadFromImage<T>(Bitmap bitmap, T[] values, int index, Func<Color, T> mapper)
         {
             PixelFormat pf = bitmap.PixelFormat;
             int bpp = Image.GetPixelFormatSize(pf) >> 3; // bytes per pixel

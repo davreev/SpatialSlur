@@ -65,7 +65,7 @@ namespace SpatialSlur.SlurData
         public static KdTree<T> CreateBalanced(IEnumerable<double[]> points, IEnumerable<T> values)
         {
             // TODO compare performance of different implementations
-            var nodes = points.Zip(values, (p, v) => new KdNode(p, v)).ToArray();
+            var nodes = points.Zip(values, (p, v) => new Node(p, v)).ToArray();
             
             KdTree<T> result = new KdTree<T>(nodes[0].Point.Length);
             result._root = result.InsertBalanced(nodes, 0, nodes.Length - 1, 0);
@@ -82,27 +82,15 @@ namespace SpatialSlur.SlurData
         /// <param name="n1"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private static KdNode Min(KdNode n0, KdNode n1, int i)
+        private static Node Min(Node n0, Node n1, int i)
         {
             return (n1.Point[i] < n0.Point[i]) ? n1 : n0;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        private static int ReverseCompare2nd((T, double) a, (T, double) b)
-        {
-            return b.Item2.CompareTo(a.Item2);
         }
 
         #endregion
 
 
-        private KdNode _root;
+        private Node _root;
         private double _tolerance = 1.0e-8;
         private readonly int _k;
         private int _count;
@@ -182,9 +170,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        private KdNode Duplicate(KdNode other)
+        private Node Duplicate(Node other)
         {
-            var copy = new KdNode(other.Point, other.Value);
+            var copy = new Node(other.Point, other.Value);
 
             if (other.Left != null)
                 copy.Left = Duplicate(other.Left);
@@ -211,7 +199,7 @@ namespace SpatialSlur.SlurData
         /// <param name="node"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private int GetMaxDepth(KdNode node, int i)
+        private int GetMaxDepth(Node node, int i)
         {
             if (node == null) return i;
             return Math.Max(GetMaxDepth(node.Left, i + 1), GetMaxDepth(node.Right, i + 1));
@@ -223,8 +211,8 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int GetMinDepth()
         {
-            var q0 = new Queue<KdNode>();
-            var q1 = new Queue<KdNode>();
+            var q0 = new Queue<Node>();
+            var q1 = new Queue<Node>();
             int depth = 0;
 
             q0.Enqueue(_root);
@@ -280,7 +268,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public bool Contains(double[] point, out T value)
         {
-            KdNode n = Find(_root, point, 0);
+            Node n = Find(_root, point, 0);
 
             if (n == null)
             {
@@ -302,7 +290,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode Find(KdNode node, double[] point, int i)
+        private Node Find(Node node, double[] point, int i)
         {
             if (node == null) 
                 return null;
@@ -339,10 +327,10 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="value"></param>
         /// <param name="i"></param>
-        private KdNode Insert(KdNode node, double[] point, T value, int i)
+        private Node Insert(Node node, double[] point, T value, int i)
         {
             if (node == null)
-                return new KdNode(point, value);
+                return new Node(point, value);
    
             // wrap dimension
             if (i == _k) i = 0;
@@ -366,34 +354,35 @@ namespace SpatialSlur.SlurData
         /// <param name="to"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode InsertBalanced(IList<double[]> points, IList<T> values, int from, int to, int i)
+        private Node InsertBalanced(IList<double[]> points, IList<T> values, int from, int to, int i)
         {
             // stopping conditions
             if (from > to)
                 return null;
             else if (from == to)
-                return new KdNode(points[from], values[from]);
+                return new Node(points[from], values[from]);
 
             // wrap dimension
             if (i == _k) i = 0;
 
             // sort the median element
             int mid = ((to - from) >> 1) + from;
-            KdComparer comparer = new KdComparer(i, _tolerance);
-            double[] midPt = points.QuickSelect(values, mid, from, to, comparer.Compare);
+            var pt = points.QuickSelect(values, mid, from, to, (p0, p1) => p0[i].CompareTo(p1[i]));
 
-            // make sure there's no duplicate elements to the left of the median
+            // ensure no duplicate elements to the left of the median
+            double t = pt[i];
             int j = from;
-            while(j < mid)
+
+            while (j < mid)
             {
-                if (comparer.Compare(points[j], midPt) == 0)
+                if (points[j][i] == t)
                     points.Swap(j, --mid);
                 else
                     j++;
             }
 
             // create node and recall on left and right children
-            KdNode node = new KdNode(points[mid], values[mid]);
+            Node node = new Node(pt, values[mid]);
             node.Left = InsertBalanced(points, values, from, mid - 1, i + 1);
             node.Right = InsertBalanced(points, values, mid + 1, to, i + 1);
             return node;
@@ -409,34 +398,35 @@ namespace SpatialSlur.SlurData
         /// <param name="to"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode InsertBalanced(double[][] points, T[] values, int from, int to, int i)
+        private Node InsertBalanced(double[][] points, T[] values, int from, int to, int i)
         {
             // stopping conditions
             if (from > to)
                 return null;
             else if (from == to)
-                return new KdNode(points[from], values[from]);
+                return new Node(points[from], values[from]);
 
             // wrap dimension
             if (i == _k) i = 0;
-
+            
             // sort the median element
             int mid = ((to - from) >> 1) + from;
-            KdComparer comparer = new KdComparer(i, _tolerance);
-            double[] midPt = points.QuickSelect(values, mid, from, to, comparer.Compare);
+            var pt = points.QuickSelect(values, mid, from, to, (p0, p1) => p0[i].CompareTo(p1[i]));
 
-            // make sure there's no duplicate elements to the left of the median
+            // ensure no duplicate elements to the left of the median
+            double t = pt[i];
             int j = from;
+
             while (j < mid)
             {
-                if (comparer.Compare(points[j], midPt) == 0)
+                if (points[j][i] == t)
                     points.Swap(j, --mid);
                 else
                     j++;
             }
 
             // create node and recall on left and right children
-            KdNode node = new KdNode(points[mid], values[mid]);
+            Node node = new Node(pt, values[mid]);
             node.Left = InsertBalanced(points, values, from, mid - 1, i + 1);
             node.Right = InsertBalanced(points, values, mid + 1, to, i + 1);
             return node;
@@ -451,7 +441,7 @@ namespace SpatialSlur.SlurData
         /// <param name="to"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode InsertBalanced(KdNode[] nodes, int from, int to, int i)
+        private Node InsertBalanced(Node[] nodes, int from, int to, int i)
         {
             // stopping conditions
             if (from > to)
@@ -464,14 +454,15 @@ namespace SpatialSlur.SlurData
 
             // sort the median element
             int mid = ((to - from) >> 1) + from;
-            KdComparer comparer = new KdComparer(i, _tolerance);
-            KdNode node = nodes.QuickSelect(mid, from, to, comparer.Compare);
+            var node = nodes.QuickSelect(mid, from, to, (n0, n1) => n0.Point[i].CompareTo(n1.Point[i]));
 
-            // make sure there's no duplicate elements to the left of the median
+            // ensure no duplicate elements to the left of the median
+            var t = node.Point[i];
             int j = from;
+
             while (j < mid)
             {
-                if (comparer.Compare(nodes[j], node) == 0)
+                if (nodes[j].Point[i] == t)
                     nodes.Swap(j, --mid);
                 else
                     j++;
@@ -505,7 +496,7 @@ namespace SpatialSlur.SlurData
         /// <param name="point"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private KdNode Remove(KdNode node, double[] point, int i)
+        private Node Remove(Node node, double[] point, int i)
         {
             if (node == null)
                 return null;
@@ -518,14 +509,14 @@ namespace SpatialSlur.SlurData
                 // found the node to remove, find replacement if it has children
                 if (node.Right != null)
                 {
-                    KdNode min = FindMin(node.Right, i, i + 1); // search the right sub-tree for a replacement node (min in the current dimension)
+                    Node min = FindMin(node.Right, i, i + 1); // search the right sub-tree for a replacement node (min in the current dimension)
                     min.Right = Remove(node.Right, min.Point, i + 1); // remove the replacement node from right subtree
                     min.Left = node.Left;
                     node = min;
                 }
                 else if (node.Left != null)
                 {
-                    KdNode min = FindMin(node.Left, i, i + 1); // search the left sub-tree for a replacement node (min in the current dimension)
+                    Node min = FindMin(node.Left, i, i + 1); // search the left sub-tree for a replacement node (min in the current dimension)
                     min.Right = Remove(node.Left, min.Point, i + 1); // remove the replacement node from the left sub tree
                     min.Left = null;
                     node = min;
@@ -557,7 +548,7 @@ namespace SpatialSlur.SlurData
         /// <param name="node"></param>
         /// <param name="dim"></param>
         /// <param name="i"></param>
-        private KdNode FindMin(KdNode node, int dim, int i)
+        private Node FindMin(Node node, int dim, int i)
         {
             // wrap dimension
             if (i == _k) i = 0;
@@ -624,7 +615,7 @@ namespace SpatialSlur.SlurData
         /// <param name="callback"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private bool BoxSearchImpl(KdNode node, double[] point, double[] range, Func<T, bool> callback, int i)
+        private bool BoxSearchImpl(Node node, double[] point, double[] range, Func<T, bool> callback, int i)
         {
             if (node == null) return true;
 
@@ -698,7 +689,7 @@ namespace SpatialSlur.SlurData
         /// <param name="callback"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private bool RangeSearchL2Impl(KdNode node, double[] point, double range, Func<T,bool> callback, int i)
+        private bool RangeSearchL2Impl(Node node, double[] point, double range, Func<T,bool> callback, int i)
         {
             if (node == null) return true;
 
@@ -771,7 +762,7 @@ namespace SpatialSlur.SlurData
         /// <param name="callback"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private bool RangeSearchL1Impl(KdNode node, double[] point, double range, Func<T, bool> callback, int i)
+        private bool RangeSearchL1Impl(Node node, double[] point, double range, Func<T, bool> callback, int i)
         {
             if (node == null) return true;
 
@@ -845,7 +836,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="nearest"></param>
         /// <param name="distance"></param>
-        private void NearestL2(KdNode node, double[] point, int i, ref T nearest, ref double distance)
+        private void NearestL2(Node node, double[] point, int i, ref T nearest, ref double distance)
         {
             if (node == null) return;
 
@@ -919,7 +910,7 @@ namespace SpatialSlur.SlurData
         /// <param name="i"></param>
         /// <param name="nearest"></param>
         /// <param name="distance"></param>
-        private void NearestL1(KdNode node, double[] point, int i, ref T nearest, ref double distance)
+        private void NearestL1(Node node, double[] point, int i, ref T nearest, ref double distance)
         {
             if (node == null) return;
 
@@ -964,9 +955,8 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public PriorityQueue<(T, double)> KNearestL2(double[] point, int k)
         {
-            var result = new PriorityQueue<(T, double)>(ReverseCompare2nd, k);
+            var result = new PriorityQueue<(T, double)>((t0, t1) => t1.Item2.CompareTo(t0.Item2), k);
             KNearestL2(_root, point, k, 0, result);
-
             return result;
         }
 
@@ -979,7 +969,7 @@ namespace SpatialSlur.SlurData
         /// <param name="k"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void KNearestL2(KdNode node, double[] point, int k, int i, PriorityQueue<(T, double)> result)
+        private void KNearestL2(Node node, double[] point, int k, int i, PriorityQueue<(T, double)> result)
         {
             if (node == null) return;
 
@@ -1024,7 +1014,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public PriorityQueue<(T, double)> KNearestL1(double[] point, int k)
         {
-            var result = new PriorityQueue<(T, double)>(ReverseCompare2nd, k);
+            var result = new PriorityQueue<(T, double)>((t0, t1) => t1.Item2.CompareTo(t0.Item2), k);
             KNearestL1(_root, point, k, 0, result);
             return result;
         }
@@ -1038,7 +1028,7 @@ namespace SpatialSlur.SlurData
         /// <param name="k"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void KNearestL1(KdNode node, double[] point, int k, int i, PriorityQueue<(T, double)> result)
+        private void KNearestL1(Node node, double[] point, int k, int i, PriorityQueue<(T, double)> result)
         {
             if (node == null) return;
 
@@ -1078,12 +1068,12 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        private class KdNode
+        private class Node
         {
             /// <summary></summary>
-            public KdNode Left;
+            public Node Left;
             /// <summary></summary>
-            public KdNode Right;
+            public Node Right;
             /// <summary></summary>
             public readonly double[] Point;
             /// <summary></summary>
@@ -1104,58 +1094,10 @@ namespace SpatialSlur.SlurData
             /// </summary>
             /// <param name="point"></param>
             /// <param name="value"></param>
-            public KdNode(double[] point, T value)
+            public Node(double[] point, T value)
             {
-                this.Point = point;
-                this.Value = value;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private class KdComparer
-        {
-            /// <summary></summary>
-            public int K;
-            /// <summary></summary>
-            public double Tolerance;
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="k"></param>
-            /// <param name="tolerance"></param>
-            public KdComparer(int k, double tolerance)
-            {
-                this.K = k;
-                this.Tolerance = tolerance;
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="p0"></param>
-            /// <param name="p1"></param>
-            /// <returns></returns>
-            public int Compare(double[] p0, double[] p1)
-            {
-                return p0[K].CompareTo(p1[K]);
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="n0"></param>
-            /// <param name="n1"></param>
-            /// <returns></returns>
-            public int Compare(KdNode n0, KdNode n1)
-            {
-                return n0.Point[K].CompareTo(n1.Point[K]);
+                Point = point;
+                Value = value;
             }
         }
     }

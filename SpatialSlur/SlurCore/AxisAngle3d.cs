@@ -12,10 +12,58 @@ namespace SpatialSlur.SlurCore
     [Serializable]
     public struct AxisAngle3d
     {
+        #region Static
+
+        /// <summary></summary>
+        public static readonly AxisAngle3d Zero = new AxisAngle3d(Vec3d.UnitZ, 0.0, 1.0, 0.0);
+
+        #endregion
+
+
         private Vec3d _axis;
         private double _angle;
         private double _cosAngle;
         private double _sinAngle;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <param name="angle"></param>
+        public AxisAngle3d(Vec3d axis, double angle)
+            : this()
+        {
+            Axis = axis;
+            Angle = angle;
+        }
+
+
+        /// <summary>
+        /// The axis and angle of rotation are taken from the direction and length of the given vector respectively.
+        /// </summary>
+        /// <param name="vector"></param>
+        public AxisAngle3d(Vec3d vector)
+            : this()
+        {
+            Set(vector);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <param name="angle"></param>
+        /// <param name="cosAngle"></param>
+        /// <param name="sinAngle"></param>
+        private AxisAngle3d(Vec3d axis, double angle, double cosAngle, double sinAngle)
+        {
+            _axis = axis;
+            _angle = angle;
+            _cosAngle = cosAngle;
+            _sinAngle = sinAngle;
+        }
 
 
         /// <summary>
@@ -71,35 +119,20 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns the inverse of this rotation
+        /// </summary>
+        public AxisAngle3d Inverse
+        {
+            get { return new AxisAngle3d(_axis, -_angle, _cosAngle, -_sinAngle); }
+        }
+
+
+        /// <summary>
         /// Returns false if the axis is undefined.
         /// </summary>
         public bool IsValid
         {
             get { return _axis.SquareLength > 0.0; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="axis"></param>
-        /// <param name="angle"></param>
-        public AxisAngle3d(Vec3d axis, double angle)
-            : this()
-        {
-            Axis = axis;
-            Angle = angle;
-        }
-
-
-        /// <summary>
-        /// The axis and angle of rotation are taken from the direction and length of the given vector respectively.
-        /// </summary>
-        /// <param name="vector"></param>
-        public AxisAngle3d(Vec3d vector)
-            : this()
-        {
-            Set(vector);
         }
 
 
@@ -128,14 +161,12 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Inverts this rotation in place.
         /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public Vec3d Rotate(Vec3d vector)
+        public void Invert()
         {
-            double t = 1.0 - _cosAngle;
-            return vector * _cosAngle + (_axis ^ vector) * _sinAngle + _axis * (_axis * vector) * t;
+            _angle = -_angle;
+            _sinAngle = -_sinAngle;
         }
 
 
@@ -144,10 +175,20 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public Vec3d RotateInv(Vec3d vector)
+        public Vec3d Rotate(Vec3d vector)
         {
-            double t = 1.0 - _cosAngle;
-            return vector * _cosAngle - (_axis ^ vector) * _sinAngle + _axis * (_axis * vector) * t;
+            return vector * _cosAngle + (_axis ^ vector) * _sinAngle + _axis * (_axis * vector) * (1.0 - _cosAngle);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Vec3d RotateInverse(Vec3d vector)
+        {
+            return vector * _cosAngle - (_axis ^ vector) * _sinAngle + _axis * (_axis * vector) * (1.0 - _cosAngle);
         }
     }
 }

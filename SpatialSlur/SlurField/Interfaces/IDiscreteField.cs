@@ -11,7 +11,7 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
-    public interface IDiscreteField<T> : IList<T>, IReadOnlyList<T>
+    public interface IDiscreteField<T>
     {
         /// <summary>
         /// Returns the internal array of field values.
@@ -24,14 +24,14 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        new T this[int index] { get; set; }
+        T this[int index] { get; set; }
 
 
         /// <summary>
         /// Returns the number of values in the field.
         /// This may be less than the length of the value array depending on the implementation.
         /// </summary>
-        new int Count { get; }
+        int Count { get; }
       
         
         /// <summary>

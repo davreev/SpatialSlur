@@ -32,14 +32,14 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public override Vec3d ValueAt(Vec3d point)
+        public sealed override Vec3d ValueAt(Vec3d point)
         {
             Vec3d sum = DefaultValue * DefaultWeight;
             double wsum = DefaultWeight;
 
             foreach (var dp in Points)
             {
-                double w = 1.0 / Math.Pow(point.DistanceTo(dp.Point) * dp.Scale + Epsilon, Power);
+                double w = dp.Weight / Math.Pow(point.DistanceTo(dp.Point) + Epsilon, Power);
                 sum += dp.Value * w;
                 wsum += w;
             }

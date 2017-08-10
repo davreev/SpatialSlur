@@ -31,6 +31,51 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        public Rotation3d(Vec3d x, Vec3d y)
+            : this()
+        {
+            Set(x, y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Rotation3d(AxisAngle3d axisAngle)
+            : this()
+        {
+            Set(axisAngle);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Rotation3d(Rotation3d other)
+        {
+            _x = other._x;
+            _y = other._y;
+            _z = other._z;
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        private Rotation3d(Vec3d x, Vec3d y, Vec3d z)
+        {
+            _x = x;
+            _y = y;
+            _z = z;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Vec3d X
         {
             get { return _x; }
@@ -56,57 +101,26 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns the inverse of this rotation
+        /// </summary>
+        public Rotation3d Inverse
+        {
+            get
+            {
+                return new Rotation3d(
+                    new Vec3d(_x.X, _y.X, _z.X),
+                    new Vec3d(_x.Y, _y.Y, _z.Y),
+                    new Vec3d(_x.Z, _y.Z, _z.Z));
+            }
+        }
+
+
+        /// <summary>
         /// Return false if this rotation is undefined.
         /// </summary>
         bool IsValid
         {
             get { return _x.SquareLength > 0.0; }
-        }
-
-
-
-        /// <summary>
-        /// Assumes the given axes are orthonormal
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        private Rotation3d(Vec3d x, Vec3d y, Vec3d z)
-        {
-            _x = x;
-            _y = y;
-            _z = z;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Rotation3d(Vec3d x, Vec3d y)
-            :this()
-        {
-            Set(x, y);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Rotation3d(AxisAngle3d axisAngle)
-            :this()
-        {
-            Set(axisAngle);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Rotation3d(Rotation3d other)
-        {
-            _x = other._x;
-            _y = other._y;
-            _z = other._z;
         }
 
 
@@ -211,27 +225,13 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Inverts the rotation in place.
+        /// Inverts this rotation in place.
         /// </summary>
         public void Invert()
         {
             Swap(ref _x.Y, ref _y.X);
             Swap(ref _x.Z, ref _z.X);
             Swap(ref _y.Z, ref _z.Y);
-        }
-
-
-        /// <summary>
-        /// Returns an inverted copy of this rotation.
-        /// </summary>
-        /// <returns></returns>
-        public Rotation3d Inverted()
-        {
-            return new Rotation3d(
-                new Vec3d(_x.X, _y.X, _z.X),
-                new Vec3d(_x.Y, _y.Y, _z.Y),
-                new Vec3d(_x.Z, _y.Z, _z.Z)
-                );
         }
 
 

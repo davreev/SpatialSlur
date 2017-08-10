@@ -43,6 +43,29 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="i"></param>
         /// <param name="n"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static int Wrap(int i, int n, WrapMode mode)
+        {
+            switch (mode)
+            {
+                case (WrapMode.Clamp):
+                    return Clamp(i, n);
+                case (WrapMode.Repeat):
+                    return Repeat(i, n);
+                case (WrapMode.MirrorRepeat):
+                    return MirrorRepeat(i, n);
+            }
+
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="n"></param>
         /// <returns></returns>
         internal static int Clamp(int i, int n)
         {

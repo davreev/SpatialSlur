@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurField
             int ny = bitmap.Height;
 
             var result = new GridVectorField2d(domain, nx, ny);
-            FieldIO.ReadFromImage(result, bitmap, mapper);
+            FieldIO.ReadFromImage(bitmap, result, mapper);
 
             return result;
         }
@@ -106,7 +106,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        protected override GridField2d<Vec2d> DuplicateBase()
+        protected sealed override GridField2d<Vec2d> DuplicateBase()
         {
             return Duplicate();
         }
@@ -118,7 +118,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        protected override Vec2d ValueAtLinear(Vec2d point)
+        protected sealed override Vec2d ValueAtLinear(Vec2d point)
         {
             (double u, double v) = Fract(point, out int i0, out int j0);
 
@@ -142,7 +142,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        protected override Vec2d ValueAtLinearUnchecked(Vec2d point)
+        protected sealed override Vec2d ValueAtLinearUnchecked(Vec2d point)
         {
             (double u, double v) = Fract(point, out int i0, out int j0);
 
@@ -164,7 +164,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public override Vec2d ValueAt(GridPoint2d point)
+        public sealed override Vec2d ValueAt(GridPoint2d point)
         {
             return FieldUtil.ValueAt(Values, point.Corners, point.Weights);
         }

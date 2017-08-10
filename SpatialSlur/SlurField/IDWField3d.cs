@@ -14,7 +14,7 @@ using SpatialSlur.SlurField;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Field type that uses inverse distance weighting to interpolate between known values with spatial coordinates.
+    /// Field type that uses inverse distance weighting to interpolate between known spatial values.
     /// https://en.wikipedia.org/wiki/Inverse_distance_weighting
     /// </summary>
     [Serializable]
@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurField
         /// <summary></summary>
         public T DefaultValue;
         /// <summary></summary>
-        public double DefaultWeight;
+        public double DefaultWeight = 0.0;
         /// <summary></summary>
         public double Power = 3.0;
 
@@ -76,7 +76,6 @@ namespace SpatialSlur.SlurField
 
         #region Explicit interface implementations
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -86,7 +85,6 @@ namespace SpatialSlur.SlurField
         {
             return ValueAt(new Vec3d(point.X, point.Y, 0.0));
         }
-
 
         #endregion
     }

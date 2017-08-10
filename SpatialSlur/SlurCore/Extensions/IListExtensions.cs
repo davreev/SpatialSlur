@@ -523,7 +523,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="maxSteps"></param>
         /// <returns></returns>
-        public static bool Consolidate(this IList<Vec3d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 100)
+        public static bool Consolidate(this IList<Vec3d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 10)
         {
             return DataUtil.ConsolidatePoints(points, radius, tolerance, maxSteps);
         }

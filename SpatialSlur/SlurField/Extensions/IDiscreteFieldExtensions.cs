@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -18,6 +19,18 @@ namespace SpatialSlur.SlurField
     public static class IDiscreteFieldExtensions
     {
         #region IDiscreteField<T>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public static ReadOnlySubArray<T> AsReadOnly<T>(this IDiscreteField<T> field)
+        {
+            return new ReadOnlySubArray<T>(field.Values, 0, field.Count);
+        }
+
 
         /// <summary>
         /// 

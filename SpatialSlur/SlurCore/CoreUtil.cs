@@ -27,5 +27,17 @@ namespace SpatialSlur.SlurCore
             a = b;
             b = c;
         }
+
+
+        /// <summary>
+        /// Trick to simplify bounds check
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="size"></param>
+        public static void BoundsCheck(int index, int size)
+        {
+            if ((uint)index >= (uint)size)
+                throw new IndexOutOfRangeException();
+        }
     }
 }

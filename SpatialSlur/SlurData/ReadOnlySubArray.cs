@@ -4,9 +4,11 @@ using System.Collections.Generic;
 
 using SpatialSlur.SlurCore;
 
+using static SpatialSlur.SlurCore.CoreUtil;
+
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurData
 {
@@ -47,7 +49,11 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public T this[int index]
         {
-            get { return _source[index + _start]; }
+            get
+            {
+                BoundsCheck(index, _count);
+                return _source[index + _start];
+            }
         }
 
 

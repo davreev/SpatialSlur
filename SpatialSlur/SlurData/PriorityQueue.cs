@@ -16,7 +16,7 @@ namespace SpatialSlur.SlurData
     [Serializable]
     public class PriorityQueue<T>
     {
-        private const int MinCapacity = 4;
+        private const int _minCapacity = 4;
 
         private readonly Comparison<T> _compare;
         private T[] _items;
@@ -28,7 +28,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="comparer"></param>
         /// <param name="capacity"></param>
-        public PriorityQueue(Comparer<T> comparer, int capacity = MinCapacity)
+        public PriorityQueue(Comparer<T> comparer, int capacity = _minCapacity)
             : this(comparer.Compare, capacity)
         {
         }
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="comparer"></param>
         /// <param name="capacity"></param>
-        public PriorityQueue(IComparer<T> comparer, int capacity = MinCapacity)
+        public PriorityQueue(IComparer<T> comparer, int capacity = _minCapacity)
             : this(comparer.Compare, capacity)
         {
         }
@@ -50,10 +50,10 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="compare"></param>
         /// <param name="capacity"></param>
-        public PriorityQueue(Comparison<T> compare, int capacity = MinCapacity)
+        public PriorityQueue(Comparison<T> compare, int capacity = _minCapacity)
         {
             _compare = compare ?? throw new ArgumentNullException();
-            _items = new T[Math.Max(capacity, MinCapacity)];
+            _items = new T[Math.Max(capacity, _minCapacity)];
             _count = 0;
         }
 
@@ -225,7 +225,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public void TrimExcess()
         {
-            int max = Math.Max(_count << 1, MinCapacity);
+            int max = Math.Max(_count << 1, _minCapacity);
 
             if (_items.Length > max)
                 Array.Resize(ref _items, max);

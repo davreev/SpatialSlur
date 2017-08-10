@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
  */ 
 
 namespace SpatialSlur.SlurField
-{ 
+{
     /// <summary>
     /// 
     /// </summary>
@@ -24,7 +24,7 @@ namespace SpatialSlur.SlurField
         /// <summary></summary>
         public T Value;
         /// <summary></summary>
-        public double Scale = 1.0;
+        public double Weight = 1.0;
     }
 
 
@@ -39,11 +39,11 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
         /// <param name="point"></param>
-        /// <param name="scale"></param>
+        /// <param name="weight"></param>
         /// <returns></returns>
-        public static IDWPoint3d<T> Create<T>(T data, Vec3d point, double scale = 1.0)
+        public static IDWPoint3d<T> Create<T>(T data, Vec3d point, double weight = 1.0)
         {
-            return new IDWPoint3d<T>() { Value = data, Point = point, Scale = scale };
+            return new IDWPoint3d<T>() { Value = data, Point = point, Weight = weight };
         }
     }
 }
