@@ -10,7 +10,6 @@ using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
-using SpatialSlur.SlurRhino.Remesher;
 
 /*
  * Notes
@@ -24,9 +23,9 @@ using SpatialSlur.SlurRhino.Remesher;
 
 namespace SpatialSlur.SlurRhino.Remesher
 {
-    using V = HeMeshDM.V;
-    using E = HeMeshDM.E;
-    using F = HeMeshDM.F;
+    using V = HeMeshSim.Vertex;
+    using E = HeMeshSim.Halfedge;
+    using F = HeMeshSim.Face;
 
 
     /// <summary>
@@ -48,26 +47,26 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static DynamicRemesher Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public static DynamicRemesher Create<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
             where TV : HeVertex<TV, TE, TF>, IVertex3d
             where TE : Halfedge<TV, TE, TF>
             where TF : HeFace<TV, TE, TF>
         {
-            var copy = HeMeshDM.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
+            var copy = HeMeshSim.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
             return new DynamicRemesher(copy, target, features, tolerance);
         }
 
         #endregion
 
 
-        private const double MaxLengthFactor = 4.0 / 3.0;
-        private const double MinLengthFactor = 4.0 / 5.0;
+        private const double _maxLengthFactor = 4.0 / 3.0;
+        private const double _minLengthFactor = 4.0 / 5.0;
 
         //
         // simulation mesh
         //
         
-        private HeMesh<V, E, F> _mesh;
+        private HeMeshSim _mesh;
         private HeElementList<V> _verts;
         private HeElementList<E> _hedges;
         private HeElementList<F> _faces;
@@ -98,7 +97,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <param name="target"></param>
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
-        public DynamicRemesher(HeMesh<V, E, F> mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public DynamicRemesher(HeMeshSim mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
             _mesh = mesh;
             _verts = _mesh.Vertices;
@@ -216,7 +215,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
-        public HeMesh<V, E, F> Mesh
+        public HeMeshBase<V, E, F> Mesh
         {
             get { return _mesh; }
         }
@@ -485,7 +484,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                 var p1 = v1.Position;
 
                 // split edge if length exceeds max
-                double maxLength = he.TargetLength * MaxLengthFactor * (1.0 + tol);
+                double maxLength = he.TargetLength * _maxLengthFactor * (1.0 + tol);
                 maxLength *= maxLength;
                 
                 if (p0.SquareDistanceTo(p1) > maxLength)
@@ -541,7 +540,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                 var p1 = v1.Position;
 
                 // collapse edge if length is less than min
-                double minLength = he.TargetLength * MinLengthFactor * (1.0 - tol);
+                double minLength = he.TargetLength * _minLengthFactor * (1.0 - tol);
                 minLength *= minLength;
 
                 if (p0.SquareDistanceTo(p1) < minLength)

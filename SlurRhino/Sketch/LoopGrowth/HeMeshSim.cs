@@ -16,19 +16,27 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
     /// <summary>
     /// Contains HeMesh element classes used in dynamic remeshing
     /// </summary>
-    public static class HeMeshLG
+    public class HeMeshSim: HeMeshBase<HeMeshSim.Vertex, HeMeshSim.Halfedge, HeMeshSim.Face>
     {
         /// <summary></summary>
-        public static readonly HeMeshFactory<V, E, F> Factory;
+        public static readonly HeMeshSimFactory Factory;
 
 
         /// <summary>
         /// Static constructor to initialize factory instance.
         /// </summary>
-        static HeMeshLG()
+        static HeMeshSim()
         {
-            var provider = HeElementProvider.Create(() => new V(), () => new E(), () => new F());
-            Factory = HeMeshFactory.Create(provider);
+            Factory = new HeMeshSimFactory();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HeMeshSim()
+            : base()
+        {
         }
 
 
@@ -38,10 +46,39 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <param name="vertexCapacity"></param>
         /// <param name="hedgeCapacity"></param>
         /// <param name="faceCapacity"></param>
-        /// <returns></returns>
-        public static HeMesh<V, E, F> Create(int vertexCapacity = 4, int hedgeCapacity = 4, int faceCapacity = 4)
+        public HeMeshSim(int vertexCapacity, int hedgeCapacity, int faceCapacity)
+            : base(vertexCapacity, hedgeCapacity, faceCapacity)
         {
-            return Factory.Create(vertexCapacity, hedgeCapacity, faceCapacity);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected sealed override Vertex NewVertex()
+        {
+            return new Vertex();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected sealed override Halfedge NewHalfedge()
+        {
+            return new Halfedge();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected sealed override Face NewFace()
+        {
+            return new Face();
         }
 
 
@@ -49,27 +86,21 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// 
         /// </summary>
         [Serializable]
-        public class V : HeVertex<V, E, F>, IVertex3d
+        public class Vertex : HeVertex<Vertex, Halfedge, Face>, IVertex3d
         {
             /// <summary></summary>
             public Vec3d Position { get; set; }
             /// <summary></summary>
             public Vec3d Normal { get; set; }
-
             /// <summary></summary>
             public Vec3d Velocity;
             /// <summary></summary>
             public Vec3d MoveSum;
-
             /// <summary></summary>
             public double WeightSum;
             /// <summary></summary>
             public int FeatureIndex = -1;
 
-            /// <summary></summary>
-            public double CollideWeight; // TESTING
-            /// <summary></summary>
-            public int LastCollision = -1; // TESTING
 
             #region Explicit interface implementations
 
@@ -87,7 +118,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// 
         /// </summary>
         [Serializable]
-        public class E : Halfedge<V, E, F>
+        public class Halfedge : Halfedge<Vertex, Halfedge, Face>
         {
             private double _maxLength;
 
@@ -102,11 +133,28 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [Serializable]
-        public class F : HeFace<V, E, F>
+        public class Face : HeFace<Vertex, Halfedge, Face>
         {
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    public class HeMeshSimFactory : HeMeshFactoryBase<HeMeshSim, HeMeshSim.Vertex, HeMeshSim.Halfedge, HeMeshSim.Face>
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public sealed override HeMeshSim Create(int vertexCapacity, int halfedgeCapacity, int faceCapacity)
+        {
+            return new HeMeshSim(vertexCapacity, halfedgeCapacity, faceCapacity);
         }
     }
 }

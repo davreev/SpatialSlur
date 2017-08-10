@@ -16,6 +16,7 @@ using SpatialSlur.SlurRhino;
 using SpatialSlur.SlurRhino.Remesher;
 
 using static SpatialSlur.SlurCore.SlurMath;
+using static SpatialSlur.SlurData.DataUtil;
 
 /*
  * Notes
@@ -23,10 +24,9 @@ using static SpatialSlur.SlurCore.SlurMath;
 
 namespace SpatialSlur.SlurRhino.LoopGrowth
 {
-    using V = HeMeshLG.V;
-    using E = HeMeshLG.E;
-    using F = HeMeshLG.F;
-
+    using V = HeMeshSim.Vertex;
+    using E = HeMeshSim.Halfedge;
+    using F = HeMeshSim.Face;
 
     /// <summary>
     /// 
@@ -47,26 +47,26 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static LoopGrower Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public static LoopGrower Create<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
             where TV : HeVertex<TV, TE, TF>, IVertex3d
             where TE : Halfedge<TV, TE, TF>
             where TF : HeFace<TV, TE, TF>
         {
-            var copy = HeMeshLG.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
+            var copy = HeMeshSim.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
             return new LoopGrower(copy, target, features, tolerance);
         }
 
         #endregion
 
 
-        private const double TargetBinScale = 3.5; // as a factor of radius
-        private const double TargetLoadFactor = 3.0;
+        private const double _targetBinScale = 3.5; // as a factor of radius
+        private const double _targetLoadFactor = 3.0;
 
         //
         // simulation mesh
         //
 
-        private HeMesh<V, E, F> _mesh;
+        private HeMeshSim _mesh;
         private HeElementList<V> _verts;
         private HeElementList<E> _hedges;
         private HashGrid3d<V> _grid;
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         // constraint objects
         //
 
-        private MeshFeature _target;
+        private IFeature _target;
         private List<IFeature> _features;
         private IField3d<double> _lengthField;
 
@@ -95,7 +95,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <param name="target"></param>
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
-        public LoopGrower(HeMesh<V, E, F> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public LoopGrower(HeMeshSim mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
             mesh.Compact();
 
@@ -107,6 +107,8 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
 
             Target = target;
             InitFeatures(features, tolerance);
+
+            // start on features
             ProjectToFeatures();
         }
 
@@ -141,7 +143,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        public HeMesh<V, E, F> Mesh
+        public HeMeshBase<V, E, F> Mesh
         {
             get { return _mesh; }
         }
@@ -150,7 +152,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        public MeshFeature Target
+        public IFeature Target
         {
             get { return _target; }
             set { _target = value; }
@@ -211,7 +213,6 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 UpdateVertices();
 
                 ProjectToFeatures();
-                // UpdateVertices();
             }
         }
 
@@ -231,7 +232,6 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
             }
 
             LaplacianFair(_settings.SmoothWeight, _settings.SmoothWeight);
-            // PullToFeatures(_settings.FeatureWeight);
         }
 
 
@@ -239,6 +239,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// 
         /// </summary>
         /// <param name="weightInterior"></param>
+        /// <param name="weightBoundary"></param>
         private void LaplacianFair(double weightInterior, double weightBoundary)
         {
             for (int i = 0; i < _verts.Count; i++)
@@ -435,15 +436,14 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         {
             if (_grid == null)
             {
-                _grid = new HashGrid3d<V>((int)(_verts.Count * TargetLoadFactor), radius * TargetBinScale);
+                _grid = new HashGrid3d<V>((int)(_verts.Count * _targetLoadFactor), radius * RadiusToBinScale);
                 return;
             }
 
-            int minCount = (int)(_verts.Count * TargetLoadFactor * 0.5);
-            if (_grid.BinCount < minCount)
-                _grid.Resize((int)(_verts.Count * TargetLoadFactor));
+            _grid.BinScale = radius * RadiusToBinScale;
 
-            _grid.BinScale = radius * TargetBinScale;
+            int minCount = (int)(_verts.Count * _targetLoadFactor * 0.5);
+            if (_grid.BinCount < minCount) _grid.Resize((int)(_verts.Count * _targetLoadFactor));
         }
 
 
@@ -488,11 +488,19 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                     var p = v.Position;
                     int fi = v.FeatureIndex;
 
-                    // snap to feature if one exists
+                    /*
+                    // snap to feature or target if one exists
+                    if (fi != -1)
+                        v.Position = _features[v.FeatureIndex].ClosestPoint(v.Position);
+                    else if(_target != null)
+                        v.Position = _target.ClosestPoint(v.Position);
+                    */
+
+                    // snap to feature
                     if (fi != -1)
                         v.Position = _features[v.FeatureIndex].ClosestPoint(v.Position);
 
-                    // snap to target if one exists
+                    // snap to target
                     if (_target != null)
                         v.Position = _target.ClosestPoint(v.Position);
                 }
@@ -517,11 +525,21 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                     var p = v.Position;
                     int fi = v.FeatureIndex;
 
-                    if (fi == -1) continue;
-                    v.MoveSum += (_features[fi].ClosestPoint(p) - p) * weight;
-                    v.WeightSum += weight;
+                    if (fi != 1)
+                        ApplyMove(v, _features[fi]);
+
+                    if(_target != null)
+                        ApplyMove(v, _target);
                 }
             });
+
+
+            void ApplyMove(V vertex, IFeature feature)
+            {
+                var p = vertex.Position;
+                vertex.MoveSum += (feature.ClosestPoint(p) - p) * weight;
+                vertex.WeightSum += weight;
+            }
         }
 
         #endregion
