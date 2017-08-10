@@ -9,25 +9,29 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurRhino;
+using SpatialSlur.SlurMesh;
+
+using SpatialSlur.SlurGH.Types;
+using SpatialSlur.SlurGH.Params;
 
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Components
+namespace SlurGH.Components
 {
     /// <summary>
     /// 
     /// </summary>
-    public class MeshFlip : GH_Component
+    public class FaceBoundaries : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MeshFlip()
-          : base("Mesh Flip", "Flip",
-              "Reverses the face windings of a mesh",
-              "Mesh", "Util")
+        public FaceBoundaries()
+          : base("Face Boundaries", "FaceBounds",
+              "Returns the boundary of each face in a given halfedge structure as a closed polyline",
+              "SpatialSlur", "Mesh")
         {
         }
 
@@ -35,21 +39,18 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Mesh to flip.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("vertexNorms", "vertexNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceNorms", "faceNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceOrient", "faceOrientation", "", GH_ParamAccess.item, true);
+            pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "Halfedge mesh to extract from", GH_ParamAccess.item);
         }
 
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Flipped mesh", GH_ParamAccess.item);
+            pManager.AddCurveParameter("result", "result", "Face polylines", GH_ParamAccess.list);
         }
 
 
@@ -60,19 +61,20 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Mesh mesh = null;
-            bool vertNorm = false;
-            bool faceNorm = false;
-            bool faceOrient = false;
-
+            GH_HeMesh3d mesh = null;
             if (!DA.GetData(0, ref mesh)) return;
-            if (!DA.GetData(1, ref vertNorm)) return;
-            if (!DA.GetData(2, ref faceNorm)) return;
-            if (!DA.GetData(3, ref faceOrient)) return;
 
-            mesh.Flip(vertNorm, faceNorm, faceOrient);
+            var result = mesh.Value.Faces.Select(f =>
+            {
+                if (f.IsRemoved) return new GH_Curve();
 
-            DA.SetData(0, new GH_Mesh(mesh));
+                var poly = new Polyline(f.Halfedges.Select(he => he.Start.Position.ToPoint3d()));
+                poly.Add(poly[0]);
+
+                return new GH_Curve(poly.ToNurbsCurve());
+            });
+        
+            DA.SetDataList(0, result);
         }
 
 
@@ -93,7 +95,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{1168132C-A1B4-45BA-9265-D61ACE445A1E}"); }
+            get { return new Guid("{BD140500-B9EA-43EE-94B9-358BEACF803C}"); }
         }
     }
 }
+

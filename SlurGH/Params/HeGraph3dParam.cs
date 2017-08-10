@@ -17,13 +17,13 @@ namespace SpatialSlur.SlurGH.Params
     /// <summary>
     /// 
     /// </summary>
-    public class HeGraphParam : GH_PersistentParam<GH_HeGraph>
+    public class HeGraph3dParam : GH_PersistentParam<GH_HeGraph3d>
     {
         /// <summary>
         /// 
         /// </summary>
-        public HeGraphParam()
-            :base("HeGraph", "HeGraph", "Contains a collection of halfedge graphs.", "SpatialSlur", "Parameters")
+        public HeGraph3dParam()
+            :base("HeGraph", "HeGraph", "", "SpatialSlur", "Parameters")
         {
         }
 
@@ -60,9 +60,9 @@ namespace SpatialSlur.SlurGH.Params
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        protected override GH_GetterResult Prompt_Singular(ref GH_HeGraph value)
+        protected override GH_GetterResult Prompt_Singular(ref GH_HeGraph3d value)
         {
-            value = new GH_HeGraph();
+            value = new GH_HeGraph3d();
             return GH_GetterResult.success;
         }
 
@@ -72,9 +72,9 @@ namespace SpatialSlur.SlurGH.Params
         /// </summary>
         /// <param name="values"></param>
         /// <returns></returns>
-        protected override GH_GetterResult Prompt_Plural(ref List<GH_HeGraph> values)
+        protected override GH_GetterResult Prompt_Plural(ref List<GH_HeGraph3d> values)
         {
-            values = new List<GH_HeGraph>();
+            values = new List<GH_HeGraph3d>();
             return GH_GetterResult.success;
         }
     }

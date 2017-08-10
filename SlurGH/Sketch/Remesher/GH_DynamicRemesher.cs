@@ -25,9 +25,6 @@ using SpatialSlur.SlurGH.Params;
 
 namespace SpatialSlur.SlurGH.Remesher
 {
-    using M = HeMesh<HeMesh3d.V, HeMesh3d.E, HeMesh3d.F>;
-
-
     /// <summary>
     /// 
     /// </summary>
@@ -37,7 +34,7 @@ namespace SpatialSlur.SlurGH.Remesher
         private StringBuilder _print = new StringBuilder();
 
 
-        private Action<HeMesh3d.V, HeMeshDM.V> _setV = (v0, v1) =>
+        private Action<HeMesh3d.Vertex, HeMeshSim.Vertex> _setV = (v0, v1) =>
         {
             v0.Position = v1.Position;
             v0.Normal = v1.Normal;
@@ -60,7 +57,7 @@ namespace SpatialSlur.SlurGH.Remesher
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddParameter(new HeMeshParam(), "source", "source", "Mesh to start from", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "source", "source", "Mesh to start from", GH_ParamAccess.item);
             pManager.AddMeshParameter("target", "target", "Mesh to constrain to", GH_ParamAccess.item);
             pManager.AddGenericParameter("features", "features", "Additional features to constrain to", GH_ParamAccess.list);
             pManager.AddGenericParameter("lengthField", "lengthField", "Scalar field defining target edge lengths", GH_ParamAccess.item);
@@ -78,7 +75,7 @@ namespace SpatialSlur.SlurGH.Remesher
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter("out", "out", "", GH_ParamAccess.item);
-            pManager.AddParameter(new HeMeshParam(), "result", "result", "Remeshed result", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "result", "result", "Remeshed result", GH_ParamAccess.item);
             // pManager.AddGenericParameter("debug", "debug", "", GH_ParamAccess.item);
         }
 
@@ -103,7 +100,7 @@ namespace SpatialSlur.SlurGH.Remesher
             // initialize
             if (_remesher == null)
             {
-                M source = null;
+                HeMesh3d source = null;
                 Mesh target = null;
                
                 if (!DA.GetData(0, ref source)) return;
@@ -111,7 +108,6 @@ namespace SpatialSlur.SlurGH.Remesher
 
                 var feats = new List<GH_ObjectWrapper>(); 
                 DA.GetDataList(2, feats);
-
                 
                 _remesher = DynamicRemesher.Create(source.Duplicate(), new MeshFeature(target), feats.Select(f => (IFeature)f.Value));
             }

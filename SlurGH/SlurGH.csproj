@@ -71,11 +71,15 @@
     <Compile Include="Components\Mesh\MeshFlip.cs" />
     <Compile Include="Components\Mesh\MeshSeparate.cs" />
     <Compile Include="Components\Display\NormalShader.cs" />
-    <Compile Include="Components\Field\SimplexNoise.cs" />
-    <Compile Include="Types\GH_HeGraph.cs" />
-    <Compile Include="Types\GH_HeMesh.cs" />
-    <Compile Include="Params\HeGraphParam.cs" />
-    <Compile Include="Params\HeMeshParam.cs" />
+    <Compile Include="Components\SlurField\SimplexNoise.cs" />
+    <Compile Include="Components\SlurMesh\EdgeLines.cs" />
+    <Compile Include="Components\SlurMesh\HoleBoundaries.cs" />
+    <Compile Include="Components\SlurMesh\FaceBoundaries.cs" />
+    <Compile Include="Components\SlurMesh\VertexPositions.cs" />
+    <Compile Include="Types\GH_HeGraph3d.cs" />
+    <Compile Include="Types\GH_HeMesh3d.cs" />
+    <Compile Include="Params\HeGraph3dParam.cs" />
+    <Compile Include="Params\HeMesh3dParam.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -93,9 +97,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Components\WIP\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

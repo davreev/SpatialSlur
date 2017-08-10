@@ -8,8 +8,8 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
+using SpatialSlur.SlurMesh;
 
 /*
  * Notes
@@ -20,15 +20,15 @@ namespace SpatialSlur.SlurGH.Components
     /// <summary>
     /// 
     /// </summary>
-    public class NormalShader : GH_Component
+    public class EdgeLines : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public NormalShader()
-          : base("Normal Shader", "NormShade",
-              "Paints a Mesh based on vertex normal directions.",
-              "SpatialSlur", "Display")
+        public EdgeLines()
+          : base("Edge Lines", "EdgeLines",
+              "Returns a line for each edge in a given halfedge structure",
+              "SpatialSlur", "Mesh")
         {
         }
 
@@ -38,9 +38,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Mesh to paint", GH_ParamAccess.item);
-            pManager.AddColourParameter("colors", "colors", "", GH_ParamAccess.list);
-            pManager.AddVectorParameter("direction", "direction", "", GH_ParamAccess.item, Vector3d.ZAxis);
+            pManager.AddGenericParameter("heStruct", "heStructure", "Halfedge structure to extract from", GH_ParamAccess.item);
         }
 
 
@@ -49,7 +47,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Painted mesh", GH_ParamAccess.item);
+            pManager.AddLineParameter("result", "result", "Edge lines", GH_ParamAccess.list);
         }
 
 
@@ -60,22 +58,35 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Mesh mesh = null;
-            List<Color> colors = new List<Color>();
-            Vector3d dir = new Vector3d();
+            IGH_Goo goo = null;
+            if (!DA.GetData(0, ref goo)) return;
 
-            if (!DA.GetData(0, ref mesh)) return;
-            if (!DA.GetDataList(1, colors)) return;
-            if (!DA.GetData(2, ref dir)) return;
+            if (goo is GH_Goo<HeGraph3d>)
+            {
+                var value = ((GH_Goo<HeGraph3d>)goo).Value;
+                DA.SetDataList(0, GetEdgeLines(value, v => v.Position));
+            }
+            else if (goo is GH_Goo<HeMesh3d>)
+            {
+                var value = ((GH_Goo<HeMesh3d>)goo).Value;
+                DA.SetDataList(0, GetEdgeLines(value, v => v.Position));
+            }
+        }
 
-            var norms = mesh.Normals;
 
-            if (norms.Count != mesh.Vertices.Count)
-                norms.ComputeNormals();
-
-            mesh.PaintByVertexNormal(n => colors.Lerp(dir * n * 0.5 + 0.5), true);
-
-            DA.SetData(0, new GH_Mesh(mesh));
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="getPosition"></param>
+        /// <returns></returns>
+        IEnumerable<GH_Line> GetEdgeLines<V, E>(IHeStructure<V, E> graph, Func<V, Vec3d> getPosition)
+            where V : HeElement, IHeVertex<V, E>
+            where E : HeElement, IHalfedge<V, E>
+        {
+            return graph.Edges.Select(he => (he.IsRemoved) ? new GH_Line(Line.Unset) : new GH_Line(he.ToLine(getPosition)));
         }
 
 
@@ -96,7 +107,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{0A8E67CC-0EC0-46BA-93A0-9019B8804DF1}"); }
+            get { return new Guid("{D3EBB8A8-08D5-47FB-AD7A-275C9A82C4BD}"); }
         }
     }
 }

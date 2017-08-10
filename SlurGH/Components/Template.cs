@@ -19,15 +19,15 @@ namespace SpatialSlur.SlurGH.Components
     /// <summary>
     /// 
     /// </summary>
-    public class MeshFlip : GH_Component
+    public class MyComponent : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MeshFlip()
-          : base("Mesh Flip", "Flip",
-              "Reverses the face windings of a mesh",
-              "Mesh", "Util")
+        public MyComponent()
+          : base("Name", "Nickname",
+              "Description",
+              "Category", "Subcategory")
         {
         }
 
@@ -37,10 +37,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Mesh to flip.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("vertexNorms", "vertexNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceNorms", "faceNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceOrient", "faceOrientation", "", GH_ParamAccess.item, true);
+            pManager.AddIntegerParameter("x", "x", "", GH_ParamAccess.item);
         }
 
 
@@ -49,7 +46,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Flipped mesh", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("y", "y", "", GH_ParamAccess.item);
         }
 
 
@@ -60,19 +57,12 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Mesh mesh = null;
-            bool vertNorm = false;
-            bool faceNorm = false;
-            bool faceOrient = false;
+            int x = 0;
+            if (!DA.GetData(0, ref x)) return;
+            
+            // do something here
 
-            if (!DA.GetData(0, ref mesh)) return;
-            if (!DA.GetData(1, ref vertNorm)) return;
-            if (!DA.GetData(2, ref faceNorm)) return;
-            if (!DA.GetData(3, ref faceOrient)) return;
-
-            mesh.Flip(vertNorm, faceNorm, faceOrient);
-
-            DA.SetData(0, new GH_Mesh(mesh));
+            DA.SetData(0, new GH_Integer(x));
         }
 
 
@@ -93,7 +83,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{1168132C-A1B4-45BA-9265-D61ACE445A1E}"); }
+            get { return new Guid("{48D4EAC4-B5B5-4638-9072-D48A6753695F}"); }
         }
     }
 }

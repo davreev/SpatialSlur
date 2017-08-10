@@ -17,13 +17,13 @@ namespace SpatialSlur.SlurGH.Params
     /// <summary>
     /// 
     /// </summary>
-    public class HeMeshParam : GH_PersistentParam<GH_HeMesh>
+    public class HeMesh3dParam : GH_PersistentParam<GH_HeMesh3d>
     {
         /// <summary>
         /// 
         /// </summary>
-        public HeMeshParam()
-            :base("HeMesh", "HeMesh", "Contains a collection of halfedge meshes.", "SpatialSlur", "Parameters")
+        public HeMesh3dParam()
+            :base("HeMesh", "HeMesh", "", "SpatialSlur", "Parameters")
         {
         }
 
@@ -60,9 +60,9 @@ namespace SpatialSlur.SlurGH.Params
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        protected override GH_GetterResult Prompt_Singular(ref GH_HeMesh value)
+        protected override GH_GetterResult Prompt_Singular(ref GH_HeMesh3d value)
         {
-            value = new GH_HeMesh();
+            value = new GH_HeMesh3d();
             return GH_GetterResult.success;
         }
 
@@ -72,9 +72,9 @@ namespace SpatialSlur.SlurGH.Params
         /// </summary>
         /// <param name="values"></param>
         /// <returns></returns>
-        protected override GH_GetterResult Prompt_Plural(ref List<GH_HeMesh> values)
+        protected override GH_GetterResult Prompt_Plural(ref List<GH_HeMesh3d> values)
         {
-            values = new List<GH_HeMesh>();
+            values = new List<GH_HeMesh3d>();
             return GH_GetterResult.success;
         }
     }

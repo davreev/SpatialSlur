@@ -1,33 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
-using SpatialSlur.SlurRhino;
+using SpatialSlur.SlurField;
 
 /*
  * Notes
- */
+ * 
+ * TODO add noise type selection (Perlin, Simplex)
+ */ 
 
 namespace SpatialSlur.SlurGH.Components
 {
     /// <summary>
     /// 
     /// </summary>
-    public class MeshFlip : GH_Component
+    public class SimplexNoise : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MeshFlip()
-          : base("Mesh Flip", "Flip",
-              "Reverses the face windings of a mesh",
-              "Mesh", "Util")
+        public SimplexNoise()
+          : base("Simplex Noise", "SNoise",
+              "Returns the noise value at a given point in space.",
+              "SpatialSlur", "Field")
         {
         }
 
@@ -35,21 +34,20 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Mesh to flip.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("vertexNorms", "vertexNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceNorms", "faceNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceOrient", "faceOrientation", "", GH_ParamAccess.item, true);
+            pManager.AddPointParameter("point", "point", "Sample point", GH_ParamAccess.item);
+            pManager.AddVectorParameter("scale", "scale", "Optional component wise scale values", GH_ParamAccess.item, new Vector3d(1, 1, 1));
+            pManager[1].Optional = true;
         }
 
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Flipped mesh", GH_ParamAccess.item);
+            pManager.AddNumberParameter("result", "result", "Noise value at the given point", GH_ParamAccess.item);
         }
 
 
@@ -60,19 +58,15 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Mesh mesh = null;
-            bool vertNorm = false;
-            bool faceNorm = false;
-            bool faceOrient = false;
+            Point3d point = new Point3d();
+            Vector3d scale = new Vector3d(1.0, 1.0, 1.0);
 
-            if (!DA.GetData(0, ref mesh)) return;
-            if (!DA.GetData(1, ref vertNorm)) return;
-            if (!DA.GetData(2, ref faceNorm)) return;
-            if (!DA.GetData(3, ref faceOrient)) return;
+            if (!DA.GetData(0, ref point)) return;
+            DA.GetData(1, ref scale);
 
-            mesh.Flip(vertNorm, faceNorm, faceOrient);
+            double t = SlurField.SimplexNoise.ValueAt(point.X * scale.X, point.Y * scale.Y, point.Z * scale.Z);
 
-            DA.SetData(0, new GH_Mesh(mesh));
+            DA.SetData(0, t);
         }
 
 
@@ -93,7 +87,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{1168132C-A1B4-45BA-9265-D61ACE445A1E}"); }
+            get { return new Guid("{0e599310-c465-4c2b-92c7-e12ecf6b143e}"); }
         }
     }
 }

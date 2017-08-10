@@ -10,21 +10,18 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
-
 using SpatialSlur.SlurRhino;
 
 /*
- * Notes
+ * Notes 
  */
 
 namespace SpatialSlur.SlurGH.Types
 {
-    using M = HeMesh<HeMesh3d.V, HeMesh3d.E, HeMesh3d.F>;
-
     /// <summary>
     /// 
     /// </summary>
-    public class GH_HeMesh : GH_GeometricGoo<M>
+    public class GH_HeGraph3d : GH_GeometricGoo<HeGraph3d>
     {
         private BoundingBox _bbox = BoundingBox.Unset;
 
@@ -32,7 +29,7 @@ namespace SpatialSlur.SlurGH.Types
         /// <summary>
         /// 
         /// </summary>
-        public GH_HeMesh()
+        public GH_HeGraph3d()
         {
         }
 
@@ -41,7 +38,7 @@ namespace SpatialSlur.SlurGH.Types
         /// 
         /// </summary>
         /// <param name="value"></param>
-        public GH_HeMesh(M value)
+        public GH_HeGraph3d(HeGraph3d value)
         {
             Value = value;
         }
@@ -51,7 +48,7 @@ namespace SpatialSlur.SlurGH.Types
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public GH_HeMesh(GH_HeMesh other)
+        public GH_HeGraph3d(GH_HeGraph3d other)
         {
             Value = other.Value;
         }
@@ -71,7 +68,7 @@ namespace SpatialSlur.SlurGH.Types
         /// </summary>
         public override string TypeName
         {
-            get { return "HeMesh"; }
+            get { return "HeGraph"; }
         }
 
 
@@ -80,7 +77,7 @@ namespace SpatialSlur.SlurGH.Types
         /// </summary>
         public override string TypeDescription
         {
-            get { return "HeMesh"; }
+            get { return "HeGraph"; }
         }
 
 
@@ -91,7 +88,7 @@ namespace SpatialSlur.SlurGH.Types
         {
             get
             {
-                if(Value != null && !_bbox.IsValid)
+                if (Value != null && !_bbox.IsValid)
                     _bbox = new Domain3d(Value.Vertices.Select(v => v.Position)).ToBoundingBox();
 
                 return _bbox;
@@ -115,10 +112,10 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override IGH_GeometricGoo DuplicateGeometry()
         {
-            return new GH_HeMesh(Value.Duplicate());
+            return new GH_HeGraph3d(Value.Duplicate());
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -146,74 +143,46 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override bool CastFrom(object source)
         {
-            if(source is GH_Goo<M>)
+            if (source is GH_Goo<HeGraph3d>)
             {
-                Value = ((GH_Goo<M>)source).Value;
+                Value = ((GH_Goo<HeGraph3d>)source).Value;
                 return true;
             }
 
-            if (source is M)
+            if (source is HeGraph3d)
             {
-                Value = (M) source;
+                Value = (HeGraph3d)source;
                 return true;
             }
 
-            if(source is GH_Mesh)
+            if (source is GH_Goo<HeMesh3d>)
             {
-                Value = ((GH_Mesh)source).Value.ToHeMesh();
+                Value = HeGraph3d.Factory.CreateFromVertexTopology(((GH_HeMesh3d)source).Value);
+                return true;
+            }
+
+            if (source is HeMesh3d)
+            {
+                Value = HeGraph3d.Factory.CreateFromVertexTopology((HeMesh3d)source);
+                return true;
+            }
+
+            if (source is GH_Mesh)
+            {
+                Value = ((GH_Mesh)source).Value.ToHeGraph();
                 return true;
             }
 
             if (source is Mesh)
             {
-                Value = ((Mesh)source).ToHeMesh();
+                Value = ((Mesh)source).ToHeGraph();
                 return true;
             }
 
             return false;
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="Q"></typeparam>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public override bool CastTo<Q>(ref Q target)
-        {
-            if (typeof(Q) == typeof(GH_Goo<M>))
-            {
-                object obj = new GH_HeMesh(Value);
-                target = (Q)obj;
-                return true;
-            }
-
-            if (typeof(Q) == typeof(M))
-            {
-                object obj = Value;
-                target = (Q)obj;
-                return true;
-            }
-
-            if (typeof(Q) == typeof(GH_Mesh))
-            {
-                object obj = new GH_Mesh(Value.ToMesh());
-                target = (Q)obj;
-                return true;
-            }
-
-            if (typeof(Q) == typeof(Mesh))
-            {
-                object obj = Value.ToMesh();
-                target = (Q)obj;
-                return true;
-            }
-
-            return false;
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -236,7 +205,7 @@ namespace SpatialSlur.SlurGH.Types
         {
             var copy = Value.Duplicate(); // TODO check if need to copy before transform?
             copy.Transform(xform);
-            return new GH_HeMesh(copy);
+            return new GH_HeGraph3d(copy);
         }
 
 
@@ -249,7 +218,7 @@ namespace SpatialSlur.SlurGH.Types
         {
             var copy = Value.Duplicate(); // TODO check if need to copy before transform?
             copy.SpaceMorph(xmorph);
-            return new GH_HeMesh(copy);
+            return new GH_HeGraph3d(copy);
         }
     }
 }
