@@ -29,7 +29,7 @@ namespace SpatialSlur.Examples
         public static void Run()
         {
             var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + FileIn);
-            
+
             double scale = 0.5;
             double offset = scale * Math.PI * 0.25;
 

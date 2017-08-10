@@ -36,9 +36,9 @@ namespace SpatialSlur.Examples
             var particles = mesh.Vertices.Select(v => new Particle(v.Position)).ToArray();
 
             // create constraints
-            var constraints = mesh.Faces.Where(f => !f.IsTriangle)
-                .Select(f => new PlanarNgon(f.Vertices
-                .Select(v => v.Index))).ToArray();
+            var constraints = mesh.Faces.Where(f => !f.IsDegree3)
+                .Select(f => new PlanarNgon(f.Vertices.Select(v => v.Index)))
+                .ToArray();
 
             // create solver
             var solver = new ConstraintSolver();

@@ -21,7 +21,6 @@ namespace SpatialSlur.Examples
         public static void Main()
         {
             PlanarizeHeMesh.Run();
-            //Debug.PropertyTest.Run();
         }
     }
 }
