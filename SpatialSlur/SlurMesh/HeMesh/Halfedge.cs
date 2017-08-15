@@ -534,6 +534,216 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
+        /// <summary>
+        /// Starting from this halfedge, enumerates through face vertices in groups of 3 according to the given triangulation mode.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<(TV, TV, TV)> GetFaceTriangles(TriangulationMode mode)
+        {
+            switch (mode)
+            {
+                case TriangulationMode.Fan:
+                    return GetFaceTrianglesFan();
+                case TriangulationMode.Strip:
+                    return GetFaceTrianglesStrip();
+            }
+
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal IEnumerable<(TV, TV, TV)> GetFaceTrianglesFan()
+        {
+            var he = NextInFace;
+
+            var v0 = Start;
+            var v1 = he.Start;
+
+            do
+            {
+                he = he.NextInFace;
+                var v2 = he.Start;
+
+                if (v2 == v0) break;
+
+                yield return (v0, v1, v2);
+                v1 = v2;
+            } while (true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal IEnumerable<(TV, TV, TV)> GetFaceTrianglesStrip()
+        {
+            var he0 = _self;
+            var v0 = Start;
+
+            var he1 = NextInFace;
+            var v1 = he1.Start;
+
+            do
+            {
+                he1 = he1.NextInFace;
+                var v2 = he1.Start;
+
+                if (v2 == v0) break;
+                yield return (v0, v1, v2);
+
+                he0 = he0.PrevInFace;
+                var v3 = he0.Start;
+
+                if (v2 == v3) break;
+                yield return (v0, v2, v3);
+              
+                v0 = v3;
+                v1 = v2;
+            } while (true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal IEnumerable<(TV, TV, TV)> GetFaceTrianglesPoke()
+        {
+            var he = _self;
+            var v0 = he.Start;
+
+            do
+            {
+                he = he.NextInFace;
+                var v1 = he.Start;
+
+                yield return (v0, v1, null);
+                v0 = v1;
+            } while (he != _self);
+        }
+   
+
+        /// <summary>
+        /// Starting from this halfedge, enumerates through face vertices in groups of 4 according to the given triangulation mode.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<(TV, TV, TV, TV)> GetFaceQuads(QuadrangulationMode mode)
+        {
+            switch (mode)
+            {
+                case QuadrangulationMode.Fan:
+                    return GetFaceQuadsFan();
+                case QuadrangulationMode.Strip:
+                    return GetFaceQuadsStrip();
+            }
+
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal IEnumerable<(TV, TV, TV, TV)> GetFaceQuadsFan()
+        {
+            var he = NextInFace;
+
+            var v0 = Start;
+            var v1 = he.Start;
+
+            do
+            {
+                he = he.NextInFace;
+                var v2 = he.Start;
+                
+                if (v2 == v0) break;
+
+                he = he.NextInFace;
+                var v3 = he.Start;
+                
+                if(v3 == v0)
+                {
+                    yield return (v0, v1, v2, null);
+                    break;
+                }
+
+                yield return (v0, v1, v2, v3);
+                v1 = v3;
+            } while (true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal IEnumerable<(TV, TV, TV, TV)> GetFaceQuadsStrip()
+        {
+            var he0 = _self;
+            var v0 = Start;
+
+            var he1 = NextInFace;
+            var v1 = he1.Start;
+
+            do
+            {
+                he1 = he1.NextInFace;
+                var v2 = he1.Start;
+
+                if (v2 == v0) break;
+
+                he0 = he0.PrevInFace;
+                var v3 = he0.Start;
+
+                if(v2 == v3)
+                {
+                    yield return (v0, v1, v2, null);
+                    break;
+                }
+
+                yield return (v0, v1, v2, v3);
+                v0 = v3;
+                v1 = v2;
+            } while (true);
+        }
+        
+      
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal IEnumerable<(TV, TV, TV, TV)> GetFaceQuadsPoke()
+        {
+            var he = _self;
+            var v0 = he.Start;
+
+            do
+            {
+                he = he.NextInFace;
+                var v1 = he.Start;
+
+                if(he == _self)
+                {
+                    yield return (v0, v1, null, null);
+                    break;
+                }
+                
+                he = he.NextInFace;
+                var v2 = he.Start;
+
+                yield return (v0, v1, v2, null);
+                v0 = v2;
+            } while (he != _self);
+        }
+        */
+
         #region Explicit interface implementations
 
         /// <summary>

@@ -268,12 +268,49 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<(TV,TV,TV)> GetTriangles(TriangulationMode mode)
+        {
+            switch (mode)
+            {
+                case TriangulationMode.Fan:
+                    return First.GetFaceTrianglesFan();
+                case TriangulationMode.Strip:
+                    return First.GetFaceTrianglesStrip();
+            }
+
+            throw new NotSupportedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<(TV, TV, TV, TV)> GetQuads(QuadrangulationMode mode)
+        {
+            switch (mode)
+            {
+                case QuadrangulationMode.Fan:
+                    return First.GetFaceQuadsFan();
+                case QuadrangulationMode.Strip:
+                    return First.GetFaceQuadsStrip();
+            }
+
+            throw new NotSupportedException();
+        }
+        */
+
         #region Explicit interface implementations
 
         /// <summary>
         /// 
         /// </summary>
-        bool IHeFace<TV,TE,TF>.IsDegree1
+        bool IHeFace<TV, TE, TF>.IsDegree1
         {
             get { return IsDegree1; }
         }

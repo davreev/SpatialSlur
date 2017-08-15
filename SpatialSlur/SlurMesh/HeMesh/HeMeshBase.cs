@@ -2427,7 +2427,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he0"></param>
         /// <param name="he1"></param>
         /// <returns></returns>
-        private TE SplitFaceImpl(TE he0, TE he1)
+        internal TE SplitFaceImpl(TE he0, TE he1)
         {
             var f0 = he0.Face;
             var f1 = AddFace();
@@ -2461,6 +2461,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -2471,47 +2472,50 @@ namespace SpatialSlur.SlurMesh
             _faces.ContainsCheck(face);
             face.RemovedCheck();
 
-            switch (mode)
-            {
-                case TriangulationMode.Fan:
-                    TriangulateFaceFan(face.First);
-                    return;
-                case TriangulationMode.Strip:
-                    TriangulateFaceStrip(face.First);
-                    return;
-                case TriangulationMode.Poke:
-                    TriangulateFacePoke(face.First);
-                    return;
-            }
-
-            throw new NotSupportedException();
+            TriangulateFaceImpl(face.First, mode);
         }
 
 
         /// <summary>
-        /// Starts the triangulation from the halfedge that returns the minimum value for the given selector function.
+        /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="face"></param>
+        /// <param name="first"></param>
         /// <param name="mode"></param>
-        /// <param name="selector"></param>
-        public void TriangulateFace<T>(TF face, TriangulationMode mode, Func<TE, T> selector)
-            where T : IComparable<T>
+        /// <returns></returns>
+        public bool TriangulateFace(TE first, TriangulationMode mode)
         {
-            _faces.ContainsCheck(face);
-            face.RemovedCheck();
+            _hedges.ContainsCheck(first);
+            first.RemovedCheck();
 
+            if (first.IsHole) return false;
+
+            TriangulateFaceImpl(first, mode);
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="first"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        private void TriangulateFaceImpl(TE first, TriangulationMode mode)
+        {
             switch (mode)
             {
                 case TriangulationMode.Fan:
-                    TriangulateFaceFan(face.Halfedges.SelectMin(selector));
-                    return;
+                    {
+                        TriangulateFaceFan(first);
+                        return;
+                    }
                 case TriangulationMode.Strip:
-                    TriangulateFaceStrip(face.Halfedges.SelectMin(selector));
-                    return;
-                case TriangulationMode.Poke:
-                    TriangulateFacePoke(face.First);
-                    return;
+                    {
+                        TriangulateFaceStrip(first);
+                        return;
+                    }
             }
 
             throw new NotSupportedException();
@@ -2556,12 +2560,120 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Assumes the given elements are valid for the operation.
+        /// 
         /// </summary>
-        private TV TriangulateFacePoke(TE first)
+        /// <param name="face"></param>
+        /// <param name="mode"></param>
+        internal void QuadrangulateFace(TF face, QuadrangulationMode mode)
+        {
+            _faces.ContainsCheck(face);
+            face.RemovedCheck();
+
+            QuadrangulateFaceImpl(face.First, mode);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        internal bool QuadrangulateFace(TE first, QuadrangulationMode mode)
+        {
+            _hedges.ContainsCheck(first);
+            first.RemovedCheck();
+
+            if (first.IsHole) return false;
+
+            QuadrangulateFaceImpl(first, mode);
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="mode"></param>
+        internal void QuadrangulateFaceImpl(TE first, QuadrangulationMode mode)
+        {
+            switch (mode)
+            {
+                case QuadrangulationMode.Fan:
+                    {
+                        QuadrangulateFaceFan(first);
+                        return;
+                    }
+                case QuadrangulationMode.Strip:
+                    {
+                        QuadrangulateFaceStrip(first);
+                        return;
+                    }
+            }
+
+            throw new NotSupportedException();
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="first"></param>
+        private void QuadrangulateFaceFan(TE first)
+        {
+            var he0 = first;
+            var he1 = he0.NextInFace.NextInFace.NextInFace;
+
+            while (he1 != he0 && he1.NextInFace != he0)
+            {
+                he0 = SplitFaceImpl(he0, he1);
+                he1 = he1.NextInFace.NextInFace;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="first"></param>
+        private void QuadrangulateFaceStrip(TE first)
+        {
+            var he0 = first;
+            var he1 = he0.NextInFace.NextInFace.NextInFace;
+
+            while (he1 != he0 && he1.NextInFace != he0)
+            {
+                he0 = SplitFaceImpl(he0, he1).PrevInFace;
+                he1 = he1.NextInFace;
+            }
+        }
+        */
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="face"></param>
+        /// <returns></returns>
+        public TV PokeFace(TF face)
+        {
+            _faces.ContainsCheck(face);
+            face.RemovedCheck();
+
+            return PokeFaceImpl(face);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="face"></param>
+        /// <returns></returns>
+        internal TV PokeFaceImpl(TF face)
         {
             var vc = AddVertex();
-            TriangulateFacePoke(first, vc);
+            PokeFaceImpl(face.First, vc);
             return vc;
         }
 
@@ -2569,7 +2681,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Assumes the given elements are valid for the operation.
         /// </summary>
-        internal void TriangulateFacePoke(TE first, TV center)
+        internal void PokeFaceImpl(TE first, TV center)
         {
             var he = first;
             var v = first.Start;
@@ -2615,90 +2727,26 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="face"></param>
-        /// <param name="mode"></param>
-        internal void QuadrangulateFace(TF face, QuadrangulationMode mode)
+        /// <returns></returns>
+        public TV QuadPokeFace(TF face)
         {
             _faces.ContainsCheck(face);
             face.RemovedCheck();
 
-            switch (mode)
-            {
-                case QuadrangulationMode.Fan:
-                    QuadrangulateFaceFan(face.First);
-                    return;
-                case QuadrangulationMode.Strip:
-                    QuadrangulateFaceStrip(face.First);
-                    return;
-                case QuadrangulationMode.Poke:
-                    QuadrangulateFacePoke(face.First);
-                    return;
-            }
-
-            throw new NotSupportedException();
+            return QuadPokeFaceImpl(face);
         }
 
 
         /// <summary>
-        /// Starts the triangulation from the halfedge that returns the minimum value for the given selector function.
+        /// 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="face"></param>
-        /// <param name="mode"></param>
-        /// <param name="selector"></param>
-        public void QuadrangulateFace<T>(TF face, QuadrangulationMode mode, Func<TE, T> selector)
-            where T : IComparable<T>
+        /// <returns></returns>
+        internal TV QuadPokeFaceImpl(TF face)
         {
-            _faces.ContainsCheck(face);
-            face.RemovedCheck();
-
-            switch (mode)
-            {
-                case QuadrangulationMode.Fan:
-                    QuadrangulateFaceFan(face.Halfedges.SelectMin(selector));
-                    return;
-                case QuadrangulationMode.Strip:
-                    QuadrangulateFaceStrip(face.Halfedges.SelectMin(selector));
-                    return;
-                case QuadrangulationMode.Poke:
-                    QuadrangulateFacePoke(face.First);
-                    return;
-            }
-
-            throw new NotSupportedException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="first"></param>
-        private void QuadrangulateFaceFan(TE first)
-        {
-            var he0 = first;
-            var he1 = he0.NextInFace.NextInFace.NextInFace;
-
-            while (he1 != he0 && he1.NextInFace != he0)
-            {
-                he0 = SplitFaceImpl(he0, he1);
-                he1 = he1.NextInFace.NextInFace;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="first"></param>
-        private void QuadrangulateFaceStrip(TE first)
-        {
-            var he0 = first;
-            var he1 = he0.NextInFace.NextInFace.NextInFace;
-
-            while (he1 != he0 && he1.NextInFace != he0)
-            {
-                he0 = SplitFaceImpl(he0, he1).PrevInFace;
-                he1 = he1.NextInFace;
-            }
+            var vc = AddVertex();
+            QuadPokeFaceImpl(face.First, vc);
+            return vc;
         }
 
 
@@ -2707,10 +2755,26 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="first"></param>
         /// <returns></returns>
-        private TV QuadrangulateFacePoke(TE first)
+        public TV QuadPokeFace(TE first)
+        {
+            _hedges.ContainsCheck(first);
+            first.RemovedCheck();
+            
+            if (first.IsHole) return null;
+
+            return QuadPokeFaceImpl(first);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="first"></param>
+        /// <returns></returns>
+        internal TV QuadPokeFaceImpl(TE first)
         {
             var vc = AddVertex();
-            QuadrangulateFacePoke(first, vc);
+            QuadPokeFaceImpl(first, vc);
             return vc;
         }
 
@@ -2720,7 +2784,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="first"></param>
         /// <param name="center"></param>
-        internal void QuadrangulateFacePoke(TE first, TV center)
+        internal void QuadPokeFaceImpl(TE first, TV center)
         {
             // TODO
             throw new NotImplementedException();
@@ -2781,7 +2845,6 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Reverses the winding direction of all faces in the mesh
-        /// TODO move to face ops
         /// </summary>
         public void ReverseFaces()
         {
@@ -2795,11 +2858,11 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Orients each face such that the first halfedge returns the minimum value for the given selector function.
+        /// Orients each face such that the first halfedge returns the minimum value for the given function.
         /// </summary>
-        /// <param name="selector"></param>
+        /// <param name="getValue"></param>
         /// <param name="parallel"></param>
-        public void OrientFacesToMin<T>(Func<TE, T> selector, bool parallel = false)
+        public void OrientFacesToMin<T>(Func<TE, T> getValue, bool parallel = false)
             where T : IComparable<T>
         {
             Action<Tuple<int, int>> body = range =>
@@ -2808,31 +2871,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     var f = _faces[i];
                     if (f.IsRemoved) continue;
-                    f.First = f.Halfedges.SelectMin(selector);
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _faces.Count), body);
-            else
-                body(Tuple.Create(0, _faces.Count));
-        }
-
-
-        /// <summary>
-        /// Orients each face such that the first halfedge returns the minimum value for the given selector function.
-        /// </summary>
-        /// <param name="selector"></param>
-        /// <param name="parallel"></param>
-        public void OrientFacesToMin(Func<TE, double> selector, bool parallel = false)
-        {
-            Action<Tuple<int, int>> body = range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var f = _faces[i];
-                    if (f.IsRemoved) continue;
-                    f.First = f.Halfedges.SelectMin(selector);
+                    f.First = f.Halfedges.SelectMin(getValue);
                 }
             };
 
@@ -2867,42 +2906,63 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="triangulator"></param>
+        public void TriangulateFaces(IFaceTriangulator<TV,TE,TF> triangulator)
+        {
+            var nf = _faces.Count;
+
+            for (int i = 0; i < nf; i++)
+                triangulator.Triangulate(_faces[i]);
+        }
+
+
+        /*
+        /// <summary>
         /// Triangulates all faces in the mesh.
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
         public void TriangulateFaces(TriangulationMode mode = TriangulationMode.Strip)
         {
-            int nf = _faces.Count;
-
-            for (int i = 0; i < nf; i++)
-            {
-                var f = _faces[i];
-                if (!f.IsRemoved) TriangulateFace(f, mode);
-            }
+            TriangulateFaces(f => f.First, mode);
         }
 
 
         /// <summary>
         /// Triangulates all faces in the mesh.
-        /// For each face, starts triangulation from the halfedge which returns the minimum value for the given selector function.
+        /// For each face, triangulation starts from the halfedge returned by the given delegate.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="selector"></param>
+        /// <param name="getFirst"></param>
         /// <param name="mode"></param>
-        public void TriangulateFaces<T>(Func<TE, T> selector, TriangulationMode mode = TriangulationMode.Strip)
-            where T : IComparable<T>
+        public void TriangulateFaces(Func<TF, TE> getFirst, TriangulationMode mode = TriangulationMode.Strip)
         {
             int nf = _faces.Count;
 
             for (int i = 0; i < nf; i++)
             {
                 var f = _faces[i];
-                if (!f.IsRemoved) TriangulateFace(f, mode, selector);
+                if (!f.IsRemoved) TriangulateFaceImpl(getFirst(f), mode);
             }
+        }
+        */
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="quadrangulator"></param>
+        public void QuadrangulateFaces(IFaceQuadrangulator<TV,TE,TF> quadrangulator)
+        {
+            var nf = _faces.Count;
+
+            for (int i = 0; i < nf; i++)
+                quadrangulator.Quadrangulate(_faces[i]);
         }
 
 
+        /*
         /// <summary>
         /// Splits all n-gonal faces into quads (and tris where necessary).
         /// </summary>
@@ -2910,34 +2970,27 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public void QuadrangulateFaces(QuadrangulationMode mode = QuadrangulationMode.Strip)
         {
-            int nf = _faces.Count;
-
-            for (int i = 0; i < nf; i++)
-            {
-                var f = _faces[i];
-                if (!f.IsRemoved) QuadrangulateFace(f, mode);
-            }
+            QuadrangulateFaces(f => f.First, mode);
         }
 
 
         /// <summary>
-        /// Splits all n-gonal faces into quads (and tris where necessary).
-        /// For each face, starts quadrangulation from the halfedge which returns the minimum value for the given selector function.
+        /// Quadrangulates all faces in the mesh.
+        /// For each face, quadrangulation starts from the halfedge returned by the given delegate.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="selector"></param>
+        /// <param name="getFirst"></param>
         /// <param name="mode"></param>
-        public void QuadrangulateFaces<T>(Func<TE, T> selector, QuadrangulationMode mode = QuadrangulationMode.Strip)
-            where T : IComparable<T>
+        public void QuadrangulateFaces(Func<TF, TE> getFirst, QuadrangulationMode mode = QuadrangulationMode.Strip)
         {
             int nf = _faces.Count;
 
             for (int i = 0; i < nf; i++)
             {
                 var f = _faces[i];
-                if (!f.IsRemoved) QuadrangulateFace(f, mode, selector);
+                if (!f.IsRemoved) QuadrangulateFaceImpl(getFirst(f), mode);
             }
         }
+        */
 
 
         /// <summary>
