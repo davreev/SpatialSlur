@@ -625,15 +625,23 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Assumes the given indices are within the valid range.
+        /// 
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
         public T this[int i, int j]
         {
-            get { return _values[IndexAtUnchecked(i, j)]; }
-            set { _values[IndexAtUnchecked(i, j)] = value; }
+            get
+            {
+                CoreUtil.BoundsCheck(i, CountX);
+                return _values[IndexAtUnchecked(i, j)];
+            }
+            set
+            {
+                CoreUtil.BoundsCheck(i, CountX);
+                _values[IndexAtUnchecked(i, j)] = value;
+            }
         }
 
 
