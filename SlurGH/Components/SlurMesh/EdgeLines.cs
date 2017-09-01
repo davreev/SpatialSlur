@@ -51,6 +51,7 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
+        /*
         /// <summary>
         /// This is the method that actually does the work.
         /// </summary>
@@ -72,9 +73,9 @@ namespace SpatialSlur.SlurGH.Components
                 DA.SetDataList(0, GetEdgeLines(value, v => v.Position));
             }
         }
+        */
 
 
-        /*
         /// <summary>
         /// This is the method that actually does the work.
         /// </summary>
@@ -82,7 +83,7 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_Goo<Object> goo = null;
+            GH_ObjectWrapper goo = null;
             if (!DA.GetData(0, ref goo)) return;
 
             var obj = goo.Value;
@@ -96,7 +97,6 @@ namespace SpatialSlur.SlurGH.Components
                 DA.SetDataList(0, GetEdgeLines((HeMesh3d)obj, v => v.Position));
             }
         }
-        */
 
 
         /// <summary>

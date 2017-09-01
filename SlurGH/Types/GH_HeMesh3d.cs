@@ -165,7 +165,14 @@ namespace SpatialSlur.SlurGH.Types
                 target = (Q)obj;
                 return true;
             }
-           
+
+            if (typeof(Q).IsAssignableFrom(typeof(GH_ObjectWrapper)))
+            {
+                object obj = new GH_ObjectWrapper(Value);
+                target = (Q)obj;
+                return true;
+            }
+
             return false;
         }
 

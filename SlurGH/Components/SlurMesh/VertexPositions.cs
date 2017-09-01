@@ -58,18 +58,20 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            IGH_Goo goo = null;
+            GH_ObjectWrapper goo = null;
             if (!DA.GetData(0, ref goo)) return;
 
-            if (goo is GH_Goo<HeGraph3d>)
+            var obj = goo.Value;
+
+            if (obj is HeGraph3d)
             {
-                var value = ((GH_Goo<HeGraph3d>)goo).Value;
-                DA.SetDataList(0, value.Vertices.Select(v => new GH_Point(v.Position.ToPoint3d())));
+                var graph = (HeGraph3d)obj;
+                DA.SetDataList(0, graph.Vertices.Select(v => new GH_Point(v.Position.ToPoint3d())));
             }
-            else if (goo is GH_Goo<HeMesh3d>)
+            else if (obj is HeMesh3d)
             {
-                var value = ((GH_Goo<HeMesh3d>)goo).Value;
-                DA.SetDataList(0, value.Vertices.Select(v => new GH_Point(v.Position.ToPoint3d())));
+                var mesh = (HeMesh3d)obj;
+                DA.SetDataList(0, mesh.Vertices.Select(v => new GH_Point(v.Position.ToPoint3d())));
             }
         }
 
