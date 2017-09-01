@@ -109,7 +109,7 @@ namespace SpatialSlur.SlurRhino
         public static PointCloud ToPointCloud<T>(this GridField2d<T> field, Func<T, Color> getColor, bool parallel = false)
             where T : struct
         {
-            var cloud = new PointCloud(field.Coordinates.Select(p => p.ToPoint3d()));
+            var cloud = new PointCloud(field.Coordinates.Select(p => new Point3d(p.X,p.Y,0.0)));
             var vals = field.Values;
 
             Action<Tuple<int, int>> body = range =>
@@ -186,7 +186,6 @@ namespace SpatialSlur.SlurRhino
 
             return mesh;
         }
-
 
 
         /// <summary>

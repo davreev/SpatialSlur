@@ -110,7 +110,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="domain"></param>
         /// <returns></returns>
-        public static Interval ToInterval(this Domain domain)
+        public static Interval ToInterval(this Domain1d domain)
         {
             return new Interval(domain.T0, domain.T1);
         }
@@ -127,8 +127,8 @@ namespace SpatialSlur.SlurRhino
         /// <returns></returns>
         public static BoundingBox ToBoundingBox(this Domain2d domain)
         {
-            Domain x = domain.X;
-            Domain y = domain.Y;
+            Domain1d x = domain.X;
+            Domain1d y = domain.Y;
             return new BoundingBox(x.T0, y.T0, 0.0, x.T1, y.T1, 0.0);
         }
 
@@ -144,10 +144,66 @@ namespace SpatialSlur.SlurRhino
         /// <returns></returns>
         public static BoundingBox ToBoundingBox(this Domain3d domain)
         {
-            Domain x = domain.X;
-            Domain y = domain.Y;
-            Domain z = domain.Z;
+            Domain1d x = domain.X;
+            Domain1d y = domain.Y;
+            Domain1d z = domain.Z;
             return new BoundingBox(x.T0, y.T0, z.T0, x.T1, y.T1, z.T1);
+        }
+
+        #endregion
+
+
+        #region Orient3d
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="orient"></param>
+        /// <returns></returns>
+        public static Plane ToPlane(this Orient3d orient)
+        {
+            return new Plane(
+                orient.Translation.ToPoint3d(),
+                orient.Rotation.X.ToVector3d(),
+                orient.Rotation.Y.ToVector3d()
+                );
+        }
+
+        #endregion
+
+
+        #region Mat4d
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static Transform ToTransform(Mat4d matrix)
+        {
+            var m = new Transform();
+
+            m.M00 = matrix.M00;
+            m.M01 = matrix.M01;
+            m.M02 = matrix.M02;
+            m.M03 = matrix.M03;
+
+            m.M10 = matrix.M10;
+            m.M11 = matrix.M11;
+            m.M12 = matrix.M12;
+            m.M13 = matrix.M13;
+
+            m.M20 = matrix.M20;
+            m.M21 = matrix.M21;
+            m.M22 = matrix.M22;
+            m.M23 = matrix.M23;
+
+            m.M30 = matrix.M30;
+            m.M31 = matrix.M31;
+            m.M32 = matrix.M32;
+            m.M33 = matrix.M33;
+
+            return m;
         }
 
         #endregion

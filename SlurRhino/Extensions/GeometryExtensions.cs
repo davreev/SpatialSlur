@@ -28,9 +28,9 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static Domain ToDomain(this Interval interval)
+        public static Domain1d ToDomain(this Interval interval)
         {
-            return new Domain(interval.T0, interval.T1);
+            return new Domain1d(interval.T0, interval.T1);
         }
 
         #endregion
@@ -90,31 +90,7 @@ namespace SpatialSlur.SlurRhino
         /// <returns></returns>
         public static Transform ToTransform(this Plane plane)
         {
-            Point3d o = plane.Origin;
-            Vector3d x = plane.XAxis;
-            Vector3d y = plane.YAxis;
-            Vector3d z = plane.ZAxis;
-
-            Transform m = new Transform();
-
-            m[0, 0] = x.X;
-            m[0, 1] = y.X;
-            m[0, 2] = z.X;
-            m[0, 3] = o.X;
-
-            m[1, 0] = x.Y;
-            m[1, 1] = y.Y;
-            m[1, 2] = z.Y;
-            m[1, 3] = o.Y;
-
-            m[2, 0] = x.Z;
-            m[2, 1] = y.Z;
-            m[2, 2] = z.Z;
-            m[2, 3] = o.Z;
-
-            m[3, 3] = 1.0;
-
-            return m;
+            return RhinoFactory.Transform.CreateFromPlane(plane);
         }
 
 
@@ -125,31 +101,7 @@ namespace SpatialSlur.SlurRhino
         /// <returns></returns>
         public static Transform ToInverseTransform(this Plane plane)
         {
-            Vector3d d = new Vector3d(plane.Origin);
-            Vector3d x = plane.XAxis;
-            Vector3d y = plane.YAxis;
-            Vector3d z = plane.ZAxis;
-
-            Transform m = new Transform();
-
-            m[0, 0] = x.X;
-            m[0, 1] = x.Y;
-            m[0, 2] = x.Z;
-            m[0, 3] = -(d * x);
-
-            m[1, 0] = y.X;
-            m[1, 1] = y.Y;
-            m[1, 2] = y.Z;
-            m[1, 3] = -(d * y);
-
-            m[2, 0] = z.X;
-            m[2, 1] = z.Y;
-            m[2, 2] = z.Z;
-            m[2, 3] = -(d * z);
-
-            m[3, 3] = 1.0;
-
-            return m;
+            return RhinoFactory.Transform.CreateInverseFromPlane(plane);
         }
 
 
@@ -174,6 +126,17 @@ namespace SpatialSlur.SlurRhino
         public static Transform ToLocal(this Plane plane)
         {
             return ToInverseTransform(plane);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="plane"></param>
+        /// <returns></returns>
+        public static Orient3d ToOrient3d(this Plane plane)
+        {
+            return new Orient3d(plane.Origin.ToVec3d(), plane.XAxis.ToVec3d(), plane.YAxis.ToVec3d());
         }
 
         #endregion
@@ -337,8 +300,46 @@ namespace SpatialSlur.SlurRhino
 
         #endregion
 
-    
+
         #region Transform
+
+
+
+        #region Mat4d
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xform"></param>
+        /// <returns></returns>
+        public static Mat4d ToMat4d(Transform xform)
+        {
+            var m = new Mat4d();
+
+            m.M00 = xform.M00;
+            m.M01 = xform.M01;
+            m.M02 = xform.M02;
+            m.M03 = xform.M03;
+
+            m.M10 = xform.M10;
+            m.M11 = xform.M11;
+            m.M12 = xform.M12;
+            m.M13 = xform.M13;
+
+            m.M20 = xform.M20;
+            m.M21 = xform.M21;
+            m.M22 = xform.M22;
+            m.M23 = xform.M23;
+
+            m.M30 = xform.M30;
+            m.M31 = xform.M31;
+            m.M32 = xform.M32;
+            m.M33 = xform.M33;
+
+            return m;
+        }
+
+        #endregion
 
         /// <summary>
         /// 
@@ -358,26 +359,28 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="xform"></param>
-        /// <param name="vector"></param>
-        /// <param name="isPosition"></param>
         /// <returns></returns>
-        public static Vec3d Apply(this Transform xform, Vec3d vector, bool isPosition = false)
+        public static Vec3d Apply(this Transform xform, Vec3d vector)
         {
-            if (isPosition)
-            {
-                return new Vec3d(
-                    vector.X * xform.M00 + vector.Y * xform.M01 + vector.Z * xform.M02 + xform.M03,
-                    vector.X * xform.M10 + vector.Y * xform.M11 + vector.Z * xform.M12 + xform.M13,
-                    vector.X * xform.M20 + vector.Y * xform.M21 + vector.Z * xform.M22 + xform.M23
-                    );
-            }
-
             return new Vec3d(
-               vector.X * xform.M00 + vector.Y * xform.M01 + vector.Z * xform.M02,
-               vector.X * xform.M10 + vector.Y * xform.M11 + vector.Z * xform.M12,
-               vector.X * xform.M20 + vector.Y * xform.M21 + vector.Z * xform.M22
-               );
+             vector.X * xform.M00 + vector.Y * xform.M01 + vector.Z * xform.M02,
+             vector.X * xform.M10 + vector.Y * xform.M11 + vector.Z * xform.M12,
+             vector.X * xform.M20 + vector.Y * xform.M21 + vector.Z * xform.M22
+             );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Vec3d ApplyToPoint(this Transform xform, Vec3d point)
+        {
+            return new Vec3d(
+             point.X * xform.M00 + point.Y * xform.M01 + point.Z * xform.M02 + xform.M03,
+             point.X * xform.M10 + point.Y * xform.M11 + point.Z * xform.M12 + xform.M13,
+             point.X * xform.M20 + point.Y * xform.M21 + point.Z * xform.M22 + xform.M23
+             );
         }
 
         #endregion
@@ -430,39 +433,68 @@ namespace SpatialSlur.SlurRhino
         /// <returns></returns>
         public static Mesh ToPolySoup(this Mesh mesh)
         {
-            var verts = mesh.Vertices;
-            var faces = mesh.Faces;
-
-            Mesh newMesh = new Mesh();
-            var newVerts = newMesh.Vertices;
-            var newFaces = newMesh.Faces;
-
-            // add verts and faces
-            for (int i = 0; i < faces.Count; i++)
-            {
-                var f = faces[i];
-                int nv = newVerts.Count;
-
-                if (f.IsTriangle)
-                {
-                    for (int j = 0; j < 3; j++)
-                        newVerts.Add(verts[f[j]]);
-
-                    newFaces.AddFace(nv, nv + 1, nv + 2);
-                }
-                else
-                {
-                    for (int j = 0; j < 4; j++)
-                        newVerts.Add(verts[f[j]]);
-
-                    newFaces.AddFace(nv, nv + 1, nv + 2, nv + 3);
-                }
-            }
-
-            return newMesh;
+            return RhinoFactory.Mesh.CreatePolySoup(mesh);
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="getColor"></param>
+        /// <param name="parallel"></param>
+        public static void ColorVertices(this Mesh mesh, Func<int, Color> getColor, bool parallel = false)
+        {
+            var verts = mesh.Vertices;
+            var colors = mesh.VertexColors;
+            colors.Count = verts.Count;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    colors[i] = getColor(i);
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
+            else
+                body(Tuple.Create(0, verts.Count));
+        }
+
+
+        /// <summary>
+        /// Assumes the mesh is polygon soup (i.e. vertices aren't shared between faces).
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="getColor"></param>
+        /// <param name="parallel"></param>
+        public static void ColorFaces<T>(this Mesh mesh, Func<int, Color> getColor, bool parallel = false)
+        {
+            var faces = mesh.Faces;
+            var colors = mesh.VertexColors;
+            colors.Count = mesh.Vertices.Count;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var f = faces[i];
+                    Color c = getColor(i);
+
+                    int n = (f.IsQuad) ? 4 : 3;
+                    for (int j = 0; j < n; j++) colors[f[j]] = c;
+                }
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
+            else
+                body(Tuple.Create(0, faces.Count));
+        }
+
+
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -572,6 +604,7 @@ namespace SpatialSlur.SlurRhino
             else
                 body(Tuple.Create(0, faces.Count));
         }
+        */
 
 
         /// <summary>
@@ -581,10 +614,9 @@ namespace SpatialSlur.SlurRhino
         /// <param name="vertexValues"></param>
         /// <param name="domain"></param>
         /// <returns></returns>
-        public static Mesh IsoTrim(this Mesh mesh, IReadOnlyList<double> vertexValues, Domain domain)
+        public static Mesh IsoTrim(this Mesh mesh, IReadOnlyList<double> vertexValues, Domain1d domain)
         {
-            // TODO
-            throw new NotImplementedException();
+            return RhinoFactory.Mesh.CreateIsoTrim(mesh, vertexValues, domain);
         }
 
 

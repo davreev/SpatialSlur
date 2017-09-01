@@ -21,27 +21,7 @@ namespace SpatialSlur.SlurRhino
     /// </summary>
     public static class IEnumerableExtensions
     {
-        #region IEnumerable<Point3d>
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        public static Point3d Mean(this IEnumerable<Point3d> points)
-        {
-            var sum = new Point3d();
-            int count = 0;
-
-            foreach (Point3d p in points)
-            {
-                sum += p;
-                count++;
-            }
-
-            return sum / count;
-        }
-
+        #region IEnumerable<Vector3d>
 
         /// <summary>
         /// 
@@ -100,6 +80,30 @@ namespace SpatialSlur.SlurRhino
             result[3] = result[1];
             result[6] = result[2];
             result[7] = result[5];
+        }
+
+        #endregion
+
+
+        #region IEnumerable<Point3d>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static Point3d Mean(this IEnumerable<Point3d> points)
+        {
+            var sum = new Point3d();
+            int count = 0;
+
+            foreach (Point3d p in points)
+            {
+                sum += p;
+                count++;
+            }
+
+            return sum / count;
         }
 
 

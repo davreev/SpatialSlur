@@ -8,7 +8,9 @@ using System.Drawing;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
+
 using Rhino.Geometry;
+using Rhino.Geometry.Collections;
 
 /*
  * Notes
@@ -234,21 +236,21 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
-        /// <param name="structure"></param>
+        /// <param name="graph"></param>
         /// <param name="xform"></param>
         /// <param name="parallel"></param>
-        public static void Transform<V, E>(this IHeStructure<V, E> structure, Transform xform, bool parallel = false)
+        public static void Transform<V, E>(this IHeStructure<V, E> graph, Transform xform, bool parallel = false)
             where V : HeElement, IHeVertex<V, E>, IVertex3d
             where E : HeElement, IHalfedge<V, E>
         {
-            var verts = structure.Vertices;
+            var verts = graph.Vertices;
             
             Action<Tuple<int, int>> body = range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var v = verts[i];
-                    v.Position = xform.Apply(v.Position, true);
+                    v.Position = xform.ApplyToPoint(v.Position);
                 }
             };
 
@@ -264,14 +266,14 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
-        /// <param name="structure"></param>
+        /// <param name="graph"></param>
         /// <param name="xmorph"></param>
         /// <param name="parallel"></param>
-        public static void SpaceMorph<V, E>(this IHeStructure<V, E> structure, SpaceMorph xmorph, bool parallel = false)
+        public static void SpaceMorph<V, E>(this IHeStructure<V, E> graph, SpaceMorph xmorph, bool parallel = false)
             where V : HeElement, IHeVertex<V, E>, IVertex3d
             where E : HeElement, IHalfedge<V, E>
         {
-            var verts = structure.Vertices;
+            var verts = graph.Vertices;
 
             Action<Tuple<int, int>> body = range =>
             {
@@ -294,94 +296,42 @@ namespace SpatialSlur.SlurRhino
         #region HeMesh
 
         /// <summary>
-        /// Note that unused and n-gon faces are skipped.
-        /// </summary>
-        /// <param name="mesh"></param>
-        /// <returns></returns>
-        public static Mesh ToMesh<V, E, F>(this HeMeshBase<V, E, F> mesh)
-            where V : HeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
-        {
-            return mesh.ToMesh(
-                v => v.Position.ToPoint3f(),
-                v => v.Normal.ToVector3f(),
-                v => v.Texture.ToPoint2f(),
-                null
-                );
-        }
-
-
-        /// <summary>
-        /// Note that unused and n-gon faces are skipped.
+        /// 
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
+        /// <param name="quadrangulator"></param>
+        /// <returns></returns>
+        public static Mesh ToMesh<V, E, F>(this HeMeshBase<V, E, F> mesh, IFaceQuadrangulator<V, E, F> quadrangulator = null)
+            where V : HeVertex<V, E, F>, IVertex3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            return RhinoFactory.Mesh.CreateFromHeMesh(mesh, v => v.Position.ToPoint3f(), v => v.Normal.ToVector3f(), v => v.Texture.ToPoint2f(), null, quadrangulator);
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="quadrangulator"></param>
         /// <param name="getPosition"></param>
         /// <param name="getNormal"></param>
-        /// <param name="getTexCoord"></param>
+        /// <param name="getTexture"></param>
         /// <param name="getColor"></param>
         /// <returns></returns>
-        public static Mesh ToMesh<V, E, F>(this HeMeshBase<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal, Func<V, Point2f> getTexCoord, Func<V, Color> getColor)
+        public static Mesh ToMesh<V, E, F>(this HeMeshBase<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null, IFaceQuadrangulator<V, E, F> quadrangulator = null)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            var verts = mesh.Vertices;
-            var faces = mesh.Faces;
-
-            Mesh result = new Mesh();
-            var newVerts = result.Vertices;
-            var newFaces = result.Faces;
-
-            var newNorms = result.Normals;
-            var newTexCoords = result.TextureCoordinates;
-            var newColors = result.VertexColors;
-
-            // add vertices
-            for (int i = 0; i < verts.Count; i++)
-            {
-                var v = verts[i];
-                newVerts.Add(getPosition(v));
-
-                if (getNormal != null) newNorms.Add(getNormal(v));
-                if (getTexCoord != null) newTexCoords.Add(getTexCoord(v));
-                if (getColor != null) newColors.Add(getColor(v));
-            }
-
-            // add faces
-            foreach (var f in mesh.Faces)
-            {
-                if (f.IsRemoved) continue;
-                var he = f.First;
-                int degree = f.Degree;
-
-                if (degree == 3)
-                {
-                    newFaces.AddFace(
-                        he.Start.Index,
-                        he.NextInFace.Start.Index,
-                        he.PrevInFace.Start.Index
-                        );
-                }
-                else if (degree == 4)
-                {
-                    newFaces.AddFace(
-                        he.Start.Index,
-                        he.NextInFace.Start.Index,
-                        he.NextInFace.NextInFace.Start.Index,
-                        he.PrevInFace.Start.Index
-                        );
-                }
-                else
-                {
-                    // TODO support different triangulation schemes for n-gons
-                }
-            }
-
-            return result;
+            return RhinoFactory.Mesh.CreateFromHeMesh(mesh, getPosition, getNormal, getTexture, getColor, quadrangulator);
         }
 
 
@@ -392,118 +342,36 @@ namespace SpatialSlur.SlurRhino
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
+        /// <param name="getColor"></param>
+        /// <param name="quadrangulator"></param>
         /// <returns></returns>
-        public static Mesh ToPolySoup<V, E, F>(this HeMeshBase<V, E, F> mesh)
+        public static Mesh ToPolySoup<V, E, F>(this HeMeshBase<V, E, F> mesh, Func<F, Color> getColor = null, IFaceQuadrangulator<V, E, F> quadrangulator = null)
             where V : HeVertex<V, E, F>, IVertex3d
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            return mesh.ToPolySoup(v => v.Position.ToPoint3f());
+            return RhinoFactory.Mesh.CreatePolySoup(mesh, v => v.Position.ToPoint3f(), getColor, quadrangulator);
         }
 
 
         /// <summary>
-        /// Vertices of the resulting mesh are not shared between faces.
-        /// Note that unused and n-gon faces are skipped.
+        /// 
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="getPosition"></param>
+        /// <param name="getColor"></param>
+        /// <param name="quadrangulator"></param>
         /// <returns></returns>
-        public static Mesh ToPolySoup<V, E, F>(this HeMeshBase<V, E, F> mesh, Func<V, Point3f> getPosition)
-        where V : HeVertex<V, E, F>
-        where E : Halfedge<V, E, F>
-        where F : HeFace<V, E, F>
+        public static Mesh ToPolySoup<V, E, F>(this HeMeshBase<V, E, F> mesh, Func<V, Point3f> getPosition, Func<F,Color> getColor, IFaceQuadrangulator<V, E, F> quadrangulator = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            Mesh result = new Mesh();
-            var newVerts = result.Vertices;
-            var newFaces = result.Faces;
-
-            // add vertices per face
-            foreach (var f in mesh.Faces)
-            {
-                if (f.IsRemoved) continue;
-                int nv = newVerts.Count;
-                int degree = 0;
-
-                // add face vertices
-                foreach (var v in f.Vertices)
-                {
-                    newVerts.Add(getPosition(v));
-                    degree++;
-                }
-
-                // add face(s)
-                if (degree == 3)
-                {
-                    newFaces.AddFace(nv, nv + 1, nv + 2);
-                }
-                else if (degree == 4)
-                {
-                    newFaces.AddFace(nv, nv + 1, nv + 2, nv + 3);
-                }
-                else
-                {
-                    // TODO support different triangulation schemes for n-gons
-                }
-            }
-
-            return result;
+            return RhinoFactory.Mesh.CreatePolySoup(mesh, getPosition, getColor, quadrangulator);
         }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xform"></param>
-        public static void Transform(this M mesh, Transform xform, bool parallel = false)
-        {
-            var verts = mesh.Vertices;
-
-            Action<Tuple<int, int>> func = range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var v = verts[i];
-                    v.Position = xform.Multiply(v.Position, true);
-                    v.Normal = xform.Multiply(v.Normal);
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
-            else
-                func(Tuple.Create(0, verts.Count));
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xform"></param>
-        public static void SpaceMorph(this M mesh, SpaceMorph xmorph, bool parallel = false)
-        {
-            var verts = mesh.Vertices;
-
-            Action<Tuple<int, int>> func = range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var v = verts[i];
-                    v.Position = xmorph.MorphPoint(v.Position);
-                    // v.Normal = xmorph.MorphPoint(v.Normal);
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, verts.Count), func);
-            else
-                func(Tuple.Create(0, verts.Count));
-        }
-        */
 
         #endregion
 
@@ -590,10 +458,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="setPosition"></param>
         /// <param name="setNormal"></param>
-        /// <param name="setTexCoord"></param>
+        /// <param name="setTexture"></param>
         /// <param name="setColor"></param>
         /// <returns></returns>
-        public static G CreateFromVertexTopology<G, V, E>(this HeGraphFactoryBase<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
+        public static G CreateFromVertexTopology<G, V, E>(this HeGraphFactoryBase<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexture, Action<V, Color> setColor)
             where G : HeGraphBase<V, E>
             where V : HeVertex<V, E>
             where E : Halfedge<V, E>
@@ -637,10 +505,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="setPosition"></param>
         /// <param name="setNormal"></param>
-        /// <param name="setTexCoord"></param>
+        /// <param name="setTexture"></param>
         /// <param name="setColor"></param>
         /// <returns></returns>
-        public static G CreateFromFaceTopology<G, V, E>(this HeGraphFactoryBase<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
+        public static G CreateFromFaceTopology<G, V, E>(this HeGraphFactoryBase<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexture, Action<V, Color> setColor)
             where G : HeGraphBase<V, E>
             where V : HeVertex<V, E>
             where E : Halfedge<V, E>
@@ -689,10 +557,10 @@ namespace SpatialSlur.SlurRhino
         /// <param name="mesh"></param>
         /// <param name="setPosition"></param>
         /// <param name="setNormal"></param>
-        /// <param name="setTexCoord"></param>
+        /// <param name="setTexture"></param>
         /// <param name="setColor"></param>
         /// <returns></returns>
-        public static M CreateFromMesh<M, V, E, F>(this HeMeshFactoryBase<M, V, E, F> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexCoord, Action<V, Color> setColor)
+        public static M CreateFromMesh<M, V, E, F>(this HeMeshFactoryBase<M, V, E, F> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal, Action<V, Point2f> setTexture, Action<V, Color> setColor)
             where M : HeMeshBase<V, E, F>
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
@@ -716,7 +584,7 @@ namespace SpatialSlur.SlurRhino
                 setPosition(v, verts[i]);
 
                 if (hasNorms) setNormal(v, norms[i]);
-                if (hasTexCoords) setTexCoord(v, texCoords[i]);
+                if (hasTexCoords) setTexture(v, texCoords[i]);
                 if (hasColors) setColor(v, colors[i]);
             }
 
@@ -805,51 +673,39 @@ namespace SpatialSlur.SlurRhino
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="strip"></param>
-        /// <param name="getPosition"></param>
         /// <returns></returns>
-        public static Mesh ToMesh<V, E, F>(this HeQuadStrip<V, E, F> strip, Func<V, Point3f> getPosition)
+        public static Mesh ToMesh<V, E, F>(this HeQuadStrip<V, E, F> strip)
+            where V : HeVertex<V, E, F>, IVertex3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            return ToMesh(strip,
+                v => v.Position.ToPoint3f(),
+                v => v.Normal.ToVector3f(),
+                v => v.Texture.ToPoint2f(),
+                null
+             );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="strip"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="getNormal"></param>
+        /// <param name="getTexture"></param>
+        /// <param name="getColor"></param>
+        /// <returns></returns>
+        public static Mesh ToMesh<V, E, F>(this HeQuadStrip<V, E, F> strip, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null)
             where V : HeVertex<V, E, F>
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            // TODO include normals and texCoords
-            var mesh = new Mesh();
-
-            var verts = mesh.Vertices;
-            var faces = mesh.Faces;
-
-            if(strip.IsPeriodic)
-            {
-                // add verts
-                foreach(var he in strip.SkipLast(1))
-                {
-                    verts.Add(getPosition(he.Start));
-                    verts.Add(getPosition(he.End));
-                }
-
-                // add faces
-                var n = verts.Count - 2;
-                for(int i = 0; i < n; i+=2)
-                    faces.AddFace(i, i + 1, i + 3, i + 2);
-
-                faces.AddFace(n, n + 1, 1, 0); // add last face
-            }
-            else
-            {
-                // add verts
-                foreach (var he in strip)
-                {
-                    verts.Add(getPosition(he.Start));
-                    verts.Add(getPosition(he.End));
-                }
-
-                // add faces
-                var n = verts.Count - 2;
-                for (int i = 0; i < n; i += 2)
-                    faces.AddFace(i, i + 1, i + 3, i + 2);
-            }
-
-            return mesh;
+            return RhinoFactory.Mesh.CreateFromQuadStrip(strip, getPosition, getNormal, getTexture, getColor);
         }
 
         #endregion
