@@ -25,6 +25,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static implicit operator Vec2i(Vec3i vector)
+        {
+            return new Vec2i(vector.X, vector.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
@@ -77,53 +88,55 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vec2i operator -(Vec2i v)
+        public static Vec2i operator -(Vec2i vector)
         {
-            v.X = -v.X;
-            v.Y = -v.Y;
-            return v;
+            vector.X = -vector.X;
+            vector.Y = -vector.Y;
+            return vector;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="t"></param>
+        /// <param name="vector"></param>
+        /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vec2i operator *(Vec2i v, int t)
+        public static Vec2i operator *(Vec2i vector, int scalar)
         {
-            v.X *= t;
-            v.Y *= t;
-            return v;
+            vector.X *= scalar;
+            vector.Y *= scalar;
+            return vector;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="t"></param>
+        /// <param name="vector"></param>
+        /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vec2i operator *(int t, Vec2i v)
+        public static Vec2i operator *(int scalar, Vec2i vector)
         {
-            v.X *= t;
-            v.Y *= t;
-            return v;
+            vector.X *= scalar;
+            vector.Y *= scalar;
+            return vector;
         }
 
 
         /// <summary>
-        /// Returns the dot product of two vectors.
+        /// Component-wise multiplication.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static int operator *(Vec2i v0, Vec2i v1)
+        public static Vec2i operator *(Vec2i v0, Vec2i v1)
         {
-            return v0.X * v1.X + v0.Y * v1.Y;
+            v0.X *= v1.X;
+            v0.Y *= v1.Y;
+            return v0;
         }
 
 
@@ -131,9 +144,9 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <returns></returns>
-        public static Vec2i Abs(Vec2i v)
+        public static Vec2i Abs(Vec2i vector)
         {
-            return new Vec2i(Math.Abs(v.X), Math.Abs(v.Y));
+            return new Vec2i(Math.Abs(vector.X), Math.Abs(vector.Y));
         }
 
 
@@ -170,17 +183,6 @@ namespace SpatialSlur.SlurCore
         public static double Dot(Vec2i v0, Vec2i v1)
         {
             return v0.X * v1.X + v0.Y * v1.Y;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static implicit operator Vec2i(Vec3i v)
-        {
-            return new Vec2i(v.X, v.Y);
         }
 
         #endregion
@@ -416,7 +418,20 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public int[] ToArray()
         {
-            return new int[] { X, Y };
+            var result = new int[2];
+            ToArray(result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        public void ToArray(int[] result)
+        {
+            result[0] = X;
+            result[1] = Y;
         }
     }
 }

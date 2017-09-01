@@ -403,17 +403,7 @@ namespace SpatialSlur.SlurCore
 
             return result / wsum;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Obsolete("Use other overload instead.")]
-        public static void Normalize<T>(this IEnumerable<T> items, Func<T, double> getValue, Action<T, double> setValue)
-        {
-            Normalize(items, Property.Create(getValue, setValue));
-        }
-
+        
 
         /// <summary>
         /// 

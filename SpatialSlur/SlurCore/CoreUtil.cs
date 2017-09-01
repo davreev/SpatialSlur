@@ -33,10 +33,10 @@ namespace SpatialSlur.SlurCore
         /// Trick to simplify bounds check
         /// </summary>
         /// <param name="index"></param>
-        /// <param name="size"></param>
-        public static void BoundsCheck(int index, int size)
+        /// <param name="range"></param>
+        public static void BoundsCheck(int index, int range)
         {
-            if ((uint)index >= (uint)size)
+            if ((uint)index >= (uint)range)
                 throw new IndexOutOfRangeException();
         }
     }

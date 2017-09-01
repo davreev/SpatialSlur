@@ -135,6 +135,18 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Fast containment check for array indices. Assumes range is positive.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public static bool Contains(int index, int range)
+        {
+            return ((uint)index < (uint)range);
+        }
+
+
+        /// <summary>
         /// Exclusive containment check.
         /// </summary>
         /// <param name="t"></param>

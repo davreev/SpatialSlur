@@ -9,7 +9,7 @@ using System.Linq;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// 
+    /// Represents a double precision numerical domain in 2 dimensions.
     /// </summary>
     [Serializable]
     public struct Domain2d
@@ -102,8 +102,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec2d Remap(Vec2d point, Domain2d from, Domain2d to)
         {
-            point.X = Domain.Remap(point.X, from.X, to.X);
-            point.Y = Domain.Remap(point.Y, from.Y, to.Y);
+            point.X = Domain1d.Remap(point.X, from.X, to.X);
+            point.Y = Domain1d.Remap(point.Y, from.Y, to.Y);
             return point;
         }
 
@@ -116,8 +116,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Domain2d Intersect(Domain2d d0, Domain2d d1)
         {
-            d0.X = Domain.Intersect(d0.X, d1.X);
-            d0.Y = Domain.Intersect(d0.Y, d1.Y);
+            d0.X = Domain1d.Intersect(d0.X, d1.X);
+            d0.Y = Domain1d.Intersect(d0.Y, d1.Y);
             return d0;
         }
 
@@ -130,8 +130,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Domain2d Union(Domain2d a, Domain2d b)
         {
-            a.X = Domain.Union(a.X, b.X);
-            a.Y = Domain.Union(a.Y, b.Y);
+            a.X = Domain1d.Union(a.X, b.X);
+            a.Y = Domain1d.Union(a.Y, b.Y);
             return a;
         }
 
@@ -150,9 +150,9 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Domain X;
+        public Domain1d X;
         /// <summary></summary>
-        public Domain Y;
+        public Domain1d Y;
 
 
         /// <summary>
@@ -161,8 +161,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="point"></param>
         public Domain2d(Vec2d point)
         {
-            X = new Domain(point.X);
-            Y = new Domain(point.Y);
+            X = new Domain1d(point.X);
+            Y = new Domain1d(point.Y);
         }
 
 
@@ -171,7 +171,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        public Domain2d(Domain x, Domain y)
+        public Domain2d(Domain1d x, Domain1d y)
         {
             this.X = x;
             this.Y = y;
@@ -185,8 +185,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="to"></param>
         public Domain2d(Vec2d from, Vec2d to)
         {
-            X = new Domain(from.X, to.X);
-            Y = new Domain(from.Y, to.Y);
+            X = new Domain1d(from.X, to.X);
+            Y = new Domain1d(from.Y, to.Y);
         }
 
 
@@ -209,8 +209,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="offsetY"></param>
         public Domain2d(Vec2d center, double offsetX, double offsetY)
         {
-            X = new Domain(center.X - offsetX, center.X + offsetX);
-            Y = new Domain(center.Y - offsetY, center.Y + offsetY);
+            X = new Domain1d(center.X - offsetX, center.X + offsetX);
+            Y = new Domain1d(center.Y - offsetY, center.Y + offsetY);
         }
 
 
@@ -223,8 +223,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="y1"></param>
         public Domain2d(double x0, double x1, double y0, double y1)
         {
-            X = new Domain(x0, x1);
-            Y = new Domain(y0, y1);
+            X = new Domain1d(x0, x1);
+            Y = new Domain1d(y0, y1);
         }
 
 
@@ -236,8 +236,8 @@ namespace SpatialSlur.SlurCore
             : this()
         {
             var p = points.First();
-            X = new Domain(p.X);
-            Y = new Domain(p.Y);
+            X = new Domain1d(p.X);
+            Y = new Domain1d(p.Y);
 
             Include(points.Skip(1));
         }

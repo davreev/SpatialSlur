@@ -51,6 +51,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+        /// </summary>
+        /// <param name="rotation"></param>
+        public AxisAngle3d(ref Rotate3d rotation)
+            :this()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="axis"></param>
@@ -177,7 +188,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Vec3d Rotate(Vec3d vector)
         {
-            return vector * _cosAngle + (_axis ^ vector) * _sinAngle + _axis * (_axis * vector) * (1.0 - _cosAngle);
+            return vector * _cosAngle + Vec3d.Cross(_axis, vector) * _sinAngle + _axis * Vec3d.Dot(_axis, vector) * (1.0 - _cosAngle);
         }
 
 
@@ -188,7 +199,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Vec3d RotateInverse(Vec3d vector)
         {
-            return vector * _cosAngle - (_axis ^ vector) * _sinAngle + _axis * (_axis * vector) * (1.0 - _cosAngle);
+            return vector * _cosAngle - Vec3d.Cross(_axis, vector) * _sinAngle + _axis * Vec3d.Dot(_axis, vector) * (1.0 - _cosAngle);
         }
     }
 }

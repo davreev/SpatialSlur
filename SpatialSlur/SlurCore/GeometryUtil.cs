@@ -87,10 +87,10 @@ namespace SpatialSlur.SlurCore
         private static void LineLineClosestPoints(Vec3d u, Vec3d v, Vec3d w, out double tu, out double tv)
         {
             double uu = u.SquareLength;
-            double uv = u * v;
+            double uv = Vec3d.Dot(u, v);
             double vv = v.SquareLength;
-            double uw = u * w;
-            double vw = v * w;
+            double uw = Vec3d.Dot(u, w);
+            double vw = Vec3d.Dot(v, w);
 
             double denom = 1.0 / (uu * vv - uv * uv);
             tu = (uv * vw - vv * uw) * denom;
@@ -139,6 +139,30 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Orthonormalizes the 2 given vectors and returns a third mutually perpendicular unit vector.
+        /// Returns false if the 2 given vectors are parallel.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public static bool OrthoNormalize(ref Vec3d x, ref Vec3d y, out Vec3d z)
+        {
+            z = Vec3d.Cross(x, y);
+            double m = z.SquareLength;
+
+            if (m > 0.0)
+            {
+                x /= x.Length;
+                z /= Math.Sqrt(m);
+                y = Vec3d.Cross(z, x);
+                return true;
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
         /// Returns the center of the circle that passes through the 3 given points.
         /// </summary>
         /// <param name="p0"></param>
@@ -167,13 +191,44 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vector"></param>
-        /// <param name="unitX"></param>
-        /// <param name="unitY"></param>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
         /// <returns></returns>
-        public static double GetAngleInPlane(Vec3d vector, Vec3d unitX, Vec3d unitY)
+        public static Vec3d GetCircumcenter(Vec3d p0, Vec3d p1, Vec3d p2)
         {
-            double t = Math.Atan2(vector * unitX, vector * unitY);
+            return p0 + GetCurvatureVector(p1 - p0, p2 - p0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <returns></returns>
+        public static Vec3d GetIncenter(Vec3d p0, Vec3d p1, Vec3d p2)
+        {
+            double d01 = p0.DistanceTo(p1);
+            double d12 = p1.DistanceTo(p2);
+            double d20 = p2.DistanceTo(p0);
+            double pInv = 1.0 / (d01 + d12 + d20); // inverse perimeter
+
+            return p0 * (d12 * pInv) + p1 * (d20 * pInv) + p2 * (d01 * pInv);
+        }
+
+
+        /// <summary>
+        /// Assumes the given axes are orthonormal.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="xAxis"></param>
+        /// <param name="yAxis"></param>
+        /// <returns></returns>
+        public static double GetAngleInPlane(Vec3d vector, Vec3d xAxis, Vec3d yAxis)
+        {
+            double t = Math.Atan2(Vec3d.Dot(vector, xAxis), Vec3d.Dot(vector, yAxis));
             return (t < 0.0) ? t + SlurMath.TwoPI : t; // shift discontinuity to 0
         }
 
@@ -257,18 +312,18 @@ namespace SpatialSlur.SlurCore
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <returns></returns>
-        public static Vec3d GetTriAreaGrad(Vec3d p0, Vec3d p1, Vec3d p2)
+        public static Vec3d GetTriAreaGradient(Vec3d p0, Vec3d p1, Vec3d p2)
         {
             var d = p2 - p1;
-            var n = d ^ (p0 - p1);
+            var n = Vec3d.Cross(d, p0 - p1);
 
             n.Unitize();
-            return (n ^ d) * 0.5;
+            return Vec3d.Cross(n, d) * 0.5;
         }
 
 
         /// <summary>
-        /// Returns the area gradient of the given trianglue with respect to each vertex
+        /// Returns the area gradient of the given triangle with respect to each vertex
         /// https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf p 64
         /// </summary>
         /// <param name="p0"></param>
@@ -278,17 +333,17 @@ namespace SpatialSlur.SlurCore
         /// <param name="g1"></param>
         /// <param name="g2"></param>
         /// <returns></returns>
-        public static void GetTriAreaGrads(Vec3d p0, Vec3d p1, Vec3d p2, out Vec3d g0, out Vec3d g1, out Vec3d g2)
+        public static void GetTriAreaGradients(Vec3d p0, Vec3d p1, Vec3d p2, out Vec3d g0, out Vec3d g1, out Vec3d g2)
         {
             var d0 = p1 - p0;
             var d1 = p2 - p1;
             var d2 = p0 - p2;
 
-            var n = d0 ^ d1;
+            var n = Vec3d.Cross(d0, d1);
             n.Unitize();
 
-            g0 = n ^ d1 * 0.5;
-            g1 = n ^ d2 * 0.5;
+            g0 = Vec3d.Cross(n, d1) * 0.5;
+            g1 = Vec3d.Cross(n, d2) * 0.5;
             g2 = g0 + g1;
         }
 
@@ -344,6 +399,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="axis"></param>
         /// <param name="angle"></param>
         /// <param name="result"></param>
+        [Obsolete("Use Rotate3d constructor instead")]
         public static void GetRotationMatrix(Vec3d axis, double angle, double[] result)
         {
             double c = Math.Cos(angle);

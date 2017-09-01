@@ -33,7 +33,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// Compound delegate for getting/setting a value V via an instance of T.
     /// </summary>
-    public struct Property<T, V>
+    public struct Property<T, V> : IProperty<T, V>
     {
         /// <summary></summary>
         public readonly Func<T, V> Get;
@@ -51,51 +51,30 @@ namespace SpatialSlur.SlurCore
             Get = get ?? throw new ArgumentNullException();
             Set = set ?? throw new ArgumentNullException();
         }
-    }
 
 
-    /*
-    /// <summary>
-    /// Wrapper class containing a pair of delegates for getting/setting a value V via an item of T.
-    /// </summary>
-    public class Property<T, V> : IProperty<T, V>
-    {
-        private Func<T, V> _get;
-        private Action<T, V> _set;
-
+        #region Explicit interface implementations
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="get"></param>
-        /// <param name="set"></param>
-        public Property(Func<T, V> get, Action<T, V> set)
-        {
-            _get = get ?? throw new ArgumentNullException();
-            _set = set ?? throw new ArgumentNullException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item"></param>
+        /// <param name=""></param>
         /// <returns></returns>
-        public V Get(T item)
+        V IReadOnlyProperty<T, V>.Get(T item)
         {
-            return _get(item);
+            return Get(item);
         }
-
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="value"></param>
-        public void Set(T item, V value)
+        /// <param name=""></param>
+        /// <returns></returns>
+        void IProperty<T, V>.Set(T item, V value)
         {
-            _set(item, value);
+            Set(item, value);
         }
+
+        #endregion
     }
-    */
 }

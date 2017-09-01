@@ -44,11 +44,9 @@ namespace SpatialSlur.SlurCore
         }
 
 
-
         /// <summary>
         /// Simple binary deserialization
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="path"></param>
         /// <returns></returns>
         public static object DeserializeBinary(string path)

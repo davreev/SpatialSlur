@@ -9,7 +9,7 @@ using System.Linq;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// 
+    /// Represents a double precision numerical domain in 3 dimensions.
     /// </summary>
     [Serializable]
     public struct Domain3d
@@ -107,9 +107,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d Remap(Vec3d point, Domain3d from, Domain3d to)
         {
-            point.X = Domain.Remap(point.X, from.X, to.X);
-            point.Y = Domain.Remap(point.Y, from.Y, to.Y);
-            point.Y = Domain.Remap(point.Z, from.Z, to.Z);
+            point.X = Domain1d.Remap(point.X, from.X, to.X);
+            point.Y = Domain1d.Remap(point.Y, from.Y, to.Y);
+            point.Y = Domain1d.Remap(point.Z, from.Z, to.Z);
             return point;
         }
 
@@ -122,9 +122,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Domain3d Intersect(Domain3d d0, Domain3d d1)
         {
-            d0.X = Domain.Intersect(d0.X, d1.X);
-            d0.Y = Domain.Intersect(d0.Y, d1.Y);
-            d0.Z = Domain.Intersect(d0.Z, d1.Z);
+            d0.X = Domain1d.Intersect(d0.X, d1.X);
+            d0.Y = Domain1d.Intersect(d0.Y, d1.Y);
+            d0.Z = Domain1d.Intersect(d0.Z, d1.Z);
             return d0;
         }
 
@@ -137,9 +137,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Domain3d Union(Domain3d a, Domain3d b)
         {
-            a.X = Domain.Union(a.X, b.X);
-            a.Y = Domain.Union(a.Y, b.Y);
-            a.Z = Domain.Union(a.Z, b.Z);
+            a.X = Domain1d.Union(a.X, b.X);
+            a.Y = Domain1d.Union(a.Y, b.Y);
+            a.Z = Domain1d.Union(a.Z, b.Z);
             return a;
         }
 
@@ -151,18 +151,18 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static implicit operator Domain3d(Domain2d d)
         {
-            return new Domain3d(d.X, d.Y, new Domain());
+            return new Domain3d(d.X, d.Y, new Domain1d());
         }
 
         #endregion
 
 
         /// <summary></summary>
-        public Domain X;
+        public Domain1d X;
         /// <summary></summary>
-        public Domain Y;
+        public Domain1d Y;
         /// <summary></summary>
-        public Domain Z;
+        public Domain1d Z;
 
 
         /// <summary>
@@ -171,9 +171,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="point"></param>
         public Domain3d(Vec3d point)
         {
-            X = new Domain(point.X);
-            Y = new Domain(point.Y);
-            Z = new Domain(point.Z);
+            X = new Domain1d(point.X);
+            Y = new Domain1d(point.Y);
+            Z = new Domain1d(point.Z);
         }
 
 
@@ -183,7 +183,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public Domain3d(Domain x, Domain y, Domain z)
+        public Domain3d(Domain1d x, Domain1d y, Domain1d z)
         {
             this.X = x;
             this.Y = y;
@@ -198,9 +198,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="to"></param>
         public Domain3d(Vec3d from, Vec3d to)
         {
-            X = new Domain(from.X, to.X);
-            Y = new Domain(from.Y, to.Y);
-            Z = new Domain(from.Z, to.Z);
+            X = new Domain1d(from.X, to.X);
+            Y = new Domain1d(from.Y, to.Y);
+            Z = new Domain1d(from.Z, to.Z);
         }
 
 
@@ -224,9 +224,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="offsetZ"></param>
         public Domain3d(Vec3d center, double offsetX, double offsetY, double offsetZ)
         {
-            X = new Domain(center.X - offsetX, center.X + offsetX);
-            Y = new Domain(center.Y - offsetY, center.Y + offsetY);
-            Z = new Domain(center.Z - offsetZ, center.Z + offsetZ);
+            X = new Domain1d(center.X - offsetX, center.X + offsetX);
+            Y = new Domain1d(center.Y - offsetY, center.Y + offsetY);
+            Z = new Domain1d(center.Z - offsetZ, center.Z + offsetZ);
         }
 
 
@@ -241,9 +241,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="z1"></param>
         public Domain3d(double x0, double x1, double y0, double y1, double z0, double z1)
         {
-            X = new Domain(x0, x1);
-            Y = new Domain(y0, y1);
-            Z = new Domain(z0, z1);
+            X = new Domain1d(x0, x1);
+            Y = new Domain1d(y0, y1);
+            Z = new Domain1d(z0, z1);
         }
 
 
@@ -255,9 +255,9 @@ namespace SpatialSlur.SlurCore
             : this()
         {
             var p = points.First();
-            X = new Domain(p.X);
-            Y = new Domain(p.Y);
-            Z = new Domain(p.Z);
+            X = new Domain1d(p.X);
+            Y = new Domain1d(p.Y);
+            Z = new Domain1d(p.Z);
 
             Include(points.Skip(1));
         }

@@ -27,6 +27,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static implicit operator Vec3i(Vec2i v)
+        {
+            return new Vec3i(v.X, v.Y, 0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
@@ -123,14 +134,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns the dot product of two vectors.
+        /// Component-wise multiplication.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static int operator *(Vec3i v0, Vec3i v1)
+        public static Vec3i operator *(Vec3i v0, Vec3i v1)
         {
-            return v0.X * v1.X + v0.Y * v1.Y + v0.Z * v1.Z;
+            v0.X *= v1.X;
+            v0.Y *= v1.Y;
+            v0.Z *= v1.Z;
+            return v0;
         }
 
 
@@ -192,17 +206,6 @@ namespace SpatialSlur.SlurCore
                 v0.Y * v1.Z - v0.Z * v1.Y, 
                 v0.Z * v1.X - v0.X * v1.Z, 
                 v0.X * v1.Y - v0.Y * v1.X);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static implicit operator Vec3i(Vec2i v)
-        {
-            return new Vec3i(v.X, v.Y, 0);
         }
 
         #endregion
@@ -427,7 +430,21 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public int[] ToArray()
         {
-            return new int[] { X, Y, Z };
+            var result = new int[3];
+            ToArray(result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        public void ToArray(int[] result)
+        {
+            result[0] = X;
+            result[1] = Y;
+            result[2] = Z;
         }
     }
 }

@@ -29,6 +29,28 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static implicit operator Vec2d(Vec3d vector)
+        {
+            return new Vec2d(vector.X, vector.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static implicit operator Vec2d(Vec4d vector)
+        {
+            return new Vec2d(vector.X, vector.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
@@ -57,80 +79,98 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vec2d operator -(Vec2d v)
+        public static Vec2d operator -(Vec2d vector)
         {
-            v.X = -v.X;
-            v.Y = -v.Y;
-            return v;
+            vector.X = -vector.X;
+            vector.Y = -vector.Y;
+            return vector;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="t"></param>
+        /// <param name="vector"></param>
+        /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vec2d operator *(Vec2d v, double t)
+        public static Vec2d operator *(Vec2d vector, double scalar)
         {
-            v.X *= t;
-            v.Y *= t;
-            return v;
+            vector.X *= scalar;
+            vector.Y *= scalar;
+            return vector;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="t"></param>
+        /// <param name="vector"></param>
+        /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vec2d operator *(double t, Vec2d v)
+        public static Vec2d operator *(double scalar, Vec2d vector)
         {
-            v.X *= t;
-            v.Y *= t;
-            return v;
+            vector.X *= scalar;
+            vector.Y *= scalar;
+            return vector;
         }
 
 
         /// <summary>
-        /// Returns the dot product of two vectors.
+        /// Component-wise multiplication.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double operator *(Vec2d v0, Vec2d v1)
+        public static Vec2d operator *(Vec2d v0, Vec2d v1)
         {
-            return v0.X * v1.X + v0.Y * v1.Y;
-        }
-
-
-        /// <summary>
-        /// Returns the pseudo cross product calculated as the dot product between v1 and the perpendicular of v0.
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <returns></returns>
-        public static double operator ^(Vec2d v0, Vec2d v1)
-        {
-            return -v0.Y * v1.X + v0.X * v1.Y;
+            v0.X *= v1.X;
+            v0.Y *= v1.Y;
+            return v0;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="t"></param>
+        /// <param name="vector"></param>
+        /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vec2d operator /(Vec2d v, double t)
+        public static Vec2d operator /(Vec2d vector, double scalar)
         {
-            t = 1.0 / t;
-            v.X *= t;
-            v.Y *= t;
-            return v;
+            scalar = 1.0 / scalar;
+            vector.X *= scalar;
+            vector.Y *= scalar;
+            return vector;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="scalar"></param>
+        /// <returns></returns>
+        public static Vec2d operator /(double scalar, Vec2d vector)
+        {
+            vector.X = scalar / vector.X;
+            vector.Y = scalar / vector.Y;
+            return vector;
+        }
+
+
+        /// <summary>
+        /// Component-wise division.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Vec2d operator /(Vec2d v0, Vec2d v1)
+        {
+            v0.X /= v1.X;
+            v0.Y /= v1.Y;
+            return v0;
         }
 
 
@@ -161,11 +201,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vec2d Abs(Vec2d v)
+        public static Vec2d Abs(Vec2d vector)
         {
-            return new Vec2d(Math.Abs(v.X), Math.Abs(v.Y));
+            return new Vec2d(Math.Abs(vector.X), Math.Abs(vector.Y));
         }
 
 
@@ -217,7 +257,7 @@ namespace SpatialSlur.SlurCore
             double d = v0.Length * v1.Length;
 
             if (d > 0.0)
-                return Math.Acos(SlurMath.Clamp(v0 * v1 / d, -1.0, 1.0)); // clamp dot product to remove noise
+                return Math.Acos(SlurMath.Clamp(Dot(v0, v1) / d, -1.0, 1.0)); // clamp dot product to remove noise
 
             return double.NaN;
         }
@@ -231,7 +271,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec2d Project(Vec2d v0, Vec2d v1)
         {
-            return (v0 * v1) / v1.SquareLength * v1;
+            return Dot(v0, v1) / v1.SquareLength * v1;
         }
 
 
@@ -257,7 +297,7 @@ namespace SpatialSlur.SlurCore
         public static Vec2d Reflect(Vec2d v0, Vec2d v1)
         {
             //return Project(v0, v1) * 2.0 - v0;
-            return v1 * ((v0 * v1) / v1.SquareLength * 2.0) - v0;
+            return v1 * (Dot(v0, v1) / v1.SquareLength * 2.0) - v0;
         }
 
  
@@ -269,7 +309,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec2d MatchProjection(Vec2d v0, Vec2d v1)
         {
-            return v1.SquareLength / (v0 * v1) * v0;
+            return v1.SquareLength / Dot(v0, v1) * v0;
         }
 
 
@@ -282,7 +322,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec2d MatchProjection(Vec2d v0, Vec2d v1, Vec2d v2)
         {
-            return (v1 * v2) / (v0 * v2) * v0;
+            return Dot(v1, v2) / Dot(v0, v2) * v0;
         }
 
 
@@ -326,28 +366,6 @@ namespace SpatialSlur.SlurCore
         {
             double st = 1.0 / Math.Sin(theta);
             return v0 * (Math.Sin((1.0 - t) * theta) * st) + v1 * (Math.Sin(t * theta) * st);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static implicit operator Vec2d(Vec3d v)
-        {
-            return new Vec2d(v.X, v.Y);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static implicit operator Vec2d(Vec4d v)
-        {
-            return new Vec2d(v.X, v.Y);
         }
 
         #endregion
@@ -670,7 +688,20 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double[] ToArray()
         {
-            return new double[] { X, Y };
+            var result = new double[2];
+            ToArray(result);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        public void ToArray(double[] result)
+        {
+            result[0] = X;
+            result[1] = Y;
         }
     }
 }

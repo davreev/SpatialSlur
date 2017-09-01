@@ -20,9 +20,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="random"></param>
         /// <returns></returns>
-        public static Domain NextDomain(this Random random)
+        public static Domain1d NextDomain(this Random random)
         {
-            return new Domain(random.NextDouble(), random.NextDouble());
+            return new Domain1d(random.NextDouble(), random.NextDouble());
         }
 
 
@@ -57,7 +57,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="random"></param>
         /// <param name="domain"></param>
         /// <returns></returns>
-        public static Vec2d NextVec2d(this Random random, Domain domain)
+        public static Vec2d NextVec2d(this Random random, Domain1d domain)
         {
             return new Vec2d(
                 domain.Evaluate(random.NextDouble()),
@@ -111,7 +111,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="random"></param>
         /// <param name="domain"></param>
         /// <returns></returns>
-        public static Vec3d NextVec3d(this Random random, Domain domain)
+        public static Vec3d NextVec3d(this Random random, Domain1d domain)
         {
             return new Vec3d(
                 domain.Evaluate(random.NextDouble()),

@@ -9,17 +9,17 @@ using System.Linq;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    ///
+    /// Represents a double precision numerical domain.
     /// </summary>
     [Serializable]
-    public struct Domain
+    public struct Domain1d
     {
         #region Static
         
         /// <summary></summary>
-        public static readonly Domain Zero = new Domain();
+        public static readonly Domain1d Zero = new Domain1d();
         /// <summary></summary>
-        public static readonly Domain Unit = new Domain(0.0, 1.0);
+        public static readonly Domain1d Unit = new Domain1d(0.0, 1.0);
 
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain operator +(Domain d, double t)
+        public static Domain1d operator +(Domain1d d, double t)
         {
             d.Translate(t);
             return d;
@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain operator -(Domain d, double t)
+        public static Domain1d operator -(Domain1d d, double t)
         {
             d.Translate(-t);
             return d;
@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain operator *(Domain d, double t)
+        public static Domain1d operator *(Domain1d d, double t)
         {
             d.Scale(t);
             return d;
@@ -67,7 +67,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         /// <param name="d"></param>
         /// <returns></returns>
-        public static Domain operator *(double t, Domain d)
+        public static Domain1d operator *(double t, Domain1d d)
         {
             d.Scale(t);
             return d;
@@ -80,7 +80,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain operator /(Domain d, double t)
+        public static Domain1d operator /(Domain1d d, double t)
         {
             d.Scale(1.0 / t);
             return d;
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        public static double Remap(double t, Domain from, Domain to)
+        public static double Remap(double t, Domain1d from, Domain1d to)
         {
             if (!from.IsValid) 
                 throw new InvalidOperationException("Can't remap from an invalid domain");
@@ -108,7 +108,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain Union(Domain a, Domain b)
+        public static Domain1d Union(Domain1d a, Domain1d b)
         {
             a.Include(b.T0);
             a.Include(b.T1);
@@ -122,7 +122,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain Intersect(Domain a, Domain b)
+        public static Domain1d Intersect(Domain1d a, Domain1d b)
         {
             throw new NotImplementedException();
         }
@@ -134,7 +134,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d0"></param>
         /// <param name="d1"></param>
         /// <returns></returns>
-        public static Domain Difference(Domain d0, Domain d1)
+        public static Domain1d Difference(Domain1d d0, Domain1d d1)
         {
             throw new NotImplementedException();
         }
@@ -152,7 +152,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="t"></param>
-        public Domain(double t)
+        public Domain1d(double t)
         {
             T0 = T1 = t;
         }
@@ -163,7 +163,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
-        public Domain(double t0, double t1)
+        public Domain1d(double t0, double t1)
         {
             this.T0 = t0;
             this.T1 = t1;
@@ -174,7 +174,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="values"></param>
-        public Domain(IEnumerable<double> values)
+        public Domain1d(IEnumerable<double> values)
             : this()
         {
             T0 = T1 = values.First();
@@ -284,7 +284,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Domain other, double tolerance)
+        public bool ApproxEquals(Domain1d other, double tolerance)
         {
             return Math.Abs(other.T0 - T0) < tolerance && Math.Abs(other.T1 - T1) < tolerance;
         }
@@ -473,7 +473,7 @@ namespace SpatialSlur.SlurCore
         /// Expands this domain to include another
         /// </summary>
         /// <param name="other"></param>
-        public void Include(Domain other)
+        public void Include(Domain1d other)
         {
             Include(other.T0);
             Include(other.T1);

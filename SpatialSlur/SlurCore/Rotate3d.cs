@@ -10,15 +10,94 @@ using static SpatialSlur.SlurCore.CoreUtil;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents a 3 dimensional right-handed orthonormal basis.
+    /// Represents an arbitrary rotation in 3 dimensions as a right-handed orthonormal basis.
     /// </summary>
     [Serializable]
-    public struct Rotation3d
+    public struct Rotate3d
     {
         #region Static
 
         /// <summary></summary>
-        public static readonly Rotation3d Identity = new Rotation3d(Vec3d.UnitX, Vec3d.UnitY, Vec3d.UnitZ);
+        public static readonly Rotate3d Identity = new Rotate3d(Vec3d.UnitX, Vec3d.UnitY, Vec3d.UnitZ);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotate"></param>
+        public static implicit operator Rotate3d(Rotate2d rotate)
+        {
+            return new Rotate3d(rotate.X, rotate.Y, Vec3d.UnitZ);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotate"></param>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static Vec3d operator *(Rotate3d rotate, Vec3d vector)
+        {
+            return rotate.Apply(vector);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <returns></returns>
+        public static Rotate3d operator *(Rotate3d t0, Rotate3d t1)
+        {
+            return t0.Apply(t1);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotate"></param>
+        /// <param name="vector"></param>
+        public static Vec3d Multiply(ref Rotate3d rotate, Vec3d vector)
+        {
+            return rotate.Apply(vector);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        public static Rotate3d Multiply(ref Rotate3d t0, ref Rotate3d t1)
+        {
+            return t0.Apply(t1);
+        }
+
+
+        /// <summary>
+        /// Creates a change of basis rotation.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        public static Rotate3d CreateChangeBasis(Rotate3d from, Rotate3d to)
+        {
+            return to.Apply(from.Inverse);
+        }
+
+
+        /// <summary>
+        /// Creates a change of basis rotation.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        public static Rotate3d CreateChangeBasis(ref Rotate3d from, ref Rotate3d to)
+        {
+            return to.Apply(from.Inverse);
+        }
 
         #endregion
 
@@ -31,7 +110,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public Rotation3d(Vec3d x, Vec3d y)
+        public Rotate3d(Vec3d x, Vec3d y)
             : this()
         {
             Set(x, y);
@@ -41,31 +120,20 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public Rotation3d(AxisAngle3d axisAngle)
+        public Rotate3d(AxisAngle3d axisAngle)
             : this()
         {
             Set(axisAngle);
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Rotation3d(Rotation3d other)
-        {
-            _x = other._x;
-            _y = other._y;
-            _z = other._z;
-        }
-
         
         /// <summary>
-        /// 
+        /// Assumes the given axes are orthonormal.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        private Rotation3d(Vec3d x, Vec3d y, Vec3d z)
+        private Rotate3d(Vec3d x, Vec3d y, Vec3d z)
         {
             _x = x;
             _y = y;
@@ -103,14 +171,15 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the inverse of this rotation
         /// </summary>
-        public Rotation3d Inverse
+        public Rotate3d Inverse
         {
             get
             {
-                return new Rotation3d(
+                return new Rotate3d(
                     new Vec3d(_x.X, _y.X, _z.X),
                     new Vec3d(_x.Y, _y.Y, _z.Y),
-                    new Vec3d(_x.Z, _y.Z, _z.Z));
+                    new Vec3d(_x.Z, _y.Z, _z.Z)
+                    );
             }
         }
 
@@ -118,7 +187,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Return false if this rotation is undefined.
         /// </summary>
-        bool IsValid
+        public bool IsValid
         {
             get { return _x.SquareLength > 0.0; }
         }
@@ -132,12 +201,12 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool Set(Vec3d x, Vec3d y)
         {
-            Vec3d z = x ^ y;
+            Vec3d z = Vec3d.Cross(x, y);
             double m = z.SquareLength;
 
             if (m > 0.0)
             {
-                SetXZ(x / x.Length, z / Math.Sqrt(m));
+                SetZX(z / Math.Sqrt(m), x / x.Length);
                 return true;
             }
 
@@ -154,20 +223,7 @@ namespace SpatialSlur.SlurCore
         {
             _x = x;
             _y = y;
-            _z = x ^ y;
-        }
-
-
-        /// <summary>
-        /// Assumes the given vectors are orthonormal.
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="z"></param>
-        private void SetXZ(Vec3d x, Vec3d z)
-        {
-            _x = x;
-            _y = z ^ x;
-            _z = z;
+            _z = Vec3d.Cross(x, y);
         }
 
 
@@ -178,21 +234,95 @@ namespace SpatialSlur.SlurCore
         /// <param name="z"></param>
         private void SetYZ(Vec3d y, Vec3d z)
         {
-            _x = y ^ z;
+            _x = Vec3d.Cross(y, z);
             _y = y;
             _z = z;
         }
 
 
         /// <summary>
-        /// Returns false if the given axis is undefined.
+        /// Assumes the given vectors are orthonormal.
+        /// </summary>
+        /// <param name="z"></param>
+        /// <param name="x"></param>
+        private void SetZX(Vec3d z, Vec3d x)
+        {
+            _x = x;
+            _y = Vec3d.Cross(z, x);
+            _z = z;
+        }
+        
+
+        /// <summary>
+        /// Swaps the x and y axes
+        /// </summary>
+        public void SwapXY()
+        {
+            var temp = _x;
+            _x = _y;
+            _y = temp;
+        }
+
+
+        /// <summary>
+        /// Swaps the y and z axes
+        /// </summary>
+        public void SwapYZ()
+        {
+            var temp = _y;
+            _y = _z;
+            _z = temp;
+        }
+
+
+        /// <summary>
+        /// Swaps the z and x axes
+        /// </summary>
+        public void SwapZX()
+        {
+            var temp = _z;
+            _z = _x;
+            _x = temp;
+        }
+
+
+        /// <summary>
+        /// Flips the x and y axes
+        /// </summary>
+        public void FlipXY()
+        {
+            _x = -_x;
+            _y = -_y;
+        }
+
+
+        /// <summary>
+        /// Flips the y and z axes
+        /// </summary>
+        public void FlipYZ()
+        {
+            _y = -_y;
+            _z = -_z;
+        }
+
+
+        /// <summary>
+        /// Flips the z and x axes
+        /// </summary>
+        public void FlipZX()
+        {
+            _z = -_z;
+            _x = -_x;
+        }
+
+
+        /// <summary>
+        /// 
         /// </summary>
         /// <param name="axisAngle"></param>
         /// <returns></returns>
-        public bool Set(AxisAngle3d axisAngle)
+        public void Set(AxisAngle3d axisAngle)
         {
-            if (!axisAngle.IsValid) return false;
-
             var axis = axisAngle.Axis;
             var cos = axisAngle.CosAngle;
             var sin = axisAngle.SinAngle;
@@ -219,8 +349,6 @@ namespace SpatialSlur.SlurCore
 
             _y.Z = p0 + p1;
             _z.Y = p0 - p1;
-
-            return true;
         }
 
 
@@ -250,9 +378,11 @@ namespace SpatialSlur.SlurCore
         /// Applies this rotation to the given rotation.
         /// </summary>
         /// <param name="other"></param>
-        public void Apply(ref Rotation3d other)
+        /// <returns></returns>
+        public Rotate3d Apply(Rotate3d other)
         {
             other.SetXY(Apply(other._x), Apply(other._y));
+            return other;
         }
 
 
@@ -263,7 +393,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Vec3d ApplyInverse(Vec3d vector)
         {
-            return new Vec3d(vector * _x, vector * _y, vector * _z);
+            return new Vec3d(Vec3d.Dot(vector, _x), Vec3d.Dot(vector, _y), Vec3d.Dot(vector, _z));
         }
 
 
@@ -271,9 +401,11 @@ namespace SpatialSlur.SlurCore
         /// Applies the inverse of this rotation to the given rotation.
         /// </summary>
         /// <param name="other"></param>
-        public void ApplyInverse(ref Rotation3d other)
+        /// <returns></returns>
+        public Rotate3d ApplyInverse(Rotate3d other)
         {
             other.SetXY(ApplyInverse(other._x), ApplyInverse(other._y));
+            return other;
         }
 
 
@@ -283,44 +415,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="axisAngle"></param>
         public void Rotate(AxisAngle3d axisAngle)
         {
-            _x = axisAngle.Rotate(_x);
-            _y = axisAngle.Rotate(_y);
-            _z = _x ^ _y;
-        }
-
-
-        /*
-        /// <summary>
-        /// https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-        /// </summary>
-        /// <param name="axis"></param>
-        /// <param name="angle"></param>
-        private void RotateImpl(Vec3d axis, double angle)
-        {
-            double c = Math.Cos(angle);
-            double s = Math.Sin(angle);
-            double t = 1.0 - c;
-
-            _x = Rotate(_x);
-            _y = Rotate(_y);
-            _z = _x ^ _y;
-
-            Vec3d Rotate(Vec3d v)
-            {
-                return v * c + (axis ^ v) * s + axis * (axis * v) * t;
-            }
-        }
-        */
-
-
-        /// <summary>
-        /// Returns the axis angle representation of this rotation
-        /// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
-        /// </summary>
-        /// <returns></returns>
-        public AxisAngle3d ToAxisAngle()
-        {
-            throw new NotImplementedException();
+            SetXY(axisAngle.Rotate(_x), axisAngle.Rotate(_y));
         }
     }
 }
