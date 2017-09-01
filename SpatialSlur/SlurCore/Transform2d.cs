@@ -183,8 +183,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Transform2d Apply(Transform2d other)
         {
-            other.Translation = Apply(other.Translation);
             other.Rotation = Rotation.Apply(other.Rotation);
+            other.Translation = Apply(other.Translation);
+            other.Scale *= Scale;
             return other;
         }
 
@@ -206,8 +207,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Transform2d ApplyInverse(Transform2d other)
         {
-            other.Translation = ApplyInverse(other.Translation);
             other.Rotation = Rotation.ApplyInverse(other.Rotation);
+            other.Translation = ApplyInverse(other.Translation);
+            other.Scale /= Scale;
             return other;
         }
     }

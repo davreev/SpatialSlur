@@ -241,8 +241,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Orient3d Apply(Orient3d other)
         {
-            other.Translation = Apply(other.Translation);
             other.Rotation = Rotation.Apply(other.Rotation);
+            other.Translation = Apply(other.Translation);
             return other;
         }
 
@@ -264,8 +264,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Orient3d ApplyInverse(Orient3d other)
         {
-            other.Translation = ApplyInverse(other.Translation);
             other.Rotation = Rotation.ApplyInverse(other.Rotation);
+            other.Translation = ApplyInverse(other.Translation);
             return other;
         }
     }
