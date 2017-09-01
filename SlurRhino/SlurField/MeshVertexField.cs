@@ -81,7 +81,7 @@ namespace SpatialSlur.SlurRhino
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class MeshVertexField<T> : MeshVertexField, IField3d<T>, IField2d<T>, IMeshField<T>
+    public abstract class MeshVertexField<T> : MeshVertexField, IMeshField<T>, IField2d<T>, IField3d<T>, IDiscreteField2d<T>, IDiscreteField3d<T>
         where T : struct
     {
         private const int _minCapacity = 4;
@@ -251,6 +251,26 @@ namespace SpatialSlur.SlurRhino
         T IField2d<T>.ValueAt(Vec2d point)
         {
             return ValueAt(point);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<Vec2d> IDiscreteField2d<T>.Coordinates
+        {
+            get { return Mesh.Vertices.Select(v => (Vec2d)v.Position); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<Vec3d> IDiscreteField3d<T>.Coordinates
+        {
+            get { return Mesh.Vertices.Select(v => v.Position); }
         }
 
         #endregion
