@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurRhino.Remesher
     [Serializable]
     public class DynamicRemesherSettings
     {
-        private Domain _lengthRange = new Domain(1.0, 1.0);
+        private Domain1d _lengthRange = new Domain1d(1.0, 1.0);
         private double _lengthTolerance = 0.1;
         
         private double _featureWeight = 100.0;
@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
-        public Domain LengthRange
+        public Domain1d LengthRange
         {
             get { return _lengthRange; }
             set { _lengthRange = value; }

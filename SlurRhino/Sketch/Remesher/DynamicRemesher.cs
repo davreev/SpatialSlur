@@ -104,13 +104,9 @@ namespace SpatialSlur.SlurRhino.Remesher
             _hedges = _mesh.Halfedges;
             _faces = _mesh.Faces;
 
-            // triangulate all faces
-            _mesh.TriangulateFaces(he =>
-                {
-                    var p0 = he.Start.Position;
-                    var p1 = he.NextInFace.End.Position;
-                    return -p0.SquareDistanceTo(p1);
-                });
+            // triangulate all faces starting with the shortest diagonal
+            Func<F, E> getStart = f => f.Halfedges.SelectMin(he => he.Start.Position.SquareDistanceTo(he.NextInFace.End.Position));
+            _mesh.TriangulateFaces(FaceTriangulators.Strip.Create(mesh, getStart));
 
             // initialize features
             _target = target;
@@ -153,7 +149,7 @@ namespace SpatialSlur.SlurRhino.Remesher
                 poly.Add(poly[0]);
 
                 int index = _features.Count;
-                _features.Add(new MeshFeature(MeshUtil.Extrude(poly, new Vector3d())));
+                _features.Add(new MeshFeature(RhinoFactory.Mesh.CreateExtrusion(poly, new Vector3d())));
 
                 // set verts that haven't been assigned
                 foreach (var v in he0.CirculateFace.Select(he1 => he1.Start))

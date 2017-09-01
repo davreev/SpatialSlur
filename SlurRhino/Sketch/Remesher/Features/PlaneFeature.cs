@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <returns></returns>
         public Vec3d ClosestPoint(Vec3d point)
         {
-            return point + ((_origin - point) * _normal) * _normal;
+            return point + (Vec3d.Dot(_origin - point, _normal) * _normal);
         }
     }
 }

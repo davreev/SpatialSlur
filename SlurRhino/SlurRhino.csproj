@@ -57,10 +57,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\Test.cs" />
     <Compile Include="Extensions\GeometryExtensions.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\IReadOnlyListExtensions.cs" />
-    <Compile Include="MeshUtil.cs" />
     <Compile Include="Sketch\LoopGrowth\LoopGrower.cs" />
     <Compile Include="Sketch\LoopGrowth\LoopGrowerSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -83,7 +83,11 @@
     <Compile Include="SlurField\Isosurface.cs" />
     <Compile Include="Extensions\SlurFieldExtensions.cs" />
     <Compile Include="Extensions\SlurMeshExtensions.cs" />
-    <Compile Include="SlurMesh\HeMeshUnroller.cs" />
+    <Compile Include="SlurField\Interfaces\IMeshField.cs" />
+    <Compile Include="SlurField\MeshVertexField.cs" />
+    <Compile Include="SlurField\MeshVertexScalarField.cs" />
+    <Compile Include="SlurField\MeshVertexVectorField.cs" />
+    <Compile Include="RhinoFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SpatialSlur\SpatialSlur.csproj">
