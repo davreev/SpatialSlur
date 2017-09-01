@@ -14,6 +14,12 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public static class PerlinNoise
     {
+        private const double _offsetY = 10.0;
+        private const double _offsetZ = 20.0;
+
+        private const double _delta = 1.0;
+        private const double _d2Inv = 0.5 / _delta;
+        
         // permutation table
         private static readonly int[] _perm = new int[256];
 
@@ -63,13 +69,14 @@ namespace SpatialSlur.SlurField
         /// <param name="seed"></param>
         public static void SetPermutation(int seed)
         {
-            // assign permutation table and shuffle
             for (int i = 0; i < 256; i++)
                 _perm[i] = i;
 
             _perm.Shuffle(seed);
         }
 
+
+        #region 2d operators
 
         /// <summary>
         /// 
@@ -90,7 +97,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double ValueAt(double x, double y)
         {
-            // get whole and franctional componenets
+            // separate whole and fractional components
             x = SlurMath.Fract(x, out int i);
             y = SlurMath.Fract(y, out int j);
 
@@ -113,6 +120,124 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Returns the gradient table index for the given coordinates.
+        /// </summary>
+        private static int ToIndex(int i, int j)
+        {
+            return (_perm[(i + _perm[j & 255]) & 255] & 7) << 1;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GradDot(int index, double x, double y)
+        {
+            return _grad2[index] * x + _grad2[index + 1] * y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static Vec2d VectorAt(Vec2d point)
+        {
+            return VectorAt(point.X, point.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static Vec2d VectorAt(double x, double y)
+        {
+            return new Vec2d(
+                GetX(x, y),
+                GetY(x, y)
+                );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetX(double x, double y)
+        {
+            return ValueAt(x, y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetY(double x, double y)
+        {
+            return ValueAt(x + _offsetY, y + _offsetY);
+        }
+
+
+        /// <summary>
+        /// Returns the gradient of noise values.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static Vec2d GradientAt(Vec2d point)
+        {
+            return GradientAt(point.X, point.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static Vec2d GradientAt(double x, double y)
+        {
+            return new Vec2d(
+                (ValueAt(x + _delta, y) - ValueAt(x - _delta, y)) * _d2Inv,
+                (ValueAt(x, y + _delta) - ValueAt(x, y - _delta)) * _d2Inv
+                );
+        }
+
+
+        /// <summary>
+        /// http://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph2007-curlnoise.pdf
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static Vec2d CurlAt(Vec2d point)
+        {
+            return CurlAt(point.X, point.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static Vec2d CurlAt(double x, double y)
+        {
+            return new Vec2d(
+                (ValueAt(x + _delta, y) - ValueAt(x - _delta, y)) * _d2Inv,
+                (ValueAt(x, y + _delta) - ValueAt(x, y - _delta)) * _d2Inv
+                );
+        }
+
+        #endregion
+
+
+        #region 3d operators
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="point"></param>
@@ -132,7 +257,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static double ValueAt(double x, double y, double z)
         {
-            // get whole and franctional componenets
+            // separate whole and fractional components
             x = SlurMath.Fract(x, out int i);
             y = SlurMath.Fract(y, out int j);
             z = SlurMath.Fract(z, out int k);
@@ -170,27 +295,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// Returns the gradient table index for the given coordinates.
         /// </summary>
-        private static int ToIndex(int i, int j)
-        {
-            return (_perm[(i + _perm[j & 255]) & 255] & 7) << 1;
-        }
-
-
-        /// <summary>
-        /// Returns the gradient table index for the given coordinates.
-        /// </summary>
         private static int ToIndex(int i, int j, int k)
         {
             return _perm[(i + _perm[(j + _perm[k & 255]) & 255]) & 255] % 12 * 3;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static double GradDot(int index, double x, double y)
-        {
-            return _grad2[index] * x + _grad2[index + 1] * y;
         }
 
 
@@ -204,41 +311,13 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Returns the gradient of noise values.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="delta"></param>
-        /// <returns></returns>
-        public static Vec2d GradientAt(Vec2d point, double delta)
-        {
-            return GradientAt(point.X, point.Y, delta);
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="delta"></param>
-        /// <returns></returns>
-        public static Vec2d GradientAt(double x, double y, double delta)
-        {
-            var gx = (ValueAt(x + delta, y) - ValueAt(x - delta, y));
-            var gy = (ValueAt(x, y + delta) - ValueAt(x, y - delta));
-            return new Vec2d(gx, gy) / (delta * 2.0);
-        }
-
-
-        /// <summary>
-        /// Returns the gradient of noise values.
-        /// </summary>
         /// <param name="point"></param>
-        /// <param name="delta"></param>
         /// <returns></returns>
-        public static Vec3d GradientAt(Vec3d point, double delta)
+        public static Vec3d VectorAt(Vec3d point)
         {
-            return GradientAt(point.X, point.Y, delta);
+            return VectorAt(point.X, point.Y, point.Z);
         }
 
 
@@ -248,26 +327,52 @@ namespace SpatialSlur.SlurField
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        /// <param name="delta"></param>
         /// <returns></returns>
-        public static Vec3d GradientAt(double x, double y, double z, double delta)
+        public static Vec3d VectorAt(double x, double y, double z)
         {
-            var gx = (ValueAt(x + delta, y, z) - ValueAt(x - delta, y, z));
-            var gy = (ValueAt(x, y + delta, z) - ValueAt(x, y - delta, z));
-            var gz = (ValueAt(x, y, z + delta) - ValueAt(x, y, z - delta));
-            return new Vec3d(gx, gy, gz) / (delta * 2.0);
+            return new Vec3d(
+                GetX(x, y, z),
+                GetY(x, y, z),
+                GetZ(x, y, z)
+                );
         }
 
 
         /// <summary>
-        /// Returns the curl of noise vectors i.e. vectors whose components equal the noise value at the given location.
+        /// 
+        /// </summary>
+        private static double GetX(double x, double y, double z)
+        {
+            return ValueAt(x, y, z);
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetY(double x, double y, double z)
+        {
+            return ValueAt(x + _offsetY, y + _offsetY, z + _offsetY);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetZ(double x, double y, double z)
+        {
+            return ValueAt(x + _offsetZ, y + _offsetZ, z + _offsetZ);
+        }
+
+
+        /// <summary>
+        /// Returns the gradient of noise values.
         /// </summary>
         /// <param name="point"></param>
-        /// <param name="delta"></param>
         /// <returns></returns>
-        public static double CurlAt(Vec2d point, double delta)
+        public static Vec3d GradientAt(Vec3d point)
         {
-            return CurlAt(point.X, point.Y, delta);
+            return GradientAt(point.X, point.Y, point.Z);
         }
 
 
@@ -276,42 +381,54 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        /// <param name="delta"></param>
+        /// <param name="z"></param>
         /// <returns></returns>
-        public static double CurlAt(double x, double y, double delta)
+        public static Vec3d GradientAt(double x, double y, double z)
         {
-            var dx = (ValueAt(x + delta, y) - ValueAt(x - delta, y));
-            var dy = (ValueAt(x, y + delta) - ValueAt(x, y - delta));
-            return (dx - dy) / (delta * 2.0);
+            return new Vec3d(
+              (ValueAt(x + _delta, y, z) - ValueAt(x - _delta, y, z)) * _d2Inv,
+              (ValueAt(x, y + _delta, z) - ValueAt(x, y - _delta, z)) * _d2Inv,
+              (ValueAt(x, y, z + _delta) - ValueAt(x, y, z - _delta)) * _d2Inv
+              );
         }
 
 
         /// <summary>
-        /// Returns the curl of noise vectors i.e. vectors whose components equal the noise value at the given location.
+        /// http://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph2007-curlnoise.pdf
         /// </summary>
         /// <param name="point"></param>
-        /// <param name="delta"></param>
         /// <returns></returns>
-        public static Vec3d CurlAt(Vec3d point, double delta)
+        public static Vec3d CurlAt(Vec3d point)
         {
-            return GradientAt(point.X, point.Y, delta);
+            return CurlAt(point.X, point.Y, point.Z);
         }
 
 
-       /// <summary>
-       /// 
-       /// </summary>
-       /// <param name="x"></param>
-       /// <param name="y"></param>
-       /// <param name="z"></param>
-       /// <param name="delta"></param>
-       /// <returns></returns>
-        public static Vec3d CurlAt(double x, double y, double z, double delta)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
+        public static Vec3d CurlAt(double x, double y, double z)
         {
-            var dx = ValueAt(x + delta, y, z) - ValueAt(x - delta, y, z);
-            var dy = ValueAt(x, y + delta, z) - ValueAt(x, y - delta, z);
-            var dz = ValueAt(x, y, z + delta) - ValueAt(x, y, z - delta);
-            return new Vec3d(dy - dz, dz - dx, dx - dy) / (2.0 * delta);
+            var dz_y = GetZ(x, y + _delta, z) - GetZ(x, y - _delta, z);
+            var dy_z = GetY(x, y, z + _delta) - GetY(x, y, z - _delta);
+
+            var dx_z = GetX(x, y, z + _delta) - GetX(x, y, z - _delta);
+            var dz_x = GetZ(x + _delta, y, z) - GetZ(x - _delta, y, z);
+
+            var dy_x = GetY(x + _delta, y, z) - GetY(x - _delta, y, z);
+            var dx_y = GetX(x, y + _delta, z) - GetX(x, y - _delta, z);
+
+            return new Vec3d(
+               (dz_y - dy_z) * _d2Inv,
+               (dx_z - dz_x) * _d2Inv,
+               (dy_x - dx_y) * _d2Inv
+               );
         }
+
+        #endregion
     }
 }
