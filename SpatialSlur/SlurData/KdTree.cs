@@ -33,47 +33,31 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Inserts point value pairs in a way that produces a balanced tree.
         /// </summary>
-        public static KdTree<T> CreateBalanced(double[][] points, T[] values)
-        {
-            KdTree<T> result = new KdTree<T>(points[0].Length);
-            result._root = result.InsertBalanced(points, values, 0, points.Length - 1, 0);
-            result._count = points.Length;
-            return result;
-        }
-
-
-        /// <summary>
-        /// Inserts point value pairs in a way that produces a balanced tree.
-        /// </summary>
-        public static KdTree<T> CreateBalanced(IList<double[]> points, IList<T> values)
-        {
-            /*
-            if (points is double[][] && values is T[])
-                return CreateBalanced((double[][])points, (T[])values);
-            */
- 
-            KdTree<T> result = new KdTree<T>(points[0].Length);
-            result._root = result.InsertBalanced(points, values, 0, points.Count - 1, 0);
-            result._count = points.Count;
-            return result;
-        }
-
-
-        /// <summary>
-        /// Inserts point value pairs in a way that produces a balanced tree.
-        /// </summary>
         public static KdTree<T> CreateBalanced(IEnumerable<double[]> points, IEnumerable<T> values)
         {
-            // TODO compare performance of different implementations
+            KdTree<T> result = new KdTree<T>(points.First().Length);
             var nodes = points.Zip(values, (p, v) => new Node(p, v)).ToArray();
-            
-            KdTree<T> result = new KdTree<T>(nodes[0].Point.Length);
+
             result._root = result.InsertBalanced(nodes, 0, nodes.Length - 1, 0);
             result._count = nodes.Length;
             return result;
         }
 
 
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a balanced tree.
+        /// </summary>
+        public static KdTree<T> CreateBalanced(double[][] points, T[] values)
+        {
+            KdTree<T> result = new KdTree<T>(points[0].Length);
+            var nodes = points.Convert((p, i) => new Node(p, values[i]));
+
+            result._root = result.InsertBalanced(nodes, 0, nodes.Length - 1, 0);
+            result._count = nodes.Length;
+            return result;
+        }
+
+        
         /// <summary>
         /// Returns the node with the smallest value in the given dimension.
         /// If equal, n0 is returned.
@@ -115,6 +99,15 @@ namespace SpatialSlur.SlurData
         public int K
         {
             get{return _k;}
+        }
+
+
+        /// <summary>
+        /// Returns the number of dimensions used by the tree (i.e. K)
+        /// </summary>
+        public int Dimension
+        {
+            get { return _k; }
         }
 
 
@@ -343,95 +336,7 @@ namespace SpatialSlur.SlurData
 
             return node;
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="values"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="i"></param>
-        /// <returns></returns>
-        private Node InsertBalanced(IList<double[]> points, IList<T> values, int from, int to, int i)
-        {
-            // stopping conditions
-            if (from > to)
-                return null;
-            else if (from == to)
-                return new Node(points[from], values[from]);
-
-            // wrap dimension
-            if (i == _k) i = 0;
-
-            // sort the median element
-            int mid = ((to - from) >> 1) + from;
-            var pt = points.QuickSelect(values, mid, from, to, (p0, p1) => p0[i].CompareTo(p1[i]));
-
-            // ensure no duplicate elements to the left of the median
-            double t = pt[i];
-            int j = from;
-
-            while (j < mid)
-            {
-                if (points[j][i] == t)
-                    points.Swap(j, --mid);
-                else
-                    j++;
-            }
-
-            // create node and recall on left and right children
-            Node node = new Node(pt, values[mid]);
-            node.Left = InsertBalanced(points, values, from, mid - 1, i + 1);
-            node.Right = InsertBalanced(points, values, mid + 1, to, i + 1);
-            return node;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="values"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="i"></param>
-        /// <returns></returns>
-        private Node InsertBalanced(double[][] points, T[] values, int from, int to, int i)
-        {
-            // stopping conditions
-            if (from > to)
-                return null;
-            else if (from == to)
-                return new Node(points[from], values[from]);
-
-            // wrap dimension
-            if (i == _k) i = 0;
-            
-            // sort the median element
-            int mid = ((to - from) >> 1) + from;
-            var pt = points.QuickSelect(values, mid, from, to, (p0, p1) => p0[i].CompareTo(p1[i]));
-
-            // ensure no duplicate elements to the left of the median
-            double t = pt[i];
-            int j = from;
-
-            while (j < mid)
-            {
-                if (points[j][i] == t)
-                    points.Swap(j, --mid);
-                else
-                    j++;
-            }
-
-            // create node and recall on left and right children
-            Node node = new Node(pt, values[mid]);
-            node.Left = InsertBalanced(points, values, from, mid - 1, i + 1);
-            node.Right = InsertBalanced(points, values, mid + 1, to, i + 1);
-            return node;
-        }
-
+        
 
         /// <summary>
         /// 
@@ -454,11 +359,11 @@ namespace SpatialSlur.SlurData
 
             // sort the median element
             int mid = ((to - from) >> 1) + from;
-            var node = nodes.QuickSelect(mid, from, to, (n0, n1) => n0.Point[i].CompareTo(n1.Point[i]));
+            var midNode = nodes.QuickSelect(mid, from, to, (n0, n1) => n0.Point[i].CompareTo(n1.Point[i]));
 
             // ensure no duplicate elements to the left of the median
-            var t = node.Point[i];
             int j = from;
+            var t = midNode.Point[i];
 
             while (j < mid)
             {
@@ -469,11 +374,62 @@ namespace SpatialSlur.SlurData
             }
 
             // create node and recall on left and right children
-            node.Left = InsertBalanced(nodes, from, mid - 1, i + 1);
-            node.Right = InsertBalanced(nodes, mid + 1, to, i + 1);
-            return node;
+            midNode.Left = InsertBalanced(nodes, from, mid - 1, i + 1);
+            midNode.Right = InsertBalanced(nodes, mid + 1, to, i + 1);
+            return nodes[mid];
         }
 
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="values"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        private Node InsertBalanced(double[][] points, T[] values, int from, int to, int i)
+        {
+            // stopping conditions
+            if (from > to)
+                return null;
+            else if (from == to)
+                return new Node(points[from], values[from]);
+
+            // wrap dimension
+            if (i == _k) i = 0;
+
+            // sort the median element
+            int mid = ((to - from) >> 1) + from;
+            var midPoint = points.QuickSelect(values, mid, from, to, (p0, p1) => p0[i].CompareTo(p1[i]));
+
+            // ensure no duplicate elements to the left of the median
+            int j = from;
+            double t = midPoint[i];
+
+            while (j < mid)
+            {
+                if (points[j][i] == t)
+                {
+                    points.Swap(j, --mid);
+                    values.Swap(j, mid);
+                }
+                else
+                {
+                    j++;
+                }
+            }
+
+            // create node and recall on left and right children
+            Node node = new Node(points[mid], values[mid]);
+            node.Left = InsertBalanced(points, values, from, mid - 1, i + 1);
+            node.Right = InsertBalanced(points, values, mid + 1, to, i + 1);
+            return node;
+        }
+        */
+      
 
         /// <summary> 
         /// Removes the first point in the tree which is equal to the given point.

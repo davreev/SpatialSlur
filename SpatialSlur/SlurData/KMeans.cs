@@ -30,10 +30,10 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="clusterCount"></param>
+        /// <param name="k"></param>
         /// <param name="seed"></param>
-        public KMeans(IEnumerable<double[]> points, int clusterCount, int seed = 1)
-            : this(points.ToArray(), clusterCount, seed)
+        public KMeans(IEnumerable<double[]> points, int k, int seed = 1)
+            : this(points.ToArray(), k, seed)
         {
         }
 
@@ -42,33 +42,59 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="clusterCount"></param>
+        /// <param name="k"></param>
         /// <param name="seed"></param>
-        public KMeans(double[][] points, int clusterCount, int seed = 1)
+        public KMeans(double[][] points, int k, int seed = 1)
         {
             _points = points;
-            _nearestClusters = new int[points[0].Length];
-
-            InitClusters(clusterCount, seed);
+            _nearestClusters = new int[points.Length];
+            InitClusters(k, seed);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="count"></param>
+        /// <param name="k"></param>
         /// <param name="seed"></param>
-        private void InitClusters(int count, int seed)
+        private void InitClusters(int k, int seed)
         {
-            _clusterCenters = new double[count][];
-            _clusterSizes = new int[count];
-            _clusterIndices = Enumerable.Range(0, count).ToArray();
+            _clusterCenters = new double[k][];
+            _clusterSizes = new int[k];
+            _clusterIndices = Enumerable.Range(0, k).ToArray();
 
             var shuffled = _points.ShallowCopy();
             shuffled.Shuffle(seed);
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < k; i++)
                 _clusterCenters[i] = shuffled[i].ShallowCopy();
+        }
+
+
+        /// <summary>
+        /// Returns the number of clusters.
+        /// </summary>
+        public int K
+        {
+            get { return _clusterSizes.Length; }
+        }
+
+
+        /// <summary>
+        /// Returns the number of clusters (i.e. K)
+        /// </summary>
+        public int ClusterCount
+        {
+            get { return _clusterSizes.Length; }
+        }
+
+
+        /// <summary>
+        /// Returns the number of points being clustered
+        /// </summary>
+        public int PointCount
+        {
+            get { return _points.Length; }
         }
 
 
@@ -115,7 +141,10 @@ namespace SpatialSlur.SlurData
             int count = 0;
 
             while (count++ < maxSteps)
+            {
                 if (UpdateNearest() == 0) return count;
+                UpdateClusterCenters();
+            }
 
             return -1;
         }
@@ -134,8 +163,8 @@ namespace SpatialSlur.SlurData
             for (int i = 0; i < _points.Length; i++)
             {
                 var nearest = tree.NearestL2(_points[i]);
-                // var nearest = tree.EuclideanNearest(_dataPoints[i]);
 
+                // update if new nearest is different than previous
                 if (nearest != _nearestClusters[i])
                 {
                     _nearestClusters[i] = nearest;
@@ -165,6 +194,7 @@ namespace SpatialSlur.SlurData
 
                 var center = _clusterCenters[nearest];
                 ArrayMath.Add(center, point, center);
+
                 _clusterSizes[nearest]++;
             }
 
