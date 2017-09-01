@@ -59,6 +59,23 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Grasshopper\170712_HeMesh_Quad_Strips_01.gh" />
+    <None Include="Grasshopper\170717_Dynamic_Remesher_01.3dm" />
+    <None Include="Grasshopper\170717_Dynamic_Remesher_01.gh" />
+    <None Include="Grasshopper\170718_HeMesh_Unroll_01.gh" />
+    <None Include="Grasshopper\170721_SphereCollide_01.3dm" />
+    <None Include="Grasshopper\170721_SphereCollide_01.gh" />
+    <None Include="Grasshopper\170722_Funicular_Network_01.3dm" />
+    <None Include="Grasshopper\170722_Funicular_Network_01.3dmbak" />
+    <None Include="Grasshopper\170722_Funicular_Network_01.gh" />
+    <None Include="Grasshopper\UserObjects\Create FuncField.ghuser" />
+    <None Include="Grasshopper\UserObjects\Create GridScalarField.ghuser" />
+    <None Include="Grasshopper\UserObjects\Create GridVectorField.ghuser" />
+    <None Include="Grasshopper\UserObjects\Create PerlinNoiseField.ghuser" />
+    <None Include="Grasshopper\UserObjects\Create SimplexNoiseField.ghuser" />
+    <None Include="Grasshopper\UserObjects\Display GridVectorField.ghuser" />
+    <None Include="Grasshopper\Utilities\170801_Divide_Edges_01.gh" />
+    <None Include="Grasshopper\Utilities\170801_Dual_Boundary_01.gh" />
     <None Include="packages.config" />
     <None Include="Resources\chair_planar.obj" />
     <None Include="Resources\chair_smooth.obj" />
