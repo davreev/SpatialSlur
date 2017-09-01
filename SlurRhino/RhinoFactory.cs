@@ -637,7 +637,7 @@ namespace SpatialSlur.SlurRhino
             /// <param name="plane"></param>
             public static T CreateInverseFromPlane(Plane plane)
             {
-                return CreateInverse(plane.Origin.ToVec3d(), plane.XAxis.ToVec3d(), plane.YAxis.ToVec3d(), plane.ZAxis.ToVec3d());
+                return CreateInverseOrtho(plane.Origin.ToVec3d(), plane.XAxis.ToVec3d(), plane.YAxis.ToVec3d(), plane.ZAxis.ToVec3d());
             }
 
 
@@ -667,7 +667,7 @@ namespace SpatialSlur.SlurRhino
             public static T CreateInverse(Vec3d origin, Vec3d x, Vec3d y)
             {
                 if (GeometryUtil.OrthoNormalize(ref x, ref y, out Vec3d z))
-                    return CreateInverse(origin, x, y, z);
+                    return CreateInverseOrtho(origin, x, y, z);
 
                 return T.Unset;
             }
@@ -677,27 +677,27 @@ namespace SpatialSlur.SlurRhino
             /// 
             /// </summary>
             /// <param name="origin"></param>
-            /// <param name="x"></param>
-            /// <param name="y"></param>
-            /// <param name="z"></param>
+            /// <param name="basisX"></param>
+            /// <param name="basisY"></param>
+            /// <param name="basisZ"></param>
             /// <returns></returns>
-            private static T Create(Vec3d origin, Vec3d x, Vec3d y, Vec3d z)
+            public static T Create(Vec3d origin, Vec3d basisX, Vec3d basisY, Vec3d basisZ)
             {
                 T m = T.Identity;
 
-                m[0, 0] = x.X;
-                m[0, 1] = y.X;
-                m[0, 2] = z.X;
+                m[0, 0] = basisX.X;
+                m[0, 1] = basisY.X;
+                m[0, 2] = basisZ.X;
                 m[0, 3] = origin.X;
 
-                m[1, 0] = x.Y;
-                m[1, 1] = y.Y;
-                m[1, 2] = z.Y;
+                m[1, 0] = basisX.Y;
+                m[1, 1] = basisY.Y;
+                m[1, 2] = basisZ.Y;
                 m[1, 3] = origin.Y;
 
-                m[2, 0] = x.Z;
-                m[2, 1] = y.Z;
-                m[2, 2] = z.Z;
+                m[2, 0] = basisX.Z;
+                m[2, 1] = basisY.Z;
+                m[2, 2] = basisZ.Z;
                 m[2, 3] = origin.Z;
 
                 return m;
@@ -712,7 +712,7 @@ namespace SpatialSlur.SlurRhino
             /// <param name="y"></param>
             /// <param name="z"></param>
             /// <returns></returns>
-            private static T CreateInverse(Vec3d origin, Vec3d x, Vec3d y, Vec3d z)
+            private static T CreateInverseOrtho(Vec3d origin, Vec3d x, Vec3d y, Vec3d z)
             {
                 T m = T.Identity;
 

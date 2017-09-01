@@ -65,7 +65,6 @@
     <Compile Include="SlurCore\Orient3d.cs" />
     <Compile Include="SlurCore\Rotate2d.cs" />
     <Compile Include="SlurCore\Mat3d.cs" />
-    <Compile Include="SlurCore\WIP\Quaternion.cs" />
     <Compile Include="SlurCore\Transform2d.cs" />
     <Compile Include="SlurCore\Transform3d.cs" />
     <Compile Include="SlurData\DataUtil.cs" />

@@ -135,6 +135,20 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="scale"></param>
+        /// <param name="rotation"></param>
+        /// <param name="translation"></param>
+        public Transform2d(Vec2d scale, Orient2d orientation)
+        {
+            Scale = scale;
+            Rotation = orientation.Rotation;
+            Translation = orientation.Translation;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Transform2d Inverse
         {
             get
