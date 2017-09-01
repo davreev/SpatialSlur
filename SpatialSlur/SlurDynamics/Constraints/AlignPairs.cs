@@ -99,7 +99,7 @@ namespace SpatialSlur.SlurDynamics
         {
             Vec3d d0 = particles[_hA1].Position - particles[_hA0].Position;
             Vec3d d1 = particles[_hB1].Position - particles[_hB0].Position;
-            double d01 = d0 * d1;
+            double d01 = Vec3d.Dot(d0, d1);
             
             _hA1.Delta = (d1 - d01 / d0.SquareLength * d0) * 0.25; // perp of d1 realtive to d0
             _hB1.Delta = (d0 - d01 / d1.SquareLength * d1) * 0.25; // perp of d0 realtive to d1

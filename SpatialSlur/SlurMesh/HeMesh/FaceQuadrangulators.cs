@@ -42,7 +42,7 @@ namespace SpatialSlur.SlurMesh
             /// <param name="mesh"></param>
             /// <param name="getStart"></param>
             /// <returns></returns>
-            public static Fan<V, E, F> Create<V, E, F>(HeMeshBase<V, E, F> mesh, Func<F,E> getStart)
+            public static Fan<V, E, F> Create<V, E, F>(HeMeshBase<V, E, F> mesh, Func<F, E> getStart)
                 where V : HeVertex<V, E, F>
                 where E : Halfedge<V, E, F>
                 where F : HeFace<V, E, F>

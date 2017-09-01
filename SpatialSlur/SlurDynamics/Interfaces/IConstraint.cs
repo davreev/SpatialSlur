@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         void Apply(IReadOnlyList<IBody> particles);
 
-        
+
         /// <summary>
         /// 
         /// </summary>

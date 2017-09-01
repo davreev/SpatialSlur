@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurMesh
             where E : IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.NearestMin(he => he.ConnectedPairs, getKey);
+            return MeshUtil.NearestMin(start, he => he.ConnectedPairs, getKey);
         }
 
 
@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurMesh
             where E : HeElement, IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.NearestMax(he => he.ConnectedPairs, getKey);
+            return MeshUtil.NearestMax(start, he => he.ConnectedPairs, getKey);
         }
 
 
@@ -67,7 +67,7 @@ namespace SpatialSlur.SlurMesh
             where E : IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.WalkToMin(he => he.ConnectedPairs, getKey);
+            return MeshUtil.WalkToMin(start, he => he.ConnectedPairs, getKey);
         }
 
 
@@ -85,7 +85,7 @@ namespace SpatialSlur.SlurMesh
             where E : HeElement, IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.WalkToMax(he => he.ConnectedPairs, getKey);
+            return MeshUtil.WalkToMax(start, he => he.ConnectedPairs, getKey);
         }
 
 
@@ -319,7 +319,7 @@ namespace SpatialSlur.SlurMesh
             Vec3d y = Vec3d.Cross(x, tangent);
 
             Vec3d d = getNormal(hedge.Twin.Face);
-            double t = Math.Atan2(d * y, d * x);
+            double t = Math.Atan2(Vec3d.Dot(d, y), Vec3d.Dot(d, x));
 
             t = (t < 0.0) ? t + SlurMath.TwoPI : t; // shift discontinuity to 0
             return SlurMath.Mod(t + Math.PI, SlurMath.TwoPI); // add angle bw normals and faces

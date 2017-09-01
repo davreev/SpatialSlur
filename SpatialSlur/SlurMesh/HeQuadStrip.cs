@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurMesh
 {

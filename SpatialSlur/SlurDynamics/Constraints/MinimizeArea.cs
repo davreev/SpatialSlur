@@ -82,7 +82,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
-            GeometryUtil.GetTriAreaGrads(
+            GeometryUtil.GetTriAreaGradients(
                 particles[_h0].Position,
                 particles[_h1].Position,
                 particles[_h2].Position, 

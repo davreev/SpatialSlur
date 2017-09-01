@@ -327,63 +327,65 @@ namespace SpatialSlur.SlurMesh
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            if (ReferenceEquals(this, other))
-                throw new ArgumentException("The mesh can not be appended to itself.");
-
-            int nv = _vertices.Count;
-            int nhe = _hedges.Count;
-            int nf = _faces.Count;
-
             var otherVerts = other._vertices;
             var otherHedges = other._hedges;
             var otherFaces = other._faces;
+            
+            int nvA = _vertices.Count;
+            int nhA = _hedges.Count;
+            int nfA = _faces.Count;
+
+            // cache in case of appending to self
+            int nvB = otherVerts.Count;
+            int nhB = otherHedges.Count;
+            int nfB = otherFaces.Count;
 
             // append new elements
-            for (int i = 0; i < otherVerts.Count; i++)
+            for (int i = 0; i < nvB; i++)
                 AddVertex();
 
-            for (int i = 0; i < otherHedges.Count; i += 2)
+            for (int i = 0; i < nhB; i += 2)
                 AddEdge();
 
-            for (int i = 0; i < otherFaces.Count; i++)
+            for (int i = 0; i < nfB; i++)
                 AddFace();
 
             // link new vertices to new halfedges
-            for (int i = 0; i < otherVerts.Count; i++)
+            for (int i = 0; i < nvB; i++)
             {
                 var v0 = otherVerts[i];
-                var v1 = _vertices[i + nv];
+                var v1 = _vertices[i + nvA];
                 setVertex(v1, v0);
 
                 if (v0.IsRemoved) continue;
-                v1.FirstOut = _hedges[v0.FirstOut.Index + nhe];
+                v1.FirstOut = _hedges[v0.FirstOut.Index + nhA];
             }
 
             // link new faces to new halfedges
-            for (int i = 0; i < otherFaces.Count; i++)
+            for (int i = 0; i < nfB; i++)
             {
                 var f0 = otherFaces[i];
-                var f1 = _faces[i + nf];
+                var f1 = _faces[i + nfA];
                 setFace(f1, f0);
 
                 if (f0.IsRemoved) continue;
-                f1.First = _hedges[f0.First.Index + nhe];
+                f1.First = _hedges[f0.First.Index + nhA];
             }
 
             // link new halfedges to eachother, new vertices, and new faces
-            for (int i = 0; i < otherHedges.Count; i++)
+            for (int i = 0; i < nhB; i++)
             {
                 var he0 = otherHedges[i];
-                var he1 = _hedges[i + nhe];
+                var he1 = _hedges[i + nhA];
                 setHedge(he1, he0);
 
                 if (he0.IsRemoved) continue;
-                he1.PrevInFace = _hedges[he0.PrevInFace.Index + nhe];
-                he1.NextInFace = _hedges[he0.NextInFace.Index + nhe];
-                he1.Start = _vertices[he0.Start.Index + nv];
+                he1.PrevInFace = _hedges[he0.PrevInFace.Index + nhA];
+                he1.NextInFace = _hedges[he0.NextInFace.Index + nhA];
+                he1.Start = _vertices[he0.Start.Index + nvA];
 
                 if (he0.Face != null)
-                    he1.Face = _faces[he0.Face.Index + nf];
+                    he1.Face = _faces[he0.Face.Index + nfA];
             }
         }
 
@@ -404,65 +406,67 @@ namespace SpatialSlur.SlurMesh
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            if (ReferenceEquals(this, other))
-                throw new ArgumentException("Cannot append the dual of an HeMesh to itself.");
+            var vertsB = other._vertices;
+            var hedgesB = other._hedges;
+            var facesB = other._faces;
 
-            int nv = _vertices.Count;
-            int nhe = _hedges.Count;
-            int nf = _faces.Count;
+            int nvA = _vertices.Count;
+            int nhA = _hedges.Count;
+            int nfA = _faces.Count;
 
-            var otherVerts = other._vertices;
-            var otherHedges = other._hedges;
-            var otherFaces = other._faces;
+            // cache in case of appending to self
+            int nvB = vertsB.Count;
+            int nhB = hedgesB.Count;
+            int nfB = facesB.Count;
 
             // add new elements
-            for (int i = 0; i < otherFaces.Count; i++)
+            for (int i = 0; i < nfB; i++)
                 AddVertex();
 
-            for (int i = 0; i < otherVerts.Count; i++)
+            for (int i = 0; i < nvB; i++)
                 AddFace();
 
-            // add halfedges and set their faces/vertices
-            // spin each halfedge such that its face in the primal mesh corresponds with its start vertex in the dual
-            for (int i = 0; i < otherHedges.Count; i += 2)
+            // add halfedge pairs and set their face/vertex refs
+            // spins each halfedge such that its face in the primal mesh corresponds with its start vertex in the dual
+            for (int i = 0; i < nhB; i += 2)
             {
                 var heA0 = AddEdge();
-                var heB0 = otherHedges[i];
+
+                var heB0 = hedgesB[i];
                 if (heB0.IsRemoved || heB0.IsBoundary) continue; // skip boundary edges
 
-                var heB1 = otherHedges[i + 1];
+                var heB1 = hedgesB[i + 1];
                 var vB0 = heB0.Start;
                 var vB1 = heB1.Start;
 
-                int mask = 0;
-                if (vB0.IsBoundary) mask |= 1;
-                if (vB1.IsBoundary) mask |= 2;
-                if (mask == 3) continue; // skip invalid dual edges
+                var b0 = vB0.IsBoundary;
+                var b1 = vB1.IsBoundary;
+                if (b0 && b1) continue; // skip invalid dual edges
 
                 var heA1 = heA0.Twin;
-                heA0.Start = _vertices[heB0.Face.Index + nv];
-                heA1.Start = _vertices[heB1.Face.Index + nv];
+                heA0.Start = _vertices[heB0.Face.Index + nvA];
+                heA1.Start = _vertices[heB1.Face.Index + nvA];
 
-                if ((mask & 1) == 0) heA1.Face = _faces[vB0.Index + nf]; // vB0 is interior
-                if ((mask & 2) == 0) heA0.Face = _faces[vB1.Index + nf]; // vB1 is interior
+                if (!b0) heA1.Face = _faces[vB0.Index + nfA]; // vB0 is interior
+                if (!b1) heA0.Face = _faces[vB1.Index + nfA]; // vB1 is interior
             }
 
             // set halfedge -> halfedge refs
-            for (int i = 0; i < otherHedges.Count; i++)
+            for (int i = 0; i < nhB; i++)
             {
-                var heA0 = _hedges[i + nhe];
-                var heB0 = otherHedges[i];
+                var heA0 = _hedges[i + nhA];
+                var heB0 = hedgesB[i];
                 setHedge(heA0, heB0);
 
                 if (heA0.IsRemoved) continue;
                 var heB1 = heB0.NextInFace;
-                var heA1 = _hedges[heB1.Index + nhe];
+                var heA1 = _hedges[heB1.Index + nhA];
 
                 // backtrack around primal face, until dual halfedge is valid
                 while (heA1.IsRemoved)
                 {
                     heB1 = heB1.NextInFace;
-                    heA1 = _hedges[heB1.Index + nhe];
+                    heA1 = _hedges[heB1.Index + nhA];
                 }
 
                 heA1.Twin.MakeConsecutive(heA0);
@@ -470,33 +474,33 @@ namespace SpatialSlur.SlurMesh
 
             // set dual face -> halfedge refs 
             // must be set before vertex refs to check for boundary invariant
-            for (int i = 0; i < otherVerts.Count; i++)
+            for (int i = 0; i < nvB; i++)
             {
-                var fA = _faces[i + nf];
-                var vB = otherVerts[i];
+                var fA = _faces[i + nfA];
+                var vB = vertsB[i];
                 setFace(fA, vB);
 
                 if (vB.IsRemoved || vB.IsBoundary) continue;
-                fA.First = _hedges[vB.FirstOut.Twin.Index + nhe]; // can assume dual edge around interior vertex is valid
+                fA.First = _hedges[vB.FirstOut.Twin.Index + nhA]; // can assume dual edge around interior vertex is valid
             }
 
             // set dual vertex -> halfedge refs
-            for (int i = 0; i < otherFaces.Count; i++)
+            for (int i = 0; i < nfB; i++)
             {
-                var vA = _vertices[i + nv];
-                var fB = otherFaces[i];
+                var vA = _vertices[i + nvA];
+                var fB = facesB[i];
                 setVertex(vA, fB);
 
                 if (fB.IsRemoved) continue;
                 var heB = fB.First; // primal halfedge
-                var heA = _hedges[heB.Index + nhe]; // corresponding dual halfedge
+                var heA = _hedges[heB.Index + nhA]; // corresponding dual halfedge
 
                 // find first used dual halfedge
                 while (heA.IsRemoved)
                 {
                     heB = heB.NextInFace;
                     if (heB == fB.First) goto EndFor; // dual vertex has no valid halfedges
-                    heA = _hedges[heB.Index + nhe];
+                    heA = _hedges[heB.Index + nhA];
                 }
 
                 vA.FirstOut = heA;
@@ -506,7 +510,7 @@ namespace SpatialSlur.SlurMesh
             }
 
             // cleanup any appended degree 2 faces
-            for (int i = nf; i < _faces.Count; i++)
+            for (int i = nfA; i < _faces.Count; i++)
             {
                 var f = _faces[i];
                 if (!f.IsRemoved && f.IsDegree2)
@@ -1861,12 +1865,10 @@ namespace SpatialSlur.SlurMesh
             throw new NotImplementedException();
         }
 
-
         #endregion
 
 
         #region Face Operators
-
 
         /// <summary>
         /// 

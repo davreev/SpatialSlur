@@ -22,7 +22,7 @@ namespace SpatialSlur.SlurMesh
         where F : IHeFace<V, E, F>
     {
         /// <summary>
-        /// 
+        /// The last 2 vertices from each quad must not belong to the previously returned quad.
         /// </summary>
         /// <param name="face"></param>
         /// <returns></returns>

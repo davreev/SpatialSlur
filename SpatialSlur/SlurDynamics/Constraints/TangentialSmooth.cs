@@ -95,7 +95,7 @@ namespace SpatialSlur.SlurDynamics
                 int j = (i + 1) % n;
                 var p0 = particles[Handles[i + 1]].Position;
                 var p1 = particles[Handles[j + 1]].Position;
-                sum += GeometryUtil.GetTriAreaGrad(p, p0, p1);
+                sum += GeometryUtil.GetTriAreaGradient(p, p0, p1);
             }
 
             return sum;

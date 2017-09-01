@@ -22,8 +22,25 @@ namespace SpatialSlur.SlurDynamics
 
         private Vec3d _moveSum;
         private double _moveWeightSum;
-
         private double _mass = 1.0;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Particle()
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position"></param>
+        public Particle(Vec3d position)
+        {
+            _position = position;
+        }
 
 
         /// <summary>
@@ -59,24 +76,6 @@ namespace SpatialSlur.SlurDynamics
 
                 _mass = value;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Particle()
-        {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="position"></param>
-        public Particle(Vec3d position)
-        {
-            _position = position;
         }
 
         
@@ -131,9 +130,9 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        Rotation3d IBody.Rotation
+        Rotate3d IBody.Rotation
         {
-            get { return Rotation3d.Identity; }
+            get { return Rotate3d.Identity; }
             set { throw new NotSupportedException(_message); }
         }
 

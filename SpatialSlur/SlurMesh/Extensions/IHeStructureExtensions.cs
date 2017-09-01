@@ -21,6 +21,37 @@ namespace SpatialSlur.SlurMesh
     {
         #region IHeStructure<V, E>
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="transform"></param>
+        /// <param name="parallel"></param>
+        public static void Transform<V, E>(this IHeStructure<V, E> graph, Transform3d transform, bool parallel = false)
+            where V : HeElement, IHeVertex<V, E>, IVertex3d
+            where E : HeElement, IHalfedge<V, E>
+        {
+            var verts = graph.Vertices;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    var v = verts[i];
+                    v.Position = transform.Apply(v.Position);
+                    v.Normal = transform.Rotation.Apply(v.Normal);
+                }
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, verts.Count), body);
+            else
+                body(Tuple.Create(0, verts.Count));
+        }
+
+
         #region Topological Search
 
         /// <summary>
@@ -684,7 +715,7 @@ namespace SpatialSlur.SlurMesh
                     {
                         var v0 = he0.GetDelta(getPosition);
                         var v1 = he1.GetDelta(getPosition);
-                        setAngle(he0, Math.Acos(SlurMath.Clamp(v0 * v1 / d, -1.0, 1.0))); // clamp dot product to remove noise
+                        setAngle(he0, Math.Acos(SlurMath.Clamp(Vec3d.Dot(v0, v1) / d, -1.0, 1.0))); // clamp dot product to remove noise
                     }
                     else
                     {
@@ -2116,7 +2147,7 @@ namespace SpatialSlur.SlurMesh
                     double a = Vec3d.Cross(d0, d1).Length;
                     area.Set(v, area.Get(v) + a * t);
 
-                    return d0 * d1 / a;
+                    return Vec3d.Dot(d0, d1) / a;
                 }
             }
 
@@ -2315,7 +2346,7 @@ namespace SpatialSlur.SlurMesh
                     double a = Vec3d.Cross(d0, d1).Length;
                     area.Set(v, area.Get(v) + a * t);
 
-                    return d0 * d1 / a;
+                    return Vec3d.Dot(d0, d1) / a;
                 }
             }
 
@@ -2587,7 +2618,7 @@ namespace SpatialSlur.SlurMesh
                     else
                     {
                         var lap = getLaplace(v);
-                        setCurvature(v, Math.Sign(getNormal(v) * lap) * lap.Length * -0.5);
+                        setCurvature(v, Math.Sign(Vec3d.Dot(getNormal(v), lap)) * lap.Length * -0.5);
                     }
                 }
             };
@@ -2878,34 +2909,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the incenter of each face.
-        /// Assumes triangular faces.
-        /// </summary>
-        public static void GetFaceIncenters<V, E, F>(this IHeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<E, double> getLength, Action<F, Vec3d> setCenter, bool parallel = false)
-            where V : HeElement, IHeVertex<V, E, F>
-            where E : HeElement, IHalfedge<V, E, F>
-            where F : HeElement, IHeFace<V, E, F>
-        {
-            var faces = mesh.Faces;
-
-            Action<Tuple<int, int>> body = range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                {
-                    var f = faces[i];
-                    if (f.IsRemoved) continue;
-                    setCenter(f, f.GetIncenter(getPosition, getLength));
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, faces.Count), body);
-            else
-                body(Tuple.Create(0, faces.Count));
-        }
-
-
-        /// <summary>
         /// Calculates face normals as the area-weighted sum of halfedge normals in each face.
         /// Face normals are unitized by default.
         /// </summary>
@@ -3083,47 +3086,7 @@ namespace SpatialSlur.SlurMesh
                 {
                     var f = faces[i];
                     if (f.IsRemoved) continue;
-
-                    var he0 = f.First;
-                    var he1 = he0;
-
-                    // tri case
-                    if (he1 == he0)
-                    {
-                        setPlanarity(f, 0.0);
-                        continue;
-                    }
-
-                    var p0 = getPosition(he1.Start); he1 = he1.NextInFace;
-                    var p1 = getPosition(he1.Start); he1 = he1.NextInFace;
-                    var p2 = getPosition(he1.Start); he1 = he1.NextInFace;
-
-                    if (he1.NextInFace == he0)
-                    {
-                        // quad case
-                        var p3 = getPosition(he1.Start);
-                        setPlanarity(f, GeometryUtil.LineLineShortestVector(p0, p2, p1, p3).Length);
-                    }
-                    else
-                    {
-                        // ngon case
-                        var he2 = he1;
-                        double sum = 0.0;
-                        int count = 0;
-
-                        do
-                        {
-                            var p3 = getPosition(he2.Start);
-                            sum += GeometryUtil.LineLineShortestVector(p0, p2, p1, p3).Length;
-                            count++;
-
-                            // advance to next set of verts
-                            p0 = p1; p1 = p2; p2 = p3;
-                            he2 = he2.NextInFace;
-                        } while (he2 != he1);
-
-                        setPlanarity(f, sum / count);
-                    }
+                    setPlanarity(f, f.GetPlanarity(getPosition));
                 }
             };
 

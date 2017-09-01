@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurMesh
             where E : IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.NearestMin(v => v.ConnectedVertices, getKey);
+            return MeshUtil.NearestMin(start, v => v.ConnectedVertices, getKey);
         }
 
 
@@ -49,7 +49,7 @@ namespace SpatialSlur.SlurMesh
             where E : HeElement, IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.NearestMax(v => v.ConnectedVertices, getKey);
+            return MeshUtil.NearestMax(start, v => v.ConnectedVertices, getKey);
         }
 
 
@@ -67,7 +67,7 @@ namespace SpatialSlur.SlurMesh
             where E : IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.WalkToMin(v => v.ConnectedVertices, getKey);
+            return MeshUtil.WalkToMin(start, v => v.ConnectedVertices, getKey);
         }
 
 
@@ -85,7 +85,7 @@ namespace SpatialSlur.SlurMesh
             where E : HeElement, IHalfedge<V, E>
             where K : IComparable<K>
         {
-            return start.WalkToMax(v => v.ConnectedVertices, getKey);
+            return MeshUtil.WalkToMax(start, v => v.ConnectedVertices, getKey);
         }
 
 
@@ -98,16 +98,7 @@ namespace SpatialSlur.SlurMesh
             where E : IHalfedge<V, E, F>
             where F : IHeFace<V, E, F>
         {
-            Vec3d result = new Vec3d();
-
-            foreach (var he in vertex.OutgoingHalfedges)
-            {
-                if (he.Face == null) continue;
-                result += he.GetNormal(getPosition);
-            }
-
-            result.Unitize();
-            return result;
+            return vertex.OutgoingHalfedges.Where(he => !he.IsHole).Sum(he => he.GetNormal(getPosition)).Direction;   
         }
 
 

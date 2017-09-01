@@ -76,7 +76,7 @@ namespace SpatialSlur.SlurDynamics
         {
             foreach (var h in Handles)
             {
-                double d = (Origin - particles[h].Position) * Normal;
+                double d = Vec3d.Dot(Origin - particles[h].Position, Normal);
 
                 if (d <= 0.0)
                 {

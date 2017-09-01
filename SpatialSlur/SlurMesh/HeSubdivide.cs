@@ -195,9 +195,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="position"></param>
         /// <param name="boundaryType"></param>
         private static void CatmullClarkGeometry<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
-        where V : HeVertex<V, E, F>
-        where E : Halfedge<V, E, F>
-        where F : HeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
             int fv0 = verts.Count; // index of first face vertex
@@ -552,7 +552,7 @@ namespace SpatialSlur.SlurMesh
 
                 var v = mesh.AddVertex();
                 position.Set(v, f.GetBarycenter(position.Get));
-                mesh.TriangulateFacePoke(f.First, v);
+                mesh.PokeFaceImpl(f.First, v);
             }
 
             // merge faces

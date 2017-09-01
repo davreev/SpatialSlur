@@ -32,7 +32,7 @@ namespace SpatialSlur.SlurData
         /// <param name="tolerance"></param>
         /// <param name="maxSteps"></param>
         /// <returns></returns>
-        public static bool ConsolidatePoints(IList<Vec2d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 10)
+        public static bool ConsolidatePoints(IList<Vec2d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 4)
         {
             var grid = new HashGrid3d<Vec2d>(points.Count << 1, radius * RadiusToBinScale);
 
@@ -81,7 +81,7 @@ namespace SpatialSlur.SlurData
         /// <param name="tolerance"></param>
         /// <param name="maxSteps"></param>
         /// <returns></returns>
-        public static bool ConsolidatePoints(IList<Vec3d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 10)
+        public static bool ConsolidatePoints(IList<Vec3d> points, double radius, double tolerance = 1.0e-8, int maxSteps = 4)
         {
             var grid = new HashGrid3d<Vec3d>(points.Count << 1, radius * RadiusToBinScale);
 

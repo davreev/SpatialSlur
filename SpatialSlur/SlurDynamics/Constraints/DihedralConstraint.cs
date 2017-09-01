@@ -141,16 +141,16 @@ namespace SpatialSlur.SlurDynamics
             double m1 = 1.0 / n1.Length;
 
             // angle error
-            double angle = Math.Acos(SlurMath.Clamp(n0 * n1 * m0 * m1, -1.0, 1.0));
-            if (n1 * v02 < 0.0) angle *= -1.0; // negate if convex
+            double angle = Math.Acos(SlurMath.Clamp(Vec3d.Dot(n0, n1) * m0 * m1, -1.0, 1.0));
+            if (Vec3d.Dot(n1, v02) < 0.0) angle *= -1.0; // negate if convex
             angle += Math.PI;
 
             // projection magnitude & relevant cotangents
             double m = (angle - _targetAngle) * h * 0.5;
-            double c0 = v02 * v01 * m0;
-            double c1 = (p1 - p2) * v01 * m0;
-            double c2 = v03 * v01 * m1;
-            double c3 = (p1 - p3) * v01 * m1;
+            double c0 = Vec3d.Dot(v02, v01) * m0;
+            double c1 = Vec3d.Dot(p1 - p2, v01) * m0;
+            double c2 = Vec3d.Dot(v03, v01) * m1;
+            double c3 = Vec3d.Dot(p1 - p3, v01) * m1;
 
             // calculate deltas
             _h0.Delta = n0 * (m * c1) + n1 * (m * c3);

@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ */
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
@@ -18,7 +22,7 @@ namespace SpatialSlur.SlurMesh
         where F : IHeFace<V, E, F>
     {
         /// <summary>
-        /// 
+        /// The last vertex from each triangle must not belong to the previously returned triangle.
         /// </summary>
         /// <param name="face"></param>
         /// <returns></returns>

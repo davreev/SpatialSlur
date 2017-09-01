@@ -26,7 +26,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        Rotation3d Rotation { get; set; }
+        Rotate3d Rotation { get; set; }
 
 
         /// <summary>

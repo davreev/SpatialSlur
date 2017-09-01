@@ -146,44 +146,45 @@ namespace SpatialSlur.SlurMesh
             where UV : HeVertex<UV, UE>
             where UE : Halfedge<UV, UE>
         {
-            if (ReferenceEquals(this, other))
-                throw new ArgumentException("The graph can not be appended to itself.");
+            var vertsB = other._vertices;
+            var hedgesB = other._hedges;
 
-            int nhe = _hedges.Count;
-            int nv = _vertices.Count;
+            int nvA = _vertices.Count;
+            int nhA = _hedges.Count;
 
-            var otherHedges = other._hedges;
-            var otherVerts = other._vertices;
+            // cache in case of appending to self
+            int nvB = vertsB.Count;
+            int nhB = hedgesB.Count;
 
             // append new elements
-            for (int i = 0; i < otherHedges.Count; i += 2)
-                AddEdge();
-
-            for (int i = 0; i < otherVerts.Count; i++)
+            for (int i = 0; i < nvB; i++)
                 AddVertex();
 
+            for (int i = 0; i < nhB; i += 2)
+                AddEdge();
+
             // link new vertices to new halfedges
-            for (int i = 0; i < otherVerts.Count; i++)
+            for (int i = 0; i < nvB; i++)
             {
-                var v0 = otherVerts[i];
-                var v1 = _vertices[i + nv];
+                var v0 = vertsB[i];
+                var v1 = _vertices[i + nvA];
                 setVertex(v1, v0);
 
                 if (v0.IsRemoved) continue;
-                v1.FirstOut = _hedges[v0.FirstOut.Index + nhe];
+                v1.FirstOut = _hedges[v0.FirstOut.Index + nhA];
             }
 
             // link new halfedges to new vertices and other new halfedges
-            for (int i = 0; i < otherHedges.Count; i++)
+            for (int i = 0; i < nhB; i++)
             {
-                var he0 = otherHedges[i];
-                var he1 = _hedges[i + nhe];
+                var he0 = hedgesB[i];
+                var he1 = _hedges[i + nhA];
                 setHedge(he1, he0);
 
                 if (he0.IsRemoved) continue;
-                he1.PrevAtStart = _hedges[he0.PrevAtStart.Index + nhe];
-                he1.NextAtStart = _hedges[he0.NextAtStart.Index + nhe];
-                he1.Start = _vertices[he0.Start.Index + nv];
+                he1.PrevAtStart = _hedges[he0.PrevAtStart.Index + nhA];
+                he1.NextAtStart = _hedges[he0.NextAtStart.Index + nhA];
+                he1.Start = _vertices[he0.Start.Index + nvA];
             }
         }
 
