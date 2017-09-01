@@ -64,6 +64,8 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\Display\DisplayFaceColors.cs" />
+    <Compile Include="Components\Display\DisplayFacePlanarity.cs" />
     <Compile Include="Components\Mesh\AlignVertices.cs" />
     <Compile Include="Components\Mesh\MeshExtrude.cs" />
     <Compile Include="Components\Mesh\MeshLoft.cs" />
@@ -71,10 +73,16 @@
     <Compile Include="Components\Mesh\MeshFlip.cs" />
     <Compile Include="Components\Mesh\MeshSeparate.cs" />
     <Compile Include="Components\Display\NormalShader.cs" />
+    <Compile Include="Components\SlurField\IntegrateField.cs" />
     <Compile Include="Components\SlurField\SimplexNoise.cs" />
+    <Compile Include="Components\SlurMesh\CreateDual.cs" />
+    <Compile Include="Components\SlurMesh\FacePlanarity.cs" />
+    <Compile Include="Components\SlurMesh\HeGraphFromLines.cs" />
+    <Compile Include="Components\SlurMesh\HeMeshFromPolylines.cs" />
     <Compile Include="Components\SlurMesh\EdgeLines.cs" />
     <Compile Include="Components\SlurMesh\HoleBoundaries.cs" />
-    <Compile Include="Components\SlurMesh\FaceBoundaries.cs" />
+    <Compile Include="Components\SlurMesh\FacePolylines.cs" />
+    <Compile Include="Components\SlurMesh\HeMeshUnroll.cs" />
     <Compile Include="Components\SlurMesh\VertexPositions.cs" />
     <Compile Include="Types\GH_HeGraph3d.cs" />
     <Compile Include="Types\GH_HeMesh3d.cs" />
@@ -86,8 +94,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <None Include="packages.config" />
-    <Compile Include="Sketch\Remesher\GH_DynamicRemesher.cs" />
-    <Compile Include="Sketch\Remesher\GH_DynamicRemesherSettings.cs" />
+    <Compile Include="Sketch\Remesher\DynamicRemesher.cs" />
+    <Compile Include="Sketch\Remesher\DynamicRemesherSettings.cs" />
     <Compile Include="SlurGHInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

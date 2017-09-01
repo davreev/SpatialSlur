@@ -38,9 +38,9 @@ namespace SpatialSlur.SlurGH.Components
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddMeshParameter("mesh", "mesh", "Mesh to flip.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("vertexNorms", "vertexNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceNorms", "faceNormals", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceOrient", "faceOrientation", "", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("vertexNormalss", "vertexNorms", "", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("faceNormals", "faceNorms", "", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("faceOrientation", "faceOrient", "", GH_ParamAccess.item, true);
         }
 
 

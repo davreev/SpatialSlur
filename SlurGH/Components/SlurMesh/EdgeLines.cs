@@ -26,8 +26,8 @@ namespace SpatialSlur.SlurGH.Components
         /// 
         /// </summary>
         public EdgeLines()
-          : base("Edge Lines", "EdgeLines",
-              "Returns a line for each edge in a given halfedge structure",
+          : base("Edge Lines", "EdgeLns",
+              "Returns a line for each edge in a given halfedge graph",
               "SpatialSlur", "Mesh")
         {
         }
@@ -38,7 +38,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("heStruct", "heStructure", "Halfedge structure to extract from", GH_ParamAccess.item);
+            pManager.AddGenericParameter("heGraph", "heGraph", "", GH_ParamAccess.item);
         }
 
 
@@ -72,6 +72,31 @@ namespace SpatialSlur.SlurGH.Components
                 DA.SetDataList(0, GetEdgeLines(value, v => v.Position));
             }
         }
+
+
+        /*
+        /// <summary>
+        /// This is the method that actually does the work.
+        /// </summary>
+        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
+        /// to store data in output parameters.</param>
+        protected override void SolveInstance(IGH_DataAccess DA)
+        {
+            GH_Goo<Object> goo = null;
+            if (!DA.GetData(0, ref goo)) return;
+
+            var obj = goo.Value;
+
+            if (obj is HeGraph3d)
+            {
+                DA.SetDataList(0, GetEdgeLines((HeGraph3d)obj, v => v.Position));
+            }
+            else if (obj is HeMesh3d)
+            {
+                DA.SetDataList(0, GetEdgeLines((HeMesh3d)obj, v => v.Position));
+            }
+        }
+        */
 
 
         /// <summary>

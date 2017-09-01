@@ -29,8 +29,8 @@ namespace SlurGH.Components
         /// 
         /// </summary>
         public HoleBoundaries()
-          : base("Hole Boundaries", "HoleBounds",
-              "Returns the boundary of each hole in a given halfedge structure as a closed polyline",
+          : base("Hole Boundaries", "HoleBnds",
+              "Returns the boundary of each hole in a given halfedge mesh as a closed polyline",
               "SpatialSlur", "Mesh")
         {
         }

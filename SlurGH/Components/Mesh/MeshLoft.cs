@@ -37,7 +37,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("polys", "polylines", "", GH_ParamAccess.list);
+            pManager.AddCurveParameter("polylines", "polys", "", GH_ParamAccess.list);
         }
 
 
@@ -69,7 +69,7 @@ namespace SpatialSlur.SlurGH.Components
                 return poly;
             });
 
-            var mesh = MeshUtil.Loft(polys);
+            var mesh = RhinoFactory.Mesh.CreateLoft(polys);
 
             DA.SetData(0, new GH_Mesh(mesh));
         }

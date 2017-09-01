@@ -12,6 +12,7 @@ using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
 using SpatialSlur.SlurMesh;
 
+using SpatialSlur.SlurRhino;
 using SpatialSlur.SlurRhino.Remesher;
 
 using SpatialSlur.SlurGH.Types;
@@ -19,8 +20,6 @@ using SpatialSlur.SlurGH.Params;
 
 /*
  * Notes
- * 
- * TODO check GH duplication
  */
 
 namespace SpatialSlur.SlurGH.Remesher
@@ -28,9 +27,9 @@ namespace SpatialSlur.SlurGH.Remesher
     /// <summary>
     /// 
     /// </summary>
-    public class GH_DynamicRemesher : GH_Component
+    public class DynamicRemesher : GH_Component
     {
-        private DynamicRemesher _remesher;
+        private SlurRhino.Remesher.DynamicRemesher _remesher;
         private StringBuilder _print = new StringBuilder();
 
 
@@ -44,7 +43,7 @@ namespace SpatialSlur.SlurGH.Remesher
         /// <summary>
         /// 
         /// </summary>
-        public GH_DynamicRemesher()
+        public DynamicRemesher()
           : base("Dynamic Remesher", "Remesher",
               "Dynamically remeshes a given mesh.",
               "SpatialSlur", "Mesh")
@@ -100,16 +99,16 @@ namespace SpatialSlur.SlurGH.Remesher
             // initialize
             if (_remesher == null)
             {
-                HeMesh3d source = null;
-                Mesh target = null;
-               
+                GH_HeMesh3d source = null;
                 if (!DA.GetData(0, ref source)) return;
+
+                GH_Mesh target = null;
                 if (!DA.GetData(1, ref target)) return;
 
                 var feats = new List<GH_ObjectWrapper>(); 
                 DA.GetDataList(2, feats);
-                
-                _remesher = DynamicRemesher.Create(source.Duplicate(), new MeshFeature(target), feats.Select(f => (IFeature)f.Value));
+
+                _remesher = SlurRhino.Remesher.DynamicRemesher.Create(source.Value.Duplicate(), new MeshFeature(target.Value), feats.Select(f => (IFeature)f.Value));
             }
 
             // update dynamic parameters
@@ -121,7 +120,7 @@ namespace SpatialSlur.SlurGH.Remesher
 
             GH_ObjectWrapper settings = null;
             if (!DA.GetData(4, ref settings)) return;
-            _remesher.Settings = (DynamicRemesherSettings)settings.Value;
+            _remesher.Settings = (SlurRhino.Remesher.DynamicRemesherSettings)settings.Value;
 
             // step
             _remesher.Step();
@@ -129,7 +128,7 @@ namespace SpatialSlur.SlurGH.Remesher
 
             // output
             DA.SetData(0, new GH_String(_print.ToString()));
-            DA.SetData(1, HeMesh3d.Factory.CreateCopy(_remesher.Mesh, _setV, delegate { }, delegate { }));
+            DA.SetData(1, new GH_HeMesh3d(HeMesh3d.Factory.CreateCopy(_remesher.Mesh, _setV, delegate { }, delegate { })));
             // DA.SetData(2, _remesher.Mesh);
 
             // recall

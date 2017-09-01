@@ -11,6 +11,9 @@ using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
 
+using SpatialSlur.SlurGH.Types;
+using SpatialSlur.SlurGH.Params;
+
 /*
  * Notes
  */
@@ -20,14 +23,14 @@ namespace SpatialSlur.SlurGH.Components
     /// <summary>
     /// 
     /// </summary>
-    public class NormalShader : GH_Component
+    public class DisplayFacePlanarity : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public NormalShader()
-          : base("Normal Shader", "NormShade",
-              "Paints a Mesh based on vertex normal directions.",
+        public DisplayFacePlanarity()
+          : base("Display Face Planarity", "FacePln",
+              "Displays the planar deviation of each face in a given mesh.",
               "SpatialSlur", "Display")
         {
         }
@@ -38,9 +41,10 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Mesh to paint", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "Mesh to color", GH_ParamAccess.item);
             pManager.AddColourParameter("colors", "colors", "", GH_ParamAccess.list);
-            pManager.AddVectorParameter("direction", "dir", "", GH_ParamAccess.item, Vector3d.ZAxis);
+            pManager.AddIntervalParameter("interval", "interval", "", GH_ParamAccess.item);
+            pManager[2].Optional = true;
         }
 
 
@@ -49,7 +53,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("mesh", "mesh", "Painted mesh", GH_ParamAccess.item);
+            pManager.AddMeshParameter("mesh", "mesh", "Colored mesh", GH_ParamAccess.item);
+            pManager.AddIntervalParameter("range", "range", "Range of displayed values", GH_ParamAccess.item);
         }
 
 
@@ -60,22 +65,18 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Mesh mesh = null;
+            HeMesh3d mesh = null;
             List<Color> colors = new List<Color>();
-            Vector3d dir = new Vector3d();
+            Interval interval = new Interval();
 
             if (!DA.GetData(0, ref mesh)) return;
             if (!DA.GetDataList(1, colors)) return;
-            if (!DA.GetData(2, ref dir)) return;
+            DA.GetData(2, ref interval);
 
-            var norms = mesh.Normals;
+            var dispMesh = SolveInstanceImpl(mesh, colors, interval.ToDomain(), out Domain1d range);
 
-            if (norms.Count != mesh.Vertices.Count)
-                norms.ComputeNormals();
-            
-            mesh.ColorVertices(i => colors.Lerp(dir * norms[i] * 0.5 + 0.5), true);
-
-            DA.SetData(0, new GH_Mesh(mesh));
+            DA.SetData(0, new GH_Mesh(dispMesh));
+            DA.SetData(1, new GH_Interval(range.ToInterval()));
         }
 
 
@@ -96,8 +97,28 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{0A8E67CC-0EC0-46BA-93A0-9019B8804DF1}"); }
+            get { return new Guid("{607BA85B-E57C-42B4-8EF1-C1C216C505C6}"); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Mesh SolveInstanceImpl(HeMesh3d mesh, IReadOnlyList<Color> colors, Domain1d interval, out Domain1d range)
+        {
+            var verts = mesh.Vertices;
+            var faces = mesh.Faces;
+
+            var planarDev = new double[faces.Count];
+            mesh.GetFacePlanarity(v => v.Position, (f, t) => planarDev[f] = t);
+
+            // get planarity range
+            range = new Domain1d(planarDev);
+            if (!interval.IsValid) interval = range;
+
+            // create new mesh
+            return mesh.ToPolySoup(f => colors.Lerp(interval.Normalize(planarDev[f])));
         }
     }
 }
-

@@ -139,25 +139,32 @@ namespace SpatialSlur.SlurGH.Types
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="Q"></typeparam>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public override bool CastTo<Q>(ref Q target)
+        {
+            if (typeof(Q).IsAssignableFrom(typeof(HeGraph3d)))
+            {
+                object obj = Value;
+                target = (Q)obj;
+                return true;
+            }
+
+            return false;
+        }
+    
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
         public override bool CastFrom(object source)
         {
-            if (source is GH_Goo<HeGraph3d>)
-            {
-                Value = ((GH_Goo<HeGraph3d>)source).Value;
-                return true;
-            }
-
             if (source is HeGraph3d)
             {
                 Value = (HeGraph3d)source;
-                return true;
-            }
-
-            if (source is GH_Goo<HeMesh3d>)
-            {
-                Value = HeGraph3d.Factory.CreateFromVertexTopology(((GH_HeMesh3d)source).Value);
                 return true;
             }
 
@@ -167,22 +174,28 @@ namespace SpatialSlur.SlurGH.Types
                 return true;
             }
 
-            if (source is GH_Mesh)
-            {
-                Value = ((GH_Mesh)source).Value.ToHeGraph();
-                return true;
-            }
-
             if (source is Mesh)
             {
                 Value = ((Mesh)source).ToHeGraph();
                 return true;
             }
 
+            if (source is GH_HeMesh3d)
+            {
+                Value = HeGraph3d.Factory.CreateFromVertexTopology(((GH_HeMesh3d)source).Value);
+                return true;
+            }
+
+            if (source is GH_Mesh)
+            {
+                Value = ((GH_Mesh)source).Value.ToHeGraph();
+                return true;
+            }
+            
             return false;
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>

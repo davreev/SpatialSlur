@@ -8,6 +8,7 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
 
 using SpatialSlur.SlurGH.Types;
@@ -22,15 +23,15 @@ namespace SpatialSlur.SlurGH.Components
     /// <summary>
     /// 
     /// </summary>
-    public class MyComponent : GH_Component
+    public class HeGraphFromLines : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MyComponent()
-          : base("Name", "Nickname",
-              "Description",
-              "Category", "Subcategory")
+        public HeGraphFromLines()
+          : base("Create From Lines", "FromLns",
+              "Creates a halfedge graph from a list of line segments",
+              "SpatialSlur", "Mesh")
         {
         }
 
@@ -40,7 +41,10 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddIntegerParameter("x", "x", "", GH_ParamAccess.item);
+            pManager.AddLineParameter("lines", "lines", "", GH_ParamAccess.list);
+            pManager.AddNumberParameter("tolerance", "tol", "", GH_ParamAccess.item, 1.0e-4);
+            pManager.AddBooleanParameter("allowMulti", "multi", "", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("allowLoops", "loops", "", GH_ParamAccess.item, false);
         }
 
 
@@ -49,7 +53,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddIntegerParameter("y", "y", "", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "result", "result", "", GH_ParamAccess.item);
         }
 
 
@@ -60,12 +64,20 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            int x = 0;
-            if (!DA.GetData(0, ref x)) return;
-            
-            // do something here
+            List<Line> lines = new List<Line>();
+            var tol = 0.0;
 
-            DA.SetData(0, new GH_Integer(x));
+            var multi = false;
+            var loops = false;
+
+            if (!DA.GetDataList(0, lines)) return;
+            if (!DA.GetData(1, ref tol)) return;
+            if (!DA.GetData(2, ref multi)) return;
+            if (!DA.GetData(3, ref loops)) return;
+
+            var graph = HeGraph3d.Factory.CreateFromLineSegments(lines, tol, multi, loops);
+
+            DA.SetData(0, new GH_HeGraph3d(graph));
         }
 
 
@@ -86,7 +98,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{48D4EAC4-B5B5-4638-9072-D48A6753695F}"); }
+            get { return new Guid("{AD761F5E-656B-4FA3-903C-E176ED422868}"); }
         }
     }
 }

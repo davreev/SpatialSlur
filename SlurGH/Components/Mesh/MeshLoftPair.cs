@@ -37,8 +37,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("polyA", "polylineA", "", GH_ParamAccess.item);
-            pManager.AddCurveParameter("polyB", "polylineB", "", GH_ParamAccess.item);
+            pManager.AddCurveParameter("polylineA", "polyA", "", GH_ParamAccess.item);
+            pManager.AddCurveParameter("polylineB", "polyB", "", GH_ParamAccess.item);
         }
 
 
@@ -70,7 +70,7 @@ namespace SpatialSlur.SlurGH.Components
             if (!crvB.TryGetPolyline(out Polyline polyB))
                 throw new ArgumentException();
 
-            var mesh = MeshUtil.Loft(polyA, polyB);
+            var mesh = RhinoFactory.Mesh.CreateLoft(polyA, polyB);
 
             DA.SetData(0, new GH_Mesh(mesh));
         }

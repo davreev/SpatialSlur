@@ -8,6 +8,7 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
 
 using SpatialSlur.SlurGH.Types;
@@ -22,15 +23,15 @@ namespace SpatialSlur.SlurGH.Components
     /// <summary>
     /// 
     /// </summary>
-    public class MyComponent : GH_Component
+    public class HeMeshFromPolylines : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MyComponent()
-          : base("Name", "Nickname",
-              "Description",
-              "Category", "Subcategory")
+        public HeMeshFromPolylines()
+          : base("HeMesh From Polylines", "FromPolys",
+              "Creates a halfedge mesh from a list of closed polylines",
+              "SpatialSlur", "Mesh")
         {
         }
 
@@ -40,7 +41,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddIntegerParameter("x", "x", "", GH_ParamAccess.item);
+            pManager.AddCurveParameter("polylines", "polys", "", GH_ParamAccess.list);
+            pManager.AddNumberParameter("tolerance", "tol", "", GH_ParamAccess.item, 1.0e-4);
         }
 
 
@@ -49,7 +51,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddIntegerParameter("y", "y", "", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "result", "result", "", GH_ParamAccess.item);
         }
 
 
@@ -60,12 +62,15 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            int x = 0;
-            if (!DA.GetData(0, ref x)) return;
-            
-            // do something here
+            List<Polyline> polys = new List<Polyline>();
+            var tol = 0.0;
 
-            DA.SetData(0, new GH_Integer(x));
+            if (!DA.GetDataList(0, polys)) return;
+            if (!DA.GetData(1, ref tol)) return;
+
+            var mesh = HeMesh3d.Factory.CreateFromPolylines(polys, tol);
+
+            DA.SetData(0, new GH_HeMesh3d(mesh));
         }
 
 
@@ -86,7 +91,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{48D4EAC4-B5B5-4638-9072-D48A6753695F}"); }
+            get { return new Guid("{2A36DB93-46BB-419C-810B-98B67D88BEDB}"); }
         }
     }
 }

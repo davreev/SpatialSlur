@@ -27,7 +27,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public VertexPositions()
           : base("Vertex Positions", "VertPos",
-              "Returns the position of each vertex in a given halfedge structure",
+              "Returns the position of each vertex in a halfedge graph.",
               "SpatialSlur", "Mesh")
         {
         }
@@ -38,7 +38,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("heStruct", "heStructure", "Halfedge structure to extract from", GH_ParamAccess.item);
+            pManager.AddGenericParameter("heGraph", "heGraph", "", GH_ParamAccess.item);
         }
 
 
@@ -51,7 +51,7 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        // <summary>
+        /// <summary>
         /// This is the method that actually does the work.
         /// </summary>
         /// <param name="DA">The DA object can be used to retrieve data from input parameters and 

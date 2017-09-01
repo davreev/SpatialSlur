@@ -136,6 +136,39 @@ namespace SpatialSlur.SlurGH.Types
             return Value;
         }
 
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="Q"></typeparam>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public override bool CastTo<Q>(ref Q target)
+        {
+            if (typeof(Q).IsAssignableFrom(typeof(HeMesh3d)))
+            {
+                object obj = Value;
+                target = (Q)obj;
+                return true;
+            }
+
+            if (typeof(Q).IsAssignableFrom(typeof(Mesh)))
+            {
+                object obj = new GH_Mesh(Value.ToMesh());
+                target = (Q)obj;
+                return true;
+            }
+
+            if (typeof(Q).IsAssignableFrom(typeof(GH_Mesh)))
+            {
+                object obj = new GH_Mesh(Value.ToMesh());
+                target = (Q)obj;
+                return true;
+            }
+           
+            return false;
+        }
+
 
         /// <summary>
         /// 
@@ -144,21 +177,9 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override bool CastFrom(object source)
         {
-            if (source is GH_Goo<HeMesh3d>)
-            {
-                Value = ((GH_Goo<HeMesh3d>)source).Value;
-                return true;
-            }
-
             if (source is HeMesh3d)
             {
                 Value = (HeMesh3d)source;
-                return true;
-            }
-
-            if (source is GH_Mesh)
-            {
-                Value = ((GH_Mesh)source).Value.ToHeMesh();
                 return true;
             }
 
@@ -168,46 +189,12 @@ namespace SpatialSlur.SlurGH.Types
                 return true;
             }
 
-            return false;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="Q"></typeparam>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public override bool CastTo<Q>(ref Q target)
-        {
-            if (typeof(Q) == typeof(GH_Goo<HeMesh3d>))
+            if (source is GH_Mesh)
             {
-                object obj = new GH_HeMesh3d(Value);
-                target = (Q)obj;
+                Value = ((GH_Mesh)source).Value.ToHeMesh();
                 return true;
             }
-
-            if (typeof(Q) == typeof(HeMesh3d))
-            {
-                object obj = Value;
-                target = (Q)obj;
-                return true;
-            }
-
-            if (typeof(Q) == typeof(GH_Mesh))
-            {
-                object obj = new GH_Mesh(Value.ToMesh());
-                target = (Q)obj;
-                return true;
-            }
-
-            if (typeof(Q) == typeof(Mesh))
-            {
-                object obj = Value.ToMesh();
-                target = (Q)obj;
-                return true;
-            }
-
+         
             return false;
         }
 

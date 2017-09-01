@@ -7,12 +7,12 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
+
 using SpatialSlur.SlurRhino;
 using SpatialSlur.SlurRhino.Remesher;
 
 using SpatialSlur.SlurGH.Types;
 using SpatialSlur.SlurGH.Params;
-
 
 /*
  * Notes
@@ -23,12 +23,12 @@ namespace SpatialSlur.SlurGH.Remesher
     /// <summary>
     /// 
     /// </summary>
-    public class GH_DynamicRemesherSettings : GH_Component
+    public class DynamicRemesherSettings : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public GH_DynamicRemesherSettings()
+        public DynamicRemesherSettings()
           : base("Dynamic Remesher Settings", "Settings",
               "Creates settings used for dynamic remeshing",
               "SpatialSlur", "Mesh")
@@ -94,7 +94,7 @@ namespace SpatialSlur.SlurGH.Remesher
             int refineFreq = 0;
             if (!DA.GetData(7, ref refineFreq)) return;
 
-            var settings = new DynamicRemesherSettings();
+            var settings = new SlurRhino.Remesher.DynamicRemesherSettings();
             settings.LengthRange = lengthRng.ToDomain();
             settings.LengthTolerance = lengthTol;
             settings.FeatureWeight = feature;

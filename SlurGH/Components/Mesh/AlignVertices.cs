@@ -8,6 +8,7 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
+using SpatialSlur.SlurData;
 using SpatialSlur.SlurRhino;
 
 /*
@@ -26,7 +27,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public AlignVertices()
           : base("Align Vertices", "AlignVerts",
-              "Aligns nearby vertices within a mesh",
+              "Aligns positions of near-coincident vertices in a mesh.",
               "Mesh", "Util")
         {
         }
@@ -38,7 +39,7 @@ namespace SpatialSlur.SlurGH.Components
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddMeshParameter("mesh", "mesh", "Mesh with vertices to align", GH_ParamAccess.item);
-            pManager.AddNumberParameter("radius", "radius", "Vertex search radius", GH_ParamAccess.item, 0.01);
+            pManager.AddNumberParameter("radius", "radius", "Vertex search radius", GH_ParamAccess.item, 1.0e-4);
         }
 
 
@@ -67,7 +68,8 @@ namespace SpatialSlur.SlurGH.Components
             var verts = mesh.Vertices;
             var points = verts.Select(p => p.ToVec3d()).ToArray();
 
-            Message = (points.Consolidate(tol)) ? "Converged" : "Not converged";
+            points.Consolidate(tol, 3);
+            //Message = (points.Consolidate(tol)) ? "Converged" : "Not converged";
    
             for (int i = 0; i < verts.Count; i++)
                 verts[i] = points[i].ToPoint3f();

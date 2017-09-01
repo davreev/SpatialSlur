@@ -23,14 +23,14 @@ namespace SlurGH.Components
     /// <summary>
     /// 
     /// </summary>
-    public class FaceBoundaries : GH_Component
+    public class FacePolylines : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public FaceBoundaries()
-          : base("Face Boundaries", "FaceBounds",
-              "Returns the boundary of each face in a given halfedge structure as a closed polyline",
+        public FacePolylines()
+          : base("Face Polylines", "FacePolys",
+              "Returns the boundary of each face in a given halfedge mesh as a closed polyline",
               "SpatialSlur", "Mesh")
         {
         }
@@ -41,7 +41,7 @@ namespace SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "Halfedge mesh to extract from", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "", GH_ParamAccess.item);
         }
 
 
@@ -50,7 +50,7 @@ namespace SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddCurveParameter("result", "result", "Face polylines", GH_ParamAccess.list);
+            pManager.AddCurveParameter("result", "result", "", GH_ParamAccess.list);
         }
 
 

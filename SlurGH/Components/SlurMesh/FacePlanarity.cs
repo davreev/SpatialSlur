@@ -9,6 +9,7 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurRhino;
+using SpatialSlur.SlurMesh;
 
 using SpatialSlur.SlurGH.Types;
 using SpatialSlur.SlurGH.Params;
@@ -17,20 +18,20 @@ using SpatialSlur.SlurGH.Params;
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Components
+namespace SlurGH.Components
 {
     /// <summary>
     /// 
     /// </summary>
-    public class MyComponent : GH_Component
+    public class FacePlanarity : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public MyComponent()
-          : base("Name", "Nickname",
-              "Description",
-              "Category", "Subcategory")
+        public FacePlanarity()
+          : base("Face Planarity", "FacePln",
+              "Returns the planar deviation of each face in a halfedge mesh.",
+              "SpatialSlur", "Mesh")
         {
         }
 
@@ -38,18 +39,18 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddIntegerParameter("x", "x", "", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "", GH_ParamAccess.item);
         }
 
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddIntegerParameter("y", "y", "", GH_ParamAccess.item);
+            pManager.AddNumberParameter("result", "result", "", GH_ParamAccess.list);
         }
 
 
@@ -60,12 +61,11 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            int x = 0;
-            if (!DA.GetData(0, ref x)) return;
+            GH_HeMesh3d mesh = null;
+            if (!DA.GetData(0, ref mesh)) return;
             
-            // do something here
-
-            DA.SetData(0, new GH_Integer(x));
+            var result = mesh.Value.Faces.Select(f => f.IsRemoved ? 0.0 : f.GetPlanarity(v => v.Position));
+            DA.SetDataList(0, result);
         }
 
 
@@ -86,7 +86,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{48D4EAC4-B5B5-4638-9072-D48A6753695F}"); }
+            get { return new Guid("{85A0F167-8DCD-4397-848F-93482E6708D7}"); }
         }
     }
 }
+

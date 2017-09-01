@@ -37,8 +37,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("poly", "polyline", "", GH_ParamAccess.item);
-            pManager.AddVectorParameter("dir", "direction", "", GH_ParamAccess.item, Vector3d.Zero);
+            pManager.AddCurveParameter("polyline", "poly", "", GH_ParamAccess.item);
+            pManager.AddVectorParameter("direction", "dir", "", GH_ParamAccess.item, Vector3d.Zero);
         }
 
 
@@ -68,7 +68,7 @@ namespace SpatialSlur.SlurGH.Components
             if (!crv.TryGetPolyline(out poly))
                 throw new ArgumentException();
 
-            var mesh = MeshUtil.Extrude(poly, dir);
+            var mesh = RhinoFactory.Mesh.CreateExtrusion(poly, dir);
 
             DA.SetData(0, new GH_Mesh(mesh));
         }
