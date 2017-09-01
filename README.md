@@ -24,11 +24,7 @@ Below is a brief outline of the core library by namespace. For further detail, t
 While the core library has no dependencies beyond the .NET framework, extension libraries typically reference additional assemblies from their respective applications. If these dependencies can't be resolved for a particular extension library, simply remove its project folder from the solution before compiling.
 
 ## Setup
-To get started, either download precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases) or clone/download the repo and compile locally. 
-
-Note that .dll files might be blocked by default when downloaded from the web so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to unblock.
-
-If compiling locally, you'll need [Visual Studio 2017](https://www.visualstudio.com/vs/whatsnew/) or later as the library makes use of some C# 7 features.
+To get started, either download precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases) or clone/download the repo and compile locally. Note that .dll files might be blocked by default when downloaded from the web so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to unblock. If compiling locally, you'll need [Visual Studio 2017](https://www.visualstudio.com/vs/whatsnew/) or later as the library makes use of some C# 7 features.
 
 ### Grasshopper
 To use within Grasshopper, drop a C#/VB scripting component on the canvas, right click on the component icon/name, and go to **Manage Assemblies**. Add SpatialSlur.dll and SlurRhino.dll to the list of referenced assemblies and click **OK** to confirm. SpatialSlur types will now be accessible within this scripting component.
