@@ -82,6 +82,8 @@
     <None Include="Resources\face.obj" />
     <None Include="Resources\face_mapped.obj" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Gallery\170720_Relief_02.gif" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
