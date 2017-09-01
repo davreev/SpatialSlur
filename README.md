@@ -1,5 +1,5 @@
 # SpatialSlur
-SpatialSlur is an open source library of data structures and algorithms intended to facilitate the development of novel computational design methods. It is written in C# and compiled against .NET 4.5.
+SpatialSlur is an open source library of geometric data structures and algorithms intended to facilitate the development of novel computational design methods. It is written in C# and compiled against .NET 4.5.
 
 <p align="center">
   <img src="https://github.com/daveReeves/SpatialSlur/blob/master/Examples/Gallery/170720_Relief_02.gif" alt="Banner">
@@ -30,7 +30,7 @@ To get started, either download precompiled binaries from the [latest release](h
 To use within Grasshopper, drop a C#/VB scripting component on the canvas, right click on the component icon/name, and go to **Manage Assemblies**. Add SpatialSlur.dll and SlurRhino.dll to the list of referenced assemblies and click **OK** to confirm. SpatialSlur types will now be accessible within this scripting component.
 
 ### Unity
-Before using in Unity, the editor must to be configured to target .NET 4.6 (available in Unity 2017.1 or later). To do so go to **Edit > Project Settings > Player** and expand the **Other Settings** dropdown. Under **Configruation**, set the **Scripting Runtime Version** to **Experimental (.Net 4.6 Equivalent)**.
+Before using in Unity, the editor must to be configured to target .NET 4.6 (available in Unity 2017.1 or later). To do so, go to **Edit > Project Settings > Player** and expand the **Other Settings** dropdown. Under **Configruation**, set the **Scripting Runtime Version** to **Experimental (.Net 4.6 Equivalent)**.
 
 Once this has been set, create a **Libraries** folder within the **Assets** folder of the current project and copy in SpatialSlur.dll along with System.ValueTuple.dll. SpatialSlur types will now be accessible from any C# script in this project.
 
