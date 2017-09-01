@@ -11,12 +11,12 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
-    public interface IDiscreteField<T>
+    public interface IDiscreteField<TValue>
     {
         /// <summary>
         /// Returns the internal array of field values.
         /// </summary>
-        T[] Values { get; }
+        TValue[] Values { get; }
 
         
         /// <summary>
@@ -24,7 +24,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        T this[int index] { get; set; }
+        TValue this[int index] { get; set; }
 
 
         /// <summary>
@@ -38,6 +38,6 @@ namespace SpatialSlur.SlurField
         /// Returns a deep copy of this field.
         /// </summary>
         /// <returns></returns>
-        IDiscreteField<T> Duplicate();
+        IDiscreteField<TValue> Duplicate();
     }
 }

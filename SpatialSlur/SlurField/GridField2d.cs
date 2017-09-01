@@ -193,9 +193,9 @@ namespace SpatialSlur.SlurField
 
         
         /// <summary>
-        /// Enumerates over coordinates of the field.
+        /// Enumerates over the coordinates of the field.
         /// </summary>
-        public IEnumerable<Vec3d> Coordinates
+        public IEnumerable<Vec2d> Coordinates
         {
             get
             {
@@ -225,40 +225,14 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Returns the coordinate of each value in the field.
-        /// </summary>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public Vec2d[] GetCoordinates(bool parallel = false)
-        {
-            Vec2d[] result = new Vec2d[_n];
-            GetCoordinates(result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public void GetCoordinates(Vec2d[] result, bool parallel = false)
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
+        public bool ContainsIndices(int i, int j)
         {
-            Action<Tuple<int, int>> body = range =>
-            {
-                (int i, int j) = IndicesAt(range.Item1);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == _nx) { j++; i = 0; }
-                    result[index] = CoordinateAt(i, j);
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _n), body);
-            else
-                body(Tuple.Create(0, _n));
+            return SlurMath.Contains(i, _nx) && SlurMath.Contains(j, _ny);
         }
 
 
@@ -319,10 +293,11 @@ namespace SpatialSlur.SlurField
         {
             return Wrap(j, _ny, _wrapModeY);
         }
-
+        
 
         /// <summary>
         /// Flattens a 2 dimensional index into a 1 dimensional index.
+        /// Applies the current wrap mode to the given indices.
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
@@ -528,7 +503,7 @@ namespace SpatialSlur.SlurField
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class GridField2d<T> : GridField2d, IField2d<T>, IField3d<T>, IDiscreteField<T>
+    public abstract class GridField2d<T> : GridField2d, IField2d<T>, IField3d<T>, IDiscreteField2d<T>
         where T : struct
     {
         #region Static
@@ -646,6 +621,19 @@ namespace SpatialSlur.SlurField
         {
             get { return _values[index]; }
             set { _values[index] = value; }
+        }
+
+
+        /// <summary>
+        /// Assumes the given indices are within the valid range.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
+        public T this[int i, int j]
+        {
+            get { return _values[IndexAtUnchecked(i, j)]; }
+            set { _values[IndexAtUnchecked(i, j)] = value; }
         }
 
 

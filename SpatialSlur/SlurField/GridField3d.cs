@@ -280,41 +280,15 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Returns coordinates of all values in the field.
-        /// </summary>
-        /// <param name="parallel"></param>
-        /// <returns></returns>
-        public Vec3d[] GetCoordinates(bool parallel = false)
-        {
-            Vec3d[] result = new Vec3d[_n];
-            GetCoordinates(result, parallel);
-            return result;
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public void GetCoordinates(Vec3d[] result, bool parallel = false)
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        public bool ContainsIndices(int i, int j, int k)
         {
-            Action<Tuple<int, int>> body = range =>
-            {
-                (int i, int j, int k) = IndicesAt(range.Item1);
-
-                for (int index = range.Item1; index < range.Item2; index++, i++)
-                {
-                    if (i == _nx) { j++; i = 0; }
-                    if (j == _ny) { k++; j = 0; }
-                    result[index] = CoordinateAt(i, j, k);
-                }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, _n), body);
-            else
-                body(Tuple.Create(0, _n));
+            return SlurMath.Contains(i, _nx) && SlurMath.Contains(j, _ny) && SlurMath.Contains(k, _nz);
         }
 
 
@@ -617,7 +591,8 @@ namespace SpatialSlur.SlurField
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class GridField3d<T> : GridField3d, IField2d<T>, IField3d<T>, IDiscreteField<T>
+    public abstract class GridField3d<T> : 
+        GridField3d, IField2d<T>, IField3d<T>, IDiscreteField3d<T>
         where T : struct
     {
         #region Static
@@ -746,6 +721,20 @@ namespace SpatialSlur.SlurField
         {
             get { return _values[index]; }
             set { _values[index] = value; }
+        }
+
+
+        /// <summary>
+        /// Assumes the given indices are within the valid range.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        public T this[int i, int j, int k]
+        {
+            get { return _values[IndexAtUnchecked(i, j, k)]; }
+            set { _values[IndexAtUnchecked(i, j, k)] = value; }
         }
 
 

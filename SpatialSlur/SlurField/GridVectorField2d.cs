@@ -210,7 +210,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void GetLaplacian(GridVectorField2d result, bool parallel = false)
+        public void GetLaplacian(IDiscreteField<Vec2d> result, bool parallel = false)
         {
             GetLaplacian(result.Values, parallel);
         }
@@ -221,10 +221,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void GetLaplacian(Vec2d[] result, bool parallel)
         {
-            var vals = Values;
-            int nx = CountX;
-            int ny = CountY;
-
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
 
@@ -236,15 +232,15 @@ namespace SpatialSlur.SlurField
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == nx) { j++; i = 0; }
+                    if (i == CountX) { j++; i = 0; }
 
-                    Vec2d tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
-                    Vec2d tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
+                    Vec2d tx0 = (i == 0) ? Values[index + di] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index - di] : Values[index + 1];
 
-                    Vec2d ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
-                    Vec2d ty1 = (j == CountY - 1) ? vals[index - dj] : vals[index + nx];
+                    Vec2d ty0 = (j == 0) ? Values[index + dj] : Values[index - CountX];
+                    Vec2d ty1 = (j == base.CountY - 1) ? Values[index - dj] : Values[index + CountX];
 
-                    Vec2d t = vals[index] * 2.0;
+                    Vec2d t = Values[index] * 2.0;
                     result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
                 }
             };
@@ -274,7 +270,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void GetDivergence(GridScalarField2d result, bool parallel = false)
+        public void GetDivergence(IDiscreteField<double> result, bool parallel = false)
         {
             GetDivergence(result.Values, parallel);
         }
@@ -285,10 +281,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void GetDivergence(double[] result, bool parallel)
         {
-            var vals = Values;
-            int nx = CountX;
-            int ny = CountY;
-
             double dx = 0.5 / ScaleX;
             double dy = 0.5 / ScaleY;
 
@@ -300,13 +292,13 @@ namespace SpatialSlur.SlurField
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == nx) { j++; i = 0; }
+                    if (i == CountX) { j++; i = 0; }
 
-                    Vec2d tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
-                    Vec2d tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
+                    Vec2d tx0 = (i == 0) ? Values[index + di] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index - di] : Values[index + 1];
 
-                    Vec2d ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
-                    Vec2d ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
+                    Vec2d ty0 = (j == 0) ? Values[index + dj] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index - dj] : Values[index + CountX];
 
                     result[index] = (tx1.X - tx0.X) * dx + (ty1.Y - ty0.Y) * dy;
                 }
@@ -337,7 +329,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void GetCurl(GridScalarField2d result, bool parallel = false)
+        public void GetCurl(IDiscreteField<double> result, bool parallel = false)
         {
            GetCurl(result.Values, parallel);
         }
@@ -348,10 +340,6 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void GetCurl(double[] result, bool parallel)
         {
-            var vals = Values;
-            int nx = CountX;
-            int ny = CountY;
-
             double dx = 0.5 / ScaleX;
             double dy = 0.5 / ScaleY;
 
@@ -363,13 +351,13 @@ namespace SpatialSlur.SlurField
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == nx) { j++; i = 0; }
+                    if (i == CountX) { j++; i = 0; }
 
-                    Vec2d tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
-                    Vec2d tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
+                    Vec2d tx0 = (i == 0) ? Values[index + di] : Values[index - 1];
+                    Vec2d tx1 = (i == CountX - 1) ? Values[index - di] : Values[index + 1];
 
-                    Vec2d ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
-                    Vec2d ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
+                    Vec2d ty0 = (j == 0) ? Values[index + dj] : Values[index - CountX];
+                    Vec2d ty1 = (j == CountY - 1) ? Values[index - dj] : Values[index + CountX];
 
                     result[index] = (tx1.Y - tx0.Y) * dx - (ty1.X - ty0.X) * dy;
                 }

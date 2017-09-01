@@ -7,22 +7,19 @@ using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
- * Notes
+ * Notes 
  */
-
+ 
 namespace SpatialSlur.SlurField
 {
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="TDerivative"></typeparam>
-    public interface IDifferentiableField2d<TDerivative>
+    public interface IDiscreteField2d<TValue> : IDiscreteField<TValue>
     {
         /// <summary>
-        /// Returns the the gradient at the given point.
+        /// 
         /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        TDerivative GradientAt(Vec2d point);
+        IEnumerable<Vec2d> Coordinates { get; }
     }
 }

@@ -94,6 +94,5 @@ namespace SpatialSlur.SlurField
 
             return 4 * (cx * cy + cy * cz + cz * cx) - 3 * cx * cy * cz + 1.4;
         }
-
     }
 }

@@ -125,6 +125,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static IEnumerable<Vec3d> IntegrateFromEuler(IField3d<Vec3d> field, Vec3d point, double stepSize)
         {
+            yield return point;
+
             while(true)
             {
                 point += field.ValueAt(point) * stepSize;
@@ -138,6 +140,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static IEnumerable<Vec3d> IntegrateFromRK2(IField3d<Vec3d> field, Vec3d point, double stepSize)
         {
+            yield return point;
+
             while (true)
             {
                 var v0 = field.ValueAt(point);
@@ -156,6 +160,8 @@ namespace SpatialSlur.SlurField
         {
             double dt2 = stepSize * 0.5;
             double dt6 = stepSize / 6.0;
+
+            yield return point;
 
             while (true)
             {
@@ -738,7 +744,7 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public static void GeodesicDistanceL1(GridField2d<double> cost, IEnumerable<int> sources, double[] result)
         {
-            // TODO consider wrap modes
+            // TODO handle wrap modes
 
             var costVals = cost.Values;
             int nx = cost.CountX;
@@ -865,7 +871,7 @@ namespace SpatialSlur.SlurField
        /// <param name="result"></param>
         private static void GeodesicDistanceL2Impl(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, double[] result)
         {
-            // TODO consider wrap modes
+            // TODO handle wrap modes
 
             var costVals = cost.Values;
             var nx = cost.CountX;

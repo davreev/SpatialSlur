@@ -234,7 +234,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void GetLaplacian(GridScalarField3d result, bool parallel = false)
+        public void GetLaplacian(IDiscreteField<double> result, bool parallel = false)
         {
             GetLaplacian(result.Values, parallel);
         }
@@ -247,12 +247,6 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetLaplacian(double[] result, bool parallel)
         {
-            var vals = Values;
-            int nx = CountX;
-            int ny = CountY;
-            int nz = CountZ;
-            int nxy = CountXY;
-
             double dx = 1.0 / (ScaleX * ScaleX);
             double dy = 1.0 / (ScaleY * ScaleY);
             double dz = 1.0 / (ScaleZ * ScaleZ);
@@ -265,19 +259,19 @@ namespace SpatialSlur.SlurField
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == nx) { j++; i = 0; }
-                    if (j == ny) { k++; j = 0; }
+                    if (i == CountX) { j++; i = 0; }
+                    if (j == CountY) { k++; j = 0; }
 
-                    double tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
-                    double tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
+                    double tx0 = (i == 0) ? Values[index + di] : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? Values[index - di] : Values[index + 1];
 
-                    double ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
-                    double ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
+                    double ty0 = (j == 0) ? Values[index + dj] : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? Values[index - dj] : Values[index + CountX];
 
-                    double tz0 = (k == 0) ? vals[index + dk] : vals[index - nxy];
-                    double tz1 = (k == nz - 1) ? vals[index - dk] : vals[index + nxy];
+                    double tz0 = (k == 0) ? Values[index + dk] : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? Values[index - dk] : Values[index + CountXY];
 
-                    double t = vals[index] * 2.0;
+                    double t = Values[index] * 2.0;
                     result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
                 }
             };
@@ -307,7 +301,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void GetGradient(GridVectorField3d result, bool parallel = false)
+        public void GetGradient(IDiscreteField<Vec3d> result, bool parallel = false)
         {
             GetGradient(result.Values, parallel);
         }
@@ -320,12 +314,6 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetGradient(Vec3d[] result, bool parallel = false)
         {
-            var vals = Values;
-            int nx = CountX;
-            int ny = CountY;
-            int nz = CountZ;
-            int nxy = CountXY;
-
             double dx = 0.5 / ScaleX;
             double dy = 0.5 / ScaleY;
             double dz = 0.5 / ScaleZ;
@@ -338,17 +326,17 @@ namespace SpatialSlur.SlurField
 
                 for (int index = range.Item1; index < range.Item2; index++, i++)
                 {
-                    if (i == nx) { j++; i = 0; }
-                    if (j == ny) { k++; j = 0; }
+                    if (i == CountX) { j++; i = 0; }
+                    if (j == CountY) { k++; j = 0; }
 
-                    double tx0 = (i == 0) ? vals[index + di] : vals[index - 1];
-                    double tx1 = (i == nx - 1) ? vals[index - di] : vals[index + 1];
+                    double tx0 = (i == 0) ? Values[index + di] : Values[index - 1];
+                    double tx1 = (i == CountX - 1) ? Values[index - di] : Values[index + 1];
 
-                    double ty0 = (j == 0) ? vals[index + dj] : vals[index - nx];
-                    double ty1 = (j == ny - 1) ? vals[index - dj] : vals[index + nx];
+                    double ty0 = (j == 0) ? Values[index + dj] : Values[index - CountX];
+                    double ty1 = (j == CountY - 1) ? Values[index - dj] : Values[index + CountX];
 
-                    double tz0 = (k == 0) ? vals[index + dk] : vals[index - nxy];
-                    double tz1 = (k == nz - 1) ? vals[index - dk] : vals[index + nxy];
+                    double tz0 = (k == 0) ? Values[index + dk] : Values[index - CountXY];
+                    double tz1 = (k == CountZ - 1) ? Values[index - dk] : Values[index + CountXY];
 
                     result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
                 }

@@ -370,7 +370,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(this IDiscreteField<double> field, Domain domain, IDiscreteField<double> result, bool parallel = false)
+        public static void Normalize(this IDiscreteField<double> field, Domain1d domain, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
                 ArrayMath.NormalizeParallel(field.Values, domain, result.Values);
@@ -382,7 +382,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(this IDiscreteField<double> field, Domain domain, IDiscreteField<double> result, bool parallel = false)
+        public static void Evaluate(this IDiscreteField<double> field, Domain1d domain, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
                 ArrayMath.EvaluateParallel(field.Values, domain, result.Values);
@@ -394,7 +394,7 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(this IDiscreteField<double> field, Domain from, Domain to, IDiscreteField<double> result, bool parallel = false)
+        public static void Remap(this IDiscreteField<double> field, Domain1d from, Domain1d to, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
                 ArrayMath.RemapParallel(field.Values, from, to, result.Values);
