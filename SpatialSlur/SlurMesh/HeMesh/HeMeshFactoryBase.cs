@@ -162,6 +162,11 @@ namespace SpatialSlur.SlurMesh
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
+            // RESUME HERE
+
+            // TODO debug
+            // component halfedges have null start vertices
+
             var vertices = mesh.Vertices;
             var hedges = mesh.Halfedges;
             var faces = mesh.Faces;
@@ -192,7 +197,7 @@ namespace SpatialSlur.SlurMesh
 
                 // the component to which heA0 was copied
                 var compHedges = comps[componentIndex.Get(heA0)].Halfedges;
-                var heA1 = heA0.NextAtStart;
+                var heA1 = heA0.NextInFace;
 
                 // set refs
                 var heB0 = compHedges[(edgeIndex.Get(heA0) << 1) + (i & 1)];
