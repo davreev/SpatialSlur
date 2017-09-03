@@ -503,7 +503,7 @@ namespace SpatialSlur.SlurField
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class GridField2d<T> : GridField2d, IField2d<T>, IField3d<T>, IDiscreteField2d<T>
+    public abstract class GridField2d<T> : GridField2d, IField2d<T>, IField3d<T>, IDiscreteField2d<T>, IDiscreteField3d<T>
         where T : struct
     {
         #region Static
@@ -1152,6 +1152,33 @@ namespace SpatialSlur.SlurField
         IDiscreteField<T> IDiscreteField<T>.Duplicate()
         {
             return DuplicateBase();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<Vec3d> IDiscreteField3d<T>.Coordinates
+        {
+            get
+            {
+                for (int j = 0; j < CountY; j++)
+                {
+                    for (int i = 0; i < CountX; i++)
+                        yield return CoordinateAt(i, j);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        Vec3d IDiscreteField3d<T>.CoordinateAt(int index)
+        {
+            return CoordinateAt(index);
         }
 
         #endregion

@@ -21,5 +21,13 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         IEnumerable<Vec3d> Coordinates { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        Vec3d CoordinateAt(int index);
     }
 }
