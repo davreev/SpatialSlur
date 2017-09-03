@@ -73,6 +73,8 @@
     <Compile Include="Components\Mesh\MeshFlip.cs" />
     <Compile Include="Components\Mesh\MeshSeparate.cs" />
     <Compile Include="Components\Display\NormalShader.cs" />
+    <Compile Include="Components\SlurField\CreateGridVectorField.cs" />
+    <Compile Include="Components\SlurField\CreateGridScalarField.cs" />
     <Compile Include="Components\SlurField\IntegrateField.cs" />
     <Compile Include="Components\SlurField\SimplexNoise.cs" />
     <Compile Include="Components\SlurMesh\CreateDual.cs" />
