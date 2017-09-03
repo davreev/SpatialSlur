@@ -99,34 +99,34 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Creates a change of basis transformation from t0 to t1
+        /// Creates relative transformation from t0 to t1.
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
         /// <returns></returns>
-        public static Transform3d CreateChangeBasis(Transform3d from, Transform3d to)
+        public static Transform3d CreateRelative(Transform3d t0, Transform3d t1)
         {
-            return to.Apply(from.Inverse);
-        }
-
-
-        /// <summary>
-        /// Creates a change of basis transformation from t0 to t1
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
-        public static Transform3d CreateChangeBasis(ref Transform3d from, ref Transform3d to)
-        {
-            return to.Apply(from.Inverse);
+            return CreateRelative(ref t0, ref t1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <returns></returns>
+        public static Transform3d CreateRelative(ref Transform3d t0, ref Transform3d t1)
+        {
+            return t1.Apply(t0.Inverse);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="normal"></param>
         /// <returns></returns>
         public static Transform3d CreateReflection(Vec3d point, Vec3d normal)
         {
@@ -162,8 +162,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="scale"></param>
-        /// <param name="rotation"></param>
-        /// <param name="translation"></param>
+        /// <param name="orientation"></param>
         public Transform3d(Vec3d scale, Orient3d orientation)
         {
             Scale = scale;

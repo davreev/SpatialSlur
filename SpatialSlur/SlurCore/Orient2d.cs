@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Orient3d Identity = new Orient3d(Rotate3d.Identity, Vec3d.Zero);
+        public static readonly Orient2d Identity = new Orient2d(Rotate2d.Identity, Vec2d.Zero);
 
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="orient"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static Vec2d Multiply(ref Orient2d orient, Vec2d point)
+        public static Vec2d Multiply(Orient2d orient, Vec2d point)
         {
             return orient.Apply(point);
         }
@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <returns></returns>
-        public static Orient2d Multiply(ref Orient2d t0, ref Orient2d t1)
+        public static Orient2d Multiply(Orient2d t0, Orient2d t1)
         {
             return t0.Apply(t1);
         }
@@ -91,16 +91,16 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Creates a change of basis transformation from t0 to t1
+        /// Creates a relative transformation from t0 to t1.
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
         /// <returns></returns>
-        public static Orient2d CreateChangeBasis(ref Orient2d from, ref Orient2d to)
+        public static Orient2d CreateRelative(Orient2d t0, Orient2d t1)
         {
-            return to.Apply(from.Inverse);
+            return t1.Apply(t0.Inverse);
         }
-
+        
 
         /// <summary>
         /// 

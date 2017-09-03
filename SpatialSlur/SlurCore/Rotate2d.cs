@@ -71,14 +71,14 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Creates a change of basis rotation from r0 to r1
+        /// Creates a relative rotation from t0 to t1.
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
         /// <returns></returns>
-        public static Rotate2d CreateChangeBasis(Rotate2d from, Rotate2d to)
+        public static Rotate2d CreateRelative(Rotate2d t0, Rotate2d t1)
         {
-            return to.Apply(from.Inverse);
+            return t1.Apply(t0.Inverse);
         }
 
         #endregion

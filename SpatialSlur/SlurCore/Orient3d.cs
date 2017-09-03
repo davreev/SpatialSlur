@@ -104,28 +104,28 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Creates a change of basis transformation from t0 to t1
+        /// Creates a relative transformation from t0 to t1.
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
         /// <returns></returns>
-        public static Orient3d CreateChangeBasis(Orient3d from, Orient3d to)
+        public static Orient3d CreateRelative(Orient3d t0, Orient3d t1)
         {
-            return to.Apply(from.Inverse);
+            return CreateRelative(ref t0, ref t1);
         }
 
 
         /// <summary>
-        /// Creates a change of basis transformation from t0 to t1
+        /// 
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
         /// <returns></returns>
-        public static Orient3d CreateChangeBasis(ref Orient3d from, ref Orient3d to)
+        public static Orient3d CreateRelative(ref Orient3d t0, ref Orient3d t1)
         {
-            return to.Apply(from.Inverse);
+            return t1.Apply(t0.Inverse);
         }
-
+        
 
         /// <summary>
         /// 

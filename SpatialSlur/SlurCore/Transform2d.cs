@@ -67,7 +67,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="transform"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static Vec2d Multiply(ref Transform2d transform, Vec2d point)
+        public static Vec2d Multiply(Transform2d transform, Vec2d point)
         {
             return transform.Apply(point);
         }
@@ -78,33 +78,21 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
-        public static Transform2d Multiply(ref Transform2d t0, ref Transform2d t1)
+        public static Transform2d Multiply(Transform2d t0, Transform2d t1)
         {
             return t0.Apply(t1);
         }
 
 
         /// <summary>
-        /// Creates a change of basis transformation from t0 to t1
+        /// Creates a relative transformation from t0 to t1.
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
         /// <returns></returns>
-        public static Transform2d CreateChangeBasis(Transform2d from, Transform2d to)
+        public static Transform2d CreateRelative(Transform2d t0, Transform2d t1)
         {
-            return to.Apply(from.Inverse);
-        }
-
-
-        /// <summary>
-        /// Creates a change of basis transformation from t0 to t1
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
-        public static Transform2d CreateChangeBasis(ref Transform2d from, ref Transform2d to)
-        {
-            return to.Apply(from.Inverse);
+            return t1.Apply(t0.Inverse);
         }
 
         #endregion
@@ -136,8 +124,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="scale"></param>
-        /// <param name="rotation"></param>
-        /// <param name="translation"></param>
+        /// <param name="orientation"></param>
         public Transform2d(Vec2d scale, Orient2d orientation)
         {
             Scale = scale;

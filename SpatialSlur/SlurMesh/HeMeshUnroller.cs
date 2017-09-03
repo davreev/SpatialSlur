@@ -263,7 +263,7 @@ namespace SpatialSlur.SlurMesh
 
             Vec3d x = p1 - p0;
 
-            return Orient3d.CreateChangeBasis(
+            return Orient3d.CreateRelative(
                 new Orient3d(p0, x, p2 - p0), 
                 new Orient3d(p0, x, p1 - p3)
                 );
