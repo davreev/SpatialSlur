@@ -26,16 +26,16 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="bitmaps"></param>
         /// <param name="mapper"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static GridVectorField3d CreateFromImageStack(IList<Bitmap> bitmaps, Func<Color, Vec3d> mapper, Domain3d domain)
+        public static GridVectorField3d CreateFromImageStack(IList<Bitmap> bitmaps, Func<Color, Vec3d> mapper, Interval3d interval)
         {
             var bmp0 = bitmaps[0];
             int nx = bmp0.Width;
             int ny = bmp0.Height;
             int nz = bitmaps.Count;
 
-            var result = new GridVectorField3d(domain, nx, ny, nz);
+            var result = new GridVectorField3d(interval, nx, ny, nz);
             FieldIO.ReadFromImageStack(bitmaps, result, mapper);
 
             return result;
@@ -66,7 +66,7 @@ namespace SpatialSlur.SlurField
                double.Parse(values[7]),
                double.Parse(values[8]));
 
-            GridVectorField3d result = new GridVectorField3d(new Domain3d(p0, p1), nx, ny, nz);
+            GridVectorField3d result = new GridVectorField3d(new Interval3d(p0, p1), nx, ny, nz);
             var vecs = result.Values;
             int index = 0;
 
@@ -98,27 +98,15 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
         /// <param name="countZ"></param>
-        public GridVectorField3d(Domain3d domain, int countX, int countY, int countZ)
-            : base(domain, countX, countY, countZ)
-        {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        /// <param name="sampleMode"></param>
         /// <param name="wrapMode"></param>
-        public GridVectorField3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapMode)
-            : base(domain, countX, countY, countZ, wrapMode, sampleMode)
+        /// <param name="sampleMode"></param>
+        public GridVectorField3d(Vec3d origin, Vec3d scale, int countX, int countY, int countZ, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
+            : base(origin, scale, countX, countY, countZ, wrapMode, sampleMode)
         {
         }
 
@@ -126,16 +114,49 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
         /// <param name="countZ"></param>
-        /// <param name="sampleMode"></param>
         /// <param name="wrapModeX"></param>
         /// <param name="wrapModeY"></param>
         /// <param name="wrapModeZ"></param>
-        public GridVectorField3d(Domain3d domain, int countX, int countY, int countZ, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ)
-            : base(domain, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ, sampleMode)
+        /// <param name="sampleMode"></param>
+        public GridVectorField3d(Vec3d origin, Vec3d scale, int countX, int countY, int countZ, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
+            : base(origin, scale, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ, sampleMode)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
+        /// <param name="wrapMode"></param>
+        /// <param name="sampleMode"></param>
+        public GridVectorField3d(Interval3d interval, int countX, int countY, int countZ, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
+            : base(interval, countX, countY, countZ, wrapMode, sampleMode)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        /// <param name="wrapModeZ"></param>
+        /// <param name="sampleMode"></param>
+        public GridVectorField3d(Interval3d interval, int countX, int countY, int countZ, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
+            : base(interval, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ, sampleMode)
         {
         }
 
@@ -144,31 +165,34 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public GridVectorField3d(GridField3d other)
-            : base(other)
+        /// <param name="sampleMode"></param>
+        public GridVectorField3d(Grid3d other, SampleMode sampleMode = SampleMode.Linear)
+            : base(other, sampleMode)
         {
-        }
-
-
-        /// <summary>
-        /// Creates a shallow copy of the internal array.
-        /// </summary>
-        /// <returns></returns>
-        public GridVectorField3d Duplicate()
-        {
-            var copy = new GridVectorField3d(this);
-            copy.Set(this);
-            return copy;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="copyValues"></param>
         /// <returns></returns>
-        protected sealed override GridField3d<Vec3d> DuplicateBase()
+        public GridVectorField3d Duplicate(bool copyValues)
         {
-            return Duplicate();
+            var result = new GridVectorField3d(this, SampleMode);
+            if (copyValues) result.Set(this);
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="copyValues"></param>
+        /// <returns></returns>
+        protected sealed override GridField3d<Vec3d> DuplicateBase(bool copyValues)
+        {
+            return Duplicate(copyValues);
         }
 
 
@@ -180,7 +204,10 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         protected sealed override Vec3d ValueAtLinear(Vec3d point)
         {
-            (double u, double v, double w) = Fract(point, out int i0, out int j0, out int k0);
+            point = ToGridSpace(point);
+            double u = SlurMath.Fract(point.X, out int i0);
+            double v = SlurMath.Fract(point.Y, out int j0);
+            double w = SlurMath.Fract(point.Z, out int k0);
 
             int i1 = WrapX(i0 + 1);
             int j1 = WrapY(j0 + 1) * CountX;
@@ -212,7 +239,10 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         protected sealed override Vec3d ValueAtLinearUnchecked(Vec3d point)
         {
-            (double u, double v, double w) = Fract(point, out int i0, out int j0, out int k0);
+            point = ToGridSpace(point);
+            double u = SlurMath.Fract(point.X, out int i0);
+            double v = SlurMath.Fract(point.Y, out int j0);
+            double w = SlurMath.Fract(point.Z, out int k0);
 
             j0 *= CountX;
             k0 *= CountXY;
@@ -277,7 +307,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public GridVectorField3d GetLaplacian(bool parallel = false)
         {
-            GridVectorField3d result = new GridVectorField3d((GridField3d)this);
+            GridVectorField3d result = new GridVectorField3d((Grid3d)this);
             GetLaplacian(result.Values, parallel);
             return result;
         }
@@ -299,9 +329,10 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void GetLaplacian(Vec3d[] result, bool parallel)
         {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
-            double dz = 1.0 / (ScaleZ * ScaleZ);
+            (var dx, var dy, var dz) = Scale.Components;
+            dx = 1.0 / (dx * dx);
+            dy = 1.0 / (dy * dy);
+            dz = 1.0 / (dz * dz);
 
             (int di, int dj, int dk) = GetBoundaryOffsets();
 
@@ -364,11 +395,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void GetDivergence(double[] result, bool parallel)
         {
-            double dx = 0.5 / ScaleX;
-            double dy = 0.5 / ScaleY;
-            double dz = 0.5 / ScaleZ;
-
-            (int di, int dj, int dk) = GetBoundaryOffsets();
+            (var dx, var dy, var dz) = (0.5 / Scale).Components;
+            (var di, var dj, var dk) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> body = range =>
             {
@@ -406,7 +434,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public GridVectorField3d GetCurl(bool parallel = false)
         {
-            GridVectorField3d result = new GridVectorField3d((GridField3d)this);
+            GridVectorField3d result = new GridVectorField3d((Grid3d)this);
             GetCurl(result.Values, parallel);
             return result;
         }
@@ -428,11 +456,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public void GetCurl(Vec3d[] result, bool parallel)
         {
-            double dx = 0.5 / ScaleX;
-            double dy = 0.5 / ScaleY;
-            double dz = 0.5 / ScaleZ;
-
-            (int di, int dj, int dk) = GetBoundaryOffsets();
+            (var dx, var dy, var dz) = (0.5 / Scale).Components;
+            (var di, var dj, var dk) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> body = range =>
             {

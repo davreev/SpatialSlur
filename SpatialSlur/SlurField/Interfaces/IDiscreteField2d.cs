@@ -29,5 +29,13 @@ namespace SpatialSlur.SlurField
         /// <param name="index"></param>
         /// <returns></returns>
         Vec2d CoordinateAt(int index);
+
+
+        /// <summary>
+        /// Returns a copy of this field.
+        /// The value array of the returned field is a deep copy but other fields may be shallow depending on the implementation.
+        /// </summary>
+        /// <returns></returns>
+        IDiscreteField2d<TValue> Duplicate(bool copyValues);
     }
 }

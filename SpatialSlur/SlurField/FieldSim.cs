@@ -350,8 +350,9 @@ namespace SpatialSlur.SlurField
             int nx = field.CountX;
             int ny = field.CountY;
 
-            double dx = 1.0 / (field.ScaleX * field.ScaleX);
-            double dy = 1.0 / (field.ScaleY * field.ScaleY);
+            (double dx, double dy) = field.Scale.Components;
+            dx = 1.0 / (dx * dx);
+            dy = 1.0 / (dy * dy);
 
             (int di, int dj) = field.GetBoundaryOffsets();
 
@@ -411,9 +412,10 @@ namespace SpatialSlur.SlurField
             int nz = field.CountZ;
             int nxy = field.CountXY;
 
-            double dx = 1.0 / (field.ScaleX * field.ScaleX);
-            double dy = 1.0 / (field.ScaleY * field.ScaleY);
-            double dz = 1.0 / (field.ScaleZ * field.ScaleZ);
+            (double dx, double dy, double dz) = field.Scale.Components;
+            dx = 1.0 / (dx * dx);
+            dy = 1.0 / (dy * dy);
+            dz = 1.0 / (dz * dz);
 
             (int di, int dj, int dk) = field.GetBoundaryOffsets();
 
@@ -580,8 +582,9 @@ namespace SpatialSlur.SlurField
             int nx = field.CountX;
             int ny = field.CountY;
 
-            double dx = 1.0 / Math.Abs(field.ScaleX);
-            double dy = 1.0 / Math.Abs(field.ScaleY);
+            (double dx, double dy) = field.Scale.Components;
+            dx = 1.0 / Math.Abs(dx);
+            dy = 1.0 / Math.Abs(dy);
 
             (int di, int dj) = field.GetBoundaryOffsets();
 
@@ -662,9 +665,10 @@ namespace SpatialSlur.SlurField
             int nz = field.CountZ;
             int nxy = field.CountXY;
 
-            double dx = 1.0 / Math.Abs(field.ScaleX);
-            double dy = 1.0 / Math.Abs(field.ScaleY);
-            double dz = 1.0 / Math.Abs(field.ScaleZ);
+            (double dx, double dy, double dz) = field.Scale.Components;
+            dx = 1.0 / Math.Abs(dx);
+            dy = 1.0 / Math.Abs(dy);
+            dz = 1.0 / Math.Abs(dz);
 
             (int di, int dj, int dk) = field.GetBoundaryOffsets();
 
@@ -749,54 +753,54 @@ namespace SpatialSlur.SlurField
             var costVals = cost.Values;
             int nx = cost.CountX;
             int ny = cost.CountY;
-            double dx = Math.Abs(cost.ScaleX);
-            double dy = Math.Abs(cost.ScaleY);
+
+            (double dx, double dy) = Vec2d.Abs(cost.Scale).Components;
 
             var pq = new PriorityQueue<(double, int)>((a, b) => a.Item1.CompareTo(b.Item1));
             result.SetRange(double.PositiveInfinity, 0, cost.Count);
 
             // enqueue sources
-            foreach (int i in sources)
+            foreach (int index in sources)
             {
-                result[i] = 0.0;
-                pq.Insert((0.0, i));
+                result[index] = 0.0;
+                pq.Insert((0.0, index));
             }
 
             // breadth first search from sources
             while (pq.Count > 0)
             {
-                (double t0, int i0) = pq.RemoveMin();
-                if (t0 > result[i0]) continue; // skip if node has already been processed
+                (double dist0, int index0) = pq.RemoveMin();
+                if (dist0 > result[index0]) continue; // skip if node has already been processed
 
-                (int x0, int y0) = cost.IndicesAt(i0);
+                (int i0, int j0) = cost.IndicesAt(index0);
 
                 // x neighbours
-                for (int j = -1; j < 2; j += 2)
+                for (int i = -1; i < 2; i += 2)
                 {
-                    if (!SlurMath.Contains(x0 + j, 0, nx)) continue;
+                    if (!SlurMath.Contains(i0 + i, nx)) continue;
 
-                    int i1 = i0 + j;
-                    double t1 = t0 + costVals[i1] * dx;
+                    int index1 = index0 + i;
+                    double dist1 = dist0 + costVals[index1] * dx;
 
-                    if (t1 < result[i1])
+                    if (dist1 < result[index1])
                     {
-                        result[i1] = t1;
-                        pq.Insert((t1, i1));
+                        result[index1] = dist1;
+                        pq.Insert((dist1, index1));
                     }
                 }
 
                 // y neigbours
                 for (int j = -1; j < 2; j += 2)
                 {
-                    if (!SlurMath.Contains(y0 + j, 0, ny)) continue;
+                    if (!SlurMath.Contains(j0 + j, ny)) continue;
 
-                    int i1 = i0 + j * nx;
-                    double t1 = t0 + costVals[i1] * dy;
+                    int index1 = index0 + j * nx;
+                    double dist1 = dist0 + costVals[index1] * dy;
 
-                    if (t1 < result[i1])
+                    if (dist1 < result[index1])
                     {
-                        result[i1] = t1;
-                        pq.Insert((t1, i1));
+                        result[index1] = dist1;
+                        pq.Insert((dist1, index1));
                     }
                 }
             }
@@ -862,13 +866,13 @@ namespace SpatialSlur.SlurField
         }
 
 
-       /// <summary>
-       /// 
-       /// </summary>
-       /// <param name="cost"></param>
-       /// <param name="sources"></param>
-       /// <param name="tags"></param>
-       /// <param name="result"></param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <param name="sources"></param>
+        /// <param name="tags"></param>
+        /// <param name="result"></param>
         private static void GeodesicDistanceL2Impl(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, double[] result)
         {
             // TODO handle wrap modes
@@ -876,8 +880,8 @@ namespace SpatialSlur.SlurField
             var costVals = cost.Values;
             var nx = cost.CountX;
             var ny = cost.CountY;
-            var dx = Math.Abs(cost.ScaleX);
-            var dy = Math.Abs(cost.ScaleY);
+            
+            (var dx, var dy) = Vec2d.Abs(cost.Scale).Components;
 
             var pq = new PriorityQueue<(double, int)>((a, b) => a.Item1.CompareTo(b.Item1));
             var eikonal = new Eikonal2d(dx, dy);
@@ -885,42 +889,43 @@ namespace SpatialSlur.SlurField
             result.SetRange(double.PositiveInfinity, 0, cost.Count);
 
             // enqueue sources
-            foreach (int i in sources)
+            foreach (int index in sources)
             {
-                result[i] = 0.0;
-                pq.Insert((0.0, i));
+                result[index] = 0.0;
+                pq.Insert((0.0, index));
             }
 
             // breadth first search from sources
             while (pq.Count > 0)
             {
-                (double t0, int i0) = pq.RemoveMin();
-                if (tags[i0]) continue; // skip if already accepted
-                tags[i0] = true;
+                (double dist0, int index0) = pq.RemoveMin();
 
-                (int x0, int y0) = cost.IndicesAt(i0);
+                if (tags[index0]) continue; // skip if already accepted
+                tags[index0] = true;
+
+                (int i0, int j0) = cost.IndicesAt(index0);
 
                 // x neigbours
-                for (int j = -1; j < 2; j += 2)
+                for (int i = -1; i < 2; i += 2)
                 {
-                    if (!SlurMath.Contains(x0 + j, 0, nx)) continue;
+                    if (!SlurMath.Contains(i0 + i, nx)) continue; // skip if out of bounds
+                    int index1 = index0 + i;
 
-                    int i1 = i0 + j;
-                    if (!tags[i1])
+                    if (!tags[index1])
                     {
-                        double y = (y0 == 0) ? 
-                          result[i1 + nx] : 
-                          (y0 == ny - 1) ? result[i1 - nx] : 
-                          Math.Min(result[i1 - nx], result[i1 + nx]);
+                        double minAdj = 
+                            (j0 == 0) ? result[index1 + nx] : 
+                            (j0 == ny - 1) ? result[index1 - nx] : 
+                            Math.Min(result[index1 - nx], result[index1 + nx]);
 
-                        double t1 = (y > double.MaxValue) ? 
-                            t0 + dx * costVals[i1] :
-                            eikonal.Evaluate(t0, y, costVals[i1]);
+                        double dist1 = 
+                            (minAdj > double.MaxValue) ? dist0 + dx * costVals[index1] : 
+                            eikonal.Evaluate(dist0, minAdj, costVals[index1]);
 
-                        if (t1 < result[i1])
+                        if (dist1 < result[index1])
                         {
-                            result[i1] = t1;
-                            pq.Insert((t1, i1));
+                            result[index1] = dist1;
+                            pq.Insert((dist1, index1));
                         }
                     }
                 }
@@ -928,24 +933,24 @@ namespace SpatialSlur.SlurField
                 // y neigbours
                 for (int j = -1; j < 2; j += 2)
                 {
-                    if (!SlurMath.Contains(y0 + j, 0, ny)) continue;
+                    if (!SlurMath.Contains(j0 + j, ny)) continue; // skip if out of bounds
+                    int index1 = index0 + j * nx;
 
-                    int i1 = i0 + j * nx;
-                    if (!tags[i1])
+                    if (!tags[index1])
                     {
-                        double x = (x0 == 0) ? 
-                          result[i1 + 1] :
-                          (x0 == nx - 1) ? result[i1 - 1] :
-                          Math.Min(result[i1 - 1], result[i1 + 1]);
+                        double minAdj = 
+                            (i0 == 0) ? result[index1 + 1] : 
+                            (i0 == nx - 1) ? result[index1 - 1] : 
+                            Math.Min(result[index1 - 1], result[index1 + 1]);
 
-                        double t1 = (x > double.MaxValue) ? 
-                            t0 + dy * costVals[i1] :
-                            eikonal.Evaluate(x, t0, costVals[i1]);
+                        double dist1 = 
+                            (minAdj > double.MaxValue) ? dist0 + dy * costVals[index1] : 
+                            eikonal.Evaluate(minAdj, dist0, costVals[index1]);
 
-                        if (t1 < result[i1])
+                        if (dist1 < result[index1])
                         {
-                            result[i1] = t1;
-                            pq.Insert((t1, i1));
+                            result[index1] = dist1;
+                            pq.Insert((dist1, index1));
                         }
                     }
                 }
@@ -956,9 +961,11 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private class Eikonal2d
+        private struct Eikonal2d
         {
-            private double _dx, _dy, _tx, _ty, _a, _a2Inv; // constants used during evaluation
+            private double _dx, _dy; // constants used during evaluation
+            private double _tx, _ty;
+            private double _a, _a2Inv;
 
 
             /// <summary>
@@ -974,7 +981,7 @@ namespace SpatialSlur.SlurField
                 _tx = 1.0 / (_dx * _dx);
                 _ty = 1.0 / (_dy * _dy);
                 _a = _tx + _ty;
-                _a2Inv = 1.0 / (2.0 * _a);
+                _a2Inv = 0.5 / _a;
             }
 
 

@@ -24,14 +24,14 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="bitmap"></param>
         /// <param name="mapper"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static GridScalarField2d CreateFromImage(Bitmap bitmap, Func<Color, double> mapper, Domain2d domain)
+        public static GridScalarField2d CreateFromImage(Bitmap bitmap, Func<Color, double> mapper, Interval2d interval)
         {
             int nx = bitmap.Width;
             int ny = bitmap.Height;
 
-            var result = new GridScalarField2d(domain, nx, ny);
+            var result = new GridScalarField2d(interval, nx, ny);
             FieldIO.ReadFromImage(bitmap, result, mapper);
 
             return result;
@@ -43,25 +43,14 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        public GridScalarField2d(Domain2d domain, int countX, int countY)
-            : base(domain, countX, countY)
-        {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="sampleMode"></param>
         /// <param name="wrapMode"></param>
-        public GridScalarField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapMode)
-            : base(domain, countX, countY, wrapMode, sampleMode)
+        /// <param name="sampleMode"></param>
+        public GridScalarField2d(Vec2d origin, Vec2d scale, int countX, int countY, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
+            : base(origin, scale, countX, countY, wrapMode, sampleMode)
         {
         }
 
@@ -69,14 +58,44 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        /// <param name="sampleMode"></param>
         /// <param name="wrapModeX"></param>
         /// <param name="wrapModeY"></param>
-        public GridScalarField2d(Domain2d domain, int countX, int countY, SampleMode sampleMode, WrapMode wrapModeX, WrapMode wrapModeY)
-            : base(domain, countX, countY, wrapModeX, wrapModeY, sampleMode)
+        /// <param name="sampleMode"></param>
+        public GridScalarField2d(Vec2d origin, Vec2d scale, int countX, int countY, WrapMode wrapModeX, WrapMode wrapModeY, SampleMode sampleMode = SampleMode.Linear)
+            : base(origin, scale, countX, countY, wrapModeX, wrapModeY, sampleMode)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="wrapMode"></param>
+        /// <param name="sampleMode"></param>
+        public GridScalarField2d(Interval2d interval, int countX, int countY, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
+            : base(interval, countX, countY, wrapMode, sampleMode)
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        /// <param name="sampleMode"></param>
+        public GridScalarField2d(Interval2d interval, int countX, int countY, WrapMode wrapModeX, WrapMode wrapModeY, SampleMode sampleMode = SampleMode.Linear)
+            : base(interval, countX, countY, wrapModeX, wrapModeY, sampleMode)
         {
         }
 
@@ -85,8 +104,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public GridScalarField2d(GridField2d other)
-            : base(other)
+        /// <param name="sampleMode"></param>
+        public GridScalarField2d(Grid2d other, SampleMode sampleMode = SampleMode.Linear)
+            : base(other, sampleMode)
         {
         }
 
@@ -95,11 +115,11 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        public GridScalarField2d Duplicate()
+        public GridScalarField2d Duplicate(bool copyValues)
         {
-            var copy = new GridScalarField2d(this);
-            copy.Set(this);
-            return copy;
+            var result = new GridScalarField2d(this);
+            if (copyValues) result.Set(this);
+            return result;
         }
 
 
@@ -107,9 +127,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        protected sealed override GridField2d<double> DuplicateBase()
+        protected sealed override GridField2d<double> DuplicateBase(bool copyValues)
         {
-            return Duplicate();
+            return Duplicate(copyValues);
         }
 
 
@@ -121,7 +141,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         protected sealed override double ValueAtLinear(Vec2d point)
         {
-            (double u, double v) = Fract(point, out int i0, out int j0);
+            point = ToGridSpace(point);
+            double u = SlurMath.Fract(point.X, out int i0);
+            double v = SlurMath.Fract(point.Y, out int j0);
 
             int i1 = WrapX(i0 + 1);
             int j1 = WrapY(j0 + 1) * CountX;
@@ -145,7 +167,9 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         protected sealed override double ValueAtLinearUnchecked(Vec2d point)
         {
-            (double u, double v) = Fract(point, out int i0, out int j0);
+            point = ToGridSpace(point);
+            double u = SlurMath.Fract(point.X, out int i0);
+            double v = SlurMath.Fract(point.Y, out int j0);
 
             j0 *= CountX;
             int i1 = i0 + 1;
@@ -224,8 +248,9 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetLaplacian(double[] result, bool parallel)
         {
-            double dx = 1.0 / (ScaleX * ScaleX);
-            double dy = 1.0 / (ScaleY * ScaleY);
+            (var dx, var dy) = Scale.Components;
+            dx = 1.0 / (dx * dx);
+            dy = 1.0 / (dy * dy);
 
             (int di, int dj) = GetBoundaryOffsets();
 
@@ -286,9 +311,7 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetGradient(Vec2d[] result, bool parallel = false)
         {
-            double dx = 0.5 / ScaleX;
-            double dy = 0.5 / ScaleY;
-
+            (var dx, var dy) = (0.5 / Scale).Components;
             (int di, int dj) = GetBoundaryOffsets();
 
             Action<Tuple<int, int>> body = range =>

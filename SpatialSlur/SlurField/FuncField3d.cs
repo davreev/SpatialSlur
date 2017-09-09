@@ -18,13 +18,14 @@ namespace SpatialSlur.SlurField
     /// <typeparam name="T"></typeparam>
     public class FuncField3d<T>: IField2d<T>, IField3d<T>
     {
+        /// <summary></summary>
         public readonly Func<Vec3d, T> ValueAt;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="function"></param>
+        /// <param name="valueAt"></param>
         public FuncField3d(Func<Vec3d, T> valueAt)
         {
             ValueAt = valueAt ?? throw new ArgumentNullException();

@@ -6,7 +6,7 @@
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Determines what happens when a field is evaluated outside of its domain.
+    /// Determines what happens when a field is evaluated beyond its bounds.
     /// </summary>
     public enum WrapMode
     {

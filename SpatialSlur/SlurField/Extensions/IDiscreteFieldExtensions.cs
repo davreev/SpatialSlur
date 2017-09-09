@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -84,21 +85,9 @@ namespace SpatialSlur.SlurField
         public static void Function<T, U>(this IDiscreteField<T> field, Func<T, U> func, IDiscreteField<U> result, bool parallel = false)
         {
             if (parallel)
-                field.Values.ConvertRangeParallel(0, field.Count, func, result.Values);
+                ArrayMath.FunctionParallel(field.Values, field.Count, func, result.Values);
             else
-                field.Values.ConvertRange(0, field.Count, func, result.Values);
-        }
-
-
-        /// <summary>
-        /// Sets the resulting field to some function of its indices
-        /// </summary>
-        public static void Function<T, U>(this IDiscreteField<T> field, Func<T, int, U> func, IDiscreteField<U> result, bool parallel = false)
-        {
-            if (parallel)
-                field.Values.ConvertRangeParallel(0, field.Count, func, result.Values);
-            else
-                field.Values.ConvertRange(0, field.Count, func, result.Values);
+                ArrayMath.Function(field.Values, field.Count, func, result.Values);
         }
 
 
@@ -108,9 +97,9 @@ namespace SpatialSlur.SlurField
         public static void Function<T0, T1, U>(this IDiscreteField<T0> f0, IDiscreteField<T1> f1, Func<T0, T1, U> func, IDiscreteField<U> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.FunctionParallel(f1.Values, f0.Count, func, result.Values);
+                ArrayMath.FunctionParallel(f0.Values, f1.Values, f0.Count, func, result.Values);
             else
-                f0.Values.Function(f1.Values, f0.Count, func, result.Values);
+                ArrayMath.Function(f0.Values, f1.Values, f0.Count, func, result.Values);
         }
 
 
@@ -120,9 +109,109 @@ namespace SpatialSlur.SlurField
         public static void Function<T0, T1, T2, U>(this IDiscreteField<T0> f0, IDiscreteField<T1> f1, IDiscreteField<T2> f2, Func<T0, T1, T2, U> func, IDiscreteField<U> result, bool parallel = false)
         {
             if (parallel)
-                f0.Values.FunctionParallel(f1.Values, f2.Values, f0.Count, func, result.Values);
+                ArrayMath.FunctionParallel(f0.Values, f1.Values, f2.Values, f0.Count, func, result.Values);
             else
-                f0.Values.Function(f1.Values, f2.Values, f0.Count, func, result.Values);
+                ArrayMath.Function(f0.Values, f1.Values, f2.Values, f0.Count, func, result.Values);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="other"></param>
+        /// <param name="parallel"></param>
+        public static void Sample<T>(this IDiscreteField2d<T> field, IField2d<T> other, bool parallel = false)
+        {
+            var vals = field.Values;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for(int i = range.Item1; i < range.Item2; i++)
+                    vals[i] = other.ValueAt(field.CoordinateAt(i));
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
+            else
+                body(Tuple.Create(0, field.Count));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="other"></param>
+        /// <param name="converter"></param>
+        /// <param name="parallel"></param>
+        public static void Sample<T, U>(this IDiscreteField2d<T> field, IField2d<U> other, Func<U,T> converter, bool parallel = false)
+        {
+            var vals = field.Values;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    vals[i] = converter(other.ValueAt(field.CoordinateAt(i)));
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
+            else
+                body(Tuple.Create(0, field.Count));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="other"></param>
+        /// <param name="parallel"></param>
+        public static void Sample<T>(this IDiscreteField3d<T> field, IField3d<T> other, bool parallel = false)
+        {
+            var vals = field.Values;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    vals[i] = other.ValueAt(field.CoordinateAt(i));
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
+            else
+                body(Tuple.Create(0, field.Count));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="other"></param>
+        /// <param name="converter"></param>
+        /// <param name="parallel"></param>
+        public static void Sample<T, U>(this IDiscreteField3d<T> field, IField3d<U> other, Func<U, T> converter, bool parallel = false)
+        {
+            var vals = field.Values;
+
+            Action<Tuple<int, int>> body = range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    vals[i] = converter(other.ValueAt(field.CoordinateAt(i)));
+            };
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, field.Count), body);
+            else
+                body(Tuple.Create(0, field.Count));
         }
 
         #endregion
@@ -370,31 +459,31 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(this IDiscreteField<double> field, Domain1d domain, IDiscreteField<double> result, bool parallel = false)
+        public static void Normalize(this IDiscreteField<double> field, Interval1d interval, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                ArrayMath.NormalizeParallel(field.Values, domain, result.Values);
+                ArrayMath.NormalizeParallel(field.Values, interval, result.Values);
             else
-                ArrayMath.Normalize(field.Values, domain, result.Values);
+                ArrayMath.Normalize(field.Values, interval, result.Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(this IDiscreteField<double> field, Domain1d domain, IDiscreteField<double> result, bool parallel = false)
+        public static void Evaluate(this IDiscreteField<double> field, Interval1d interval, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
-                ArrayMath.EvaluateParallel(field.Values, domain, result.Values);
+                ArrayMath.EvaluateParallel(field.Values, interval, result.Values);
             else
-                ArrayMath.Evaluate(field.Values, domain, result.Values);
+                ArrayMath.Evaluate(field.Values, interval, result.Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(this IDiscreteField<double> field, Domain1d from, Domain1d to, IDiscreteField<double> result, bool parallel = false)
+        public static void Remap(this IDiscreteField<double> field, Interval1d from, Interval1d to, IDiscreteField<double> result, bool parallel = false)
         {
             if (parallel)
                 ArrayMath.RemapParallel(field.Values, from, to, result.Values);
@@ -605,31 +694,31 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(this IDiscreteField<Vec2d> field, Domain2d domain, IDiscreteField<Vec2d> result, bool parallel = false)
+        public static void Normalize(this IDiscreteField<Vec2d> field, Interval2d interval, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                ArrayMath.NormalizeParallel(field.Values, domain, result.Values);
+                ArrayMath.NormalizeParallel(field.Values, interval, result.Values);
             else
-                ArrayMath.Normalize(field.Values, domain, result.Values);
+                ArrayMath.Normalize(field.Values, interval, result.Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(this IDiscreteField<Vec2d> field, Domain2d domain, IDiscreteField<Vec2d> result, bool parallel = false)
+        public static void Evaluate(this IDiscreteField<Vec2d> field, Interval2d interval, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
-                ArrayMath.EvaluateParallel(field.Values, domain, result.Values);
+                ArrayMath.EvaluateParallel(field.Values, interval, result.Values);
             else
-                ArrayMath.Evaluate(field.Values, domain, result.Values);
+                ArrayMath.Evaluate(field.Values, interval, result.Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(this IDiscreteField<Vec2d> field, Domain2d from, Domain2d to, IDiscreteField<Vec2d> result, bool parallel = false)
+        public static void Remap(this IDiscreteField<Vec2d> field, Interval2d from, Interval2d to, IDiscreteField<Vec2d> result, bool parallel = false)
         {
             if (parallel)
                 ArrayMath.RemapParallel(field.Values, from, to, result.Values);
@@ -852,31 +941,31 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(this IDiscreteField<Vec3d> field, Domain3d domain, IDiscreteField<Vec3d> result, bool parallel = false)
+        public static void Normalize(this IDiscreteField<Vec3d> field, Interval3d interval, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                ArrayMath.NormalizeParallel(field.Values, domain, result.Values);
+                ArrayMath.NormalizeParallel(field.Values, interval, result.Values);
             else
-                ArrayMath.Normalize(field.Values, domain, result.Values);
+                ArrayMath.Normalize(field.Values, interval, result.Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(this IDiscreteField<Vec3d> field, Domain3d domain, IDiscreteField<Vec3d> result, bool parallel = false)
+        public static void Evaluate(this IDiscreteField<Vec3d> field, Interval3d interval, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
-                ArrayMath.EvaluateParallel(field.Values, domain, result.Values);
+                ArrayMath.EvaluateParallel(field.Values, interval, result.Values);
             else
-                ArrayMath.Evaluate(field.Values, domain, result.Values);
+                ArrayMath.Evaluate(field.Values, interval, result.Values);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(this IDiscreteField<Vec3d> field, Domain3d from, Domain3d to, IDiscreteField<Vec3d> result, bool parallel = false)
+        public static void Remap(this IDiscreteField<Vec3d> field, Interval3d from, Interval3d to, IDiscreteField<Vec3d> result, bool parallel = false)
         {
             if (parallel)
                 ArrayMath.RemapParallel(field.Values, from, to, result.Values);

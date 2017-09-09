@@ -14,11 +14,11 @@ namespace SpatialSlur.SlurField
     public interface IDiscreteField<TValue>
     {
         /// <summary>
-        /// Returns the internal array of field values.
+        /// Returns a reference to the internal array of values.
         /// </summary>
         TValue[] Values { get; }
 
-        
+
         /// <summary>
         /// Gets or sets the field value at the given index.
         /// </summary>
@@ -32,12 +32,13 @@ namespace SpatialSlur.SlurField
         /// This may be less than the length of the value array depending on the implementation.
         /// </summary>
         int Count { get; }
-      
-        
+
+
         /// <summary>
-        /// Returns a deep copy of this field.
+        /// Returns a copy of this field.
+        /// The value array of the returned field is a deep copy but other fields may be shallow depending on the implementation.
         /// </summary>
         /// <returns></returns>
-        IDiscreteField<TValue> Duplicate();
+        IDiscreteField<TValue> Duplicate(bool copyValues);
     }
 }

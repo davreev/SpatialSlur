@@ -20,579 +20,9 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    public abstract class GridField3d
-    {
-        private Domain3d _domain;
-        private double _x0, _y0, _z0; // cached for convenience
-        private double _dx, _dy, _dz;
-        private double _dxInv, _dyInv, _dzInv; // cached to avoid uneccesary divs
-        private readonly int _nx, _ny, _nz, _nxy, _n;
-
-        private WrapMode _wrapModeX, _wrapModeY, _wrapModeZ;
-        // Func<int, int> _wrapX, _wrapY, _wrapZ; // compare delegate performance to switch (release & debug)
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        private GridField3d(int countX, int countY, int countZ)
-        {
-            if (countX < 1 || countY < 1 || countZ < 1)
-                throw new System.ArgumentException("The field must have at least 1 value in each dimension.");
-
-            _nx = countX;
-            _ny = countY;
-            _nz = countZ;
-            _nxy = _nx * _ny;
-            _n = _nxy * _nz;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        protected GridField3d(Domain3d domain, int countX, int countY, int countZ)
-            : this(countX, countY, countZ)
-        {
-            Domain = domain;
-            WrapModeX = WrapModeY = WrapModeZ = WrapMode.Clamp;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        /// <param name="wrapMode"></param>
-        protected GridField3d(Domain3d domain, int countX, int countY, int countZ, WrapMode wrapMode)
-            : this(countX, countY, countZ)
-        {
-            Domain = domain;
-            WrapModeX = WrapModeY = WrapModeZ = wrapMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        /// <param name="wrapModeX"></param>
-        /// <param name="wrapModeY"></param>
-        /// <param name="wrapModeZ"></param>
-        protected GridField3d(Domain3d domain, int countX, int countY, int countZ, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ)
-            : this(countX, countY, countZ)
-        {
-            Domain = domain;
-            WrapModeX = wrapModeX;
-            WrapModeY = wrapModeY;
-            WrapModeZ = wrapModeZ;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        protected GridField3d(GridField3d other)
-        {
-            _nx = other._nx;
-            _ny = other._ny;
-            _nz = other._nz;
-            _nxy = other._nxy;
-            _n = other._n;
-
-            Domain = other._domain;
-            WrapModeX = other._wrapModeX;
-            WrapModeY = other._wrapModeY;
-            WrapModeZ = other._wrapModeZ;
-        }
-
-
-        /// <summary>
-        /// Gets/sets the domain of the field.
-        /// </summary>
-        public Domain3d Domain
-        {
-            get { return _domain; }
-            set
-            {
-                if (!value.IsValid)
-                    throw new System.ArgumentException("The given domain must be valid.");
-
-                _domain = value;
-                OnDomainChange();
-            }
-        }
-
-
-        /// <summary>
-        /// Returns the number of values in the field.
-        /// </summary>
-        public int Count
-        {
-            get { return _n; }
-        }
-
-
-        /// <summary>
-        /// Returns the number of values in the x direction.
-        /// </summary>
-        public int CountX
-        {
-            get { return _nx; }
-        }
-
-
-        /// <summary>
-        /// Returns the number of values in the y direction.
-        /// </summary>
-        public int CountY
-        {
-            get { return _ny; }
-        }
-
-
-        /// <summary>
-        /// Returns the number of values in the z direction.
-        /// </summary>
-        public int CountZ
-        {
-            get { return _nz; }
-        }
-
-
-        /// <summary>
-        /// Returns the number of values in a single xy layer.
-        /// </summary>
-        public int CountXY
-        {
-            get { return _nxy; }
-        }
-
-
-        /// <summary>
-        /// Returns the distance between values in the x direction.
-        /// </summary>
-        public double ScaleX
-        {
-            get { return _dx; }
-        }
-
-
-        /// <summary>
-        /// Returns the distance between values in the y direction.
-        /// </summary>
-        public double ScaleY
-        {
-            get { return _dy; }
-        }
-
-
-        /// <summary>
-        /// Returns the distance between values in the z direction.
-        /// </summary>
-        public double ScaleZ
-        {
-            get { return _dz; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public WrapMode WrapModeX
-        {
-            get { return _wrapModeX; }
-            set { _wrapModeX = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public WrapMode WrapModeY
-        {
-            get { return _wrapModeY; }
-            set { _wrapModeY = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public WrapMode WrapModeZ
-        {
-            get { return _wrapModeZ; }
-            set { _wrapModeZ = value; }
-        }
-
-
-        /// <summary>
-        /// Enumerates over coordinates of the field.
-        /// </summary>
-        public IEnumerable<Vec3d> Coordinates
-        {
-            get
-            {
-                for (int k = 0; k < CountZ; k++)
-                {
-                    for (int j = 0; j < CountY; j++)
-                    {
-                        for (int i = 0; i < CountX; i++)
-                            yield return CoordinateAt(i, j, k);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// This is called after any changes to the field's domain.
-        /// </summary>
-        protected void OnDomainChange()
-        {
-            _x0 = _domain.X.T0;
-            _y0 = _domain.Y.T0;
-            _z0 = _domain.Z.T0;
-
-            _dx = _domain.X.Span / (_nx - 1);
-            _dy = _domain.Y.Span / (_ny - 1);
-            _dz = _domain.Z.Span / (_nz - 1);
-
-            _dxInv = 1.0 / _dx;
-            _dyInv = 1.0 / _dy;
-            _dzInv = 1.0 / _dz;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        public bool ContainsIndices(int i, int j, int k)
-        {
-            return SlurMath.Contains(i, _nx) && SlurMath.Contains(j, _ny) && SlurMath.Contains(k, _nz);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        public Vec3d CoordinateAt(int i, int j, int k)
-        {
-            return new Vec3d(
-                i * _dx + _x0,
-                j * _dy + _y0,
-                k * _dz + _z0);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Vec3d CoordinateAt(int index)
-        {
-            (int i, int j, int k) = IndicesAt(index);
-            return CoordinateAt(i, j, k);
-        }
-
-
-        /// <summary>
-        /// Returns true if the field has the same number of values in each dimension as another.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool ResolutionEquals(GridField3d other)
-        {
-            return (_nx == other._nx && _ny == other._ny && _nz == other._nz);
-        }
-
-
-        /// <summary>
-        /// Applies a wrap function to the given index based on the current wrap mode.
-        /// </summary>
-        /// <param name="i"></param>
-        /// <returns></returns>
-        public int WrapX(int i)
-        {
-            return Wrap(i, _nx, _wrapModeX);
-        }
-
-
-        /// <summary>
-        /// Applies a wrap function to the given index based on the current wrap mode.
-        /// </summary>
-        /// <param name="j"></param>
-        /// <returns></returns>
-        public int WrapY(int j)
-        {
-            return Wrap(j, _ny, _wrapModeY);
-        }
-
-
-        /// <summary>
-        /// Applies a wrap function to the given index based on the current wrap mode.
-        /// </summary>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        public int WrapZ(int k)
-        {
-            return Wrap(k, _nz, _wrapModeZ);
-        }
-
-
-        /// <summary>
-        /// Flattens a 3 dimensional index into a 1 dimensional index.
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        public int IndexAt(int i, int j, int k)
-        {
-            return FlattenIndices(WrapX(i), WrapY(j), WrapZ(k), _nx, _nxy);
-        }
-
-
-        /// <summary>
-        /// Flattens a 3 dimensional index into a 1 dimensional index.
-        /// Assumes the given indices are within the valid range.
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        public int IndexAtUnchecked(int i, int j, int k)
-        {
-            return FlattenIndices(i, j, k, _nx, _nxy);
-        }
-
-
-        /// <summary>
-        /// Returns the index of the nearest value to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public int IndexAt(Vec3d point)
-        {
-            (int i, int j, int k) = IndicesAt(point);
-            return FlattenIndices(WrapX(i), WrapY(j), WrapZ(k), _nx, _nxy);
-        }
-
-
-        /// <summary>
-        /// Returns the index of the nearest value to the given point.
-        /// Assumes the point is inside the field domain.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public int IndexAtUnchecked(Vec3d point)
-        {
-            (int i, int j, int k) = IndicesAt(point);
-            return FlattenIndices(i, j, k, _nx, _nxy);
-        }
-
-
-        /// <summary>
-        /// Expands a 1 dimensional index into a 3 dimensional index.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public (int, int, int) IndicesAt(int index)
-        {
-            return ExpandIndex(index, _nx, _nxy);
-        }
-
-
-        /// <summary>
-        /// Expands a 1 dimensional index into a 3 dimensional index.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        public void IndicesAt(int index, out int i, out int j, out int k)
-        {
-            (i, j, k) = ExpandIndex(index, _nx, _nxy);
-        }
-
-
-        /// <summary>
-        /// Returns the indices of the nearest value to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        public (int, int, int) IndicesAt(Vec3d point)
-        {
-            return (
-                (int)Math.Round((point.X - _x0) * _dxInv),
-                (int)Math.Round((point.Y - _y0) * _dyInv),
-                (int)Math.Round((point.Z - _z0) * _dzInv)
-                );
-        }
-
-
-        /// <summary>
-        /// Returns the indices of the nearest value to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        public void IndicesAt(Vec3d point, out int i, out int j, out int k)
-        {
-            (i, j, k) = IndicesAt(point);
-        }
-
-
-        /// <summary>
-        /// Returns a grid point at the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public GridPoint3d GridPointAt(Vec3d point)
-        {
-            GridPoint3d result = new GridPoint3d();
-            GridPointAt(point, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns a grid point at the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
-        public void GridPointAt(Vec3d point, GridPoint3d result)
-        {
-            (double u, double v, double w) = Fract(point, out int i0, out int j0, out int k0);
-            result.SetWeights(u, v, w);
-
-            int i1 = WrapX(i0 + 1);
-            int j1 = WrapY(j0 + 1) * _nx;
-            int k1 = WrapZ(k0 + 1) * _nxy;
-
-            i0 = WrapX(i0);
-            j0 = WrapY(j0) * _nx;
-            k0 = WrapZ(k0) * _nxy;
-
-            var corners = result.Corners;
-            corners[0] = i0 + j0 + k0;
-            corners[1] = i1 + j0 + k0;
-            corners[2] = i0 + j1 + k0;
-            corners[3] = i1 + j1 + k0;
-            corners[4] = i0 + j0 + k1;
-            corners[5] = i1 + j0 + k1;
-            corners[6] = i0 + j1 + k1;
-            corners[7] = i1 + j1 + k1;
-        }
-
-
-        /// <summary>
-        /// Returns a grid point at the given point.
-        /// Assumes the given point is inside the field domain.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public GridPoint3d GridPointAtUnchecked(Vec3d point)
-        {
-            GridPoint3d result = new GridPoint3d();
-            GridPointAtUnchecked(point, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns a grid point at the given point.
-        /// Assumes the point is inside the field's domain.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="result"></param>
-        public void GridPointAtUnchecked(Vec3d point, GridPoint3d result)
-        {
-            (double u, double v, double w) = Fract(point, out int i0, out int j0, out int k0);
-            result.SetWeights(u, v, w);
-
-            j0 *= _nx;
-            k0 *= _nxy;
-            int i1 = i0 + 1;
-            int j1 = j0 + _nx;
-            int k1 = k0 + _nxy;
-
-            var corners = result.Corners;
-            corners[0] = i0 + j0 + k0;
-            corners[1] = i1 + j0 + k0;
-            corners[2] = i0 + j1 + k0;
-            corners[3] = i1 + j1 + k0;
-            corners[4] = i0 + j0 + k1;
-            corners[5] = i1 + j0 + k1;
-            corners[6] = i0 + j1 + k1;
-            corners[7] = i1 + j1 + k1;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        protected (double, double, double) Fract(Vec3d point, out int i, out int j, out int k)
-        {
-            return (
-            SlurMath.Fract((point.X - _x0) * _dxInv, out i),
-            SlurMath.Fract((point.Y - _y0) * _dyInv, out j),
-            SlurMath.Fract((point.Z - _z0) * _dzInv, out k)
-            );
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        internal (int, int, int) GetBoundaryOffsets()
-        {
-            return (
-                WrapModeX == WrapMode.Repeat ? CountX - 1 : 0,
-                WrapModeY == WrapMode.Repeat ? CountXY - CountX : 0,
-                WrapModeZ == WrapMode.Repeat ? Count - CountXY : 0
-                );
-        }
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class GridField3d<T> : 
-        GridField3d, IField2d<T>, IField3d<T>, IDiscreteField3d<T>
+    public abstract class GridField3d<T> : Grid3d, IField2d<T>, IField3d<T>, IDiscreteField3d<T>
         where T : struct
     {
         #region Static
@@ -623,51 +53,21 @@ namespace SpatialSlur.SlurField
 
 
         private readonly T[] _values;
-
         private SampleMode _sampleMode;
-        // private Func<Vec3d, T> _sample;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
-        /// <param name="sampleMode"></param>
-        protected GridField3d(Domain3d domain, int nx, int ny, int nz, SampleMode sampleMode = SampleMode.Linear)
-          : base(domain, nx, ny, nz)
-        {
-            _values = new T[Count];
-            SampleMode = sampleMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="sampleMode"></param>
-        protected GridField3d(GridField3d other, SampleMode sampleMode = SampleMode.Linear)
-            : base(other)
-        {
-            _values = new T[Count];
-            SampleMode = sampleMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
         /// <param name="wrapMode"></param>
         /// <param name="sampleMode"></param>
-        protected GridField3d(Domain3d domain, int nx, int ny, int nz, WrapMode wrapMode, SampleMode sampleMode = SampleMode.Linear)
-            : base(domain, nx, ny, nz, wrapMode)
+        public GridField3d(Vec3d origin, Vec3d scale, int countX, int countY, int countZ, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
+            : base(origin, scale, countX, countY, countZ, wrapMode)
         {
             _values = new T[Count];
             SampleMode = sampleMode;
@@ -677,16 +77,66 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
         /// <param name="wrapModeX"></param>
         /// <param name="wrapModeY"></param>
         /// <param name="wrapModeZ"></param>
         /// <param name="sampleMode"></param>
-        protected GridField3d(Domain3d domain, int nx, int ny, int nz, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
-            : base(domain, nx, ny, nz, wrapModeX, wrapModeY, wrapModeZ)
+        public GridField3d(Vec3d origin, Vec3d scale, int countX, int countY, int countZ, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
+            : base(origin, scale, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ)
+        {
+            _values = new T[Count];
+            SampleMode = sampleMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
+        /// <param name="wrapMode"></param>
+        /// <param name="sampleMode"></param>
+        public GridField3d(Interval3d interval, int countX, int countY, int countZ, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
+            : base(interval, countX, countY, countZ, wrapMode)
+        {
+            _values = new T[Count];
+            SampleMode = sampleMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
+        /// <param name="wrapModeX"></param>
+        /// <param name="wrapModeY"></param>
+        /// <param name="wrapModeZ"></param>
+        /// <param name="sampleMode"></param>
+        public GridField3d(Interval3d interval, int countX, int countY, int countZ, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
+            : base(interval, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ)
+        {
+            _values = new T[Count];
+            SampleMode = sampleMode;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="sampleMode"></param>
+        public GridField3d(Grid3d grid, SampleMode sampleMode = SampleMode.Linear)
+            :base(grid)
         {
             _values = new T[Count];
             SampleMode = sampleMode;
@@ -763,7 +213,7 @@ namespace SpatialSlur.SlurField
         /// Returns a deep copy of this field.
         /// </summary>
         /// <returns></returns>
-        protected abstract GridField3d<T> DuplicateBase();
+        protected abstract GridField3d<T> DuplicateBase(bool copyValues);
 
 
         /// <summary>
@@ -815,7 +265,7 @@ namespace SpatialSlur.SlurField
 
         /// <summary>
         /// Returns the value at the given point.
-        /// Assumes the point is inside the field's domain.
+        /// Assumes the point is within the bounds of the grid.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -1018,10 +468,11 @@ namespace SpatialSlur.SlurField
         /// Sets this field to some function of its coordinates.
         /// </summary>
         /// <param name="func"></param>
+        /// <param name="normalize"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionXYZ(Func<double, double, double, T> func, bool parallel = false)
+        public void SpatialFunction(Func<Vec3d, T> func, bool normalize = false, bool parallel = false)
         {
-            SpatialFunctionXYZ(func, this, parallel);
+            SpatialFunction(func, Values, parallel);
         }
 
 
@@ -1030,14 +481,41 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="func"></param>
         /// <param name="result"></param>
+        /// <param name="normalize"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionXYZ(Func<double, double, double, T> func, IDiscreteField<T> result, bool parallel = false)
+        public void SpatialFunction(Func<Vec3d, T> func, IDiscreteField<T> result, bool normalize = false, bool parallel = false)
         {
-            var values = result.Values;
+            SpatialFunction(func, result.Values, normalize, parallel);
+        }
 
-            double x0 = Domain.X.T0;
-            double y0 = Domain.Y.T0;
-            double z0 = Domain.Z.T0;
+
+        /// <summary>
+        /// Sets the given field to some function of this field's coordinates.
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="normalize"></param>
+        /// <param name="parallel"></param>
+        public void SpatialFunction(Func<Vec3d, T> func, T[] result, bool normalize = false, bool parallel = false)
+        {
+            if (normalize)
+                SpatialFunctionUVW(func, result, parallel);
+            else
+                SpatialFunctionXYZ(func, result, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        private void SpatialFunctionXYZ(Func<Vec3d, T> func, T[] result, bool parallel)
+        {
+            double x0 = Bounds.X.A;
+            double y0 = Bounds.Y.A;
+            double z0 = Bounds.Z.A;
 
             Action<Tuple<int, int>> body = range =>
             {
@@ -1047,7 +525,8 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
-                    values[index] = func(i * ScaleX + x0, j * ScaleY + y0, k * ScaleZ + z0);
+
+                    result[index] = func(CoordinateAt(i,j,k));
                 }
             };
 
@@ -1056,52 +535,16 @@ namespace SpatialSlur.SlurField
             else
                 body(Tuple.Create(0, Count));
         }
-
-
-        /// <summary>
-        /// Sets this field to some function of its coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunctionXYZ(Func<Vec3d, T> func, bool parallel = false)
-        {
-            SpatialFunctionXYZ(func, this, parallel);
-        }
-
+        
 
         /// <summary>
-        /// Sets the given field to some function of this field's coordinates.
+        /// 
         /// </summary>
         /// <param name="func"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionXYZ(Func<Vec3d, T> func, IDiscreteField<T> result, bool parallel = false)
+        private void SpatialFunctionUVW(Func<Vec3d, T> func, T[] result, bool parallel)
         {
-            SpatialFunctionXYZ((x, y, z) => func(new Vec3d(x, y, z)), result, parallel);
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of its normalized coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunctionUVW(Func<double, double, double, T> func, bool parallel = false)
-        {
-            SpatialFunctionUVW(func, this, parallel);
-        }
-
-
-        /// <summary>
-        /// Sets the given field to some function of this field's normalized coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunctionUVW(Func<double, double, double, T> func, IDiscreteField<T> result, bool parallel = false)
-        {
-            var values = result.Values;
-
             double ti = 1.0 / (CountX - 1);
             double tj = 1.0 / (CountY - 1);
             double tk = 1.0 / (CountZ - 1);
@@ -1115,7 +558,7 @@ namespace SpatialSlur.SlurField
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
 
-                    values[index] = func(i * ti, j * tj, k * tk);
+                    result[index] = func(new Vec3d(i * ti, j * tj, k * tk));
                 }
             };
 
@@ -1125,51 +568,38 @@ namespace SpatialSlur.SlurField
                 body(Tuple.Create(0, Count));
         }
 
-
+        
         /// <summary>
-        /// Sets this field to some function of its normalized coordinates.
+        /// Sets this field to some function of its coordinates in grid space.
         /// </summary>
         /// <param name="func"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionUVW(Func<Vec3d, T> func, bool parallel = false)
+        public void SpatialFunction(Func<int, int, int, T> func, bool parallel = false)
         {
-            SpatialFunctionUVW(func, this, parallel);
+            SpatialFunction(func, Values, parallel);
         }
 
 
         /// <summary>
-        /// Sets the given field to some function of this field's normalized coordinates.
+        /// Sets the given field to some function of this field's coordinates in grid space.
         /// </summary>
         /// <param name="func"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionUVW(Func<Vec3d, T> func, IDiscreteField<T> result, bool parallel = false)
+        public void SpatialFunction(Func<int, int, int, T> func, IDiscreteField<T> result, bool parallel = false)
         {
-            SpatialFunctionUVW((u, v, w) => func(new Vec3d(u, v, w)), result, parallel);
+            SpatialFunction(func, result.Values, parallel);
         }
 
 
         /// <summary>
-        /// Sets this field to some function of its indices.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunctionIJK(Func<int, int, int, T> func, bool parallel = false)
-        {
-            SpatialFunctionIJK(func, this, parallel);
-        }
-
-
-        /// <summary>
-        /// Sets the given field to some function of this field's indices.
+        /// 
         /// </summary>
         /// <param name="func"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunctionIJK(Func<int, int, int, T> func, IDiscreteField<T> result, bool parallel = false)
+        public void SpatialFunction(Func<int, int, int, T> func, T[] result, bool parallel = false)
         {
-            var values = result.Values;
-
             Action<Tuple<int, int>> body = range =>
             {
                 (int i, int j, int k) = IndicesAt(range.Item1);
@@ -1178,7 +608,8 @@ namespace SpatialSlur.SlurField
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
-                    values[index] = func(i, j, k);
+
+                    result[index] = func(i, j, k);
                 }
             };
 
@@ -1186,29 +617,6 @@ namespace SpatialSlur.SlurField
                 Parallel.ForEach(Partitioner.Create(0, Count), body);
             else
                 body(Tuple.Create(0, Count));
-        }
-
-
-        /// <summary>
-        /// Sets this field to some function of its indices.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunctionIJK(Func<Vec3i, T> func, bool parallel = false)
-        {
-            SpatialFunctionIJK(func, this, parallel);
-        }
-
-
-        /// <summary>
-        /// Sets the given field to some function of this field's indices.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunctionIJK(Func<Vec3i, T> func, IDiscreteField<T> result, bool parallel = false)
-        {
-            SpatialFunctionIJK((i, j, k) => func(new Vec3i(i, j, k)), result, parallel);
         }
 
 
@@ -1225,7 +633,7 @@ namespace SpatialSlur.SlurField
                 return;
             }
 
-            Sample((IField3d<T>)other, parallel);
+            this.Sample((IField3d<T>)other, parallel);
         }
 
 
@@ -1245,10 +653,11 @@ namespace SpatialSlur.SlurField
                 return;
             }
 
-            Sample((IField3d<U>)other, converter, parallel);
+            this.Sample((IField3d<U>)other, converter, parallel);
         }
 
 
+        /*
         /// <summary>
         /// Sets this field to the values of another.
         /// </summary>
@@ -1301,6 +710,7 @@ namespace SpatialSlur.SlurField
             else
                 body(Tuple.Create(0, Count));
         }
+        */
 
 
         #region Explicit interface implementations
@@ -1320,9 +730,19 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        IDiscreteField<T> IDiscreteField<T>.Duplicate()
+        IDiscreteField<T> IDiscreteField<T>.Duplicate(bool copyValues)
         {
-            return DuplicateBase();
+            return DuplicateBase(copyValues);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IDiscreteField3d<T> IDiscreteField3d<T>.Duplicate(bool copyValues)
+        {
+            return DuplicateBase(copyValues);
         }
 
         #endregion

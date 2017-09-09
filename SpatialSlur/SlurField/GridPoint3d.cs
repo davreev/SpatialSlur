@@ -1,5 +1,6 @@
 ﻿
 using System;
+using SpatialSlur.SlurCore;
 
 /*
  * Notes
@@ -31,19 +32,6 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="u"></param>
-        /// <param name="v"></param>
-        /// <param name="w"></param>
-        public GridPoint3d(double u, double v, double w)
-            : this()
-        {
-            SetWeights(u, v, w);
-        }
- 
-
-        /// <summary>
-        /// 
-        /// </summary>
         public double[] Weights
         {
             get { return _weights; }
@@ -67,14 +55,14 @@ namespace SpatialSlur.SlurField
             get { return _corners[0] == -1; }
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
         /// <param name="u"></param>
         /// <param name="v"></param>
         /// <param name="w"></param>
-        internal void SetWeights(double u, double v, double w)
+        public void SetWeights(double u, double v, double w)
         {
             double u1 = 1.0 - u;
             double v1 = 1.0 - v;
