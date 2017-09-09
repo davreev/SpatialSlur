@@ -47,7 +47,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static DynamicRemesher Create<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public static DynamicRemesher Create<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
             where TV : HeVertex<TV, TE, TF>, IVertex3d
             where TE : Halfedge<TV, TE, TF>
             where TF : HeFace<TV, TE, TF>
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         // constraint objects
         //
 
-        private IFeature _target;
+        private MeshFeature _target;
         private List<IFeature> _features;
         private IField3d<double> _lengthField;
 
@@ -97,7 +97,7 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <param name="target"></param>
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
-        public DynamicRemesher(HeMeshSim mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public DynamicRemesher(HeMeshSim mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
             _mesh = mesh;
             _verts = _mesh.Vertices;
@@ -626,7 +626,7 @@ namespace SpatialSlur.SlurRhino.Remesher
             if (_lengthField == null)
             {
                 for (int i = 0; i < _hedges.Count; i += 2)
-                    _hedges[i].TargetLength =  d.T0;
+                    _hedges[i].TargetLength =  d.A;
 
                 return;
             }

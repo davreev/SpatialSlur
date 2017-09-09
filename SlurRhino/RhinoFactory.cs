@@ -293,6 +293,7 @@ namespace SpatialSlur.SlurRhino
             /// <typeparam name="F"></typeparam>
             /// <param name="mesh"></param>
             /// <param name="getPosition"></param>
+            /// <param name="getColor"></param>
             /// <param name="quadrangulator"></param>
             /// <returns></returns>
             public static M CreatePolySoup<V, E, F>(HeMeshBase<V, E, F> mesh, Func<V, Point3f> getPosition, Func<F, Color> getColor = null, IFaceQuadrangulator<V, E, F> quadrangulator = null)
@@ -606,9 +607,9 @@ namespace SpatialSlur.SlurRhino
             /// </summary>
             /// <param name="mesh"></param>
             /// <param name="vertexValues"></param>
-            /// <param name="domain"></param>
+            /// <param name="interval"></param>
             /// <returns></returns>
-            public static M CreateIsoTrim(M mesh, IReadOnlyList<double> vertexValues, Domain1d domain)
+            public static M CreateIsoTrim(M mesh, IReadOnlyList<double> vertexValues, Interval1d interval)
             {
                 // TODO
                 throw new NotImplementedException();
@@ -645,13 +646,13 @@ namespace SpatialSlur.SlurRhino
             /// 
             /// </summary>
             /// <param name="origin"></param>
-            /// <param name="x"></param>
-            /// <param name="y"></param>
+            /// <param name="basisX"></param>
+            /// <param name="basisY"></param>
             /// <returns></returns>
-            public static T Create(Vec3d origin, Vec3d x, Vec3d y)
+            public static T CreateOrtho(Vec3d origin, Vec3d basisX, Vec3d basisY)
             {
-                if (GeometryUtil.OrthoNormalize(ref x, ref y, out Vec3d z))
-                    return Create(origin, x, y, z);
+                if (GeometryUtil.OrthoNormalize(ref basisX, ref basisY, out Vec3d z))
+                    return Create(origin, basisX, basisY, z);
 
                 return T.Unset;
             }
@@ -661,13 +662,13 @@ namespace SpatialSlur.SlurRhino
             /// 
             /// </summary>
             /// <param name="origin"></param>
-            /// <param name="x"></param>
-            /// <param name="y"></param>
+            /// <param name="basisX"></param>
+            /// <param name="basisY"></param>
             /// <returns></returns>
-            public static T CreateInverse(Vec3d origin, Vec3d x, Vec3d y)
+            public static T CreateInverseOrtho(Vec3d origin, Vec3d basisX, Vec3d basisY)
             {
-                if (GeometryUtil.OrthoNormalize(ref x, ref y, out Vec3d z))
-                    return CreateInverseOrtho(origin, x, y, z);
+                if (GeometryUtil.OrthoNormalize(ref basisX, ref basisY, out Vec3d z))
+                    return CreateInverseOrtho(origin, basisX, basisY, z);
 
                 return T.Unset;
             }

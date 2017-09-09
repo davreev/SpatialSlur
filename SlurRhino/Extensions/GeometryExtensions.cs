@@ -28,9 +28,9 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static Domain1d ToDomain(this Interval interval)
+        public static Interval1d ToInterval1d(this Interval interval)
         {
-            return new Domain1d(interval.T0, interval.T1);
+            return new Interval1d(interval.T0, interval.T1);
         }
 
         #endregion
@@ -43,11 +43,11 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="bbox"></param>
         /// <returns></returns>
-        public static Domain2d ToDomain2d(this BoundingBox bbox)
+        public static Interval2d ToInterval2d(this BoundingBox bbox)
         {
             Vec3d p0 = bbox.Min.ToVec3d();
             Vec3d p1 = bbox.Max.ToVec3d();
-            return new Domain2d(p0, p1);
+            return new Interval2d(p0, p1);
         }
 
 
@@ -56,11 +56,11 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="bbox"></param>
         /// <returns></returns>
-        public static Domain3d ToDomain3d(this BoundingBox bbox)
+        public static Interval3d ToInterval3d(this BoundingBox bbox)
         {
             Vec3d p0 = bbox.Min.ToVec3d();
             Vec3d p1 = bbox.Max.ToVec3d();
-            return new Domain3d(p0, p1);
+            return new Interval3d(p0, p1);
         }
 
         #endregion
@@ -73,9 +73,9 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        public static Domain3d ToDomain3d(this Line line)
+        public static Interval3d ToInterval3d(this Line line)
         {
-            return new Domain3d(line.From.ToVec3d(), line.To.ToVec3d());
+            return new Interval3d(line.From.ToVec3d(), line.To.ToVec3d());
         }
 
         #endregion
@@ -84,7 +84,7 @@ namespace SpatialSlur.SlurRhino
         #region Plane
 
         /// <summary>
-        /// Returns the transform matrix given by this plane.
+        /// Returns the transformation matrix defined by this plane.
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
@@ -95,37 +95,13 @@ namespace SpatialSlur.SlurRhino
 
 
         /// <summary>
-        /// Returns the inverse transformation matrix given by this plane.
+        /// Returns the inverse of the transformation matrix defined by this plane.
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
-        public static Transform ToInverseTransform(this Plane plane)
+        public static Transform ToTransformInverse(this Plane plane)
         {
             return RhinoFactory.Transform.CreateInverseFromPlane(plane);
-        }
-
-
-        /// <summary>
-        /// Returns the transform matrix given by this plane.
-        /// </summary>
-        /// <param name="plane"></param>
-        /// <returns></returns>
-        [Obsolete("")]
-        public static Transform ToWorld(this Plane plane)
-        {
-            return ToTransform(plane);
-        }
-
-
-        /// <summary>
-        /// Returns the inverse transformation matrix given by this plane.
-        /// </summary>
-        /// <param name="plane"></param>
-        /// <returns></returns>
-        [Obsolete("")]
-        public static Transform ToLocal(this Plane plane)
-        {
-            return ToInverseTransform(plane);
         }
 
 
@@ -312,9 +288,9 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="xform"></param>
         /// <returns></returns>
-        public static Mat4d ToMat4d(Transform xform)
+        public static Matrix4d ToMatrix4d(Transform xform)
         {
-            var m = new Mat4d();
+            var m = new Matrix4d();
 
             m.M00 = xform.M00;
             m.M01 = xform.M01;
@@ -612,11 +588,11 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="vertexValues"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static Mesh IsoTrim(this Mesh mesh, IReadOnlyList<double> vertexValues, Domain1d domain)
+        public static Mesh IsoTrim(this Mesh mesh, IReadOnlyList<double> vertexValues, Interval1d interval)
         {
-            return RhinoFactory.Mesh.CreateIsoTrim(mesh, vertexValues, domain);
+            return RhinoFactory.Mesh.CreateIsoTrim(mesh, vertexValues, interval);
         }
 
 

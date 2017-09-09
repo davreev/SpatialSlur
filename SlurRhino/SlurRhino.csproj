@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\Test.cs" />
     <Compile Include="Extensions\GeometryExtensions.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\IReadOnlyListExtensions.cs" />
@@ -74,11 +75,11 @@
     <Compile Include="Sketch\Remesher\Features\PointFeature.cs" />
     <Compile Include="Sketch\LoopGrowth\HeMeshSim.cs" />
     <Compile Include="Sketch\Remesher\HeMeshSim.cs" />
-    <Compile Include="SlurDynamics\Constraints\OnMeshNormal.cs" />
+    <Compile Include="SlurDynamics\Constraints\OnMeshExtended.cs" />
     <Compile Include="SlurDynamics\Constraints\OnMesh.cs" />
     <Compile Include="SlurDynamics\Constraints\OnCurve.cs" />
     <Compile Include="SlurDynamics\Constraints\OnSurface.cs" />
-    <Compile Include="SlurDynamics\Constraints\OnSurfaceNormal.cs" />
+    <Compile Include="SlurDynamics\Constraints\OnSurfaceExtended.cs" />
     <Compile Include="SlurField\Isosurface.cs" />
     <Compile Include="Extensions\SlurFieldExtensions.cs" />
     <Compile Include="Extensions\SlurMeshExtensions.cs" />

@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino.LoopGrowth
+namespace SpatialSlur.SlurRhino.LoopGrower
 {
     /// <summary>
     /// Contains HeMesh element classes used in dynamic remeshing

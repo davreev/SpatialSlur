@@ -10,7 +10,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino.LoopGrowth
+namespace SpatialSlur.SlurRhino.LoopGrower
 {
     /// <summary>
     /// 
@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
     [Serializable]
     public class LoopGrowerSettings
     {
-        private Domain1d _lengthRange = new Domain1d(1.0, 1.0);
+        private Interval1d _lengthRange = new Interval1d(1.0, 1.0);
         private double _radFactor = 0.75;
         
         private double _smoothWeight = 5.0;
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        public Domain1d LengthRange
+        public Interval1d LengthRange
         {
             get { return _lengthRange; }
             set { _lengthRange = value; }

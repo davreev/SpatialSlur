@@ -30,14 +30,13 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="selection"></param>
         /// <returns></returns>
-        public static Mesh MeshSelection(this GridField2d field, IEnumerable<int> selection)
+        public static Mesh MeshSelection(this Grid2d field, IEnumerable<int> selection)
         {
             var mesh = new Mesh();
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
 
-            double dx = field.ScaleX * 0.5;
-            double dy = field.ScaleY * 0.5;
+            (var dx, var dy) = (field.Scale * 0.5).Components;
 
             // add vertices
             foreach (int index in selection)
@@ -67,14 +66,13 @@ namespace SpatialSlur.SlurRhino
         /// <param name="field"></param>
         /// <param name="selection"></param>
         /// <returns></returns>
-        public static Mesh MeshSelection(this GridField3d field, IEnumerable<int> selection)
+        public static Mesh MeshSelection(this Grid3d field, IEnumerable<int> selection)
         {
             var mesh = new Mesh();
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
-
-            double dx = field.ScaleX * 0.5;
-            double dy = field.ScaleY * 0.5;
+            
+            (var dx, var dy) = ((Vec2d)field.Scale * 0.5).Components;
 
             // add vertices
             foreach (int index in selection)
@@ -202,11 +200,10 @@ namespace SpatialSlur.SlurRhino
             var verts = mesh.Vertices;
             var colors = mesh.VertexColors;
             var faces = mesh.Faces;
-
-            double dx = field.ScaleX * 0.5;
-            double dy = field.ScaleY * 0.5;
-
+            
             var values = field.Values;
+            (var dx, var dy) = (field.Scale * 0.5).Components;
+
             int index = 0;
 
             // add vertices
@@ -248,11 +245,9 @@ namespace SpatialSlur.SlurRhino
             var verts = mesh.Vertices;
             var colors = mesh.VertexColors;
             var faces = mesh.Faces;
-
-            double dx = field.ScaleX * 0.5;
-            double dy = field.ScaleY * 0.5;
-
+            
             var values = field.Values;
+            (var dx, var dy) = (field.Scale * 0.5).Components;
 
             // add vertices
             foreach (int index in selection)

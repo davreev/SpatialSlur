@@ -103,51 +103,51 @@ namespace SpatialSlur.SlurRhino
         #endregion
 
 
-        #region Domain
+        #region Interval
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static Interval ToInterval(this Domain1d domain)
+        public static Interval ToInterval(this Interval1d interval)
         {
-            return new Interval(domain.T0, domain.T1);
+            return new Interval(interval.A, interval.B);
         }
 
         #endregion
 
 
-        #region Domain2d
+        #region Interval2d
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static BoundingBox ToBoundingBox(this Domain2d domain)
+        public static BoundingBox ToBoundingBox(this Interval2d interval)
         {
-            Domain1d x = domain.X;
-            Domain1d y = domain.Y;
-            return new BoundingBox(x.T0, y.T0, 0.0, x.T1, y.T1, 0.0);
+            Interval1d x = interval.X;
+            Interval1d y = interval.Y;
+            return new BoundingBox(x.A, y.A, 0.0, x.B, y.B, 0.0);
         }
 
         #endregion
 
 
-        #region Domain3d
+        #region Interval3d
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static BoundingBox ToBoundingBox(this Domain3d domain)
+        public static BoundingBox ToBoundingBox(this Interval3d interval)
         {
-            Domain1d x = domain.X;
-            Domain1d y = domain.Y;
-            Domain1d z = domain.Z;
-            return new BoundingBox(x.T0, y.T0, z.T0, x.T1, y.T1, z.T1);
+            Interval1d x = interval.X;
+            Interval1d y = interval.Y;
+            Interval1d z = interval.Z;
+            return new BoundingBox(x.A, y.A, z.A, x.B, y.B, z.B);
         }
 
         #endregion
@@ -179,7 +179,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static Transform ToTransform(Mat4d matrix)
+        public static Transform ToTransform(Matrix4d matrix)
         {
             var m = new Transform();
 

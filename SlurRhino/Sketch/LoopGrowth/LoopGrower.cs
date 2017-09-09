@@ -22,7 +22,7 @@ using static SpatialSlur.SlurData.DataUtil;
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino.LoopGrowth
+namespace SpatialSlur.SlurRhino.LoopGrower
 {
     using V = HeMeshSim.Vertex;
     using E = HeMeshSim.Halfedge;
@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         // constraint objects
         //
 
-        private IFeature _target;
+        private MeshFeature _target;
         private List<IFeature> _features;
         private IField3d<double> _lengthField;
 
@@ -95,7 +95,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <param name="target"></param>
         /// <param name="features"></param>
         /// <param name="tolerance"></param>
-        public LoopGrower(HeMeshSim mesh, IFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+        public LoopGrower(HeMeshSim mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
         {
             mesh.Compact();
 
@@ -152,7 +152,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
         /// <summary>
         /// 
         /// </summary>
-        public IFeature Target
+        public MeshFeature Target
         {
             get { return _target; }
             set { _target = value; }
@@ -355,7 +355,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                 var p0 = v0.Position;
 
                 // search from h0
-                foreach (var v1 in _grid.Search(new Domain3d(p0, diam)))
+                foreach (var v1 in _grid.Search(new Interval3d(p0, diam)))
                 {
                     var d = v1.Position - p0;
                     var m = d.SquareLength;
@@ -404,7 +404,7 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
                     var moveSum = new Vec3d();
                     int count = 0;
 
-                    _grid.Search(new Domain3d(p0, rad2), v1 =>
+                    _grid.Search(new Interval3d(p0, rad2), v1 =>
                     {
                         var move = v1.Position - p0;
                         var d = move.SquareLength;
@@ -442,8 +442,8 @@ namespace SpatialSlur.SlurRhino.LoopGrowth
 
             _grid.BinScale = radius * RadiusToBinScale;
 
-            int minCount = (int)(_verts.Count * _targetLoadFactor * 0.5);
-            if (_grid.BinCount < minCount) _grid.Resize((int)(_verts.Count * _targetLoadFactor));
+            int targCount = (int)(_verts.Count * _targetLoadFactor);
+            if (_grid.BinCount < (targCount >> 1)) _grid.Resize(targCount);
         }
 
 
