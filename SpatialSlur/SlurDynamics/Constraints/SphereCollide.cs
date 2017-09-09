@@ -137,7 +137,7 @@ namespace SpatialSlur.SlurDynamics
                     var deltaSum = new Vec3d();
                     int count = 0;
 
-                    _grid.Search(new Domain3d(p0, diam), h1 =>
+                    _grid.Search(new Interval3d(p0, diam), h1 =>
                     {
                         var d = particles[h1].Position - p0;
                         var m = d.SquareLength;
@@ -186,7 +186,7 @@ namespace SpatialSlur.SlurDynamics
                 var p0 = particles[h0].Position;
 
                 // search from h0
-                foreach (var h1 in _grid.Search(new Domain3d(p0, diam)))
+                foreach (var h1 in _grid.Search(new Interval3d(p0, diam)))
                 {
                     var d = particles[h1].Position - p0;
                     var m = d.SquareLength;
@@ -220,8 +220,8 @@ namespace SpatialSlur.SlurDynamics
 
             _grid.BinScale = Radius * RadiusToBinScale;
 
-            int minCount = (int)(particles.Count * _targetLoadFactor * 0.5);
-            if (_grid.BinCount < minCount) _grid.Resize((int)(particles.Count * _targetLoadFactor));
+            int targCount = (int)(particles.Count * _targetLoadFactor);
+            if (_grid.BinCount < (targCount >> 1)) _grid.Resize(targCount);
         }
     }
 

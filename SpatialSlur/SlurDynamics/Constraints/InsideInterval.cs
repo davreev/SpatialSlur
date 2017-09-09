@@ -15,34 +15,34 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class InsideDomain : MultiParticleConstraint<H>
+    public class InsideInterval : MultiParticleConstraint<H>
     {
         /// <summary></summary>
-        public Domain3d Domain;
+        public Interval3d Interval;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <param name="weight"></param>
-        public InsideDomain(Domain3d domain, double weight = 1.0)
+        public InsideInterval(Interval3d interval, double weight = 1.0)
             : base(weight)
         {
-            Domain = domain;
+            Interval = interval;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public InsideDomain(Domain3d domain, int capacity, double weight = 1.0)
+        public InsideInterval(Interval3d interval, int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
-            Domain = domain;
+            Interval = interval;
         }
 
 
@@ -50,13 +50,13 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="indices"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <param name="weight"></param>
-        public InsideDomain(IEnumerable<int> indices, Domain3d domain, double weight = 1.0)
+        public InsideInterval(IEnumerable<int> indices, Interval3d interval, double weight = 1.0)
             : base(weight)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
-            Domain = domain;
+            Interval = interval;
         }
 
         
@@ -66,7 +66,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
-            var d = Domain;
+            var d = Interval;
 
             foreach (var h in Handles)
             {
@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurDynamics
                     continue;
                 }
 
-                h.Delta = Domain.Clamp(p) - p;
+                h.Delta = Interval.Clamp(p) - p;
                 h.Weight = Weight;
             }
         }

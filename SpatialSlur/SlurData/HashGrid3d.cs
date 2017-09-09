@@ -223,14 +223,14 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Inserts the given value into each intersecting bin.
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="box"></param>
         /// <param name="value"></param>
-        public void Insert(Domain3d domain, T value)
+        public void Insert(Interval3d box, T value)
         {
-            domain.MakeIncreasing();
+            box.MakeIncreasing();
 
-            (int i0, int j0, int k0) = IndicesAt(domain.From);
-            (int i1, int j1, int k1) = IndicesAt(domain.To);
+            (int i0, int j0, int k0) = IndicesAt(box.A);
+            (int i1, int j1, int k1) = IndicesAt(box.B);
             var currQuery = NextQuery;
 
             for (int k = k0; k <= k1; k++)
@@ -282,13 +282,13 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each value within each intersecting bin.
-        /// The search can be aborted by returning false from the given callback. If this occurs, this function will also return false.
+        /// The search can be aborted by returning false from the given callback at any time. If this occurs, this function will also return false.
         /// This method is technically not threadsafe as concurrent calls could result in the same bin being processed multiple times within a single search.
         /// For some applications, this isn't an issue however.
         /// </summary>
-        public bool Search(Domain3d domain, Func<T, bool> callback)
+        public bool Search(Interval3d box, Func<T, bool> callback)
         {
-            foreach(var bin in SearchImpl(domain))
+            foreach(var bin in SearchImpl(box))
             {
                 foreach (var t in bin)
                     if (!callback(t)) return false;
@@ -319,9 +319,9 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Returns the contents of all intersecting bins.
         /// </summary>
-        public IEnumerable<T> Search(Domain3d domain)
+        public IEnumerable<T> Search(Interval3d box)
         {
-            return SearchImpl(domain).SelectMany(x => x);
+            return SearchImpl(box).SelectMany(x => x);
         }
 
 
@@ -329,11 +329,11 @@ namespace SpatialSlur.SlurData
         /// Adds the contents of each intersecting bin to the given stack.
         /// This implementation separates the the collection of bins (not threadsafe) from the processing of their contents (potentially threadsafe) making it better suited to concurrent applications.
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="box"></param>
         /// <param name="result"></param>
-        public void Search(Domain3d domain, Stack<IEnumerable<T>> result)
+        public void Search(Interval3d box, Stack<IEnumerable<T>> result)
         {
-            foreach (var bin in SearchImpl(domain))
+            foreach (var bin in SearchImpl(box))
                 result.Push(bin);
         }
 
@@ -341,12 +341,12 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Returns each intersecting bin.
         /// </summary>
-        private IEnumerable<Bin> SearchImpl(Domain3d domain)
+        private IEnumerable<Bin> SearchImpl(Interval3d box)
         {
-            domain.MakeIncreasing();
+            box.MakeIncreasing();
 
-            (int i0, int j0, int k0) = IndicesAt(domain.From);
-            (int i1, int j1, int k1) = IndicesAt(domain.To);
+            (int i0, int j0, int k0) = IndicesAt(box.A);
+            (int i1, int j1, int k1) = IndicesAt(box.B);
             var currQuery = NextQuery;
 
             for (int k = k0; k <= k1; k++)

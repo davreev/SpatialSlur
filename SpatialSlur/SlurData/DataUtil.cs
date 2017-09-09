@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurData
                 for (int i = 0; i < points.Count; i++)
                 {
                     var p0 = points[i];
-                    var p1 = grid.Search(new Domain2d(p0, radius))
+                    var p1 = grid.Search(new Interval2d(p0, radius))
                         .Where(p => p0.SquareDistanceTo(p) < radSqr)
                         .Mean();
 
@@ -104,7 +104,7 @@ namespace SpatialSlur.SlurData
                 for (int i = 0; i < points.Count; i++)
                 {
                     var p0 = points[i];
-                    var p1 = grid.Search(new Domain3d(p0, radius))
+                    var p1 = grid.Search(new Interval3d(p0, radius))
                         .Where(p => p0.SquareDistanceTo(p) < radSqr)
                         .Mean();
 
@@ -295,7 +295,7 @@ namespace SpatialSlur.SlurData
                 var p0 = getPosition(items[i]);
 
                 // search for concident in result
-                foreach (int j in grid.Search(new Domain2d(p0, tolerance)))
+                foreach (int j in grid.Search(new Interval2d(p0, tolerance)))
                 {
                     if (p0.ApproxEquals(getPosition(result[j]), tolerance))
                     {
@@ -369,7 +369,7 @@ namespace SpatialSlur.SlurData
                 var p0 = getPosition(items[i]);
 
                 // search for concident in result
-                foreach (int j in grid.Search(new Domain3d(p0, tolerance)))
+                foreach (int j in grid.Search(new Interval3d(p0, tolerance)))
                 {
                     if (p0.ApproxEquals(getPosition(result[j]), tolerance))
                     {
@@ -427,7 +427,7 @@ namespace SpatialSlur.SlurData
             {
                 var p0 = getPosition(items[i]);
 
-                foreach (var j in grid.Search(new Domain2d(p0, tolerance)))
+                foreach (var j in grid.Search(new Interval2d(p0, tolerance)))
                 {
                     if (i != j && p0.ApproxEquals(getPosition(items[j]), tolerance))
                     {
@@ -478,7 +478,7 @@ namespace SpatialSlur.SlurData
             {
                 var p0 = getPosition(items[i]);
 
-                foreach (var j in grid.Search(new Domain3d(p0, tolerance)))
+                foreach (var j in grid.Search(new Interval3d(p0, tolerance)))
                 {
                     if (i != j && p0.ApproxEquals(getPosition(items[j]), tolerance))
                     {
@@ -532,7 +532,7 @@ namespace SpatialSlur.SlurData
             {
                 var p0 = getPosition(itemsA[i]);
 
-                foreach (var j in grid.Search(new Domain2d(p0, tolerance)))
+                foreach (var j in grid.Search(new Interval2d(p0, tolerance)))
                 {
                     if (p0.ApproxEquals(getPosition(itemsB[j]), tolerance))
                     {
@@ -586,7 +586,7 @@ namespace SpatialSlur.SlurData
             {
                 var p0 = getPosition(itemsA[i]);
 
-                foreach (var j in grid.Search(new Domain3d(p0, tolerance)))
+                foreach (var j in grid.Search(new Interval3d(p0, tolerance)))
                 {
                     if (p0.ApproxEquals(getPosition(itemsB[j]), tolerance))
                     {
@@ -640,7 +640,7 @@ namespace SpatialSlur.SlurData
             {
                 var p0 = getPosition(itemsA[i]);
 
-                yield return grid.Search(new Domain2d(p0, tolerance))
+                yield return grid.Search(new Interval2d(p0, tolerance))
                     .Where(j => p0.ApproxEquals(getPosition(itemsB[j]), tolerance));
             }
         }
@@ -685,7 +685,7 @@ namespace SpatialSlur.SlurData
             {
                 var p0 = getPosition(itemsA[i]);
 
-                yield return grid.Search(new Domain3d(p0, tolerance))
+                yield return grid.Search(new Interval3d(p0, tolerance))
                     .Where(j => p0.ApproxEquals(getPosition(itemsB[j]), tolerance));
             }
         }

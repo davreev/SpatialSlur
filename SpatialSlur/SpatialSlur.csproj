@@ -60,11 +60,14 @@
     <Compile Include="SlurCore\Extensions\TExtensions.cs" />
     <Compile Include="SlurCore\Interfaces\IProperty.cs" />
     <Compile Include="SlurCore\Interfaces\IReadOnlyProperty.cs" />
+    <Compile Include="SlurCore\Obsolete\Domain1d.cs" />
+    <Compile Include="SlurCore\Obsolete\Domain2d.cs" />
+    <Compile Include="SlurCore\Obsolete\Domain3d.cs" />
     <Compile Include="SlurCore\Orient2d.cs" />
     <Compile Include="SlurCore\Property.cs" />
     <Compile Include="SlurCore\Orient3d.cs" />
     <Compile Include="SlurCore\Rotate2d.cs" />
-    <Compile Include="SlurCore\Mat3d.cs" />
+    <Compile Include="SlurCore\Matrix3d.cs" />
     <Compile Include="SlurCore\Transform2d.cs" />
     <Compile Include="SlurCore\Transform3d.cs" />
     <Compile Include="SlurData\DataUtil.cs" />
@@ -81,7 +84,7 @@
     <Compile Include="SlurDynamics\Constraints\Coincident.cs" />
     <Compile Include="SlurDynamics\Constraints\Colinear.cs" />
     <Compile Include="SlurDynamics\Constraints\ForceField.cs" />
-    <Compile Include="SlurDynamics\Constraints\InsideDomain.cs" />
+    <Compile Include="SlurDynamics\Constraints\InsideInterval.cs" />
     <Compile Include="SlurDynamics\Constraints\OnTarget.cs" />
     <Compile Include="SlurDynamics\Constraints\SphereCollide.cs" />
     <Compile Include="SlurDynamics\Constraints\Weight.cs" />
@@ -128,6 +131,8 @@
     <Compile Include="SlurField\FieldUtil.cs" />
     <Compile Include="SlurField\FuncField2d.cs" />
     <Compile Include="SlurField\FuncField3d.cs" />
+    <Compile Include="SlurField\Grid2d.cs" />
+    <Compile Include="SlurField\Grid3d.cs" />
     <Compile Include="SlurField\GridUtil.cs" />
     <Compile Include="SlurField\IDWField3d.cs" />
     <Compile Include="SlurField\IDWPoint3d.cs" />
@@ -175,9 +180,9 @@
     <Compile Include="SlurMesh\HeMesh\FaceTriangulators.cs" />
     <None Include="packages.config" />
     <Compile Include="SlurCore\Vec2i.cs" />
-    <Compile Include="SlurCore\Domain1d.cs" />
-    <Compile Include="SlurCore\Domain2d.cs" />
-    <Compile Include="SlurCore\Domain3d.cs" />
+    <Compile Include="SlurCore\Interval1d.cs" />
+    <Compile Include="SlurCore\Interval2d.cs" />
+    <Compile Include="SlurCore\Interval3d.cs" />
     <Compile Include="SlurCore\Vec2d.cs" />
     <Compile Include="SlurCore\Vec3d.cs" />
     <Compile Include="SlurCore\Vec3i.cs" />
@@ -229,10 +234,12 @@
     <Compile Include="SlurMesh\MeshUtil.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Sketch\" />
+    <Folder Include="SlurDynamics\Obsolete\" />
+    <Folder Include="SlurField\Obsolete\" />
+    <Folder Include="SlurMesh\Obsolete\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SlurCore\Mat4d.cs" />
+    <Compile Include="SlurCore\Matrix4d.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
