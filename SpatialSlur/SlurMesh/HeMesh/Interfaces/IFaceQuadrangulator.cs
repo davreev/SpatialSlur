@@ -22,6 +22,7 @@ namespace SpatialSlur.SlurMesh
         where F : IHeFace<V, E, F>
     {
         /// <summary>
+        /// Iterates through the vertices of each quad without modifying the topology of the mesh.
         /// The last 2 vertices from each quad must not belong to the previously returned quad.
         /// </summary>
         /// <param name="face"></param>

@@ -235,10 +235,12 @@ namespace SpatialSlur.SlurMesh
         public virtual void Sort<K>(Func<T, K> getKey, IComparer<K> keyComparer)
         {
             int index = 0;
+
+            // sort
             foreach (var t in this.OrderBy(getKey, keyComparer))
                 this[index++] = t;
 
-            // reset indices
+            // re-index
             for (int i = 0; i < _count; i++)
                 _items[i].Index = i;
         }

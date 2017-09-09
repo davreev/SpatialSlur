@@ -36,15 +36,16 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public sealed override void Sort<K>(Func<E, K> getKey, IComparer<K> keyComparer)
         {
-            // sort halfedges in pairs
             int index = 0;
+
+            // sort in pairs
             foreach (var he0 in this.TakeEveryNth(2).OrderBy(getKey, keyComparer))
             {
                 this[index++] = he0;
                 this[index++] = he0.Twin;
             }
 
-            // reindex
+            // re-index
             for (int i = 0; i < Count; i++)
                 this[i].Index = i;
         }

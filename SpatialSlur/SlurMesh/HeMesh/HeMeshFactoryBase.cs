@@ -162,11 +162,6 @@ namespace SpatialSlur.SlurMesh
             where UE : Halfedge<UV, UE, UF>
             where UF : HeFace<UV, UE, UF>
         {
-            // RESUME HERE
-
-            // TODO debug
-            // component halfedges have null start vertices
-
             var vertices = mesh.Vertices;
             var hedges = mesh.Halfedges;
             var faces = mesh.Faces;

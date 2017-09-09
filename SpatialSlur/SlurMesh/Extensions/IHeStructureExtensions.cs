@@ -954,19 +954,6 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the minimum topological depth of each edge from a collection of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
-        [Obsolete("Use other overload instead.")]
-        public static void GetEdgeDepths<V, E>(this IHeStructure<V, E> graph, IEnumerable<E> sources, Func<E, int> getDepth, Action<E, int> setDepth)
-            where V : HeElement, IHeVertex<V, E>
-            where E : HeElement, IHalfedge<V, E>
-        {
-            GetEdgeDepths(graph, sources, Property.Create(getDepth, setDepth));
-        }
-
-
-        /// <summary>
-        /// Calculates the minimum topological depth of each edge from a collection of sources.
-        /// Note that corresponding get/set delegates must read/write to the same location.
-        /// </summary>
         public static void GetEdgeDepths<V, E>(this IHeStructure<V, E> graph, IEnumerable<E> sources, Property<E, int> depth)
             where V : HeElement, IHeVertex<V, E>
             where E : HeElement, IHalfedge<V, E>
@@ -1256,19 +1243,6 @@ namespace SpatialSlur.SlurMesh
         /// Normalizes halfedge weights such that the weights of outgoing halfedges around each vertex sum to 1.
         /// Note that this breaks weight symmetry between halfedge pairs.
         /// </summary>
-        [Obsolete("Use other overload instead.")]
-        public static void NormalizeHalfedgeWeightsAtVertices<V, E>(this IHeStructure<V, E> graph, Func<E, double> getWeight, Action<E, double> setWeight, bool parallel = false)
-           where V : HeElement, IHeVertex<V, E>
-           where E : HeElement, IHalfedge<V, E>
-        {
-            NormalizeHalfedgeWeightsAtVertices(graph, Property.Create(getWeight, setWeight), parallel);
-        }
-
-
-        /// <summary>
-        /// Normalizes halfedge weights such that the weights of outgoing halfedges around each vertex sum to 1.
-        /// Note that this breaks weight symmetry between halfedge pairs.
-        /// </summary>
         public static void NormalizeHalfedgeWeightsAtVertices<V, E>(this IHeStructure<V, E> graph, Property<E, double> weight, bool parallel = false)
            where V : HeElement, IHeVertex<V, E>
            where E : HeElement, IHalfedge<V, E>
@@ -1364,19 +1338,6 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the minimum topological depth of each vertex from a collection of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
-        [Obsolete("Use other overload instead.")]
-        public static void GetVertexDepths<V, E>(this IHeStructure<V, E> graph, IEnumerable<V> sources, Func<V, int> getDepth, Action<V, int> setDepth)
-            where V : HeElement, IHeVertex<V, E>
-            where E : HeElement, IHalfedge<V, E>
-        {
-            GetVertexDepths(graph, sources, Property.Create(getDepth, setDepth));
-        }
-
-
-        /// <summary>
-        /// Calculates the minimum topological depth of each vertex from a collection of sources.
-        /// Note that corresponding get/set delegates must read/write to the same location.
-        /// </summary>
         public static void GetVertexDepths<V, E>(this IHeStructure<V, E> graph, IEnumerable<V> sources, Property<V, int> depth)
             where V : HeElement, IHeVertex<V, E>
             where E : HeElement, IHalfedge<V, E>
@@ -1413,19 +1374,6 @@ namespace SpatialSlur.SlurMesh
                     }
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Calculates the minimum topological distance to each vertex from a collection of sources.
-        /// Note that corresponding get/set delegates must read/write to the same location.
-        /// </summary>
-        [Obsolete("Use other overload instead.")]
-        public static void GetVertexDistances<V, E>(this IHeStructure<V, E> graph, IEnumerable<V> sources, Func<E, double> getLength, Func<V, double> getDistance, Action<V, double> setDistance)
-            where V : HeElement, IHeVertex<V, E>
-            where E : HeElement, IHalfedge<V, E>
-        {
-            GetVertexDistances(graph, sources, getLength, Property.Create(getDistance, setDistance));
         }
 
 
@@ -3095,21 +3043,7 @@ namespace SpatialSlur.SlurMesh
             else
                 body(Tuple.Create(0, faces.Count));
         }
-
-
-        /// <summary>
-        /// Calculates the minimum topological depth of all faces connected to a set of sources.
-        /// Note that corresponding get/set delegates must read/write to the same location.
-        /// </summary>
-        [Obsolete("Use other overload instead.")]
-        public static void GetFaceDepths<V, E, F>(this IHeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<F, int> getDepth, Action<F, int> setDepth)
-            where V : HeElement, IHeVertex<V, E, F>
-            where E : HeElement, IHalfedge<V, E, F>
-            where F : HeElement, IHeFace<V, E, F>
-        {
-            GetFaceDepths(mesh, sources, Property.Create(getDepth, setDepth));
-        }
-
+        
 
         /// <summary>
         /// Calculates the minimum topological depth of all faces connected to a set of sources.
@@ -3152,20 +3086,6 @@ namespace SpatialSlur.SlurMesh
                     }
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Calculates the minimum topological distance to each face from a collection of sources.
-        /// Note that corresponding get/set delegates must read/write to the same location.
-        /// </summary>
-        [Obsolete("Use other overload instead.")]
-        public static void GetFaceDistances<V, E, F>(this IHeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, double> getLength, Func<F, double> getDistance, Action<F, double> setDistance)
-            where V : HeElement, IHeVertex<V, E, F>
-            where E : HeElement, IHalfedge<V, E, F>
-            where F : HeElement, IHeFace<V, E, F>
-        {
-            GetFaceDistances(mesh, sources, getLength, Property.Create(getDistance, setDistance));
         }
 
 

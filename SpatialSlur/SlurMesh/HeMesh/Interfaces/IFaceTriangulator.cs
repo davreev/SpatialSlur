@@ -22,6 +22,7 @@ namespace SpatialSlur.SlurMesh
         where F : IHeFace<V, E, F>
     {
         /// <summary>
+        /// Iterates through the vertices of each triangle without modifying the topology of the mesh.
         /// The last vertex from each triangle must not belong to the previously returned triangle.
         /// </summary>
         /// <param name="face"></param>
