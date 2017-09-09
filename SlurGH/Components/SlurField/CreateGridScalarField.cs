@@ -28,6 +28,9 @@ namespace SpatialSlur.SlurGH.Components
         private WrapMode _wrapY = WrapMode.Clamp;
         private WrapMode _wrapZ = WrapMode.Clamp;
 
+        // TODO
+        // add wrap and sample modes as menu items
+
 
         /// <summary>
         /// 
@@ -49,12 +52,10 @@ namespace SpatialSlur.SlurGH.Components
             pManager.AddIntegerParameter("countX", "countX", "Resolution in the x direction", GH_ParamAccess.item);
             pManager.AddIntegerParameter("countY", "countY", "Resolution in the y direction", GH_ParamAccess.item);
             pManager.AddIntegerParameter("countZ", "countZ", "Resolution in the z direction", GH_ParamAccess.item);
-            pManager.AddNumberParameter("values", "values", "Optional initial scalar values", GH_ParamAccess.list);
-
-            // TODO
-            // add wrap and sample modes as menu items
+            pManager.AddNumberParameter("values", "values", "Optional initial values", GH_ParamAccess.list);
 
             pManager[3].Optional = true;
+            pManager[4].Optional = true;
         }
 
 
@@ -91,23 +92,33 @@ namespace SpatialSlur.SlurGH.Components
 
             if (nz == null)
             {
-                var d = box.Value.BoundingBox.ToDomain2d();
-                var f = new GridScalarField2d(d, nx.Value, ny.Value, _sample, _wrapX, _wrapY);
+                var d = box.Value.BoundingBox.ToInterval2d();
+                var f = new GridScalarField2d(d, nx.Value, ny.Value, _wrapX, _wrapY, _sample);
 
                 // set values
                 if (vals != null)
-                    f.Set(vals.Select(x => x.Value));
+                {
+                    if (vals.Count == 1)
+                        f.Set(vals[0].Value);
+                    else
+                        f.Set(vals.Select(x => x.Value));
+                }
 
                 DA.SetData(0, new GH_ObjectWrapper(f));
             }
             else
             {
-                var d = box.Value.BoundingBox.ToDomain3d();
-                var f = new GridScalarField3d(d, nx.Value, ny.Value, nz.Value, _sample, _wrapX, _wrapY, _wrapZ);
+                var d = box.Value.BoundingBox.ToInterval3d();
+                var f = new GridScalarField3d(d, nx.Value, ny.Value, nz.Value, _wrapX, _wrapY, _wrapZ, _sample);
 
                 // set values
                 if (vals != null)
-                    f.Set(vals.Select(x => x.Value));
+                {
+                    if (vals.Count == 1)
+                        f.Set(vals[0].Value);
+                    else
+                        f.Set(vals.Select(x => x.Value));
+                }
 
                 DA.SetData(0, new GH_ObjectWrapper(f));
             }
@@ -131,7 +142,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{FE606239-5B89-4E63-85BD-00CD286A10E2}"); }
+            get { return new Guid("{C2B98274-51EA-4021-B973-CBCF9CAA7E4B}"); }
         }
     }
 }

@@ -23,6 +23,9 @@ namespace SpatialSlur.SlurGH.Components
     /// </summary>
     public class IntegrateField : GH_Component
     {
+        private bool _parallel = true;
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -63,7 +66,7 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_Goo<object> goo = null;
+            GH_ObjectWrapper goo = null;
             if (!DA.GetData(0, ref goo)) return;
 
             var points = new List<Point3d>();

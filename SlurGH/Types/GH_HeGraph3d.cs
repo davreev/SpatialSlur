@@ -89,7 +89,7 @@ namespace SpatialSlur.SlurGH.Types
             get
             {
                 if (Value != null && !_bbox.IsValid)
-                    _bbox = new Domain3d(Value.Vertices.Select(v => v.Position)).ToBoundingBox();
+                    _bbox = new Interval3d(Value.Vertices.Select(v => v.Position)).ToBoundingBox();
 
                 return _bbox;
             }

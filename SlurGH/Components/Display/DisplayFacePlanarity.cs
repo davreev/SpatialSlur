@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurGH.Components
             if (!DA.GetDataList(1, colors)) return;
             DA.GetData(2, ref interval);
 
-            var dispMesh = SolveInstanceImpl(mesh, colors, interval.ToDomain(), out Domain1d range);
+            var dispMesh = SolveInstanceImpl(mesh, colors, interval.ToInterval1d(), out Interval1d range);
 
             DA.SetData(0, new GH_Mesh(dispMesh));
             DA.SetData(1, new GH_Interval(range.ToInterval()));
@@ -105,7 +105,7 @@ namespace SpatialSlur.SlurGH.Components
         /// 
         /// </summary>
         /// <returns></returns>
-        Mesh SolveInstanceImpl(HeMesh3d mesh, IReadOnlyList<Color> colors, Domain1d interval, out Domain1d range)
+        Mesh SolveInstanceImpl(HeMesh3d mesh, IReadOnlyList<Color> colors, Interval1d interval, out Interval1d range)
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
@@ -114,7 +114,7 @@ namespace SpatialSlur.SlurGH.Components
             mesh.GetFacePlanarity(v => v.Position, (f, t) => planarDev[f] = t);
 
             // get planarity range
-            range = new Domain1d(planarDev);
+            range = new Interval1d(planarDev);
             if (!interval.IsValid) interval = range;
 
             // create new mesh

@@ -95,7 +95,7 @@ namespace SpatialSlur.SlurGH.Remesher
             if (!DA.GetData(7, ref refineFreq)) return;
 
             var settings = new SlurRhino.Remesher.DynamicRemesherSettings();
-            settings.LengthRange = lengthRng.ToDomain();
+            settings.LengthRange = lengthRng.ToInterval1d();
             settings.LengthTolerance = lengthTol;
             settings.FeatureWeight = feature;
             settings.SmoothWeight = smooth;

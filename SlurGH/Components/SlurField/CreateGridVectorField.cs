@@ -28,6 +28,8 @@ namespace SpatialSlur.SlurGH.Components
         private WrapMode _wrapY = WrapMode.Clamp;
         private WrapMode _wrapZ = WrapMode.Clamp;
 
+        // TODO
+        // add wrap and sample modes as menu items
 
         /// <summary>
         /// 
@@ -49,12 +51,10 @@ namespace SpatialSlur.SlurGH.Components
             pManager.AddIntegerParameter("countX", "countX", "Resolution in the x direction", GH_ParamAccess.item);
             pManager.AddIntegerParameter("countY", "countY", "Resolution in the y direction", GH_ParamAccess.item);
             pManager.AddIntegerParameter("countZ", "countZ", "Resolution in the z direction", GH_ParamAccess.item);
-            pManager.AddVectorParameter("values", "values", "Optional initial vector values", GH_ParamAccess.list);
-
-            // TODO
-            // add wrap and sample modes as menu items
+            pManager.AddVectorParameter("values", "values", "Optional initial values", GH_ParamAccess.list);
 
             pManager[3].Optional = true;
+            pManager[4].Optional = true;
         }
 
 
@@ -91,27 +91,42 @@ namespace SpatialSlur.SlurGH.Components
 
             if (nz == null)
             {
-                var d = box.Value.BoundingBox.ToDomain2d();
-                var f = new GridVectorField2d(d, nx.Value, ny.Value, _sample, _wrapX, _wrapY);
+                var d = box.Value.BoundingBox.ToInterval2d();
+                var f = new GridVectorField2d(d, nx.Value, ny.Value, _wrapX, _wrapY, _sample);
 
                 // set values
                 if (vals != null)
-                    f.Set(vals.Select(x =>
+                {
+                    if (vals.Count == 1)
                     {
-                        var v = x.Value;
-                        return new Vec2d(v.X, v.Y);
-                    }));
+                        var v = vals[0].Value;
+                        f.Set(new Vec2d(v.X, v.Y));
+                    }
+                    else
+                    {
+                        f.Set(vals.Select(x =>
+                        {
+                            var v = x.Value;
+                            return new Vec2d(v.X, v.Y);
+                        }));
+                    }
+                }
 
                 DA.SetData(0, new GH_ObjectWrapper(f));
             }
             else
             {
-                var d = box.Value.BoundingBox.ToDomain3d();
-                var f = new GridVectorField3d(d, nx.Value, ny.Value, nz.Value, _sample, _wrapX, _wrapY, _wrapZ);
+                var d = box.Value.BoundingBox.ToInterval3d();
+                var f = new GridVectorField3d(d, nx.Value, ny.Value, nz.Value, _wrapX, _wrapY, _wrapZ, _sample);
 
                 // set values
                 if (vals != null)
-                    f.Set(vals.Select(x => x.Value.ToVec3d()));
+                {
+                    if (vals.Count == 1)
+                        f.Set(vals[0].Value.ToVec3d());
+                    else
+                        f.Set(vals.Select(x => x.Value.ToVec3d()));
+                }
 
                 DA.SetData(0, new GH_ObjectWrapper(f));
             }

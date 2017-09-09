@@ -48,12 +48,6 @@
       <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SlurRhino">
-      <HintPath>..\SlurRhino\bin\Release\SlurRhino.dll</HintPath>
-    </Reference>
-    <Reference Include="SpatialSlur">
-      <HintPath>..\SpatialSlur\bin\Release\SpatialSlur.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -75,8 +69,9 @@
     <Compile Include="Components\Display\NormalShader.cs" />
     <Compile Include="Components\SlurField\CreateGridVectorField.cs" />
     <Compile Include="Components\SlurField\CreateGridScalarField.cs" />
+    <Compile Include="Components\SlurField\GeodesicDistance.cs" />
     <Compile Include="Components\SlurField\IntegrateField.cs" />
-    <Compile Include="Components\SlurField\SimplexNoise.cs" />
+    <Compile Include="Components\SlurField\SampleField.cs" />
     <Compile Include="Components\SlurMesh\CreateDual.cs" />
     <Compile Include="Components\SlurMesh\FacePlanarity.cs" />
     <Compile Include="Components\SlurMesh\HeGraphFromLines.cs" />
@@ -107,7 +102,16 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\SlurRhino\SlurRhino.csproj">
+      <Project>{bc939b55-9bb3-446b-9dbf-8a16b5177a39}</Project>
+      <Name>SlurRhino</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpatialSlur\SpatialSlur.csproj">
+      <Project>{b57af965-5201-4215-8077-50b3cc8b1f6b}</Project>
+      <Name>SpatialSlur</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
