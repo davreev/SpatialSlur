@@ -16,7 +16,7 @@ Below is a brief outline of the core library by namespace. For further detail, t
 
 + __SlurDynamics__ contains a projection based constraint solver and various constraint types for geometry optimization and form-finding. This is an implementation of principles described in (1) and follows many of the implementation details given in (2).
 
-+ __SlurField__ contains generic data structures for discrete and continuous tensor field representations along with various algorithms for processing, sampling, and visualization.
++ __SlurField__ contains generic data structures for discrete and continuous scalar/vector/tensor field representations along with various algorithms for processing, sampling, and visualization.
 
 + __SlurMesh__ contains half-edge data structures for discrete representations of networks and surfaces along with various algorithms for geometry processing, topological traversal, segmentation, and subdivision.
 
