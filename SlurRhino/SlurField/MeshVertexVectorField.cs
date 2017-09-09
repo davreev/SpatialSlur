@@ -45,11 +45,11 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <returns></returns>
-        public MeshVertexVectorField Duplicate()
+        public MeshVertexVectorField Duplicate(bool copyValues)
         {
-            var copy = new MeshVertexVectorField(this);
-            copy.Set(this);
-            return copy;
+            var result = new MeshVertexVectorField(this);
+            if (copyValues) result.Set(this);
+            return result;
         }
 
 
@@ -57,9 +57,9 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <returns></returns>
-        protected override MeshVertexField<Vec3d> DuplicateBase()
+        protected override MeshVertexField<Vec3d> DuplicateBase(bool copyValues)
         {
-            return Duplicate();
+            return Duplicate(copyValues);
         }
 
 

@@ -177,7 +177,7 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <returns></returns>
-        protected abstract MeshVertexField<T> DuplicateBase();
+        protected abstract MeshVertexField<T> DuplicateBase(bool copyValues);
 
 
         /// <summary>
@@ -237,9 +237,19 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <returns></returns>
-        IDiscreteField<T> IDiscreteField<T>.Duplicate()
+        IDiscreteField<T> IDiscreteField<T>.Duplicate(bool copyValues)
         {
-            return DuplicateBase();
+            return DuplicateBase(copyValues);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IDiscreteField3d<T> IDiscreteField3d<T>.Duplicate(bool copyValues)
+        {
+            return DuplicateBase(copyValues);
         }
 
 

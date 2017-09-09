@@ -46,11 +46,11 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <returns></returns>
-        public MeshVertexScalarField Duplicate()
+        public MeshVertexScalarField Duplicate(bool copyValues)
         {
-            var copy = new MeshVertexScalarField(this);
-            copy.Set(this);
-            return copy;
+            var result = new MeshVertexScalarField(this);
+            if (copyValues) result.Set(this);
+            return result;
         }
 
 
@@ -58,9 +58,9 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <returns></returns>
-        protected override MeshVertexField<double> DuplicateBase()
+        protected override MeshVertexField<double> DuplicateBase(bool copyValues)
         {
-            return Duplicate();
+            return Duplicate(copyValues);
         }
         
 
@@ -144,6 +144,7 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="getWeight"></param>
         /// <param name="parallel"></param>
         /// <returns></returns>
         public MeshVertexScalarField GetLaplacian(Func<HeMesh3d.Halfedge, double> getWeight, bool parallel = true)
@@ -158,6 +159,7 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <param name="result"></param>
+        /// <param name="getWeight"></param>
         /// <param name="parallel"></param>
         public void GetLaplacian(IDiscreteField<double> result, Func<HeMesh3d.Halfedge, double> getWeight, bool parallel = true)
         {
@@ -169,6 +171,7 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <param name="result"></param>
+        /// <param name="getWeight"></param>
         /// <param name="parallel"></param>
         public void GetLaplacian(double[] result, Func<HeMesh3d.Halfedge, double> getWeight, bool parallel = true)
         {
@@ -272,6 +275,7 @@ namespace SpatialSlur.SlurRhino
         /// 
         /// </summary>
         /// <param name="result"></param>
+        /// <param name="getWeight"></param>
         /// <param name="parallel"></param>
         public void GetGradient(Vec3d[] result, Func<HeMesh3d.Halfedge, double> getWeight, bool parallel = true)
         {

@@ -23,8 +23,11 @@ namespace SpatialSlur.SlurRhino
     {
         #region Lookup Tables
 
-        // table of vertices belonging to each edge (12 x 2)
-        private static readonly int[] _edgeIndices = 
+
+        /// <summary>
+        /// Vertices belonging to each edge (12 x 2)
+        /// </summary>
+        private static readonly int[] _edgeIndices =
         {
             0, 1,
             1, 2,
@@ -41,7 +44,25 @@ namespace SpatialSlur.SlurRhino
         };
 
 
-        // intersecting edges for each case
+        /// <summary>
+        /// 
+        /// </summary>
+        private static readonly Vec3d[] _vertexOffsets =
+        {
+            new Vec3d(0.0, 0.0, 0.0),
+            new Vec3d(1.0, 0.0, 0.0),
+            new Vec3d(1.0, 1.0, 0.0),
+            new Vec3d(0.0, 1.0, 0.0),
+            new Vec3d(0.0, 0.0, 1.0),
+            new Vec3d(1.0, 0.0, 1.0),
+            new Vec3d(1.0, 1.0, 1.0),
+            new Vec3d(0.0, 1.0, 1.0)
+        };
+
+
+        /// <summary>
+        /// Intersecting edges for each case
+        /// </summary>
         private static readonly int[][] _edgeTable =
         {
             new int[]{},
@@ -303,9 +324,11 @@ namespace SpatialSlur.SlurRhino
         };
 
 
-        // face topology for each case
-        private static readonly int[][] _triTable = 
-        { 
+        /// <summary>
+        /// Face topology for each case
+        /// </summary>
+        private static readonly int[][] _triTable =
+        {
             new int[]{},
             new int[]{0, 2, 1},
             new int[]{0, 1, 2},
@@ -865,7 +888,7 @@ namespace SpatialSlur.SlurRhino
            new int[]{}
        };
        */
-    
+
         #endregion
 
 
@@ -877,30 +900,20 @@ namespace SpatialSlur.SlurRhino
         /// <returns></returns>
         public static Mesh Evaluate(GridScalarField3d field, double thresh)
         {
-            Mesh result = Evaluate(field.Values, field.ScaleX, field.ScaleY, field.ScaleZ, field.CountX, field.CountY, field.CountZ, thresh);
-
-            // move to domain origin
-            Vec3d v = field.Domain.From;
-            result.Translate(v.X, v.Y, v.Z);
-            return result;
+            return Evaluate(field.Values, field.Origin, field.Scale, field.CountX, field.CountY, field.CountZ, thresh);
         }
 
 
         /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
+        /// 
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="gradient"></param>
+        /// <param name="values"></param>
+        /// <param name="grid"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(GridScalarField3d field, GridVectorField3d gradient, double thresh)
+        public static Mesh Evaluate(double[] values, Grid3d grid, double thresh)
         {
-            Mesh result = Evaluate(field.Values, gradient.Values, field.ScaleX, field.ScaleY, field.ScaleZ, field.CountX, field.CountY, field.CountZ, thresh);
-
-            // move to domain origin
-            Vec3d v = field.Domain.From;
-            result.Translate(v.X, v.Y, v.Z);
-            return result;
+            return Evaluate(values, grid.Origin, grid.Scale, grid.CountX, grid.CountY, grid.CountZ, thresh);
         }
 
 
@@ -908,26 +921,18 @@ namespace SpatialSlur.SlurRhino
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(double[] values, Domain3d domain, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(double[] values, Vec3d origin, Vec3d scale, int countX, int countY, int countZ, double thresh)
         {
-            // get voxel dimensions
-            double dx = domain.X.Span / (nx - 1);
-            double dy = domain.Y.Span / (ny - 1);
-            double dz = domain.Z.Span / (nz - 1);
-
-            // get isosurface
-            Mesh result = Evaluate(values, dx, dy, dz, nx, ny, nz, thresh);
-
-            // move to domain origin
-            Vec3d v = domain.From;
-            result.Translate(v.X, v.Y, v.Z);
-            return result;
+            var mesh = Evaluate(values, countX, countY, countZ, thresh);
+            mesh.Transform(GetTransform(scale, origin));
+            return mesh;
         }
 
 
@@ -935,50 +940,16 @@ namespace SpatialSlur.SlurRhino
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
-        /// <param name="normals"></param>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(double[] values, Vec3d[] normals, Domain3d domain, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(double[] values, int countX, int countY, int countZ, double thresh)
         {
-            // get voxel dimensions
-            double dx = domain.X.Span / (nx - 1);
-            double dy = domain.Y.Span / (ny - 1);
-            double dz = domain.Z.Span / (nz - 1);
-
-            // get isosurface
-            Mesh result = Evaluate(values, normals, dx, dy, dz, nx, ny, nz, thresh);
-
-            // move to domain origin
-            Vec3d v = domain.From;
-            result.Translate(v.X, v.Y, v.Z);
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns an isosurface mesh at the given threshold.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        /// <param name="dz"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
-        /// <param name="thresh"></param>
-        /// <returns></returns>
-        public static Mesh Evaluate(double[] values, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
-        {
-            int nxy = nx * ny;
-            int n = nxy * nz;
-       
-            // get offsets
-            int[] indexOffsets = GetIndexOffsets(nx, nxy);
-            Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
+            int nxy = countX * countY;
+            int n = nxy * countZ;
+            int[] indexOffsets = GetIndexOffsets(countX, nxy);
 
             // resulting mesh
             Mesh result = new Mesh();
@@ -991,14 +962,14 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                (int x, int y, int z) = ExpandIndex(range.Item1, nx, nxy);
-           
+                (int x, int y, int z) = ExpandIndex(range.Item1, countX, nxy);
+
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)
                 {
-                    if (x == nx) { x = 0; y++; }
-                    if (y == ny) { y = 0; z++; }
-                    if (x == nx - 1 || y == ny - 1) continue; // skip last in each dimension
+                    if (x == countX) { x = 0; y++; }
+                    if (y == countY) { y = 0; z++; }
+                    if (x == countX - 1 || y == countY - 1) continue; // skip last in each dimension
 
                     // get case
                     int caseIndex = 0;
@@ -1009,11 +980,11 @@ namespace SpatialSlur.SlurRhino
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
                     // set voxel
-                    Vec3d p0 = new Vec3d(dx * x, dy * y, dz * z);
+                    Vec3d p0 = new Vec3d(x, y, z);
                     for (int j = 0; j < 8; j++)
                     {
                         voxelVals[j] = values[i + indexOffsets[j]];
-                        voxelVerts[j] = p0 + vertOffsets[j];
+                        voxelVerts[j] = p0 + _vertexOffsets[j];
                     }
 
                     // mesh voxel
@@ -1035,24 +1006,65 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
-        /// <param name="values"></param>
+        /// <param name="field"></param>
         /// <param name="normals"></param>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        /// <param name="dz"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(double[] values, Vec3d[] normals, double dx, double dy, double dz, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(GridScalarField3d field, Vec3d[] normals, double thresh)
         {
-            int nxy = nx * ny;
-            int n = nxy * nz;
+            return Evaluate(field.Values, normals, field.Origin, field.Scale, field.CountX, field.CountY, field.CountZ, thresh);
+        }
 
-            // get offsets
-            Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
-            int[] indexOffsets = GetIndexOffsets(nx, nxy);
+
+        /// <summary>
+        /// Returns an isosurface mesh at the given threshold.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="normals"></param>
+        /// <param name="grid"></param>
+        /// <param name="thresh"></param>
+        /// <returns></returns>
+        public static Mesh Evaluate(double[] values, Vec3d[] normals, Grid3d grid, double thresh)
+        {
+            return Evaluate(values, normals, grid.Origin, grid.Scale, grid.CountX, grid.CountY, grid.CountZ, thresh);
+        }
+
+
+        /// <summary>
+        /// Returns an isosurface mesh at the given threshold.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="normals"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
+        /// <param name="thresh"></param>
+        /// <returns></returns>
+        public static Mesh Evaluate(double[] values, Vec3d[] normals, Vec3d origin, Vec3d scale, int countX, int countY, int countZ, double thresh)
+        {
+            var mesh = Evaluate(values, normals, countX, countY, countZ, thresh);
+            mesh.Transform(GetTransform(scale, origin));
+            return mesh;
+        }
+
+
+        /// <summary>
+        /// Returns an isosurface mesh at the given threshold.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="normals"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
+        /// <param name="thresh"></param>
+        /// <returns></returns>
+        public static Mesh Evaluate(double[] values, Vec3d[] normals, int countX, int countY, int countZ, double thresh)
+        {
+            int nxy = countX * countY;
+            int n = nxy * countZ;
+            int[] indexOffsets = GetIndexOffsets(countX, nxy);
 
             // resulting mesh
             Mesh result = new Mesh();
@@ -1066,15 +1078,15 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                (int x, int y, int z) = ExpandIndex(range.Item1, nx, nxy);
+                (int x, int y, int z) = ExpandIndex(range.Item1, countX, nxy);
 
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)
                 {
                     // increment 3d index
-                    if (x == nx) { x = 0; y++; }
-                    if (y == ny) { y = 0; z++; }
-                    if (x == nx - 1 || y == ny - 1) continue; // skip last in each dimension
+                    if (x == countX) { x = 0; y++; }
+                    if (y == countY) { y = 0; z++; }
+                    if (x == countX - 1 || y == countY - 1) continue; // skip last in each dimension
 
                     // get case
                     int caseIndex = 0;
@@ -1085,13 +1097,13 @@ namespace SpatialSlur.SlurRhino
                     if (caseIndex == 0 || caseIndex == 255) continue;
 
                     // set voxel
-                    Vec3d p0 = new Vec3d(x * dx, y * dy, z * dz);
+                    Vec3d p0 = new Vec3d(x, y, z);
                     for (int j = 0; j < 8; j++)
                     {
                         int index = i + indexOffsets[j];
                         voxelVals[j] = values[index];
                         voxelNorms[j] = normals[index];
-                        voxelVerts[j] = p0 + vertOffsets[j];
+                        voxelVerts[j] = p0 + _vertexOffsets[j];
                     }
 
                     // mesh voxel
@@ -1116,25 +1128,17 @@ namespace SpatialSlur.SlurRhino
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
-        /// <param name="domain"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IReadOnlyList<double[]> values, Domain3d domain, int nx, int ny, double thresh)
+        public static Mesh Evaluate(IReadOnlyList<double[]> values, Vec3d origin, Vec3d scale, int countX, int countY, double thresh)
         {
-            // get voxel dimensions
-            double dx = domain.X.Span / (nx - 1);
-            double dy = domain.Y.Span / (ny - 1);
-            double dz = domain.Z.Span / (values.Count - 1);
-
-            // get isosurface
-            Mesh result = Evaluate(values, dx, dy, dz, nx, ny, thresh);
-
-            // move to domain origin
-            Vec3d v = domain.From;
-            result.Translate(v.X, v.Y, v.Z);
-            return result;
+            var mesh = Evaluate(values, countX, countY, thresh);
+            mesh.Transform(GetTransform(scale, origin));
+            return mesh;
         }
 
 
@@ -1142,20 +1146,14 @@ namespace SpatialSlur.SlurRhino
         /// Returns an isosurface mesh at the given threshold.
         /// </summary>
         /// <param name="values"></param>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        /// <param name="dz"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(IReadOnlyList<double[]> values, double dx, double dy, double dz, int nx, int ny, double thresh)
+        public static Mesh Evaluate(IReadOnlyList<double[]> values, int countX, int countY, double thresh)
         {
-            int nxy = nx * ny; // number of values per layer
- 
-            // get offsets
-            Vec3d[] vertOffsets = GetVertexOffsets(dx, dy, dz);
-            int[] indexOffsets = GetIndexOffsets(nx, nxy);
+            int nxy = countX * countY; // number of values per layer
+            int[] indexOffsets = GetIndexOffsets(countX, nxy);
         
             // resulting mesh
             Mesh result = new Mesh();
@@ -1174,11 +1172,11 @@ namespace SpatialSlur.SlurRhino
                     var vals0 = values[z];
                     var vals1 = values[z + 1];
                     
-                    for (int y = 0; y < ny - 1; y++)
+                    for (int y = 0; y < countY - 1; y++)
                     {
-                        for (int x = 0; x < nx - 1; x++)
+                        for (int x = 0; x < countX - 1; x++)
                         {
-                            int index = x + y * nx;
+                            int index = x + y * countX;
 
                             // get case
                             int caseIndex = 0;
@@ -1192,14 +1190,14 @@ namespace SpatialSlur.SlurRhino
                             if (caseIndex == 0 || caseIndex == 255) continue;
 
                             // set voxel
-                            Vec3d p0 = new Vec3d(x * dx, y * dy, z * dz);
+                            Vec3d p0 = new Vec3d(x, y, z);
                             for (int i = 0, j = 4; i < 4; i++, j++)
                             { 
                                 voxelVals[i] = vals0[index + indexOffsets[i]];
-                                voxelVerts[i] = p0 + vertOffsets[i];
+                                voxelVerts[i] = p0 + _vertexOffsets[i];
 
                                 voxelVals[j] = vals1[index + indexOffsets[i]];
-                                voxelVerts[j] = p0 + vertOffsets[j];
+                                voxelVerts[j] = p0 + _vertexOffsets[j];
                             }
 
                             // mesh voxel
@@ -1225,18 +1223,18 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="points"></param>
         /// <param name="values"></param>
-        /// <param name="nx"></param>
-        /// <param name="ny"></param>
-        /// <param name="nz"></param>
+        /// <param name="countX"></param>
+        /// <param name="countY"></param>
+        /// <param name="countZ"></param>
         /// <param name="thresh"></param>
         /// <returns></returns>
-        public static Mesh Evaluate(Vec3d[] points, double[] values, int nx, int ny, int nz, double thresh)
+        public static Mesh Evaluate(Vec3d[] points, double[] values, int countX, int countY, int countZ, double thresh)
         {
-            int nxy = nx * ny;
-            int n = nxy * nz;
+            int nxy = countX * countY;
+            int n = nxy * countZ;
 
             // get offsets
-            int[] indexOffsets = GetIndexOffsets(nx, nxy);
+            int[] indexOffsets = GetIndexOffsets(countX, nxy);
         
             // resulting mesh
             Mesh result = new Mesh();
@@ -1249,15 +1247,15 @@ namespace SpatialSlur.SlurRhino
                 double[] voxelVals = new double[8];
 
                 Mesh chunk = new Mesh();
-                (int x, int y, int z) = ExpandIndex(range.Item1, nx, nxy);
+                (int x, int y, int z) = ExpandIndex(range.Item1, countX, nxy);
 
                 // flatten loop for parallelization
                 for (int i = range.Item1; i < range.Item2; i++, x++)
                 {
                     // increment 3d index
-                    if (x == nx) { x = 0; y++; }
-                    if (y == ny) { y = 0; z++; }
-                    if (x == nx - 1 || y == ny - 1) continue; // skip last in each dimension
+                    if (x == countX) { x = 0; y++; }
+                    if (y == countY) { y = 0; z++; }
+                    if (x == countX - 1 || y == countY - 1) continue; // skip last in each dimension
 
                     // get case
                     int caseIndex = 0;
@@ -1293,6 +1291,28 @@ namespace SpatialSlur.SlurRhino
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="scale"></param>
+        /// <param name="translate"></param>
+        /// <returns></returns>
+        private static Transform GetTransform(Vec3d scale, Vec3d translate)
+        {
+            var xform = Transform.Identity;
+
+            xform.M00 = scale.X;
+            xform.M11 = scale.Y;
+            xform.M22 = scale.Z;
+
+            xform.M03 = translate.X;
+            xform.M13 = translate.Y;
+            xform.M23 = translate.Z;
+
+            return xform;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="nx"></param>
         /// <param name="nxy"></param>
         /// <returns></returns>
@@ -1308,29 +1328,6 @@ namespace SpatialSlur.SlurRhino
                 nxy + 1, 
                 nxy + nx + 1, 
                 nxy + nx 
-            };
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        /// <param name="dz"></param>
-        /// <returns></returns>
-        private static Vec3d[] GetVertexOffsets(double dx, double dy, double dz)
-        {
-            return new Vec3d[]
-            {
-                new Vec3d(0.0, 0.0, 0.0),
-                new Vec3d(dx, 0.0, 0.0),
-                new Vec3d(dx, dy, 0.0),
-                new Vec3d(0.0, dy, 0.0),
-                new Vec3d(0.0, 0.0, dz),
-                new Vec3d(dx, 0.0, dz),
-                new Vec3d(dx, dy, dz),
-                new Vec3d(0.0, dy, dz)
             };
         }
 
