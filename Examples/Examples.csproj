@@ -32,11 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SpatialSlur, Version=0.2.2.8306, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SpatialSlur\bin\Release\SpatialSlur.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -50,16 +45,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
-    <Compile Include="HeMeshFromFile.cs" />
-    <Compile Include="Paths.cs" />
-    <Compile Include="PlanarizeHeMesh.cs" />
-    <Compile Include="PlanarizeQuad.cs" />
+    <Compile Include="Console\Program.cs" />
+    <Compile Include="Console\HeMeshFromFile.cs" />
+    <Compile Include="Console\Paths.cs" />
+    <Compile Include="Console\PlanarizeHeMesh.cs" />
+    <Compile Include="Console\PlanarizeQuad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpatialSlur\SpatialSlur.csproj">
+      <Project>{b57af965-5201-4215-8077-50b3cc8b1f6b}</Project>
+      <Name>SpatialSlur</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
