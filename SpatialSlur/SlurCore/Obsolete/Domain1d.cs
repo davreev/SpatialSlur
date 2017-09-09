@@ -11,6 +11,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// Represents a double precision numerical domain.
     /// </summary>
+    [Obsolete("Renamed to Interval1d")]
     [Serializable]
     public struct Domain1d
     {
@@ -20,6 +21,16 @@ namespace SpatialSlur.SlurCore
         public static readonly Domain1d Zero = new Domain1d();
         /// <summary></summary>
         public static readonly Domain1d Unit = new Domain1d(0.0, 1.0);
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="domain"></param>
+        public static implicit operator Interval1d(Domain1d domain)
+        {
+            return new Interval1d(domain.T0, domain.T1);
+        }
 
 
         /// <summary>

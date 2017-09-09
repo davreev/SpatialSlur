@@ -20,9 +20,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="random"></param>
         /// <returns></returns>
-        public static Domain1d NextDomain(this Random random)
+        public static Interval1d NextInterval(this Random random)
         {
-            return new Domain1d(random.NextDouble(), random.NextDouble());
+            return new Interval1d(random.NextDouble(), random.NextDouble());
         }
 
 
@@ -37,7 +37,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a random vector which has components within the given domain.
+        /// Returns a random vector which has components within the given interval.
         /// </summary>
         /// <param name="random"></param>
         /// <param name="t0"></param>
@@ -52,30 +52,30 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a random 2d vector which has components within the given domain
+        /// Returns a random 2d vector which has components within the given interval
         /// </summary>
         /// <param name="random"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static Vec2d NextVec2d(this Random random, Domain1d domain)
+        public static Vec2d NextVec2d(this Random random, Interval1d interval)
         {
             return new Vec2d(
-                domain.Evaluate(random.NextDouble()),
-                domain.Evaluate(random.NextDouble()));
+                interval.Evaluate(random.NextDouble()),
+                interval.Evaluate(random.NextDouble()));
         }
 
 
         /// <summary>
-        /// Returns a random 2d vector which has components within the given domain
+        /// Returns a random 2d vector which has components within the given interval
         /// </summary>
         /// <param name="random"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static Vec2d NextVec2d(this Random random, Domain2d domain)
+        public static Vec2d NextVec2d(this Random random, Interval2d interval)
         {
             return new Vec2d(
-                domain.X.Evaluate(random.NextDouble()),
-                domain.Y.Evaluate(random.NextDouble()));
+                interval.X.Evaluate(random.NextDouble()),
+                interval.Y.Evaluate(random.NextDouble()));
         }
 
 
@@ -90,7 +90,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a random vector which has components within the given domain.
+        /// Returns a random vector which has components within the given interval.
         /// </summary>
         /// <param name="random"></param>
         /// <param name="t0"></param>
@@ -106,32 +106,32 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a random vector which has components within the given domain.
+        /// Returns a random vector which has components within the given interval.
         /// </summary>
         /// <param name="random"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static Vec3d NextVec3d(this Random random, Domain1d domain)
+        public static Vec3d NextVec3d(this Random random, Interval1d interval)
         {
             return new Vec3d(
-                domain.Evaluate(random.NextDouble()),
-                domain.Evaluate(random.NextDouble()),
-                domain.Evaluate(random.NextDouble()));
+                interval.Evaluate(random.NextDouble()),
+                interval.Evaluate(random.NextDouble()),
+                interval.Evaluate(random.NextDouble()));
         }
 
 
         /// <summary>
-        /// Returns a random vector which has components within the given domain.
+        /// Returns a random vector which has components within the given interval.
         /// </summary>
         /// <param name="random"></param>
-        /// <param name="domain"></param>
+        /// <param name="interval"></param>
         /// <returns></returns>
-        public static Vec3d NextVec3d(this Random random, Domain3d domain)
+        public static Vec3d NextVec3d(this Random random, Interval3d interval)
         {
             return new Vec3d(
-                domain.X.Evaluate(random.NextDouble()),
-                domain.Y.Evaluate(random.NextDouble()),
-                domain.Z.Evaluate(random.NextDouble()));
+                interval.X.Evaluate(random.NextDouble()),
+                interval.Y.Evaluate(random.NextDouble()),
+                interval.Z.Evaluate(random.NextDouble()));
         }
 
 

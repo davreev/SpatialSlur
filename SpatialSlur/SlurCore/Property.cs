@@ -58,7 +58,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name=""></param>
+        /// <param name="item"></param>
         /// <returns></returns>
         V IReadOnlyProperty<T, V>.Get(T item)
         {
@@ -68,8 +68,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name=""></param>
-        /// <returns></returns>
+        /// <param name="item"></param>
+        /// <param name="value"></param>
         void IProperty<T, V>.Set(T item, V value)
         {
             Set(item, value);

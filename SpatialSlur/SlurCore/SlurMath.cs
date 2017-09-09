@@ -59,7 +59,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// remaps a number from one  domain to another
+        /// Maps a number from one interval to another
         /// </summary>
         /// <param name="t"></param>
         /// <param name="a0"></param>
@@ -262,7 +262,7 @@ namespace SpatialSlur.SlurCore
         
 
         /// <summary>
-        /// Wraps t to the domain.
+        /// Wraps t to the given interval.
         /// </summary>
         /// <param name="t"></param>
         /// <param name="t0"></param>
@@ -275,7 +275,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Wraps t to the domain defined by t0 and t1.
+        /// Wraps t to the given interval.
         /// </summary>
         /// <param name="t"></param>
         /// <param name="t0"></param>

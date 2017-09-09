@@ -26,6 +26,18 @@ namespace SpatialSlur.SlurCore
         public static readonly Vec2d UnitY = new Vec2d(0.0, 1.0);
 
 
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tuple"></param>
+        public static implicit operator Vec2d((double, double) tuple)
+        {
+            return new Vec2d(tuple.Item1, tuple.Item2);
+        }
+        */
+
+
         /// <summary>
         /// 
         /// </summary>

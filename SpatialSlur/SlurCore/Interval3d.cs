@@ -9,17 +9,17 @@ using System.Linq;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents a double precision numerical domain in 2 dimensions.
+    /// Represents a double precision interval in 3 dimensions.
     /// </summary>
     [Serializable]
-    public struct Domain2d
+    public struct Interval3d
     {
         #region Static
 
         /// <summary></summary>
-        public static readonly Domain2d Zero = new Domain2d();
+        public static readonly Interval3d Zero = new Interval3d();
         /// <summary></summary>
-        public static readonly Domain2d Unit = new Domain2d(0.0, 1.0, 0.0, 1.0);
+        public static readonly Interval3d Unit = new Interval3d(0.0, 1.0, 0.0, 1.0, 0.0, 1.0);
 
 
         /// <summary>
@@ -28,10 +28,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static Domain2d operator +(Domain2d d, Vec2d v)
+        public static Interval3d operator +(Interval3d d, Vec3d v)
         {
             d.X.Translate(v.X);
             d.Y.Translate(v.Y);
+            d.Z.Translate(v.Z);
             return d;
         }
 
@@ -42,10 +43,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static Domain2d operator -(Domain2d d, Vec2d v)
+        public static Interval3d operator -(Interval3d d, Vec3d v)
         {
             d.X.Translate(-v.X);
             d.Y.Translate(-v.Y);
+            d.Z.Translate(-v.Z);
             return d;
         }
 
@@ -56,10 +58,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain2d operator *(Domain2d d, double t)
+        public static Interval3d operator *(Interval3d d, double t)
         {
             d.X.Scale(t);
             d.Y.Scale(t);
+            d.Z.Scale(t);
             return d;
         }
 
@@ -70,10 +73,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         /// <param name="d"></param>
         /// <returns></returns>
-        public static Domain2d operator *(double t, Domain2d d)
+        public static Interval3d operator *(double t, Interval3d d)
         {
             d.X.Scale(t);
             d.Y.Scale(t);
+            d.Z.Scale(t);
             return d;
         }
 
@@ -84,11 +88,12 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain2d operator /(Domain2d d, double t)
+        public static Interval3d operator /(Interval3d d, double t)
         {
             t = 1.0 / t;
             d.X.Scale(t);
             d.Y.Scale(t);
+            d.Z.Scale(t);
             return d;
         }
 
@@ -100,10 +105,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        public static Vec2d Remap(Vec2d point, Domain2d from, Domain2d to)
+        public static Vec3d Remap(Vec3d point, Interval3d from, Interval3d to)
         {
-            point.X = Domain1d.Remap(point.X, from.X, to.X);
-            point.Y = Domain1d.Remap(point.Y, from.Y, to.Y);
+            point.X = Interval1d.Remap(point.X, from.X, to.X);
+            point.Y = Interval1d.Remap(point.Y, from.Y, to.Y);
+            point.Y = Interval1d.Remap(point.Z, from.Z, to.Z);
             return point;
         }
 
@@ -114,10 +120,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="d0"></param>
         /// <param name="d1"></param>
         /// <returns></returns>
-        public static Domain2d Intersect(Domain2d d0, Domain2d d1)
+        public static Interval3d Intersect(Interval3d d0, Interval3d d1)
         {
-            d0.X = Domain1d.Intersect(d0.X, d1.X);
-            d0.Y = Domain1d.Intersect(d0.Y, d1.Y);
+            d0.X = Interval1d.Intersect(d0.X, d1.X);
+            d0.Y = Interval1d.Intersect(d0.Y, d1.Y);
+            d0.Z = Interval1d.Intersect(d0.Z, d1.Z);
             return d0;
         }
 
@@ -128,10 +135,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain2d Union(Domain2d a, Domain2d b)
+        public static Interval3d Union(Interval3d a, Interval3d b)
         {
-            a.X = Domain1d.Union(a.X, b.X);
-            a.Y = Domain1d.Union(a.Y, b.Y);
+            a.X = Interval1d.Union(a.X, b.X);
+            a.Y = Interval1d.Union(a.Y, b.Y);
+            a.Z = Interval1d.Union(a.Z, b.Z);
             return a;
         }
 
@@ -141,29 +149,20 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="d"></param>
         /// <returns></returns>
-        public static implicit operator Domain2d(Domain3d d)
+        public static implicit operator Interval3d(Interval2d d)
         {
-            return new Domain2d(d.X, d.Y);
+            return new Interval3d(d.X, d.Y, new Interval1d());
         }
 
         #endregion
 
 
         /// <summary></summary>
-        public Domain1d X;
+        public Interval1d X;
         /// <summary></summary>
-        public Domain1d Y;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        public Domain2d(Vec2d point)
-        {
-            X = new Domain1d(point.X);
-            Y = new Domain1d(point.Y);
-        }
+        public Interval1d Y;
+        /// <summary></summary>
+        public Interval1d Z;
 
 
         /// <summary>
@@ -171,22 +170,37 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        public Domain2d(Domain1d x, Domain1d y)
+        /// <param name="z"></param>
+        public Interval3d(Interval1d x, Interval1d y, Interval1d z)
         {
             this.X = x;
             this.Y = y;
+            this.Z = z;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        public Domain2d(Vec2d from, Vec2d to)
+        /// <param name="ab"></param>
+        public Interval3d(Vec3d ab)
         {
-            X = new Domain1d(from.X, to.X);
-            Y = new Domain1d(from.Y, to.Y);
+            X = new Interval1d(ab.X);
+            Y = new Interval1d(ab.Y);
+            Z = new Interval1d(ab.Z);
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        public Interval3d(Vec3d a, Vec3d b)
+        {
+            X = new Interval1d(a.X, b.X);
+            Y = new Interval1d(a.Y, b.Y);
+            Z = new Interval1d(a.Z, b.Z);
         }
 
 
@@ -195,8 +209,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="center"></param>
         /// <param name="offset"></param>
-        public Domain2d(Vec2d center, double offset)
-           : this(center, offset, offset)
+        public Interval3d(Vec3d center, double offset)
+           : this(center, offset, offset, offset)
         {
         }
 
@@ -207,10 +221,12 @@ namespace SpatialSlur.SlurCore
         /// <param name="center"></param>
         /// <param name="offsetX"></param>
         /// <param name="offsetY"></param>
-        public Domain2d(Vec2d center, double offsetX, double offsetY)
+        /// <param name="offsetZ"></param>
+        public Interval3d(Vec3d center, double offsetX, double offsetY, double offsetZ)
         {
-            X = new Domain1d(center.X - offsetX, center.X + offsetX);
-            Y = new Domain1d(center.Y - offsetY, center.Y + offsetY);
+            X = new Interval1d(center.X - offsetX, center.X + offsetX);
+            Y = new Interval1d(center.Y - offsetY, center.Y + offsetY);
+            Z = new Interval1d(center.Z - offsetZ, center.Z + offsetZ);
         }
 
 
@@ -221,10 +237,13 @@ namespace SpatialSlur.SlurCore
         /// <param name="x1"></param>
         /// <param name="y0"></param>
         /// <param name="y1"></param>
-        public Domain2d(double x0, double x1, double y0, double y1)
+        /// <param name="z0"></param>
+        /// <param name="z1"></param>
+        public Interval3d(double x0, double x1, double y0, double y1, double z0, double z1)
         {
-            X = new Domain1d(x0, x1);
-            Y = new Domain1d(y0, y1);
+            X = new Interval1d(x0, x1);
+            Y = new Interval1d(y0, y1);
+            Z = new Interval1d(z0, z1);
         }
 
 
@@ -232,12 +251,13 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        public Domain2d(IEnumerable<Vec2d> points)
+        public Interval3d(IEnumerable<Vec3d> points)
             : this()
         {
             var p = points.First();
-            X = new Domain1d(p.X);
-            Y = new Domain1d(p.Y);
+            X = new Interval1d(p.X);
+            Y = new Interval1d(p.Y);
+            Z = new Interval1d(p.Z);
 
             Include(points.Skip(1));
         }
@@ -248,7 +268,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsIncreasing
         {
-            get { return X.IsIncreasing && Y.IsIncreasing; }
+            get { return X.IsIncreasing && Y.IsIncreasing && Z.IsIncreasing; }
         }
 
 
@@ -257,7 +277,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsDecreasing
         {
-            get { return X.IsDecreasing && Y.IsDecreasing; }
+            get { return X.IsDecreasing && Y.IsDecreasing && Z.IsDecreasing; }
         }
 
 
@@ -266,20 +286,21 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsValid
         {
-            get { return X.IsValid && Y.IsValid; }
+            get { return X.IsValid && Y.IsValid && Z.IsValid; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public Vec2d From
+        public Vec3d A
         {
-            get { return new Vec2d(X.T0, Y.T0); }
+            get { return new Vec3d(X.A, Y.A, Z.A); }
             set
             {
-                X.T0 = value.X;
-                Y.T0 = value.Y;
+                X.A = value.X;
+                Y.A = value.Y;
+                Z.A = value.Z;
             }
         }
 
@@ -287,50 +308,51 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public Vec2d To
+        public Vec3d B
         {
-            get { return new Vec2d(X.T1, Y.T1); }
+            get { return new Vec3d(X.B, Y.B, Z.B); }
             set
             {
-                X.T1 = value.X;
-                Y.T1 = value.Y;
+                X.B = value.X;
+                Y.B = value.Y;
+                Z.B = value.Z;
             }
         }
 
 
         /// <summary>
-        /// 
+        /// Defined as B - A
         /// </summary>
-        public Vec2d Span
+        public Vec3d Length
         {
-            get { return new Vec2d(X.Span, Y.Span); }
+            get { return new Vec3d(X.Length, Y.Length, Z.Length); }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public Vec2d Mid
+        public Vec3d Mid
         {
-            get { return new Vec2d(X.Mid, Y.Mid); }
+            get { return new Vec3d(X.Mid, Y.Mid, Z.Mid); }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public Vec2d Min
+        public Vec3d Min
         {
-            get { return new Vec2d(X.Min, Y.Min); }
+            get { return new Vec3d(X.Min, Y.Min, Z.Min); }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public Vec2d Max
+        public Vec3d Max
         {
-            get { return new Vec2d(X.Max, Y.Max); }
+            get { return new Vec3d(X.Max, Y.Max, Z.Max); }
         }
 
 
@@ -340,7 +362,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("({0} to {1}, {2} to {3})", X.T0, X.T1, Y.T0, Y.T1);
+            return String.Format("({0} to {1}, {2} to {3}, {4} to {5})", X.A, X.B, Y.A, Y.B, Z.A, Z.B);
         }
 
 
@@ -350,9 +372,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Domain2d other, double tolerance)
+        public bool ApproxEquals(Interval3d other, double tolerance)
         {
-            return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance);
+            return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance) && Z.ApproxEquals(other.Z, tolerance);
         }
 
 
@@ -361,10 +383,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vec2d Evaluate(Vec2d point)
+        public Vec3d Evaluate(Vec3d point)
         {
             point.X = X.Evaluate(point.X);
             point.Y = Y.Evaluate(point.Y);
+            point.Z = Z.Evaluate(point.Z);
             return point;
         }
 
@@ -374,10 +397,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vec2d Normalize(Vec2d point)
+        public Vec3d Normalize(Vec3d point)
         {
             point.X = X.Normalize(point.X);
             point.Y = Y.Normalize(point.Y);
+            point.Z = Z.Normalize(point.Z);
             return point;
         }
 
@@ -387,10 +411,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vec2d Clamp(Vec2d point)
+        public Vec3d Clamp(Vec3d point)
         {
             point.X = X.Clamp(point.X);
             point.Y = Y.Clamp(point.Y);
+            point.Z = Z.Clamp(point.Z);
             return point;
         }
 
@@ -400,10 +425,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vec2d Wrap(Vec2d point)
+        public Vec3d Wrap(Vec3d point)
         {
             point.X = X.Wrap(point.X);
             point.Y = Y.Wrap(point.Y);
+            point.Z = Z.Wrap(point.Z);
             return point;
         }
 
@@ -413,9 +439,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public bool Contains(Vec2d point)
+        public bool Contains(Vec3d point)
         {
-            return X.Contains(point.X) && Y.Contains(point.Y);
+            return X.Contains(point.X) && Y.Contains(point.Y) && Z.Contains(point.Z);
         }
 
 
@@ -424,9 +450,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public bool ContainsIncl(Vec2d point)
+        public bool ContainsIncl(Vec3d point)
         {
-            return X.ContainsIncl(point.X) && Y.ContainsIncl(point.Y);
+            return X.ContainsIncl(point.X) && Y.ContainsIncl(point.Y) && Z.ContainsIncl(point.Z);
         }
 
 
@@ -434,10 +460,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="delta"></param>
-        public void Translate(Vec2d delta)
+        public void Translate(Vec3d delta)
         {
             X.Translate(delta.X);
             Y.Translate(delta.Y);
+            Z.Translate(delta.Z);
         }
 
 
@@ -449,6 +476,7 @@ namespace SpatialSlur.SlurCore
         {
             X.Expand(delta);
             Y.Expand(delta);
+            Z.Expand(delta);
         }
 
 
@@ -456,10 +484,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="delta"></param>
-        public void Expand(Vec2d delta)
+        public void Expand(Vec3d delta)
         {
             X.Expand(delta.X);
             Y.Expand(delta.Y);
+            Z.Expand(delta.Z);
         }
 
 
@@ -467,10 +496,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="point"></param>
-        public void Include(Vec2d point)
+        public void Include(Vec3d point)
         {
             X.Include(point.X);
             Y.Include(point.Y);
+            Z.Include(point.Z);
         }
 
 
@@ -478,10 +508,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public void Include(Domain2d other)
+        public void Include(Interval3d other)
         {
             X.Include(other.X);
             Y.Include(other.Y);
+            Z.Include(other.Z);
         }
 
 
@@ -489,12 +520,13 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="points"></param>
-        public void Include(IEnumerable<Vec2d> points)
+        public void Include(IEnumerable<Vec3d> points)
         {
             X.Include(points.Select(p => p.X));
             Y.Include(points.Select(p => p.Y));
+            Z.Include(points.Select(p => p.Z));
         }
-  
+
 
         /// <summary>
         /// 
@@ -503,6 +535,7 @@ namespace SpatialSlur.SlurCore
         {
             X.Reverse();
             Y.Reverse();
+            Z.Reverse();
         }
 
 
@@ -513,6 +546,7 @@ namespace SpatialSlur.SlurCore
         {
             X.MakeIncreasing();
             Y.MakeIncreasing();
+            Z.MakeIncreasing();
         }
 
 
@@ -523,6 +557,7 @@ namespace SpatialSlur.SlurCore
         {
             X.MakeDecreasing();
             Y.MakeDecreasing();
+            Z.MakeDecreasing();
         }
     }
 }

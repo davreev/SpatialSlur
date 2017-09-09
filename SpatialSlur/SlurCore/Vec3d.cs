@@ -30,6 +30,18 @@ namespace SpatialSlur.SlurCore
         public static readonly Vec3d UnitZ = new Vec3d(0.0, 0.0, 1.0);
 
 
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tuple"></param>
+        public static implicit operator Vec3d((double, double, double) tuple)
+        {
+            return new Vec3d(tuple.Item1, tuple.Item2, tuple.Item3);
+        }
+        */
+
+
         /// <summary>
         /// 
         /// </summary>

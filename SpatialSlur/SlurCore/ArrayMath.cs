@@ -18,6 +18,134 @@ namespace SpatialSlur.SlurCore
     /// </summary>
     public static class ArrayMath
     {
+        #region T[]
+
+
+        /// <summary>
+        /// Sets the result to some function of the given vector.
+        /// </summary>
+        public static void Function<T, U>(T[] vector, Func<T, U> func, U[] result)
+        {
+            Function(vector, vector.Length, func, result);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the given vector.
+        /// </summary>
+        public static void Function<T, U>(T[] vector, int count, Func<T, U> func, U[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = func(vector[i]);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the 2 given vectors.
+        /// </summary>
+        public static void Function<T0, T1, U>(T0[] v0, T1[] v1, Func<T0, T1, U> func, U[] result)
+        {
+            Function(v0, v1, v0.Length, func, result);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the 2 given vectors.
+        /// </summary>
+        public static void Function<T0, T1, U>(T0[] v0, T1[] v1, int count, Func<T0, T1, U> func, U[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = func(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the 3 given vectors.
+        /// </summary>
+        public static void Function<T0, T1, T2, U>(T0[] v0, T1[] v1, T2[] v2, Func<T0, T1, T2, U> func, U[] result)
+        {
+            Function(v0, v1, v2, v0.Length, func, result);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the 3 given vectors.
+        /// </summary>
+        public static void Function<T0, T1, T2, U>(T0[] v0, T1[] v1, T2[] v2, int count, Func<T0, T1, T2, U> func, U[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = func(v0[i], v1[i], v2[i]);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the given vector.
+        /// </summary>
+        public static void FunctionParallel<T, U>(T[] vector, Func<T, U> func, U[] result)
+        {
+            FunctionParallel(vector, vector.Length, func, result);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the given vector.
+        /// </summary>
+        public static void FunctionParallel<T, U>(T[] vector, int count, Func<T, U> func, U[] result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    result[i] = func(vector[i]);
+            });
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the 2 given vectors.
+        /// </summary>
+        public static void FunctionParallel<T0, T1, U>(T0[] v0, T1[] v1, Func<T0, T1, U> func, U[] result)
+        {
+            FunctionParallel(v0, v1, v0.Length, func, result);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of the 2 given vectors.
+        /// </summary>
+        public static void FunctionParallel<T0, T1, U>(T0[] v0, T1[] v1, int count, Func<T0, T1, U> func, U[] result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    result[i] = func(v0[i], v1[i]);
+            });
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of 3 given vectors.
+        /// </summary>
+        public static void FunctionParallel<T0, T1, T2, U>(T0[] v0, T1[] v1, T2[] v2, Func<T0, T1, T2, U> func, U[] result)
+        {
+            FunctionParallel(v0, v1, v2, v0.Length, func, result);
+        }
+
+
+        /// <summary>
+        /// Sets the result to some function of 3 given vectors.
+        /// </summary>
+        public static void FunctionParallel<T0, T1, T2, U>(T0[] v0, T1[] v1, T2[] v2, int count, Func<T0, T1, T2, U> func, U[] result)
+        {
+            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            {
+                for (int i = range.Item1; i < range.Item2; i++)
+                    result[i] = func(v0[i], v1[i], v2[i]);
+            });
+        }
+
+        #endregion
+
+
         #region double[]
 
         /// <summary>
@@ -1457,40 +1585,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(double[] vector, Domain1d domain, double[] result)
+        public static void Normalize(double[] vector, Interval1d interval, double[] result)
         {
-            Normalize(vector, domain, vector.Length, result);
+            Normalize(vector, interval, vector.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(double[] vector, Domain1d domain, int count, double[] result)
+        public static void Normalize(double[] vector, Interval1d interval, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = domain.Normalize(vector[i]);
+                result[i] = interval.Normalize(vector[i]);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void NormalizeParallel(double[] vector, Domain1d domain, double[] result)
+        public static void NormalizeParallel(double[] vector, Interval1d interval, double[] result)
         {
-            NormalizeParallel(vector, domain, vector.Length, result);
+            NormalizeParallel(vector, interval, vector.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void NormalizeParallel(double[] vector, Domain1d domain, int count, double[] result)
+        public static void NormalizeParallel(double[] vector, Interval1d interval, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = domain.Normalize(vector[i]);
+                    result[i] = interval.Normalize(vector[i]);
             });
         }
 
@@ -1498,40 +1626,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(double[] vector, Domain1d domain, double[] result)
+        public static void Evaluate(double[] vector, Interval1d interval, double[] result)
         {
-            Evaluate(vector, domain, vector.Length, result);
+            Evaluate(vector, interval, vector.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(double[] vector, Domain1d domain, int count, double[] result)
+        public static void Evaluate(double[] vector, Interval1d interval, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = domain.Evaluate(vector[i]);
+                result[i] = interval.Evaluate(vector[i]);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void EvaluateParallel(double[] vector, Domain1d domain, double[] result)
+        public static void EvaluateParallel(double[] vector, Interval1d interval, double[] result)
         {
-            EvaluateParallel(vector, domain, vector.Length, result);
+            EvaluateParallel(vector, interval, vector.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void EvaluateParallel(double[] vector, Domain1d domain, int count, double[] result)
+        public static void EvaluateParallel(double[] vector, Interval1d interval, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = domain.Evaluate(vector[i]);
+                    result[i] = interval.Evaluate(vector[i]);
             });
         }
 
@@ -1539,7 +1667,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(double[] vector, Domain1d from, Domain1d to, double[] result)
+        public static void Remap(double[] vector, Interval1d from, Interval1d to, double[] result)
         {
             Remap(vector, from, to, vector.Length, result);
         }
@@ -1548,17 +1676,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(double[] vector, Domain1d from, Domain1d to, int count, double[] result)
+        public static void Remap(double[] vector, Interval1d from, Interval1d to, int count, double[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = Domain1d.Remap(vector[i], from, to);
+                result[i] = Interval1d.Remap(vector[i], from, to);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void RemapParallel(double[] vector, Domain1d from, Domain1d to, double[] result)
+        public static void RemapParallel(double[] vector, Interval1d from, Interval1d to, double[] result)
         {
             RemapParallel(vector, from, to, vector.Length, result);
         }
@@ -1567,12 +1695,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void RemapParallel(double[] vector, Domain1d from, Domain1d to, int count, double[] result)
+        public static void RemapParallel(double[] vector, Interval1d from, Interval1d to, int count, double[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, vector.Length), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = Domain1d.Remap(vector[i], from, to);
+                    result[i] = Interval1d.Remap(vector[i], from, to);
             });
         }
 
@@ -3224,40 +3352,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(Vec2d[] vectors, Domain2d domain, Vec2d[] result)
+        public static void Normalize(Vec2d[] vectors, Interval2d interval, Vec2d[] result)
         {
-            Normalize(vectors, domain, vectors.Length, result);
+            Normalize(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(Vec2d[] vectors, Domain2d domain, int count, Vec2d[] result)
+        public static void Normalize(Vec2d[] vectors, Interval2d interval, int count, Vec2d[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = domain.Normalize(vectors[i]);
+                result[i] = interval.Normalize(vectors[i]);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void NormalizeParallel(Vec2d[] vectors, Domain2d domain, Vec2d[] result)
+        public static void NormalizeParallel(Vec2d[] vectors, Interval2d interval, Vec2d[] result)
         {
-            NormalizeParallel(vectors, domain, vectors.Length, result);
+            NormalizeParallel(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void NormalizeParallel(Vec2d[] vectors, Domain2d domain, int count, Vec2d[] result)
+        public static void NormalizeParallel(Vec2d[] vectors, Interval2d interval, int count, Vec2d[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = domain.Normalize(vectors[i]);
+                    result[i] = interval.Normalize(vectors[i]);
             });
         }
 
@@ -3265,40 +3393,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(Vec2d[] vectors, Domain2d domain, Vec2d[] result)
+        public static void Evaluate(Vec2d[] vectors, Interval2d interval, Vec2d[] result)
         {
-            Evaluate(vectors, domain, vectors.Length, result);
+            Evaluate(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(Vec2d[] vectors, Domain2d domain, int count, Vec2d[] result)
+        public static void Evaluate(Vec2d[] vectors, Interval2d interval, int count, Vec2d[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = domain.Evaluate(vectors[i]);
+                result[i] = interval.Evaluate(vectors[i]);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void EvaluateParallel(Vec2d[] vectors, Domain2d domain, Vec2d[] result)
+        public static void EvaluateParallel(Vec2d[] vectors, Interval2d interval, Vec2d[] result)
         {
-            EvaluateParallel(vectors, domain, vectors.Length, result);
+            EvaluateParallel(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void EvaluateParallel(Vec2d[] vectors, Domain2d domain, int count, Vec2d[] result)
+        public static void EvaluateParallel(Vec2d[] vectors, Interval2d interval, int count, Vec2d[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = domain.Evaluate(vectors[i]);
+                    result[i] = interval.Evaluate(vectors[i]);
             });
         }
 
@@ -3306,7 +3434,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(Vec2d[] vectors, Domain2d from, Domain2d to, Vec2d[] result)
+        public static void Remap(Vec2d[] vectors, Interval2d from, Interval2d to, Vec2d[] result)
         {
             Remap(vectors, from, to, vectors.Length, result);
         }
@@ -3315,17 +3443,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(Vec2d[] vectors, Domain2d from, Domain2d to, int count, Vec2d[] result)
+        public static void Remap(Vec2d[] vectors, Interval2d from, Interval2d to, int count, Vec2d[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = Domain2d.Remap(vectors[i], from, to);
+                result[i] = Interval2d.Remap(vectors[i], from, to);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void RemapParallel(Vec2d[] vectors, Domain2d from, Domain2d to, Vec2d[] result)
+        public static void RemapParallel(Vec2d[] vectors, Interval2d from, Interval2d to, Vec2d[] result)
         {
             RemapParallel(vectors, from, to, vectors.Length, result);
         }
@@ -3334,12 +3462,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void RemapParallel(Vec2d[] vectors, Domain2d from, Domain2d to, int count, Vec2d[] result)
+        public static void RemapParallel(Vec2d[] vectors, Interval2d from, Interval2d to, int count, Vec2d[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = Domain2d.Remap(vectors[i], from, to);
+                    result[i] = Interval2d.Remap(vectors[i], from, to);
             });
         }
 
@@ -4991,40 +5119,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(Vec3d[] vectors, Domain3d domain, Vec3d[] result)
+        public static void Normalize(Vec3d[] vectors, Interval3d interval, Vec3d[] result)
         {
-            Normalize(vectors, domain, vectors.Length, result);
+            Normalize(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(Vec3d[] vectors, Domain3d domain, int count, Vec3d[] result)
+        public static void Normalize(Vec3d[] vectors, Interval3d interval, int count, Vec3d[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = domain.Normalize(vectors[i]);
+                result[i] = interval.Normalize(vectors[i]);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void NormalizeParallel(Vec3d[] vectors, Domain3d domain, Vec3d[] result)
+        public static void NormalizeParallel(Vec3d[] vectors, Interval3d interval, Vec3d[] result)
         {
-            NormalizeParallel(vectors, domain, vectors.Length, result);
+            NormalizeParallel(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void NormalizeParallel(Vec3d[] vectors, Domain3d domain, int count, Vec3d[] result)
+        public static void NormalizeParallel(Vec3d[] vectors, Interval3d interval, int count, Vec3d[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = domain.Normalize(vectors[i]);
+                    result[i] = interval.Normalize(vectors[i]);
             });
         }
 
@@ -5032,40 +5160,40 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(Vec3d[] vectors, Domain3d domain, Vec3d[] result)
+        public static void Evaluate(Vec3d[] vectors, Interval3d interval, Vec3d[] result)
         {
-            Evaluate(vectors, domain, vectors.Length, result);
+            Evaluate(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(Vec3d[] vectors, Domain3d domain, int count, Vec3d[] result)
+        public static void Evaluate(Vec3d[] vectors, Interval3d interval, int count, Vec3d[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = domain.Evaluate(vectors[i]);
+                result[i] = interval.Evaluate(vectors[i]);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void EvaluateParallel(Vec3d[] vectors, Domain3d domain, Vec3d[] result)
+        public static void EvaluateParallel(Vec3d[] vectors, Interval3d interval, Vec3d[] result)
         {
-            EvaluateParallel(vectors, domain, vectors.Length, result);
+            EvaluateParallel(vectors, interval, vectors.Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void EvaluateParallel(Vec3d[] vectors, Domain3d domain, int count, Vec3d[] result)
+        public static void EvaluateParallel(Vec3d[] vectors, Interval3d interval, int count, Vec3d[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = domain.Evaluate(vectors[i]);
+                    result[i] = interval.Evaluate(vectors[i]);
             });
         }
 
@@ -5073,7 +5201,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(Vec3d[] vectors, Domain3d from, Domain3d to, Vec3d[] result)
+        public static void Remap(Vec3d[] vectors, Interval3d from, Interval3d to, Vec3d[] result)
         {
             Remap(vectors, from, to, vectors.Length, result);
         }
@@ -5082,17 +5210,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(Vec3d[] vectors, Domain3d from, Domain3d to, int count, Vec3d[] result)
+        public static void Remap(Vec3d[] vectors, Interval3d from, Interval3d to, int count, Vec3d[] result)
         {
             for (int i = 0; i < count; i++)
-                result[i] = Domain3d.Remap(vectors[i], from, to);
+                result[i] = Interval3d.Remap(vectors[i], from, to);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void RemapParallel(Vec3d[] vectors, Domain3d from, Domain3d to, Vec3d[] result)
+        public static void RemapParallel(Vec3d[] vectors, Interval3d from, Interval3d to, Vec3d[] result)
         {
             RemapParallel(vectors, from, to, vectors.Length, result);
         }
@@ -5101,12 +5229,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void RemapParallel(Vec3d[] vectors, Domain3d from, Domain3d to, int count, Vec3d[] result)
+        public static void RemapParallel(Vec3d[] vectors, Interval3d from, Interval3d to, int count, Vec3d[] result)
         {
             Parallel.ForEach(Partitioner.Create(0, count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
-                    result[i] = Domain3d.Remap(vectors[i], from, to);
+                    result[i] = Interval3d.Remap(vectors[i], from, to);
             });
         }
 

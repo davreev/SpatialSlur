@@ -30,6 +30,18 @@ namespace SpatialSlur.SlurCore
         public static Vec4d UnitW = new Vec4d(0.0, 0.0, 0.0, 1.0);
 
 
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tuple"></param>
+        public static implicit operator Vec4d((double, double, double, double) tuple)
+        {
+            return new Vec4d(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
+        }
+        */
+
+
         /// <summary>
         /// 
         /// </summary>
