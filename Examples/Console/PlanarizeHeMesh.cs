@@ -20,8 +20,8 @@ namespace SpatialSlur.Examples
     /// </summary>
     static class PlanarizeHeMesh
     {
-        const string FileIn = "chair_smooth.obj";
-        const string FileOut = "chair_planar.obj";
+        const string _fileIn = "chair_smooth.obj";
+        const string _fileOut = "chair_planar.obj";
 
 
         /// <summary>
@@ -29,9 +29,8 @@ namespace SpatialSlur.Examples
         /// </summary>
         public static void Run()
         {
-            var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + FileIn);
-            var verts = mesh.Vertices;
-            var faces = mesh.Halfedges;
+            // import halfedge mesh
+            var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + _fileIn);
 
             // create particles
             var particles = mesh.Vertices.Select(v => new Particle(v.Position)).ToArray();
@@ -57,12 +56,12 @@ namespace SpatialSlur.Examples
             Console.WriteLine("\nSolver converged! Press return to exit.");
 
             // update mesh vertices
-            verts.Action(v => v.Position = particles[v.Index].Position);
-            // verts.Action(v => v.Position = particles[v].Position); // mesh elements (vertices, halfedges, faces) are converted to their indices implicitly so this also works
+            mesh.Vertices.Action(v => v.Position = particles[v.Index].Position);
+            // mesh.Vertices.Action(v => v.Position = particles[v].Position); // mesh elements (vertices, halfedges, faces) are converted to their indices implicitly so this also works
 
             // compute vertex normals & write to file
             mesh.GetVertexNormals(v => v.Position, (v, n) => v.Normal = n, true);
-            mesh.WriteToOBJ(Paths.Resources + FileOut);
+            mesh.WriteToOBJ(Paths.Resources + _fileOut);
             Console.ReadLine();
         }
     }

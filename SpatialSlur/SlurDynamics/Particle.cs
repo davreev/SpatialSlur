@@ -115,7 +115,7 @@ namespace SpatialSlur.SlurDynamics
 
         #region Explicit interface implementations
 
-        private static readonly string _message = "This implementation of IBody does not support rotation.";
+        private const string _message = "This implementation of IBody does not support rotation.";
 
 
         /// <summary>

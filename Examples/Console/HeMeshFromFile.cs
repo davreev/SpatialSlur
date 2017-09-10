@@ -19,8 +19,8 @@ namespace SpatialSlur.Examples
     /// </summary>
     static class HeMeshFromFile
     {
-        const string FileIn = "face.obj";
-        const string FileOut = "face_mapped.obj";
+        const string _fileIn = "face.obj";
+        const string _fileOut = "face_mapped.obj";
 
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace SpatialSlur.Examples
         /// <param name="args"></param>
         public static void Run()
         {
-            var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + FileIn);
+            var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + _fileIn);
 
             double scale = 0.5;
             double offset = scale * Math.PI * 0.25;
@@ -47,7 +47,7 @@ namespace SpatialSlur.Examples
             
             // compute vertex normals & write to file
             mesh.GetVertexNormals(v => v.Position, (v, n) => v.Normal = n);
-            mesh.WriteToOBJ(Paths.Resources + FileOut);
+            mesh.WriteToOBJ(Paths.Resources + _fileOut);
 
             Console.WriteLine("File written successfully. Press return to exit.");
             Console.ReadLine();
