@@ -1,4 +1,5 @@
 ﻿using System;
+using SpatialSlur.SlurCore;
 
 /*
  * Notes
@@ -14,6 +15,17 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static double Gyroid(Vec3d point)
+        {
+            return Gyroid(point.X, point.Y, point.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
@@ -21,6 +33,17 @@ namespace SpatialSlur.SlurField
         public static double Gyroid(double x, double y, double z)
         {
             return Math.Sin(x) * Math.Cos(y) + Math.Sin(y) * Math.Cos(z) + Math.Sin(z) * Math.Cos(x);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static double Diamond(Vec3d point)
+        {
+            return Diamond(point.X, point.Y, point.Z);
         }
 
 
@@ -48,6 +71,17 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static double Neovius(Vec3d point)
+        {
+            return Neovius(point.X, point.Y, point.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
@@ -65,6 +99,17 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static double IWP(Vec3d point)
+        {
+            return IWP(point.X, point.Y, point.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
@@ -76,6 +121,17 @@ namespace SpatialSlur.SlurField
             double cz = Math.Cos(z);
 
             return cx * cy + cy * cz + cz * cx - cx * cy * cz + 0.25;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static double HybridPW(Vec3d point)
+        {
+            return HybridPW(point.X, point.Y, point.Z);
         }
 
 
