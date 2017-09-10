@@ -21,13 +21,13 @@ namespace SpatialSlur.SlurDynamics
     /// </summary>
     public class ForceField : MultiParticleConstraint<H>
     {
-        private GridVectorField3d _field;
+        private IField3d<Vec3d> _field;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public GridVectorField3d Field
+        public IField3d<Vec3d> Field
         {
             get { return _field; }
             set { _field = value ?? throw new ArgumentNullException(); }
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="field"></param>
         /// <param name="weight"></param>
-        public ForceField(GridVectorField3d field, double weight = 1.0)
+        public ForceField(IField3d<Vec3d> field, double weight = 1.0)
             : base(weight)
         {
             Field = field;
@@ -52,7 +52,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="field"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public ForceField(GridVectorField3d field, int capacity, double weight = 1.0)
+        public ForceField(IField3d<Vec3d> field, int capacity, double weight = 1.0)
             : base(capacity, weight)
         {
             Field = field;
@@ -65,7 +65,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="field"></param>
         /// <param name="weight"></param>
-        public ForceField(IEnumerable<int> indices, GridVectorField3d field, double weight = 1.0)
+        public ForceField(IEnumerable<int> indices, IField3d<Vec3d> field, double weight = 1.0)
             : base(weight)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
