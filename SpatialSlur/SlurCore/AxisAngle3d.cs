@@ -54,7 +54,7 @@ namespace SpatialSlur.SlurCore
         /// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
         /// </summary>
         /// <param name="rotation"></param>
-        public AxisAngle3d(ref Rotate3d rotation)
+        public AxisAngle3d(ref Rotation3d rotation)
             :this()
         {
             throw new NotImplementedException();

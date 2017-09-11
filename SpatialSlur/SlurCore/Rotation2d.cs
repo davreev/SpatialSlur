@@ -15,70 +15,70 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// Represents an arbitrary rotation in 2 dimensions as a right-handed orthonormal basis.
     /// </summary>
-    public struct Rotate2d
+    public struct Rotation2d
     {
         #region Static
 
         /// <summary></summary>
-        public static readonly Rotate2d Identity = new Rotate2d(1.0, 0.0);
+        public static readonly Rotation2d Identity = new Rotation2d(1.0, 0.0);
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
+        /// <param name="rotation"></param>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vec2d operator *(Rotate2d rotate, Vec2d vector)
+        public static Vec2d operator *(Rotation2d rotation, Vec2d vector)
         {
-            return rotate.Apply(vector);
+            return rotation.Apply(vector);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
         /// <returns></returns>
-        public static Rotate2d operator *(Rotate2d t0, Rotate2d t1)
+        public static Rotation2d operator *(Rotation2d r0, Rotation2d r1)
         {
-            return t0.Apply(t1);
+            return r0.Apply(r1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
+        /// <param name="rotation"></param>
         /// <param name="vector"></param>
-        public static Vec2d Multiply(Rotate2d rotate, Vec2d vector)
+        public static Vec2d Multiply(Rotation2d rotation, Vec2d vector)
         {
-            return rotate.Apply(vector);
+            return rotation.Apply(vector);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
         /// <returns></returns>
-        public static Rotate2d Multiply(Rotate2d t0, Rotate2d t1)
+        public static Rotation2d Multiply(Rotation2d r0, Rotation2d r1)
         {
-            return t0.Apply(t1);
+            return r0.Apply(r1);
         }
 
 
         /// <summary>
         /// Creates a relative rotation from t0 to t1.
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
         /// <returns></returns>
-        public static Rotate2d CreateRelative(Rotate2d t0, Rotate2d t1)
+        public static Rotation2d CreateRelative(Rotation2d r0, Rotation2d r1)
         {
-            return t1.Apply(t0.Inverse);
+            return r1.Apply(r0.Inverse);
         }
 
         #endregion
@@ -91,7 +91,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="x"></param>
-        public Rotate2d(Vec2d x)
+        public Rotation2d(Vec2d x)
         {
             _x = x.Direction;
         }
@@ -101,7 +101,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="angle"></param>
-        public Rotate2d(double angle)
+        public Rotation2d(double angle)
             : this()
         {
             Set(angle);
@@ -113,7 +113,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="cosAngle"></param>
         /// <param name="sinAngle"></param>
-        private Rotate2d(double cosAngle, double sinAngle)
+        private Rotation2d(double cosAngle, double sinAngle)
         {
             _x = new Vec2d(cosAngle, sinAngle);
         }
@@ -141,9 +141,9 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the inverse of this rotation
         /// </summary>
-        public Rotate2d Inverse
+        public Rotation2d Inverse
         {
-            get { return new Rotate2d(_x.X, -_x.Y); }
+            get { return new Rotation2d(_x.X, -_x.Y); }
         }
 
 
@@ -190,7 +190,7 @@ namespace SpatialSlur.SlurCore
         /// Applies this rotation to the given rotation.
         /// </summary>
         /// <param name="other"></param>
-        public Rotate2d Apply(Rotate2d other)
+        public Rotation2d Apply(Rotation2d other)
         {
             other._x = Apply(other._x);
             return other;
@@ -212,7 +212,7 @@ namespace SpatialSlur.SlurCore
         /// Applies the inverse of this rotation to the given rotation.
         /// </summary>
         /// <param name="other"></param>
-        public Rotate2d ApplyInverse(Rotate2d other)
+        public Rotation2d ApplyInverse(Rotation2d other)
         {
             other._x = ApplyInverse(other._x);
             return other;

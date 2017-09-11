@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Transform3d Identity = new Transform3d(new Vec3d(1.0), Rotate3d.Identity, Vec3d.Zero);
+        public static readonly Transform3d Identity = new Transform3d(new Vec3d(1.0), Rotation3d.Identity, Vec3d.Zero);
 
 
         /// <summary>
@@ -34,10 +34,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
-        public static implicit operator Transform3d(Rotate3d rotate)
+        /// <param name="rotation"></param>
+        public static implicit operator Transform3d(Rotation3d rotation)
         {
-            return new Transform3d(new Vec3d(1.0), rotate, Vec3d.Zero);
+            return new Transform3d(new Vec3d(1.0), rotation, Vec3d.Zero);
         }
 
 
@@ -137,7 +137,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotate3d Rotation;
+        public Rotation3d Rotation;
         /// <summary></summary>
         public Vec3d Translation;
         /// <summary></summary>
@@ -150,7 +150,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="scale"></param>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Transform3d(Vec3d scale, Rotate3d rotation, Vec3d translation)
+        public Transform3d(Vec3d scale, Rotation3d rotation, Vec3d translation)
         {
             Scale = scale;
             Rotation = rotation;

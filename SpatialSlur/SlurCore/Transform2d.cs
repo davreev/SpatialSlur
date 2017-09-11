@@ -14,16 +14,16 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Transform2d Identity = new Transform2d(new Vec2d(1.0), Rotate2d.Identity, Vec2d.Zero);
+        public static readonly Transform2d Identity = new Transform2d(new Vec2d(1.0), Rotation2d.Identity, Vec2d.Zero);
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
-        public static implicit operator Transform2d(Rotate2d rotate)
+        /// <param name="rotation"></param>
+        public static implicit operator Transform2d(Rotation2d rotation)
         {
-            return new Transform2d(new Vec2d(1.0), rotate, Vec2d.Zero);
+            return new Transform2d(new Vec2d(1.0), rotation, Vec2d.Zero);
         }
 
 
@@ -99,7 +99,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotate2d Rotation;
+        public Rotation2d Rotation;
         /// <summary></summary>
         public Vec2d Translation;
         /// <summary></summary>
@@ -112,7 +112,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="scale"></param>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Transform2d(Vec2d scale, Rotate2d rotation, Vec2d translation)
+        public Transform2d(Vec2d scale, Rotation2d rotation, Vec2d translation)
         {
             Scale = scale;
             Rotation = rotation;

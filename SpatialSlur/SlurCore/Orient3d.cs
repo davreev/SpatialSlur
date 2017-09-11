@@ -20,7 +20,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Orient3d Identity = new Orient3d(Rotate3d.Identity, Vec3d.Zero);
+        public static readonly Orient3d Identity = new Orient3d(Rotation3d.Identity, Vec3d.Zero);
 
 
         /// <summary>
@@ -36,10 +36,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
-        public static implicit operator Orient3d(Rotate3d rotate)
+        /// <param name="rotation"></param>
+        public static implicit operator Orient3d(Rotation3d rotation)
         {
-            return new Orient3d(rotate, Vec3d.Zero);
+            return new Orient3d(rotation, Vec3d.Zero);
         }
 
 
@@ -136,10 +136,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Orient3d CreateLookAt(Vec3d eye, Vec3d target, Vec3d up)
         {
-            var rotate = new Rotate3d(target - eye, up);
-            rotate.SwapZX();
+            var rot = new Rotation3d(target - eye, up);
+            rot.SwapZX();
 
-            var orient = new Orient3d(rotate, eye);
+            var orient = new Orient3d(rot, eye);
             orient.Invert();
 
             return orient;
@@ -161,7 +161,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotate3d Rotation;
+        public Rotation3d Rotation;
         /// <summary></summary>
         public Vec3d Translation;
 
@@ -171,7 +171,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Orient3d(Rotate3d rotation, Vec3d translation)
+        public Orient3d(Rotation3d rotation, Vec3d translation)
         {
             Rotation = rotation;
             Translation = translation;
@@ -186,7 +186,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         public Orient3d(Vec3d origin, Vec3d x, Vec3d y)
         {
-            Rotation = new Rotate3d(x, y);
+            Rotation = new Rotation3d(x, y);
             Translation = origin;
         }
   

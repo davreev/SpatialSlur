@@ -24,12 +24,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
-        public static implicit operator Matrix3d(Rotate2d rotate)
+        /// <param name="rotation"></param>
+        public static implicit operator Matrix3d(Rotation2d rotation)
         {
             var m = Identity;
-            m.Column0 = rotate.X;
-            m.Column1 = rotate.Y;
+            m.Column0 = rotation.X;
+            m.Column1 = rotation.Y;
             return m;
         }
 
@@ -65,13 +65,13 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
-        public static implicit operator Matrix3d(Rotate3d rotate)
+        /// <param name="rotation"></param>
+        public static implicit operator Matrix3d(Rotation3d rotation)
         {
             var m = Identity;
-            m.Column0 = rotate.X;
-            m.Column1 = rotate.Y;
-            m.Column2 = rotate.Z;
+            m.Column0 = rotation.X;
+            m.Column1 = rotation.Y;
+            m.Column2 = rotation.Z;
             return m;
         }
 

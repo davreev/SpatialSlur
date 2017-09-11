@@ -31,15 +31,15 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// This method is responsible for calculating all deltas and weights associated with the constraint.
         /// </summary>
-        /// <param name="particles"></param>
-        void Calculate(IReadOnlyList<IBody> particles);
+        /// <param name="bodies"></param>
+        void Calculate(IReadOnlyList<IBody> bodies);
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        void Apply(IReadOnlyList<IBody> particles);
+        /// <param name="bodies"></param>
+        void Apply(IReadOnlyList<IBody> bodies);
 
 
         /// <summary>

@@ -13,90 +13,90 @@ namespace SpatialSlur.SlurCore
     /// Represents an arbitrary rotation in 3 dimensions as a right-handed orthonormal basis.
     /// </summary>
     [Serializable]
-    public struct Rotate3d
+    public struct Rotation3d
     {
         #region Static
 
         /// <summary></summary>
-        public static readonly Rotate3d Identity = new Rotate3d(Vec3d.UnitX, Vec3d.UnitY, Vec3d.UnitZ);
+        public static readonly Rotation3d Identity = new Rotation3d(Vec3d.UnitX, Vec3d.UnitY, Vec3d.UnitZ);
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
-        public static implicit operator Rotate3d(Rotate2d rotate)
+        /// <param name="rotation"></param>
+        public static implicit operator Rotation3d(Rotation2d rotation)
         {
-            return new Rotate3d(rotate.X, rotate.Y, Vec3d.UnitZ);
+            return new Rotation3d(rotation.X, rotation.Y, Vec3d.UnitZ);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
+        /// <param name="rotation"></param>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vec3d operator *(Rotate3d rotate, Vec3d vector)
+        public static Vec3d operator *(Rotation3d rotation, Vec3d vector)
         {
-            return rotate.Apply(vector);
+            return rotation.Apply(vector);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
         /// <returns></returns>
-        public static Rotate3d operator *(Rotate3d t0, Rotate3d t1)
+        public static Rotation3d operator *(Rotation3d r0, Rotation3d r1)
         {
-            return t0.Apply(t1);
+            return r0.Apply(r1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
+        /// <param name="rotation"></param>
         /// <param name="vector"></param>
-        public static Vec3d Multiply(ref Rotate3d rotate, Vec3d vector)
+        public static Vec3d Multiply(ref Rotation3d rotation, Vec3d vector)
         {
-            return rotate.Apply(vector);
+            return rotation.Apply(vector);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public static Rotate3d Multiply(ref Rotate3d t0, ref Rotate3d t1)
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
+        public static Rotation3d Multiply(ref Rotation3d r0, ref Rotation3d r1)
         {
-            return t0.Apply(t1);
+            return r0.Apply(r1);
         }
 
 
         /// <summary>
         /// Creates a relative rotation from t0 to t1.
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
         /// <returns></returns>
-        public static Rotate3d CreateRelative(Rotate3d t0, Rotate3d t1)
+        public static Rotation3d CreateRelative(Rotation3d r0, Rotation3d r1)
         {
-            return CreateRelative(ref t0, ref t1);
+            return CreateRelative(ref r0, ref r1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public static Rotate3d CreateRelative(ref Rotate3d t0, ref Rotate3d t1)
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
+        public static Rotation3d CreateRelative(ref Rotation3d r0, ref Rotation3d r1)
         {
-            return t1.Apply(t0.Inverse);
+            return r1.Apply(r0.Inverse);
         }
 
         #endregion
@@ -110,7 +110,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public Rotate3d(Vec3d x, Vec3d y)
+        public Rotation3d(Vec3d x, Vec3d y)
             : this()
         {
             Set(x, y);
@@ -120,7 +120,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public Rotate3d(AxisAngle3d axisAngle)
+        public Rotation3d(AxisAngle3d axisAngle)
             : this()
         {
             Set(axisAngle);
@@ -133,7 +133,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        private Rotate3d(Vec3d x, Vec3d y, Vec3d z)
+        private Rotation3d(Vec3d x, Vec3d y, Vec3d z)
         {
             _x = x;
             _y = y;
@@ -171,11 +171,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the inverse of this rotation
         /// </summary>
-        public Rotate3d Inverse
+        public Rotation3d Inverse
         {
             get
             {
-                return new Rotate3d(
+                return new Rotation3d(
                     new Vec3d(_x.X, _y.X, _z.X),
                     new Vec3d(_x.Y, _y.Y, _z.Y),
                     new Vec3d(_x.Z, _y.Z, _z.Z)
@@ -379,7 +379,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public Rotate3d Apply(Rotate3d other)
+        public Rotation3d Apply(Rotation3d other)
         {
             other.SetXY(Apply(other._x), Apply(other._y));
             return other;
@@ -402,7 +402,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public Rotate3d ApplyInverse(Rotate3d other)
+        public Rotation3d ApplyInverse(Rotation3d other)
         {
             other.SetXY(ApplyInverse(other._x), ApplyInverse(other._y));
             return other;

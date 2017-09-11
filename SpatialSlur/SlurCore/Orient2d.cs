@@ -18,16 +18,16 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Orient2d Identity = new Orient2d(Rotate2d.Identity, Vec2d.Zero);
+        public static readonly Orient2d Identity = new Orient2d(Rotation2d.Identity, Vec2d.Zero);
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotate"></param>
-        public static implicit operator Orient2d(Rotate2d rotate)
+        /// <param name="rotation"></param>
+        public static implicit operator Orient2d(Rotation2d rotation)
         {
-            return new Orient2d(rotate, Vec2d.Zero);
+            return new Orient2d(rotation, Vec2d.Zero);
         }
 
 
@@ -117,7 +117,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotate2d Rotation;
+        public Rotation2d Rotation;
         /// <summary></summary>
         public Vec2d Translation;
 
@@ -127,7 +127,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Orient2d(Rotate2d rotation, Vec2d translation)
+        public Orient2d(Rotation2d rotation, Vec2d translation)
         {
             Rotation = rotation;
             Translation = translation;
@@ -141,7 +141,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="x"></param>
         public Orient2d(Vec2d origin, Vec2d x)
         {
-            Rotation = new Rotate2d(x);
+            Rotation = new Rotation2d(x);
             Translation = origin;
         }
 

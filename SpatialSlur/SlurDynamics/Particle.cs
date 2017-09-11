@@ -130,9 +130,9 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        Rotate3d IBody.Rotation
+        Rotation3d IBody.Rotation
         {
-            get { return Rotate3d.Identity; }
+            get { return Rotation3d.Identity; }
             set { throw new NotSupportedException(_message); }
         }
 

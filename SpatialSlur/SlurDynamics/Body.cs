@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurDynamics
         private Vec3d _moveSum;
         private double _moveWeightSum;
 
-        private Rotate3d _rotation = Rotate3d.Identity;
+        private Rotation3d _rotation = Rotation3d.Identity;
         private Vec3d _angleVelocity;
         private Vec3d _rotateSum; // direction = rotation axis, length = rotation angle
         private double _rotateWeightSum;
@@ -70,7 +70,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public Rotate3d Rotation
+        public Rotation3d Rotation
         {
             get { return _rotation; }
             set { _rotation = value; }
@@ -110,7 +110,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="position"></param>
         /// <param name="rotation"></param>
-        public Body(Vec3d position, Rotate3d rotation)
+        public Body(Vec3d position, Rotation3d rotation)
         {
             _position = position;
             _rotation = rotation;
