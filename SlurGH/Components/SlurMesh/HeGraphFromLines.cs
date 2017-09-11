@@ -64,18 +64,19 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Line> lines = new List<Line>();
+            var lines = new List<GH_Line>();
+            if (!DA.GetDataList(0, lines)) return;
+
             var tol = 0.0;
+            if (!DA.GetData(1, ref tol)) return;
 
             var multi = false;
-            var loops = false;
-
-            if (!DA.GetDataList(0, lines)) return;
-            if (!DA.GetData(1, ref tol)) return;
             if (!DA.GetData(2, ref multi)) return;
+
+            var loops = false;
             if (!DA.GetData(3, ref loops)) return;
 
-            var graph = HeGraph3d.Factory.CreateFromLineSegments(lines, tol, multi, loops);
+            var graph = HeGraph3d.Factory.CreateFromLineSegments(lines.Select(ln => ln.Value), tol, multi, loops);
 
             DA.SetData(0, new GH_HeGraph3d(graph));
         }

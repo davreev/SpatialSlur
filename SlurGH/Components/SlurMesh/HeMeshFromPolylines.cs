@@ -62,13 +62,17 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Polyline> polys = new List<Polyline>();
-            var tol = 0.0;
+            var curves = new List<GH_Curve>();
+            if (!DA.GetDataList(0, curves)) return;
 
-            if (!DA.GetDataList(0, polys)) return;
+            var tol = 0.0;
             if (!DA.GetData(1, ref tol)) return;
 
-            var mesh = HeMesh3d.Factory.CreateFromPolylines(polys, tol);
+            var mesh = HeMesh3d.Factory.CreateFromPolylines(curves.Select(crv =>
+            {
+                crv.Value.TryGetPolyline(out Polyline poly);
+                return poly;
+            }), tol);
 
             DA.SetData(0, new GH_HeMesh3d(mesh));
         }
