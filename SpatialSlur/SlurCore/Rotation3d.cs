@@ -78,7 +78,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Creates a relative rotation from t0 to t1.
+        /// Creates a relative rotation from r0 to r1.
         /// </summary>
         /// <param name="r0"></param>
         /// <param name="r1"></param>
