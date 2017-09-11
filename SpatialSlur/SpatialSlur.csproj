@@ -66,7 +66,7 @@
     <Compile Include="SlurCore\Orient2d.cs" />
     <Compile Include="SlurCore\Property.cs" />
     <Compile Include="SlurCore\Orient3d.cs" />
-    <Compile Include="SlurCore\Rotate2d.cs" />
+    <Compile Include="SlurCore\Rotation2d.cs" />
     <Compile Include="SlurCore\Matrix3d.cs" />
     <Compile Include="SlurCore\Transform2d.cs" />
     <Compile Include="SlurCore\Transform3d.cs" />
@@ -121,7 +121,7 @@
     <Compile Include="SlurDynamics\Particle.cs" />
     <Compile Include="SlurDynamics\HandleTypes.cs" />
     <Compile Include="SlurDynamics\Body.cs" />
-    <Compile Include="SlurCore\Rotate3d.cs" />
+    <Compile Include="SlurCore\Rotation3d.cs" />
     <Compile Include="SlurDynamics\Constraints\OnThreshold.cs" />
     <Compile Include="SlurField\Enums\IntegrationMode.cs" />
     <Compile Include="SlurField\Enums\SampleMode.cs" />
