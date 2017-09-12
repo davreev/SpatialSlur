@@ -19,16 +19,7 @@ namespace SpatialSlur.SlurMesh
     public class HeGraph : HeGraphBase<HeGraph.Vertex, HeGraph.Halfedge>
     {
         /// <summary></summary>
-        public static readonly HeGraphFactory Factory;
-
-
-        /// <summary>
-        /// Static constructor to initialize factory instance.
-        /// </summary>
-        static HeGraph()
-        {
-            Factory = new HeGraphFactory();
-        }
+        public static readonly HeGraphFactory Factory = new HeGraphFactory();
 
 
         /// <summary>
@@ -172,16 +163,7 @@ namespace SpatialSlur.SlurMesh
     public class HeGraph<TV,TE> : HeGraphBase<HeGraph<TV,TE>.Vertex, HeGraph<TV,TE>.Halfedge>
     {
         /// <summary></summary>
-        public static readonly HeGraphFactory<TV,TE> Factory;
-
-
-        /// <summary>
-        /// Static constructor to initialize factory instance.
-        /// </summary>
-        static HeGraph()
-        {
-            Factory = new HeGraphFactory<TV, TE>();
-        }
+        public static readonly HeGraphFactory<TV,TE> Factory = new HeGraphFactory<TV, TE>();
 
 
         /// <summary>

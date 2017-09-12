@@ -19,21 +19,12 @@ namespace SpatialSlur.SlurMesh
     public class HeMesh3d : HeMeshBase<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face>
     {
         /// <summary></summary>
-        public static readonly HeMesh3dFactory Factory;
+        public static readonly HeMesh3dFactory Factory = new HeMesh3dFactory();
 
         // property delegates
         private static readonly Func<IVertex3d, Vec3d> _getPosition = v => v.Position;
         private static readonly Func<IVertex3d, Vec3d> _getNormal = v => v.Normal;
         private static readonly Func<IVertex3d, Vec2d> _getTexture = v => v.Texture;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        static HeMesh3d()
-        {
-            Factory = new HeMesh3dFactory();
-        }
 
 
         /// <summary>

@@ -19,16 +19,7 @@ namespace SpatialSlur.SlurMesh
     public class HeMesh : HeMeshBase<HeMesh.Vertex, HeMesh.Halfedge, HeMesh.Face>
     {
         /// <summary></summary>
-        public static readonly HeMeshFactory Factory;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        static HeMesh()
-        {
-            Factory = new HeMeshFactory();
-        }
+        public static readonly HeMeshFactory Factory = new HeMeshFactory();
 
 
         /// <summary>
@@ -212,16 +203,7 @@ namespace SpatialSlur.SlurMesh
     public class HeMesh<TV, TE, TF> : HeMeshBase<HeMesh<TV, TE, TF>.Vertex, HeMesh<TV, TE, TF>.Halfedge, HeMesh<TV, TE, TF>.Face>
     {
         /// <summary></summary>
-        public static readonly HeMeshFactory<TV, TE, TF> Factory;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        static HeMesh()
-        {
-            Factory = new HeMeshFactory<TV, TE, TF>();
-        }
+        public static readonly HeMeshFactory<TV, TE, TF> Factory = new HeMeshFactory<TV, TE, TF>();
 
 
         /// <summary>

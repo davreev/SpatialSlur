@@ -19,20 +19,11 @@ namespace SpatialSlur.SlurMesh
     public class HeGraph3d : HeGraphBase<HeGraph3d.Vertex, HeGraph3d.Halfedge>
     {
         /// <summary></summary>
-        public static readonly HeGraph3dFactory Factory;
+        public static readonly HeGraph3dFactory Factory = new HeGraph3dFactory();
 
         // property delegates
         private static readonly Func<IVertex3d, Vec3d> _getPosition = v => v.Position;
         private static readonly Func<IVertex3d, Vec3d> _getNormal = v => v.Normal;
-
-
-        /// <summary>
-        /// Static constructor to initialize factory instance.
-        /// </summary>
-        static HeGraph3d()
-        {
-            Factory = new HeGraph3dFactory();
-        }
 
 
         /// <summary>
