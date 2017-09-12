@@ -51,6 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Sketch\SteinerFinder\HeGraphSim.cs" />
+    <Compile Include="Sketch\SteinerFinder\SteinerFinder.cs" />
+    <Compile Include="Sketch\SteinerFinder\SteinerFinderSettings.cs" />
     <Compile Include="SlurCore\ArrayMath.cs" />
     <Compile Include="SlurCore\AxisAngle3d.cs" />
     <Compile Include="SlurCore\CoreUtil.cs" />

@@ -188,6 +188,9 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 
+# Rhino files
+*.3dmbak
+
 # Additional files & folders
 *Documentation/
 *Debug/

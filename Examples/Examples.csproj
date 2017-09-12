@@ -54,44 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Grasshopper\170314_Spatial_Clustering_01.3dm" />
-    <None Include="Grasshopper\170314_Spatial_Clustering_01.gh" />
-    <None Include="Grasshopper\170712_HeMesh_Quad_Strips_01.gh" />
-    <None Include="Grasshopper\170717_Dynamic_Remesher_01.3dm" />
-    <None Include="Grasshopper\170717_Dynamic_Remesher_01.gh" />
-    <None Include="Grasshopper\170718_HeMesh_Unroll_01.gh" />
-    <None Include="Grasshopper\170721_SphereCollide_01.3dm" />
-    <None Include="Grasshopper\170721_SphereCollide_01.gh" />
-    <None Include="Grasshopper\170722_Funicular_Network_01.3dm" />
-    <None Include="Grasshopper\170722_Funicular_Network_01.gh" />
-    <None Include="Grasshopper\170731_Noise_Field_Integration_01.gh" />
-    <None Include="Grasshopper\Debug\170723_K2_Compare_01.gh" />
-    <None Include="Grasshopper\Debug\170725_Grid3d_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170726_SphereCollide_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170727_SphereCollide_Test_01.3dm" />
-    <None Include="Grasshopper\Debug\170728_Consolidate_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170731_Catmull_Test_01.3dm" />
-    <None Include="Grasshopper\Debug\170731_Catmull_Test_01.3dmbak" />
-    <None Include="Grasshopper\Debug\170731_Catmull_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170801_Weave_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170815_Dual_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170817_Display_Planar_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170829_Display_Planar_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170830_Transform_Test_01.3dm" />
-    <None Include="Grasshopper\Debug\170830_Transform_Test_01.3dmbak" />
-    <None Include="Grasshopper\Debug\170830_Transform_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170831_Field_Integration_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170901_Split_Disjoint_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170902_Field_API_Test_01.gh" />
-    <None Include="Grasshopper\Debug\170906_Geodesic_Debug_01.gh" />
-    <None Include="Grasshopper\UserObjects\Create FuncField.ghuser" />
-    <None Include="Grasshopper\UserObjects\Create GridScalarField.ghuser" />
-    <None Include="Grasshopper\UserObjects\Create GridVectorField.ghuser" />
-    <None Include="Grasshopper\UserObjects\Create PerlinNoiseField.ghuser" />
-    <None Include="Grasshopper\UserObjects\Create SimplexNoiseField.ghuser" />
-    <None Include="Grasshopper\UserObjects\Display GridVectorField.ghuser" />
-    <None Include="Grasshopper\Utilities\170801_Divide_Edges_01.gh" />
-    <None Include="Grasshopper\Utilities\170801_Dual_Boundary_01.gh" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
