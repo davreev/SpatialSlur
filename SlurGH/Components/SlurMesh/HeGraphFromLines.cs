@@ -53,7 +53,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddParameter(new HeMesh3dParam(), "result", "result", "", GH_ParamAccess.item);
+            pManager.AddParameter(new HeGraph3dParam(), "result", "result", "", GH_ParamAccess.item);
         }
 
 
