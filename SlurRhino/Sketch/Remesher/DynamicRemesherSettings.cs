@@ -35,12 +35,6 @@ namespace SpatialSlur.SlurRhino.Remesher
         /// <summary>
         /// 
         /// </summary>
-        public DynamicRemesherSettings() { }
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
         public Interval1d LengthRange
         {
             get { return _lengthRange; }

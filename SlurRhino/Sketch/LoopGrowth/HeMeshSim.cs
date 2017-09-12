@@ -19,16 +19,7 @@ namespace SpatialSlur.SlurRhino.LoopGrower
     public class HeMeshSim: HeMeshBase<HeMeshSim.Vertex, HeMeshSim.Halfedge, HeMeshSim.Face>
     {
         /// <summary></summary>
-        public static readonly HeMeshSimFactory Factory;
-
-
-        /// <summary>
-        /// Static constructor to initialize factory instance.
-        /// </summary>
-        static HeMeshSim()
-        {
-            Factory = new HeMeshSimFactory();
-        }
+        public static readonly HeMeshSimFactory Factory = new HeMeshSimFactory();
 
 
         /// <summary>

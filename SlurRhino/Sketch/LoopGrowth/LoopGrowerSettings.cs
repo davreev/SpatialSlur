@@ -28,13 +28,7 @@ namespace SpatialSlur.SlurRhino.LoopGrower
         private int _subSteps = 10;
         private int _refineFreq = 10;
         private int _collideFreq = 5;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public LoopGrowerSettings() { }
-
+        
 
         /// <summary>
         /// 
