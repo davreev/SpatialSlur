@@ -50,7 +50,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         public bool IsConverged
         {
-            get { return _maxDelta < _settings.ToleranceSqr && _maxAngleDelta < _settings.AngularToleranceSqr; }
+            get { return _maxDelta < _settings.ToleranceSquared && _maxAngleDelta < _settings.AnglularToleranceSquared; }
         }
 
 

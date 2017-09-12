@@ -106,7 +106,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        internal double ToleranceSqr
+        internal double ToleranceSquared
         {
             get { return _tolerance * _tolerance; }
         }
@@ -115,7 +115,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        internal double AngularToleranceSqr
+        internal double AnglularToleranceSquared
         {
             get { return _angleTolerance * _angleTolerance; }
         }

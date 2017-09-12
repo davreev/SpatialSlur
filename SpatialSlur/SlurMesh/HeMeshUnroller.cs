@@ -268,5 +268,34 @@ namespace SpatialSlur.SlurMesh
                 new Orient3d(p0, x, p1 - p3)
                 );
         }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hedge"></param>
+        /// <returns></returns>
+        private Orient3d GetHalfedgeTransform(E hedge, double unrollFactor)
+        {
+            var he0 = hedge;
+            var he1 = he0.Twin;
+
+            Vec3d p0 = _getPos(he0.Start);
+            Vec3d p1 = _getPos(he1.Start);
+
+            Vec3d p2 = (_getPos(he0.PrevInFace.Start) + _getPos(he0.NextInFace.End)) * 0.5;
+            Vec3d p3 = (_getPos(he1.PrevInFace.Start) + _getPos(he1.NextInFace.End)) * 0.5;
+
+            Vec3d x = p1 - p0;
+            Vec3d y0 = p2 - p0;
+            Vec3d y1 = Vec3d.Slerp(y0, p1 - p3, unrollFactor);
+
+            return Orient3d.CreateRelative(
+                new Orient3d(p0, x, y0),
+                new Orient3d(p0, x, y1)
+                );
+        }
+        */
     }
 }

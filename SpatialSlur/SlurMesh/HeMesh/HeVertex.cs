@@ -13,9 +13,9 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     [Serializable]
     public abstract class HeVertex<TV, TE, TF> : HeElement, IHeVertex<TV, TE, TF>
-    where TV : HeVertex<TV, TE, TF>
-    where TE : Halfedge<TV, TE, TF>
-    where TF : HeFace<TV, TE, TF>
+        where TV : HeVertex<TV, TE, TF>
+        where TE : Halfedge<TV, TE, TF>
+        where TF : HeFace<TV, TE, TF>
     {
         private TE _first;
 
