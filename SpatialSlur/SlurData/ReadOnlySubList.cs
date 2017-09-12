@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurData
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public struct ReadOnlySubList<T> : IReadOnlyList<T>, IReadOnlyProperty<int,T>
+    public struct ReadOnlySubList<T> : IReadOnlyList<T>
     {
         private readonly IReadOnlyList<T> _source;
         private readonly int _start;
@@ -104,7 +104,6 @@ namespace SpatialSlur.SlurData
 
         #region Explicit interface implementations
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -112,17 +111,6 @@ namespace SpatialSlur.SlurData
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        T IReadOnlyProperty<int, T>.Get(int item)
-        {
-            return _source[item];
         }
 
         #endregion
