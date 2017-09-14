@@ -15,6 +15,12 @@ namespace SpatialSlur.SlurMesh
         where T : IHeElement
     {
         /// <summary>
+        /// 
+        /// </summary>
+        int Capacity { get; }
+
+
+        /// <summary>
         /// Removes all attributes corresponding with elements which have been flagged for removal.
         /// </summary>
         /// <typeparam name="U"></typeparam>

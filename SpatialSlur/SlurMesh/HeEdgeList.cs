@@ -43,6 +43,15 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Capacity
+        {
+            get { return _hedges.Capacity >> 1; }
+        }
+
+
         /// <inheritdoc/>
         /// <summary>
         /// Returns the first halfedge of the edge at the given index.
