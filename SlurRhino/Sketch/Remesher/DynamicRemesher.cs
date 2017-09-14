@@ -105,8 +105,7 @@ namespace SpatialSlur.SlurRhino.Remesher
             _faces = _mesh.Faces;
 
             // triangulate all faces starting with the shortest diagonal
-            Func<F, E> getStart = f => f.Halfedges.SelectMin(he => he.Start.Position.SquareDistanceTo(he.NextInFace.End.Position));
-            _mesh.TriangulateFaces(FaceTriangulators.Strip.Create(mesh, getStart));
+            _mesh.TriangulateFaces(FaceTriangulators.Strip.CreateFromMin(mesh, he => he.Start.Position.SquareDistanceTo(he.NextInFace.End.Position)));
 
             // initialize features
             _target = target;

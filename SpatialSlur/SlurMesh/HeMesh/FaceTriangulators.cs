@@ -4,6 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using SpatialSlur.SlurCore;
+
+/*
+ * Notes
+ */ 
+
 namespace SpatialSlur.SlurMesh
 {
     /// <summary>
@@ -48,6 +54,24 @@ namespace SpatialSlur.SlurMesh
                 where F : HeFace<V, E, F>
             {
                 return new Fan<V, E, F>(mesh, getStart);
+            }
+
+
+            /// <summary>
+            /// Starts the triangulation from the minimum halfedge in each face.
+            /// </summary>
+            /// <typeparam name="V"></typeparam>
+            /// <typeparam name="E"></typeparam>
+            /// <typeparam name="F"></typeparam>
+            /// <param name="mesh"></param>
+            /// <param name="getValue"></param>
+            /// <returns></returns>
+            public static Fan<V, E, F> CreateFromMin<V, E, F>(HeMeshBase<V, E, F> mesh, Func<E, double> getValue)
+                where V : HeVertex<V, E, F>
+                where E : Halfedge<V, E, F>
+                where F : HeFace<V, E, F>
+            {
+                return new Fan<V, E, F>(mesh, f => f.Halfedges.SelectMin(getValue));
             }
         }
 
@@ -161,6 +185,24 @@ namespace SpatialSlur.SlurMesh
                 where F : HeFace<V, E, F>
             {
                 return new Strip<V, E, F>(mesh, getStart);
+            }
+
+
+            /// <summary>
+            /// Starts the triangulation from the minimum halfedge in each face.
+            /// </summary>
+            /// <typeparam name="V"></typeparam>
+            /// <typeparam name="E"></typeparam>
+            /// <typeparam name="F"></typeparam>
+            /// <param name="mesh"></param>
+            /// <param name="getValue"></param>
+            /// <returns></returns>
+            public static Strip<V, E, F> CreateFromMin<V, E, F>(HeMeshBase<V, E, F> mesh, Func<E, double> getValue)
+                where V : HeVertex<V, E, F>
+                where E : Halfedge<V, E, F>
+                where F : HeFace<V, E, F>
+            {
+                return new Strip<V, E, F>(mesh, f => f.Halfedges.SelectMin(getValue));
             }
         }
 
