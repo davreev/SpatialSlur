@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino.SteinerFinder
+namespace SpatialSlur.Sketch.SteinerFinder
 {
     /// <summary>
     /// 

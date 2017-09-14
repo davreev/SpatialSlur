@@ -12,7 +12,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurRhino.SteinerFinder
+namespace SpatialSlur.Sketch.SteinerFinder
 {
     /// <summary>
     /// 
@@ -25,8 +25,9 @@ namespace SpatialSlur.SlurRhino.SteinerFinder
         /// 
         /// </summary>
         /// <param name="points"></param>
+        /// <param name="settings"></param>
         /// <returns></returns>
-        public static SteinerFinder CreateFromPoints(IEnumerable<Vec3d> points)
+        public static SteinerFinder CreateFromPoints(IEnumerable<Vec3d> points, SteinerFinderSettings settings = null)
         {
             var graph = new HeGraphSim();
 
@@ -42,7 +43,7 @@ namespace SpatialSlur.SlurRhino.SteinerFinder
             for(int i = 0; i < nv; i++)
                 graph.AddEdge(i, nv);
 
-            return new SteinerFinder(graph);
+            return new SteinerFinder(graph, settings);
         }
 
         #endregion
@@ -59,11 +60,12 @@ namespace SpatialSlur.SlurRhino.SteinerFinder
         /// 
         /// </summary>
         /// <param name="graph"></param>
-        public SteinerFinder(HeGraphSim graph)
+        /// <param name="settings"></param>
+        public SteinerFinder(HeGraphSim graph, SteinerFinderSettings settings = null)
         {
             _graph = graph;
             _graph.Compact();
-
+            _settings = settings ?? new SteinerFinderSettings();
             SetTerminalStatus();
         }
 
@@ -314,6 +316,9 @@ namespace SpatialSlur.SlurRhino.SteinerFinder
         /// <returns></returns>
         private bool FindZipPair(HeGraphSim.Vertex vertex, out HeGraphSim.Halfedge he0, out HeGraphSim.Halfedge he1)
         {
+            // TODO currently brute force
+            // test HashGrid when vertex degree > some threshold value
+
             var first = vertex.FirstOut;
             var p0 = vertex.Position;
 
