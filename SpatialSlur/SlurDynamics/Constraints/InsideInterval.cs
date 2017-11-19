@@ -26,34 +26,21 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="interval"></param>
         /// <param name="weight"></param>
-        public InsideInterval(Interval3d interval, double weight = 1.0)
-            : base(weight)
+        public InsideInterval(Interval3d interval, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Interval = interval;
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="interval"></param>
-        /// <param name="capacity"></param>
-        /// <param name="weight"></param>
-        public InsideInterval(Interval3d interval, int capacity, double weight = 1.0)
-            : base(capacity, weight)
-        {
-            Interval = interval;
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="interval"></param>
         /// <param name="weight"></param>
-        public InsideInterval(IEnumerable<int> indices, Interval3d interval, double weight = 1.0)
-            : base(weight)
+        public InsideInterval(IEnumerable<int> indices, Interval3d interval, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
             Interval = interval;

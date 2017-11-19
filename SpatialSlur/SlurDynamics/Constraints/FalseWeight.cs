@@ -18,31 +18,19 @@ namespace SpatialSlur.SlurDynamics
     public class FalseWeight : MultiParticleConstraint<H>
     {
         /// <summary></summary>
-        public Vec3d Direction;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="direction"></param>
-        /// <param name="weight"></param>
-        public FalseWeight(Vec3d direction, double weight = 1.0)
-            : base(weight)
-        {
-            Direction = direction;
-        }
-
+        public Vec3d Force;
+        
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="force"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public FalseWeight(Vec3d direction, int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public FalseWeight(Vec3d force, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
-            Direction = direction;
+            Force = force;
         }
 
 
@@ -50,13 +38,13 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="indices"></param>
-        /// <param name="direction"></param>
+        /// <param name="force"></param>
         /// <param name="weight"></param>
-        public FalseWeight(IEnumerable<int> indices, Vec3d direction, double weight = 1.0)
-            : base(weight)
+        public FalseWeight(IEnumerable<int> indices, Vec3d force, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
-            Direction = direction;
+            Force = force;
         }
 
 
@@ -68,7 +56,7 @@ namespace SpatialSlur.SlurDynamics
         {
             foreach (var h in Handles)
             {
-                h.Delta = Direction * h.Mass;
+                h.Delta = Force * h.Mass;
                 h.Weight = Weight;
             }
         }

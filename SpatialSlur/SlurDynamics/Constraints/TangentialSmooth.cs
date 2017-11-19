@@ -23,8 +23,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="normal"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public TangentialSmooth(Vec3d normal, int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public TangentialSmooth(double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
         }
 
@@ -34,8 +34,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public TangentialSmooth(IEnumerable<int> indices, double weight = 1.0)
-            :base(weight)
+        public TangentialSmooth(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
+            :base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
         }

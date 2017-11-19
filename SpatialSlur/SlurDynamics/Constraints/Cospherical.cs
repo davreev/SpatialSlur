@@ -21,30 +21,19 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="weight"></param>
-        public Cospherical(double weight = 1.0)
-           : base(weight)
+        public Cospherical(double weight = 1.0, int capacity = 4)
+           : base(weight, capacity)
         {
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="capacity"></param>
-        /// <param name="weight"></param>
-        public Cospherical(int capacity, double weight = 1.0)
-            : base(capacity, weight)
-        {
-        }
-
+        
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public Cospherical(IEnumerable<int> indices, double weight = 1.0)
-            : base(weight)
+        public Cospherical(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
         }

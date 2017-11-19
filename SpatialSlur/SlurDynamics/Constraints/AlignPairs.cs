@@ -86,7 +86,11 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         public AlignPairs(int startA, int endA, int startB, int endB, double weight = 1.0)
         {
-            SetHandles(startA, endA, startB, endB);
+            _hA0.Index = startA;
+            _hA1.Index = endA;
+            _hB0.Index = startB;
+            _hB1.Index = endB;
+
             Weight = weight;
         }
 
@@ -108,22 +112,6 @@ namespace SpatialSlur.SlurDynamics
             _hB0.Delta = -_hB1.Delta;
 
             _hA0.Weight = _hA1.Weight = _hB0.Weight = _hB1.Weight = Weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="startA"></param>
-        /// <param name="endA"></param>
-        /// <param name="startB"></param>
-        /// <param name="endB"></param>
-        public void SetHandles(int startA, int endA, int startB, int endB)
-        {
-            _hA0.Index = startA;
-            _hA1.Index = endA;
-            _hB0.Index = startB;
-            _hB1.Index = endB;
         }
     }
 }

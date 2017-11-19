@@ -18,20 +18,8 @@ namespace SpatialSlur.SlurDynamics
     public class OnPoint : MultiParticleConstraint<H>
     {
         /// <summary></summary>
-        public Vec3d Position;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="weight"></param>
-        public OnPoint(Vec3d point, double weight = 1.0)
-            : base(weight)
-        {
-            Position = point;
-        }
-
+        public Vec3d Point;
+        
 
         /// <summary>
         /// 
@@ -39,10 +27,10 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="point"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnPoint(Vec3d point, int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public OnPoint(Vec3d point, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
-            Position = point;
+            Point = point;
         }
 
 
@@ -52,11 +40,11 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="point"></param>
         /// <param name="weight"></param>
-        public OnPoint(IEnumerable<int> indices, Vec3d point, double weight = 1.0)
-            : base(weight)
+        public OnPoint(IEnumerable<int> indices, Vec3d point, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
-            Position = point;
+            Point = point;
         }
 
 
@@ -68,7 +56,7 @@ namespace SpatialSlur.SlurDynamics
         {
             foreach (var h in Handles)
             {
-                h.Delta = Position - particles[h].Position;
+                h.Delta = Point - particles[h].Position;
                 h.Weight = Weight;
             }
         }

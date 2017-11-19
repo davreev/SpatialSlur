@@ -24,7 +24,7 @@ namespace SpatialSlur.SlurDynamics
         private H _h2 = new H();
         private H _h3 = new H();
 
-        private double _targetAngle;
+        private double _angle;
 
 
         /// <summary>
@@ -81,10 +81,10 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// Note this value is wrapped between 0 and 2PI.
         /// </summary>
-        public double TargetAngle
+        public double Angle
         {
-            get { return _targetAngle; }
-            set { _targetAngle = SlurMath.Mod(value, SlurMath.TwoPI); }
+            get { return _angle; }
+            set { _angle = SlurMath.Mod(value, SlurMath.TwoPI); }
         }
 
 
@@ -95,12 +95,16 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="end"></param>
         /// <param name="left"></param>
         /// <param name="right"></param>
-        /// <param name="targetAngle"></param>
+        /// <param name="angle"></param>
         /// <param name="weight"></param>
-        public DihedralConstraint(int start, int end, int left, int right, double targetAngle, double weight = 1.0)
+        public DihedralConstraint(int start, int end, int left, int right, double angle, double weight = 1.0)
         {
-            SetHandles(start, end, left, right);
-            TargetAngle = targetAngle;
+            _h0.Index = start;
+            _h1.Index = end;
+            _h2.Index = left;
+            _h3.Index = right;
+
+            Angle = angle;
             Weight = weight;
         }
 
@@ -146,7 +150,7 @@ namespace SpatialSlur.SlurDynamics
             angle += Math.PI;
 
             // projection magnitude & relevant cotangents
-            double m = (angle - _targetAngle) * h * 0.5;
+            double m = (angle - _angle) * h * 0.5;
             double c0 = Vec3d.Dot(v02, v01) * m0;
             double c1 = Vec3d.Dot(p1 - p2, v01) * m0;
             double c2 = Vec3d.Dot(v03, v01) * m1;
@@ -159,22 +163,6 @@ namespace SpatialSlur.SlurDynamics
             _h3.Delta = n1 * -(m * (c2 + c3));
 
             _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        public void SetHandles(int start, int end, int left, int right)
-        {
-            _h0.Index = start;
-            _h1.Index = end;
-            _h2.Index = left;
-            _h3.Index = right;
         }
     }
 }

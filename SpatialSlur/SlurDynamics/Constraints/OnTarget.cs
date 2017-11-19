@@ -50,26 +50,10 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="target"></param>
         /// <param name="closestPoint"></param>
         /// <param name="parallel"></param>
-        /// <param name="weight"></param>
-        public OnTarget(T target, Func<T, Vec3d, Vec3d> closestPoint, bool parallel, double weight = 1.0)
-            : base(weight)
-        {
-            Target = target;
-            Parallel = parallel;
-            _closestPoint = closestPoint;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="closestPoint"></param>
-        /// <param name="parallel"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnTarget(T target, Func<T, Vec3d, Vec3d> closestPoint, bool parallel, int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public OnTarget(T target, Func<T, Vec3d, Vec3d> closestPoint, bool parallel, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Target = target;
             Parallel = parallel;
@@ -85,8 +69,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="closestPoint"></param>
         /// <param name="parallel"></param>
         /// <param name="weight"></param>
-        public OnTarget(IEnumerable<int> indices, T target, Func<T, Vec3d, Vec3d> closestPoint, bool parallel, double weight = 1.0)
-            : base(weight)
+        public OnTarget(IEnumerable<int> indices, T target, Func<T, Vec3d, Vec3d> closestPoint, bool parallel, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
             Target = target;
@@ -101,21 +85,21 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="particles"></param>
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
-            Action<Tuple<int, int>> body = range =>
-             {
-                 for (int i = range.Item1; i < range.Item2; i++)
-                 {
-                     var h = Handles[i];
-                     var p = particles[h].Position;
-                     h.Delta = _closestPoint(_target, p) - p;
-                     h.Weight = Weight;
-                 }
-             };
-
             if (Parallel)
-                ForEach(Partitioner.Create(0, Handles.Count), body);
+                ForEach(Partitioner.Create(0, Handles.Count), range => Body(range.Item1, range.Item2));
             else
-                body(Tuple.Create(0, Handles.Count));
+                Body(0, Handles.Count);
+
+            void Body(int from, int to)
+            {
+                for (int i = from; i < to; i++)
+                {
+                    var h = Handles[i];
+                    var p = particles[h].Position;
+                    h.Delta = _closestPoint(_target, p) - p;
+                    h.Weight = Weight;
+                }
+            }
         }
     }
 }

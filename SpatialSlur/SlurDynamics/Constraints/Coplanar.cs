@@ -20,20 +20,10 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="weight"></param>
-        public Coplanar(double weight = 1.0)
-           : base(weight)
-        {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public Coplanar(int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public Coplanar(double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
         }
 
@@ -43,8 +33,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public Coplanar(IEnumerable<int> indices, double weight = 1.0)
-            : base(weight)
+        public Coplanar(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
         }

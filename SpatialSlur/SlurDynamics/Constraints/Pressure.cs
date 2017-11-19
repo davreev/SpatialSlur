@@ -78,7 +78,10 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         public Pressure(int vertex0, int vertex1, int vertex2, double forcePerArea, double weight = 1.0)
         {
-            SetHandles(vertex0, vertex1, vertex2);
+            _h0.Index = vertex0;
+            _h1.Index = vertex1;
+            _h2.Index = vertex2;
+
             ForcePerArea = forcePerArea;
             Weight = weight;
         }
@@ -97,20 +100,6 @@ namespace SpatialSlur.SlurDynamics
             const double inv6 = 1.0 / 6.0;
             _h0.Delta = _h1.Delta = _h2.Delta = Vec3d.Cross(p1 - p0, p2 - p1) * (ForcePerArea * inv6); // force is proportional to 1/3 area of tri
             _h0.Weight = _h1.Weight = _h2.Weight = Weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vertex0"></param>
-        /// <param name="vertex1"></param>
-        /// <param name="vertex2"></param>
-        public void SetHandles(int vertex0, int vertex1, int vertex2)
-        {
-            _h0.Index = vertex0;
-            _h1.Index = vertex1;
-            _h2.Index = vertex2;
         }
     }
 }

@@ -19,23 +19,14 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class PlanarNgon : MultiParticleConstraint<H>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="weight"></param>
-        public PlanarNgon(double weight = 1.0)
-         : base(weight)
-        {
-        }
-
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public PlanarNgon(int capacity, double weight = 1.0)
-            :base(capacity,weight)
+        public PlanarNgon(double weight = 1.0, int capacity = DefaultCapacity)
+            :base(weight, capacity)
         {
         }
 
@@ -45,8 +36,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public PlanarNgon(IEnumerable<int> indices, double weight = 1.0)
-            : base(weight)
+        public PlanarNgon(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
         }

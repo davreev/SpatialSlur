@@ -32,19 +32,7 @@ namespace SpatialSlur.SlurDynamics
             get { return _field; }
             set { _field = value ?? throw new ArgumentNullException(); }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="weight"></param>
-        public ForceField(IField3d<Vec3d> field, double weight = 1.0)
-            : base(weight)
-        {
-            Field = field;
-        }
-
+        
 
         /// <summary>
         /// 
@@ -52,8 +40,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="field"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public ForceField(IField3d<Vec3d> field, int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public ForceField(IField3d<Vec3d> field, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Field = field;
         }
@@ -65,8 +53,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="indices"></param>
         /// <param name="field"></param>
         /// <param name="weight"></param>
-        public ForceField(IEnumerable<int> indices, IField3d<Vec3d> field, double weight = 1.0)
-            : base(weight)
+        public ForceField(IEnumerable<int> indices, IField3d<Vec3d> field, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
             Field = field;

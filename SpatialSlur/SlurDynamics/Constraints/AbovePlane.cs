@@ -28,24 +28,10 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="origin"></param>
         /// <param name="normal"></param>
-        /// <param name="weight"></param>
-        public AbovePlane(Vec3d origin, Vec3d normal, double weight = 1.0)
-            : base(weight)
-        {
-            Origin = origin;
-            Normal = normal;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public AbovePlane(Vec3d origin, Vec3d normal, int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public AbovePlane(Vec3d origin, Vec3d normal, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Origin = origin;
             Normal = normal;
@@ -59,8 +45,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="origin"></param>
         /// <param name="normal"></param>
         /// <param name="weight"></param>
-        public AbovePlane(IEnumerable<int> indices, Vec3d origin, Vec3d normal, double weight = 1.0)
-            : base(weight)
+        public AbovePlane(IEnumerable<int> indices, Vec3d origin, Vec3d normal, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
             Origin = origin;

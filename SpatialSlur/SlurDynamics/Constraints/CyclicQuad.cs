@@ -83,7 +83,11 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         public CyclicQuad(int vertex0, int vertex1, int vertex2, int vertex3, double weight = 1.0)
         {
-            SetHandles(vertex0, vertex1, vertex2, vertex3);
+            _h0.Index = vertex0;
+            _h1.Index = vertex1;
+            _h2.Index = vertex2;
+            _h3.Index = vertex3;
+
             Weight = weight;
         }
 
@@ -122,22 +126,6 @@ namespace SpatialSlur.SlurDynamics
             _h3.Delta = (cen - p3) * (1.0 - rad / d3);
 
             _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vertex0"></param>
-        /// <param name="vertex1"></param>
-        /// <param name="vertex2"></param>
-        /// <param name="vertex3"></param>
-        public void SetHandles(int vertex0, int vertex1, int vertex2, int vertex3)
-        {
-            _h0.Index = vertex0;
-            _h1.Index = vertex1;
-            _h2.Index = vertex2;
-            _h3.Index = vertex3;
         }
     }
 }

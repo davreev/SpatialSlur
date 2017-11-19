@@ -27,7 +27,7 @@ namespace SpatialSlur.SlurDynamics
         private GridScalarField3d _field;
         private GridVectorField3d _gradient;
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -39,40 +39,14 @@ namespace SpatialSlur.SlurDynamics
 
 
         /// <summary>
-        /// This must be called after any changes to the field.
-        /// </summary>
-        public void UpdateGradient()
-        {
-            if (_gradient == null || _gradient.Count != _field.Count)
-                _gradient = new GridVectorField3d(_field);
-
-            _field.GetGradient(_gradient);
-        }
-
-   
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="threshold"></param>
-        /// <param name="weight"></param>
-        public OnThreshold(GridScalarField3d field, double threshold, double weight = 1.0)
-            :base(weight)
-        {
-            Field = field;
-            Threshold = threshold;
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="field"></param>
         /// <param name="threshold"></param>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnThreshold(GridScalarField3d field, double threshold, int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public OnThreshold(GridScalarField3d field, double threshold, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Field = field;
             Threshold = threshold;
@@ -86,8 +60,8 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="field"></param>
         /// <param name="threshold"></param>
         /// <param name="weight"></param>
-        public OnThreshold(IEnumerable<int> indices, GridScalarField3d field, double threshold, double weight = 1.0)
-            : base(weight)
+        public OnThreshold(IEnumerable<int> indices, GridScalarField3d field, double threshold, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
             Field = field;
@@ -115,6 +89,18 @@ namespace SpatialSlur.SlurDynamics
                 h.Delta = g * (Threshold - t);
                 h.Weight = Weight;
             }
+        }
+
+        
+        /// <summary>
+        /// This must be called after any changes to the field.
+        /// </summary>
+        public void UpdateGradient()
+        {
+            if (_gradient == null || _gradient.Count != _field.Count)
+                _gradient = new GridVectorField3d(_field);
+
+            _field.GetGradient(_gradient);
         }
     }
 }

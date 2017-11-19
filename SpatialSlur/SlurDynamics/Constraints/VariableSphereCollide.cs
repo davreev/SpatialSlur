@@ -29,8 +29,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public VariableSphereCollide(int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public VariableSphereCollide(double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
         }
 
@@ -40,8 +40,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public VariableSphereCollide(IEnumerable<int> indices, double weight = 1.0)
-            : base(weight)
+        public VariableSphereCollide(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
         }
 

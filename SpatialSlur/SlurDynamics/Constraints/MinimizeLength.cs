@@ -62,7 +62,9 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         public MinimizeLength(int start, int end, double weight = 1.0)
         {
-            SetHandles(start, end);
+            _h0.Index = start;
+            _h1.Index = end;
+
             Weight = weight;
         }
 
@@ -76,18 +78,6 @@ namespace SpatialSlur.SlurDynamics
             _h0.Delta = (particles[_h1].Position - particles[_h0].Position) * 0.5;
             _h1.Delta = -_h0.Delta;
             _h0.Weight = _h1.Weight = Weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        public void SetHandles(int start, int end)
-        {
-            _h0.Index = start;
-            _h1.Index = end;
         }
     }
 }

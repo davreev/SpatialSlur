@@ -22,7 +22,7 @@ namespace SpatialSlur.SlurDynamics
         private H _h0 = new H();
         private H _h1 = new H();
 
-        private double _targetLength;
+        private double _length;
 
 
         /// <summary>
@@ -59,15 +59,15 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public double TargetLength
+        public double Length
         {
-            get { return _targetLength; }
+            get { return _length; }
             set
             {
                 if (value < 0.0)
                     throw new ArgumentOutOfRangeException("The value cannot be negative.");
 
-                _targetLength = value;
+                _length = value;
             }
         }
 
@@ -77,12 +77,14 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        /// <param name="targetLength"></param>
+        /// <param name="length"></param>
         /// <param name="weight"></param>
-        public LengthConstraint(int start, int end, double targetLength, double weight = 1.0)
+        public LengthConstraint(int start, int end, double length, double weight = 1.0)
         {
-            SetHandles(start, end);
-            TargetLength = targetLength;
+            _h0.Index = start;
+            _h1.Index = end;
+            
+            Length = length;
             Weight = weight;
         }
 
@@ -94,21 +96,9 @@ namespace SpatialSlur.SlurDynamics
         public override sealed void Calculate(IReadOnlyList<IBody> particles)
         {
             var d = particles[_h1].Position - particles[_h0].Position;
-            _h0.Delta = d * (1.0 - _targetLength / d.Length) * 0.5;
+            _h0.Delta = d * (1.0 - _length / d.Length) * 0.5;
             _h1.Delta = -_h0.Delta;
             _h0.Weight = _h1.Weight = Weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        public void SetHandles(int start, int end)
-        {
-            _h0.Index = start;
-            _h1.Index = end;
         }
     }
 }

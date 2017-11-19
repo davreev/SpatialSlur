@@ -71,7 +71,10 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         public MinimizeArea(int vertex0, int vertex1, int vertex2, double weight = 1.0)
         {
-            SetHandles(vertex0, vertex1, vertex2);
+            _h0.Index = vertex0;
+            _h1.Index = vertex1;
+            _h2.Index = vertex2;
+
             Weight = weight;
         }
 
@@ -92,20 +95,6 @@ namespace SpatialSlur.SlurDynamics
             _h1.Delta = -g1;
             _h2.Delta = -g2;
             _h0.Weight = _h1.Weight = _h2.Weight = Weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vertex0"></param>
-        /// <param name="vertex1"></param>
-        /// <param name="vertex2"></param>
-        public void SetHandles(int vertex0, int vertex1, int vertex2)
-        {
-            _h0.Index = vertex0;
-            _h1.Index = vertex1;
-            _h2.Index = vertex2;
         }
     }
 }

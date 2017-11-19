@@ -46,8 +46,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public LineCollide(int capacity, double weight = 1.0)
-            : base(capacity, weight)
+        public LineCollide(double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
         }
 
@@ -57,8 +57,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public LineCollide(IEnumerable<int> indices, double weight = 1.0)
-            : base(weight)
+        public LineCollide(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
         }
