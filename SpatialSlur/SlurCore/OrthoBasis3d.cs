@@ -5,14 +5,15 @@ using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
  * Notes
- */ 
+ * 
+ * Slower to concatenate than quaternions but faster to transform vectors.
+ * See detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// Orthonormal basis representation of a 3 dimensional rotation.
-    /// Faster to concatenate than rotation matrices but slower to transform vectors.
-    /// See detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
     /// </summary>
     [Serializable]
     public struct OrthoBasis3d

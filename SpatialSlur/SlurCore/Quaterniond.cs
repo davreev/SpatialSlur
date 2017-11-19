@@ -8,14 +8,15 @@ using System.Threading.Tasks;
  * Notes
  * http://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
  * http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
+ * 
+ * Faster to concatenate than rotation matrices but slower to transform vectors.
+ * See detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
  */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// Quaternion representation of a 3 dimensional rotation.
-    /// Slower to concatenate than quaternions but faster to transform vectors.
-    /// See detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
     /// </summary>
     public partial struct Quaterniond
     {
