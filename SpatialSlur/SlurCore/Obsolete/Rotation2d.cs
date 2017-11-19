@@ -13,8 +13,10 @@ using static SpatialSlur.SlurCore.CoreUtil;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents an arbitrary rotation in 2 dimensions as a right-handed orthonormal basis.
+    /// Orthogonal matrix representation of a 2 dimensional rotation.
     /// </summary>
+    [Obsolete("Renamed to Ortho2d")]
+    [Serializable]
     public struct Rotation2d
     {
         #region Static
@@ -24,7 +26,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Applies the given rotation to the given vector.
         /// </summary>
         /// <param name="rotation"></param>
         /// <param name="vector"></param>
@@ -36,35 +38,12 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Concatenates the given rotations as per rules of matrix multiplication.
         /// </summary>
         /// <param name="r0"></param>
         /// <param name="r1"></param>
         /// <returns></returns>
         public static Rotation2d operator *(Rotation2d r0, Rotation2d r1)
-        {
-            return r0.Apply(r1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rotation"></param>
-        /// <param name="vector"></param>
-        public static Vec2d Multiply(Rotation2d rotation, Vec2d vector)
-        {
-            return rotation.Apply(vector);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="r0"></param>
-        /// <param name="r1"></param>
-        /// <returns></returns>
-        public static Rotation2d Multiply(Rotation2d r0, Rotation2d r1)
         {
             return r0.Apply(r1);
         }

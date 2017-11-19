@@ -32,6 +32,7 @@ namespace SpatialSlur.SlurCore
 
     /// <summary>
     /// Compound delegate for getting/setting a value V via an instance of T.
+    /// The given getter and setter are assumed to read/write to the same location.
     /// </summary>
     public struct Property<T, V> : IProperty<T, V>
     {

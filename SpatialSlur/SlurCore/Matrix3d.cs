@@ -12,7 +12,11 @@ namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// Double precision 3x3 matrix.
+    /// 
+    /// TODO 
+    /// constructors and setters
     /// </summary>
+    [Serializable]
     public struct Matrix3d
     {
         #region Static
@@ -24,15 +28,26 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="rotation"></param>
-        public static implicit operator Matrix3d(Rotation2d rotation)
+        /// <param name="matrix"></param>
+        public static implicit operator Matrix3d(Matrix4d matrix)
         {
-            var m = Identity;
-            m.Column0 = rotation.X;
-            m.Column1 = rotation.Y;
-            return m;
+            return new Matrix3d(
+                matrix.M00, matrix.M01, matrix.M02,
+                matrix.M10, matrix.M11, matrix.M12,
+                matrix.M20, matrix.M21, matrix.M22
+                );
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotation"></param>
+        public static implicit operator Matrix3d(OrthoBasis3d rotation)
+        {
+            return rotation.ToMatrix();
+        }
+        
 
         /// <summary>
         /// 
@@ -40,11 +55,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="orient"></param>
         public static implicit operator Matrix3d(Orient2d orient)
         {
-            var m = new Matrix3d();
-            m.Column0 = orient.Rotation.X;
-            m.Column1 = orient.Rotation.Y;
-            m.Column2 = new Vec3d(orient.Translation, 1.0);
-            return m;
+            return orient.ToMatrix();
         }
 
 
@@ -54,25 +65,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="transform"></param>
         public static implicit operator Matrix3d(Transform2d transform)
         {
-            var m = new Matrix3d();
-            m.Column0 = transform.Rotation.X * transform.Scale.X;
-            m.Column1 = transform.Rotation.Y * transform.Scale.Y;
-            m.Column2 = new Vec3d(transform.Translation, 1.0);
-            return m;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rotation"></param>
-        public static implicit operator Matrix3d(Rotation3d rotation)
-        {
-            var m = Identity;
-            m.Column0 = rotation.X;
-            m.Column1 = rotation.Y;
-            m.Column2 = rotation.Z;
-            return m;
+            return transform.ToMatrix();
         }
 
 
@@ -104,11 +97,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d operator *(Matrix3d matrix, Vec3d vector)
         {
-            return new Vec3d(
-                Vec3d.Dot(vector, matrix.Row0),
-                Vec3d.Dot(vector, matrix.Row1),
-                Vec3d.Dot(vector, matrix.Row2)
-                );
+            return Multiply(ref matrix, vector);
         }
 
 
@@ -118,10 +107,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix3d operator *(Matrix3d m0, Matrix3d m1)
         {
-            m1.Column0 = Multiply(ref m0, m1.Column0);
-            m1.Column1 = Multiply(ref m0, m1.Column1);
-            m1.Column2 = Multiply(ref m0, m1.Column2);
-            return m1;
+            return Multiply(ref m0, ref m1);
         }
 
 
@@ -211,11 +197,11 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix3d Multiply(ref Matrix3d m0, ref Matrix3d m1)
         {
-            var m2 = new Matrix3d();
-            m2.Column0 = Multiply(ref m0, m1.Column0);
-            m2.Column1 = Multiply(ref m0, m1.Column1);
-            m2.Column2 = Multiply(ref m0, m1.Column2);
-            return m2;
+            return new Matrix3d(
+                Multiply(ref m0, m1.Column0),
+                Multiply(ref m0, m1.Column1),
+                Multiply(ref m0, m1.Column2)
+                );
         }
 
         #endregion
@@ -248,7 +234,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="diagonal"></param>
         public Matrix3d(double diagonal)
-            :this()
+            : this()
         {
             M00 = M11 = M22 = diagonal;
         }
@@ -283,6 +269,28 @@ namespace SpatialSlur.SlurCore
             M20 = m20;
             M21 = m21;
             M22 = m22;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="column0"></param>
+        /// <param name="column1"></param>
+        /// <param name="column2"></param>
+        public Matrix3d(Vec3d column0, Vec3d column1, Vec3d column2)
+        {
+            M00 = column0.X;
+            M01 = column1.X;
+            M02 = column2.X;
+
+            M10 = column0.Y;
+            M11 = column1.Y;
+            M12 = column2.Y;
+
+            M20 = column0.Z;
+            M21 = column1.Z;
+            M22 = column2.Z;
         }
 
 
@@ -399,9 +407,9 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                var result = this;
-                result.Invert();
-                return result;
+                var m = this;
+                m.Invert();
+                return m;
             }
         }
 
@@ -413,7 +421,13 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                throw new NotImplementedException();
+               return 
+                    M00 * M11 * M22 +
+                    M10 * M21 * M02 +
+                    M20 * M01 * M12 -
+                    M20 * M11 * M02 -
+                    M10 * M01 * M22 -
+                    M00 * M21 * M12;
             }
         }
 
@@ -448,7 +462,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Result is given in row-major order
         /// </summary>
         /// <returns></returns>
         public double[] ToArray()
@@ -460,7 +474,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Result is given in row-major order
         /// </summary>
         /// <param name="result"></param>
         public void ToArray(double[] result)

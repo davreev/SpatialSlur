@@ -10,8 +10,9 @@ using static SpatialSlur.SlurCore.CoreUtil;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents an arbitrary rotation in 3 dimensions as a right-handed orthonormal basis.
+    /// Orthogonal matrix representation of a 3 dimensional rotation.
     /// </summary>
+    [Obsolete("Renamed to Ortho3d")]
     [Serializable]
     public struct Rotation3d
     {
@@ -32,7 +33,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Applies the given rotation to the given vector.
         /// </summary>
         /// <param name="rotation"></param>
         /// <param name="vector"></param>
@@ -44,36 +45,15 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Concatenates the given rotations as per rules of matrix multiplication.
         /// </summary>
         /// <param name="r0"></param>
         /// <param name="r1"></param>
         /// <returns></returns>
         public static Rotation3d operator *(Rotation3d r0, Rotation3d r1)
         {
-            return r0.Apply(r1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rotation"></param>
-        /// <param name="vector"></param>
-        public static Vec3d Multiply(ref Rotation3d rotation, Vec3d vector)
-        {
-            return rotation.Apply(vector);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="r0"></param>
-        /// <param name="r1"></param>
-        public static Rotation3d Multiply(ref Rotation3d r0, ref Rotation3d r1)
-        {
-            return r0.Apply(r1);
+            r0.Apply(ref r1);
+            return r1;
         }
 
 
@@ -85,7 +65,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Rotation3d CreateRelative(Rotation3d r0, Rotation3d r1)
         {
-            return CreateRelative(ref r0, ref r1);
+            return r1.Apply(r0.Inverse);
         }
 
 
@@ -120,13 +100,23 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public Rotation3d(AxisAngle3d axisAngle)
+        public Rotation3d(AxisAngle3d rotation)
             : this()
         {
-            Set(axisAngle);
+            Set(rotation);
         }
 
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Rotation3d(Quaterniond quaternion)
+            : this()
+        {
+            Set(quaternion);
+        }
+
+
         /// <summary>
         /// Assumes the given axes are orthonormal.
         /// </summary>
@@ -219,7 +209,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void SetXY(Vec3d x, Vec3d y)
+        internal void SetXY(Vec3d x, Vec3d y)
         {
             _x = x;
             _y = y;
@@ -232,7 +222,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        private void SetYZ(Vec3d y, Vec3d z)
+        internal void SetYZ(Vec3d y, Vec3d z)
         {
             _x = Vec3d.Cross(y, z);
             _y = y;
@@ -245,7 +235,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="z"></param>
         /// <param name="x"></param>
-        private void SetZX(Vec3d z, Vec3d x)
+        internal void SetZX(Vec3d z, Vec3d x)
         {
             _x = x;
             _y = Vec3d.Cross(z, x);
@@ -254,78 +244,65 @@ namespace SpatialSlur.SlurCore
         
 
         /// <summary>
-        /// Swaps the x and y axes
+        /// Swaps the x and y axes.
+        /// Also flips the z axis to preserve handedness.
         /// </summary>
         public void SwapXY()
         {
             var temp = _x;
             _x = _y;
             _y = temp;
+            _z = -_z;
         }
 
 
         /// <summary>
-        /// Swaps the y and z axes
+        /// Swaps the y and z axes.
+        /// Also flips the x axis to preserve handedness.
         /// </summary>
         public void SwapYZ()
         {
             var temp = _y;
             _y = _z;
             _z = temp;
+            _x = -_x;
         }
 
 
         /// <summary>
         /// Swaps the z and x axes
+        /// Also flips the y axis to preserve handedness.
         /// </summary>
         public void SwapZX()
         {
             var temp = _z;
             _z = _x;
             _x = temp;
-        }
-
-
-        /// <summary>
-        /// Flips the x and y axes
-        /// </summary>
-        public void FlipXY()
-        {
-            _x = -_x;
             _y = -_y;
         }
 
 
         /// <summary>
-        /// Flips the y and z axes
+        /// Reverses all axes.
         /// </summary>
-        public void FlipYZ()
+        public void Flip()
         {
-            _y = -_y;
-            _z = -_z;
-        }
-
-
-        /// <summary>
-        /// Flips the z and x axes
-        /// </summary>
-        public void FlipZX()
-        {
-            _z = -_z;
-            _x = -_x;
+            _x.Negate();
+            _y.Negate();
+            _z.Negate();
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="axisAngle"></param>
+        /// <param name="rotation"></param>
         /// <returns></returns>
-        public void Set(AxisAngle3d axisAngle)
+        public void Set(AxisAngle3d rotation)
         {
-            var axis = axisAngle.Axis;
-            var cos = axisAngle.CosAngle;
-            var sin = axisAngle.SinAngle;
+            var axis = rotation.Axis;
+            var cos = rotation.CosAngle;
+            var sin = rotation.SinAngle;
             double t = 1.0 - cos;
 
             _x.X = cos + axis.X * axis.X * t;
@@ -349,6 +326,16 @@ namespace SpatialSlur.SlurCore
 
             _y.Z = p0 + p1;
             _z.Y = p0 - p1;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="quaternion"></param>
+        public void Set(Quaterniond quaternion)
+        {
+            throw new NotImplementedException();
         }
 
 
@@ -381,8 +368,19 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Rotation3d Apply(Rotation3d other)
         {
-            other.SetXY(Apply(other._x), Apply(other._y));
+            Apply(ref other);
             return other;
+        }
+
+
+        /// <summary>
+        /// Applies this rotation to the given rotation.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public void Apply(ref Rotation3d other)
+        {
+            other.SetXY(Apply(other._x), Apply(other._y));
         }
 
 
@@ -404,18 +402,19 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Rotation3d ApplyInverse(Rotation3d other)
         {
-            other.SetXY(ApplyInverse(other._x), ApplyInverse(other._y));
+            ApplyInverse(ref other);
             return other;
         }
 
 
         /// <summary>
-        /// Rotates this basis around the given axis by the specified angle.
+        /// Applies the inverse of this rotation to the given rotation.
         /// </summary>
-        /// <param name="axisAngle"></param>
-        public void Rotate(AxisAngle3d axisAngle)
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public void ApplyInverse(ref Rotation3d other)
         {
-            SetXY(axisAngle.Rotate(_x), axisAngle.Rotate(_y));
+            other.SetXY(ApplyInverse(other._x), ApplyInverse(other._y));
         }
     }
 }

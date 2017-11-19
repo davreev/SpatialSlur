@@ -383,7 +383,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Domain3d other, double tolerance)
+        public bool ApproxEquals(Domain3d other, double tolerance = SlurMath.ZeroTolerance)
         {
             return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance) && Z.ApproxEquals(other.Z, tolerance);
         }

@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents an angle preserving affine transformation in 3 dimensions
+    /// Represents an angle preserving affine transformation in 3 dimensions.
     /// </summary>
-    public struct Transform3d
+    public partial struct Transform3d
     {
         #region Static
 
         /// <summary></summary>
-        public static readonly Transform3d Identity = new Transform3d(new Vec3d(1.0), Rotation3d.Identity, Vec3d.Zero);
+        public static readonly Transform3d Identity = new Transform3d(new Vec3d(1.0), OrthoBasis3d.Identity, Vec3d.Zero);
 
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public static implicit operator Transform3d(Rotation3d rotation)
+        public static implicit operator Transform3d(OrthoBasis3d rotation)
         {
             return new Transform3d(new Vec3d(1.0), rotation, Vec3d.Zero);
         }
@@ -64,37 +64,15 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Combines the two given transformations.
+        /// Concatenates the given transformations by applying the first to the second.
         /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <returns></returns>
         public static Transform3d operator *(Transform3d t0, Transform3d t1)
         {
-            return t0.Apply(t1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="transform"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static Vec3d Multiply(ref Transform3d transform, Vec3d point)
-        {
-            return transform.Apply(point);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public static Transform3d Multiply(ref Transform3d t0, ref Transform3d t1)
-        {
-            return t0.Apply(t1);
+            t0.Apply(ref t1);
+            return t1;
         }
 
 
@@ -106,7 +84,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Transform3d CreateRelative(Transform3d t0, Transform3d t1)
         {
-            return CreateRelative(ref t0, ref t1);
+            return t1.Apply(t0.Inverse);
         }
 
 
@@ -137,7 +115,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotation3d Rotation;
+        public OrthoBasis3d Rotation;
         /// <summary></summary>
         public Vec3d Translation;
         /// <summary></summary>
@@ -150,7 +128,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="scale"></param>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Transform3d(Vec3d scale, Rotation3d rotation, Vec3d translation)
+        public Transform3d(Vec3d scale, OrthoBasis3d rotation, Vec3d translation)
         {
             Scale = scale;
             Rotation = rotation;
@@ -222,9 +200,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Transform3d Apply(Transform3d other)
         {
-            other.Rotation = Rotation.Apply(other.Rotation);
-            other.Translation = Apply(other.Translation);
-            other.Scale *= Scale;
+            Apply(ref other);
             return other;
         }
 
@@ -241,15 +217,56 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Apply(ref Transform3d other)
+        {
+            Rotation.Apply(ref other.Rotation);
+            other.Translation = Apply(other.Translation);
+            other.Scale *= Scale;
+        }
+
+
+        /// <summary>
         /// Applies the inverse of this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
         public Transform3d ApplyInverse(Transform3d other)
         {
-            other.Rotation = Rotation.ApplyInverse(other.Rotation);
+            Apply(ref other);
+            return other;
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void ApplyInverse(ref Transform3d other)
+        {
+            Rotation.ApplyInverse(ref other.Rotation);
             other.Translation = ApplyInverse(other.Translation);
             other.Scale /= Scale;
-            return other;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Matrix4d ToMatrix()
+        {
+            var rx = Rotation.X * Scale.X;
+            var ry = Rotation.Y * Scale.Y;
+            var rz = Rotation.Z * Scale.Z;
+
+            return new Matrix4d(
+                rx.X, ry.X, rz.X, Translation.X,
+                rx.Y, ry.Y, rz.Y, Translation.Y,
+                rx.Z, ry.Z, rz.Z, Translation.Z,
+                0.0, 0.0, 0.0, 1.0
+                );
         }
     }
 }

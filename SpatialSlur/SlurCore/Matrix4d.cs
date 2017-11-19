@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
 	/// <summary>
     /// Double precision 4x4 matrix.
     /// </summary>
-    public struct Matrix4d
+    [Serializable]
+    public partial struct Matrix4d
     {
         #region Static
 
@@ -27,25 +28,12 @@ namespace SpatialSlur.SlurCore
         /// <param name="matrix"></param>
         public static implicit operator Matrix4d(Matrix3d matrix)
         {
-            var m = Identity;
-            m.Column0 = matrix.Column0;
-            m.Column1 = matrix.Column1;
-            m.Column2 = matrix.Column2;
-            return m;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rotation"></param>
-        public static implicit operator Matrix4d(Rotation3d rotation)
-        {
-            var m = Identity;
-            m.Column0 = rotation.X;
-            m.Column1 = rotation.Y;
-            m.Column2 = rotation.Z;
-            return m;
+            return new Matrix4d(
+                matrix.M00, matrix.M01, matrix.M02, 0.0,
+                matrix.M10, matrix.M11, matrix.M12, 0.0,
+                matrix.M20, matrix.M21, matrix.M22, 0.0,
+                0.0, 0.0, 0.0, 1.0
+                );
         }
 
 
@@ -55,12 +43,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="orient"></param>
         public static implicit operator Matrix4d(Orient3d orient)
         {
-            var m = new Matrix4d();
-            m.Column0 = orient.Rotation.X;
-            m.Column1 = orient.Rotation.Y;
-            m.Column2 = orient.Rotation.Z;
-            m.Column3 = new Vec4d(orient.Translation, 1.0);
-            return m;
+            return orient.ToMatrix();
         }
         
 
@@ -70,12 +53,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="transform"></param>
         public static implicit operator Matrix4d(Transform3d transform)
         {
-            var m = new Matrix4d();
-            m.Column0 = transform.Rotation.X * transform.Scale.X;
-            m.Column1 = transform.Rotation.Y * transform.Scale.Y;
-            m.Column2 = transform.Rotation.Z * transform.Scale.Z;
-            m.Column3 = new Vec4d(transform.Translation, 1.0);
-            return m;
+            return transform.ToMatrix();
         }
 
 
@@ -115,12 +93,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d operator *(Matrix4d matrix, Vec4d vector)
         {
-            return new Vec4d(
-                Vec4d.Dot(vector, matrix.Row0),
-                Vec4d.Dot(vector, matrix.Row1),
-                Vec4d.Dot(vector, matrix.Row2),
-                Vec4d.Dot(vector, matrix.Row3)
-                );
+            return Multiply(ref matrix, vector);
         }
 
 
@@ -130,11 +103,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix4d operator *(Matrix4d m0, Matrix4d m1)
         {
-            m1.Column0 = Multiply(ref m0, m1.Column0);
-            m1.Column1 = Multiply(ref m0, m1.Column1);
-            m1.Column2 = Multiply(ref m0, m1.Column2);
-            m1.Column3 = Multiply(ref m0, m1.Column3);
-            return m1;
+            return Multiply(ref m0, ref m1);
         }
 
 
@@ -249,14 +218,14 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix4d Multiply(ref Matrix4d m0, ref Matrix4d m1)
         {
-            var m2 = new Matrix4d();
-            m2.Column0 = Multiply(ref m0, m1.Column0);
-            m2.Column1 = Multiply(ref m0, m1.Column1);
-            m2.Column2 = Multiply(ref m0, m1.Column2);
-            m2.Column3 = Multiply(ref m0, m1.Column3);
-            return m2;
+            return new Matrix4d(
+                Multiply(ref m0, m1.Column0),
+                Multiply(ref m0, m1.Column1),
+                Multiply(ref m0, m1.Column2),
+                Multiply(ref m0, m1.Column3)
+                );
         }
-        
+
         #endregion
 
 
@@ -353,6 +322,37 @@ namespace SpatialSlur.SlurCore
             M31 = m31;
             M32 = m32;
             M33 = m33;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="column0"></param>
+        /// <param name="column1"></param>
+        /// <param name="column2"></param>
+        /// <param name="column3"></param>
+        public Matrix4d(Vec4d column0, Vec4d column1, Vec4d column2, Vec4d column3)
+        {
+            M00 = column0.X;
+            M01 = column1.X;
+            M02 = column2.X;
+            M03 = column3.X;
+
+            M10 = column0.Y;
+            M11 = column1.Y;
+            M12 = column2.Y;
+            M13 = column3.Y;
+
+            M20 = column0.Z;
+            M21 = column1.Z;
+            M22 = column2.Z;
+            M23 = column3.Z;
+
+            M30 = column0.W;
+            M31 = column1.W;
+            M32 = column2.W;
+            M33 = column3.W;
         }
 
 
@@ -508,9 +508,9 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                var result = this;
-                result.Invert();
-                return result;
+                var m = this;
+                m.Invert();
+                return m;
             }
         }
 
@@ -522,7 +522,19 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                throw new NotImplementedException();
+                var a0 = M20 * M31 - M21 * M30;
+                var a1 = M20 * M32 - M22 * M30;
+                var a2 = M20 * M33 - M23 * M30;
+                var a3 = M21 * M32 - M22 * M31;
+                var a4 = M21 * M33 - M23 * M31;
+                var a5 = M22 * M33 - M23 * M32;
+
+                var b0 = a5 * M11 - a4 * M12 + a3 * M13;
+                var b1 = a2 * M12 - a5 * M10 - a1 * M13;
+                var b2 = a4 * M10 - a2 * M11 + a0 * M13;
+                var b3 = a1 * M11 - a3 * M10 - a0 * M12;
+
+                return b0 * M00 + b1 * M01 + b2 * M02 + b3 * M03;
             }
         }
 
@@ -560,7 +572,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Result is given in row-major order
         /// </summary>
         /// <returns></returns>
         public double[] ToArray()
@@ -572,7 +584,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Result is given in row-major order
         /// </summary>
         /// <param name="result"></param>
         public void ToArray(double[] result)

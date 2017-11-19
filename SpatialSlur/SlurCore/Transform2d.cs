@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Notes
+ */ 
+
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
@@ -14,14 +18,14 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Transform2d Identity = new Transform2d(new Vec2d(1.0), Rotation2d.Identity, Vec2d.Zero);
+        public static readonly Transform2d Identity = new Transform2d(new Vec2d(1.0), OrthoBasis2d.Identity, Vec2d.Zero);
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public static implicit operator Transform2d(Rotation2d rotation)
+        public static implicit operator Transform2d(OrthoBasis2d rotation)
         {
             return new Transform2d(new Vec2d(1.0), rotation, Vec2d.Zero);
         }
@@ -38,7 +42,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Applies the given transformation to the given point.
         /// </summary>
         /// <param name="transform"></param>
         /// <param name="point"></param>
@@ -50,35 +54,12 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Concatenates the given transformations by applying the first to the second.
         /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <returns></returns>
         public static Transform2d operator *(Transform2d t0, Transform2d t1)
-        {
-            return t0.Apply(t1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="transform"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static Vec2d Multiply(Transform2d transform, Vec2d point)
-        {
-            return transform.Apply(point);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public static Transform2d Multiply(Transform2d t0, Transform2d t1)
         {
             return t0.Apply(t1);
         }
@@ -99,7 +80,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotation2d Rotation;
+        public OrthoBasis2d Rotation;
         /// <summary></summary>
         public Vec2d Translation;
         /// <summary></summary>
@@ -112,7 +93,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="scale"></param>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Transform2d(Vec2d scale, Rotation2d rotation, Vec2d translation)
+        public Transform2d(Vec2d scale, OrthoBasis2d rotation, Vec2d translation)
         {
             Scale = scale;
             Rotation = rotation;
@@ -179,6 +160,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Applies the inverse of this transformation to the given point.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vec2d ApplyInverse(Vec2d point)
+        {
+            return Rotation.ApplyInverse(point - Translation) / Scale;
+        }
+
+
+        /// <summary>
         /// Applies this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
@@ -192,17 +184,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this transformation to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public Vec2d ApplyInverse(Vec2d point)
-        {
-            return Rotation.ApplyInverse(point - Translation) / Scale;
-        }
-
-
-        /// <summary>
         /// Applies the inverse of this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
@@ -212,6 +193,23 @@ namespace SpatialSlur.SlurCore
             other.Translation = ApplyInverse(other.Translation);
             other.Scale /= Scale;
             return other;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Matrix3d ToMatrix()
+        {
+            var rx = Rotation.X * Scale.X;
+            var ry = Rotation.Y * Scale.Y;
+
+            return new Matrix3d(
+                rx.X, ry.X, Translation.X,
+                rx.Y, ry.Y, Translation.Y,
+                0.0, 0.0, 1.0
+                );
         }
     }
 }

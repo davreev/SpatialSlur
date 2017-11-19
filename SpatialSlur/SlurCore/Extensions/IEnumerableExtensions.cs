@@ -20,20 +20,41 @@ namespace SpatialSlur.SlurCore
         #region IEnumerable<T>
 
         /// <summary>
-        /// Assumes the number of elements in this sequence doesn't exceed the length of the given array.
-        /// Returns the number of items in this sequence.
+        /// Assumes the given array is large enough to fit the entire sequence.
+        /// Returns the number of items in the sequence.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="seqeunce"></param>
         /// <param name="array"></param>
         public static int ToArray<T>(this IEnumerable<T> seqeunce, T[] array)
         {
-            int index = 0;
+            int n = 0;
 
             foreach (var item in seqeunce)
-                array[index++] = item;
+                array[n++] = item;
 
-            return index;
+            return n;
+        }
+
+
+        /// <summary>
+        /// Assumes the given array is large enough to fit the entire sequence.
+        /// Returns the number of items in the sequence.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="seqeunce"></param>
+        /// <param name="array"></param>
+        public static int ToArray<T>(this IEnumerable<T> seqeunce, T[] array, int index)
+        {
+            int n = 0;
+
+            foreach (var item in seqeunce)
+            {
+                array[n + index] = item;
+                n++;
+            }
+
+            return n;
         }
 
 

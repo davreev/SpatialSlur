@@ -11,69 +11,47 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// 
+    /// Represents a proper rigid transformation in 2 dimensions.
+    /// https://en.wikipedia.org/wiki/Rigid_transformation
     /// </summary>
     public struct Orient2d
     {
         #region Static
 
         /// <summary></summary>
-        public static readonly Orient2d Identity = new Orient2d(Rotation2d.Identity, Vec2d.Zero);
+        public static readonly Orient2d Identity = new Orient2d(OrthoBasis2d.Identity, Vec2d.Zero);
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public static implicit operator Orient2d(Rotation2d rotation)
+        public static implicit operator Orient2d(OrthoBasis2d rotation)
         {
             return new Orient2d(rotation, Vec2d.Zero);
         }
 
 
         /// <summary>
+        /// Applies the given transformation to the given point.
         /// 
         /// </summary>
-        /// <param name="orient"></param>
+        /// <param name="transform"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static Vec2d operator *(Orient2d orient, Vec2d point)
+        public static Vec2d operator *(Orient2d transform, Vec2d point)
         {
-            return orient.Apply(point);
+            return transform.Apply(point);
         }
 
 
         /// <summary>
-        /// 
+        /// Concatenates the given transformations by applying the first to the second.
         /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <returns></returns>
         public static Orient2d operator *(Orient2d t0, Orient2d t1)
-        {
-            return t0.Apply(t1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="orient"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static Vec2d Multiply(Orient2d orient, Vec2d point)
-        {
-            return orient.Apply(point);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        /// <returns></returns>
-        public static Orient2d Multiply(Orient2d t0, Orient2d t1)
         {
             return t0.Apply(t1);
         }
@@ -117,7 +95,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotation2d Rotation;
+        public OrthoBasis2d Rotation;
         /// <summary></summary>
         public Vec2d Translation;
 
@@ -127,7 +105,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Orient2d(Rotation2d rotation, Vec2d translation)
+        public Orient2d(OrthoBasis2d rotation, Vec2d translation)
         {
             Rotation = rotation;
             Translation = translation;
@@ -141,7 +119,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="x"></param>
         public Orient2d(Vec2d origin, Vec2d x)
         {
-            Rotation = new Rotation2d(x);
+            Rotation = new OrthoBasis2d(x);
             Translation = origin;
         }
 
@@ -191,6 +169,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Applies the inverse of this transformation to the given point.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vec2d ApplyInverse(Vec2d point)
+        {
+            return Rotation.ApplyInverse(point - Translation);
+        }
+
+
+        /// <summary>
         /// Applies this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
@@ -203,17 +192,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this transformation to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public Vec2d ApplyInverse(Vec2d point)
-        {
-            return Rotation.ApplyInverse(point - Translation);
-        }
-
-
-        /// <summary>
         /// Applies the inverse of this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
@@ -222,6 +200,23 @@ namespace SpatialSlur.SlurCore
             other.Rotation = Rotation.ApplyInverse(other.Rotation);
             other.Translation = ApplyInverse(other.Translation);
             return other;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Matrix3d ToMatrix()
+        {
+            var rx = Rotation.X;
+            var ry = Rotation.Y;
+
+            return new Matrix3d(
+                rx.X, ry.X, Translation.X,
+                rx.Y, ry.Y, Translation.Y,
+                0.0, 0.0, 1.0
+                );
         }
     }
 }

@@ -295,7 +295,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Domain1d other, double tolerance)
+        public bool ApproxEquals(Domain1d other, double tolerance = SlurMath.ZeroTolerance)
         {
             return Math.Abs(other.T0 - T0) < tolerance && Math.Abs(other.T1 - T1) < tolerance;
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Drawing;
 
 /*
@@ -193,7 +192,44 @@ namespace SpatialSlur.SlurCore
             }
         }
 
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Shuffle<T>(this IList<T> list, int index, int count)
+        {
+            Shuffle(list, new Random(), index, count);
+        }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Shuffle<T>(this IList<T> list, int seed, int index, int count)
+        {
+            Shuffle(list, new Random(seed), index, count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Shuffle<T>(this IList<T> list, Random random, int index, int count)
+        {
+            if (list is T[])
+            {
+                ArrayExtensions.Shuffle((T[])list, random, index, count);
+                return;
+            }
+
+            for (int i = count - 1; i > 0; i--)
+            {
+                int j = random.Next(i);
+                list.Swap(i + index, j + index);
+            }
+        }
+
+        
         /// <summary>
         /// Shifts a list of items in place.
         /// </summary>
@@ -296,12 +332,13 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns the nth smallest item in linear amortized time.
+        /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
         /// </summary>
         public static T QuickSelect<T>(this IList<T> list, int n)
             where T : IComparable<T>
         {
-            return list.QuickSelect(n, 0, list.Count - 1, (x, y) => x.CompareTo(y));
+            return list.QuickSelect(n, 0, list.Count - 1);
         }
 
 
@@ -311,10 +348,61 @@ namespace SpatialSlur.SlurCore
         public static T QuickSelect<T>(this IList<T> list, int n, int from, int to)
             where T : IComparable<T>
         {
-            return list.QuickSelect(n, from, to, (x, y) => x.CompareTo(y));
+            if (list is T[])
+                return ArrayExtensions.QuickSelect((T[])list, n, from, to);
+
+            if (n < from || n > to)
+                throw new IndexOutOfRangeException();
+
+            while (to > from)
+            {
+                int i = list.Partition(from, to);
+                if (i > n) to = i - 1;
+                else if (i < n) from = i + 1;
+                else return list[i];
+            }
+            return list[from];
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        private static int Partition<T>(this IList<T> list, int from, int to)
+            where T : IComparable<T>
+        {
+            T pivot = list[from]; // get pivot element
+            int i = from;
+            int j = to + 1;
+
+            while (true)
+            {
+                while (pivot.CompareTo(list[++i]) > 0)
+                    if (i == to) break;
+
+                while (pivot.CompareTo(list[--j]) < 0)
+                    if (j == from) break;
+
+                if (i >= j) break; // check if indices have crossed
+                list.Swap(i, j);
+            }
+
+            // swap with pivot element
+            list.Swap(from, j);
+            return j;
+        }
+
+
+        /// <summary>
+        /// Returns the nth smallest item in linear amortized time.
+        /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
+        /// </summary>
+        public static T QuickSelect<T>(this IList<T> list, int n, Comparison<T> compare)
+        {
+            return list.QuickSelect(n, 0, list.Count - 1, compare);
+        }
+
+        
         /// <summary>
         /// 
         /// </summary>
@@ -332,17 +420,7 @@ namespace SpatialSlur.SlurCore
             return list.QuickSelect(n, from, to, comparer.Compare);
         }
 
-
-        /// <summary>
-        /// Returns the nth smallest item in linear amortized time.
-        /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
-        /// </summary>
-        public static T QuickSelect<T>(this IList<T> list, int n, Comparison<T> compare)
-        {
-            return list.QuickSelect(n, 0, list.Count - 1, compare);
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -393,12 +471,14 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns the nth smallest key in linear amortized time.
+        /// Partially sorts the keys with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
+        /// Also partially sorts a list of corresponding values.
         /// </summary>
         public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n)
             where K : IComparable<K>
         {
-            return keys.QuickSelect(values, n, 0, keys.Count - 1, (x, y) => x.CompareTo(y));
+            return keys.QuickSelect(values, n, 0, keys.Count - 1);
         }
 
 
@@ -408,53 +488,15 @@ namespace SpatialSlur.SlurCore
         public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n, int from, int to)
             where K : IComparable<K>
         {
-            return keys.QuickSelect(values, n, from, to, (x, y) => x.CompareTo(y));
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n, IComparer<K> comparer)
-        {
-            return keys.QuickSelect(values, n, 0, keys.Count - 1, comparer.Compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n, int from, int to, IComparer<K> comparer)
-        {
-            return keys.QuickSelect(values, n, from, to, comparer.Compare);
-        }
-
-
-        /// <summary>
-        /// Returns the nth smallest key in linear amortized time.
-        /// Partially sorts the keys with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
-        /// Also partially sorts a list of corresponding values.
-        /// </summary>
-        public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n, Comparison<K> compare)
-        {
-            return keys.QuickSelect(values, n, 0, keys.Count - 1, compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n, int from, int to, Comparison<K> compare)
-        {
             if (keys is K[] && values is V[])
-                return ArrayExtensions.QuickSelect((K[])keys, (V[])values, n, from, to, compare);
+                return ArrayExtensions.QuickSelect((K[])keys, (V[])values, n, from, to);
 
             if (n < from || n > to)
                 throw new IndexOutOfRangeException();
 
             while (to > from)
             {
-                int i = keys.Partition(values, from, to, compare);
+                int i = keys.Partition(values, from, to);
                 if (i > n) to = i - 1;
                 else if (i < n) from = i + 1;
                 else return keys[i];
@@ -466,7 +508,8 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        private static int Partition<K, V>(this IList<K> keys, IList<V> values, int from, int to, Comparison<K> compare)
+        private static int Partition<K, V>(this IList<K> keys, IList<V> values, int from, int to)
+            where K : IComparable<K>
         {
             K pivot = keys[from]; // get pivot element
             int i = from;
@@ -474,10 +517,10 @@ namespace SpatialSlur.SlurCore
 
             while (true)
             {
-                while (compare(pivot, keys[++i]) > 0)
+                while (pivot.CompareTo(keys[++i]) > 0)
                     if (i == to) break;
 
-                while (compare(pivot, keys[--j]) < 0)
+                while (pivot.CompareTo(keys[--j]) < 0)
                     if (j == from) break;
 
                 if (i >= j) break; // check if indices have crossed

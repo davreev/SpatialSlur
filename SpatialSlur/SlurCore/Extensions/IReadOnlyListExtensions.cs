@@ -7,11 +7,8 @@ using System.Drawing;
 
 using SpatialSlur.SlurData;
 
-using static SpatialSlur.SlurData.DataUtil;
-
 /*
  * Notes
- * All IList extension methods are redirected to equivalent array extension methods where possible for better performance.
  */
 
 namespace SpatialSlur.SlurCore
@@ -101,93 +98,45 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void Action<T>(this IReadOnlyList<T> source, Action<T> action)
+        public static void Action<T>(this IReadOnlyList<T> source, Action<T> action, bool parallel = false)
         {
-            ActionRange(source, 0, source.Count, action);
+            ActionRange(source, 0, source.Count, action, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] Convert<T, U>(this IReadOnlyList<T> source, Func<T, U> converter)
+        public static U[] Convert<T, U>(this IReadOnlyList<T> source, Func<T, U> converter, bool parallel = false)
         {
-            return ConvertRange(source, 0, source.Count, converter);
+            return ConvertRange(source, 0, source.Count, converter, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Convert<T, U>(this IReadOnlyList<T> source, Func<T, U> converter, IList<U> result)
+        public static void Convert<T, U>(this IReadOnlyList<T> source, Func<T, U> converter, IList<U> result, bool parallel = false)
         {
-            ConvertRange(source, 0, source.Count, converter, result);
+            ConvertRange(source, 0, source.Count, converter, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] Convert<T, U>(this IReadOnlyList<T> source, Func<T, int, U> converter)
+        public static U[] Convert<T, U>(this IReadOnlyList<T> source, Func<T, int, U> converter, bool parallel = false)
         {
-            return ConvertRange(source, 0, source.Count, converter);
+            return ConvertRange(source, 0, source.Count, converter, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Convert<T, U>(this IReadOnlyList<T> source, Func<T, int, U> converter, IList<U> result)
+        public static void Convert<T, U>(this IReadOnlyList<T> source, Func<T, int, U> converter, IList<U> result, bool parallel = false)
         {
-            ConvertRange(source, 0, source.Count, converter, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="action"></param>
-        public static void ActionParallel<T>(this IReadOnlyList<T> source, Action<T> action)
-        {
-            ActionRangeParallel(source, 0, source.Count, action);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertParallel<T, U>(this IReadOnlyList<T> source, Func<T, U> converter)
-        {
-            return ConvertRangeParallel(source, 0, source.Count, converter);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertParallel<T, U>(this IReadOnlyList<T> source, Func<T, U> converter, IList<U> result)
-        {
-            ConvertRangeParallel(source, 0, source.Count, converter, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertParallel<T, U>(this IReadOnlyList<T> source, Func<T, int, U> converter)
-        {
-            return ConvertRangeParallel(source, 0, source.Count, converter);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertParallel<T, U>(this IReadOnlyList<T> source, Func<T, int, U> converter, IList<U> result)
-        {
-            ConvertRangeParallel(source, 0, source.Count, converter, result);
+            ConvertRange(source, 0, source.Count, converter, result, parallel);
         }
 
 
@@ -199,128 +148,40 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ActionRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
+        public static void ActionRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action, bool parallel = false)
         {
             if (source is T[])
             {
-                ArrayExtensions.ActionRange((T[])source, index, count, action);
+                ArrayExtensions.ActionRange((T[])source, index, count, action, parallel);
                 return;
             }
 
-            for(int i = 0; i < count; i++)
-                action(source[i + index]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter)
-        {
-            if (source is T[])
-                return ArrayExtensions.ConvertRange((T[])source, index, count, converter);
-
-            U[] result = new U[count];
-            ConvertRangeImpl(source, index, count, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter, IList<U> result)
-        {
-            if (source is T[] && result is U[])
-                ArrayExtensions.ConvertRange((T[])source, index, count, converter, (U[])result);
-            else
-                ConvertRangeImpl(source, index, count, converter, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void ConvertRangeImpl<T,U>(IReadOnlyList<T> source, int index, int count, Func<T, U> converter, IList<U> result)
-        {
-            for (int i = 0; i < count; i++)
-                result[i] = converter(source[i + index]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter)
-        {
-            if (source is T[])
-                return ArrayExtensions.ConvertRange((T[])source, index, count, converter);
-
-            U[] result = new U[count];
-            ConvertRangeImpl(source, index, count, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, IList<U> result)
-        {
-            if (source is T[] && result is U[])
-                ArrayExtensions.ConvertRange((T[])source, index, count, converter, (U[])result);
-            else
-                ConvertRangeImpl(source, index, count, converter, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void ConvertRangeImpl<T, U>(IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, IList<U> result)
-        {
-            for (int i = 0; i < count; i++)
+            if (parallel)
             {
-                int j = i + index;
-                result[i] = converter(source[j], j);
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        action(source[i + index]);
+                });
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
-        /// <param name="action"></param>
-        public static void ActionRangeParallel<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action)
-        {
-            if (source is T[])
+            else
             {
-                ArrayExtensions.ActionRangeParallel((T[])source, index, count, action);
-                return;
-            }
-
-            Parallel.ForEach(Partitioner.Create(0, count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
+                for (int i = 0; i < count; i++)
                     action(source[i + index]);
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] ConvertRangeParallel<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter)
+        public static U[] ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter, bool parallel = false)
         {
             if (source is T[])
-                return ArrayExtensions.ConvertRangeParallel((T[])source, index, count, converter);
+                return ArrayExtensions.ConvertRange((T[])source, index, count, converter, parallel);
 
             U[] result = new U[count];
-            ConvertRangeParallelImpl(source, index, count, converter, result);
+            ConvertRangeImpl(source, index, count, converter, result, parallel);
             return result;
         }
 
@@ -328,38 +189,46 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertRangeParallel<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter, IList<U> result)
+        public static void ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter, IList<U> result, bool parallel = false)
         {
             if (source is T[] && result is U[])
-                ArrayExtensions.ConvertRangeParallel((T[])source, index, count, converter, (U[])result);
+                ArrayExtensions.ConvertRange((T[])source, index, count, converter, (U[])result, parallel);
             else
-                ConvertRangeParallelImpl(source, index, count, converter, result);
+                ConvertRangeImpl(source, index, count, converter, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void ConvertRangeParallelImpl<T, U>(IReadOnlyList<T> source, int index, int count, Func<T, U> converter, IList<U> result)
+        private static void ConvertRangeImpl<T,U>(IReadOnlyList<T> source, int index, int count, Func<T, U> converter, IList<U> result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            if(parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = converter(source[i + index]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
                     result[i] = converter(source[i + index]);
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] ConvertRangeParallel<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter)
+        public static U[] ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, bool parallel = false)
         {
             if (source is T[])
-                return ArrayExtensions.ConvertRangeParallel((T[])source, index, count, converter);
+                return ArrayExtensions.ConvertRange((T[])source, index, count, converter, parallel);
 
             U[] result = new U[count];
-            ConvertRangeParallelImpl(source, index, count, converter, result);
+            ConvertRangeImpl(source, index, count, converter, result, parallel);
             return result;
         }
 
@@ -367,151 +236,79 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertRangeParallel<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, IList<U> result)
+        public static void ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, IList<U> result, bool parallel = false)
         {
             if (source is T[] && result is U[])
-                ArrayExtensions.ConvertRangeParallel((T[])source, index, count, converter, (U[])result);
+                ArrayExtensions.ConvertRange((T[])source, index, count, converter, (U[])result, parallel);
             else
-                ConvertRangeParallelImpl(source, index, count, converter, result);
+                ConvertRangeImpl(source, index, count, converter, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void ConvertRangeParallelImpl<T, U>(IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, IList<U> result)
+        private static void ConvertRangeImpl<T, U>(IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, IList<U> result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            if(parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        int j = i + index;
+                        result[i] = converter(source[j], j);
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
                 {
                     int j = i + index;
                     result[i] = converter(source[j], j);
                 }
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void ActionSelection<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
+        public static void ActionSelection<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action, bool parallel = false)
         {
             if (source is T[] && indices is int[])
             {
-                ArrayExtensions.ActionSelection<T>((T[])source, (int[])indices, action);
+                ArrayExtensions.ActionSelection<T>((T[])source, (int[])indices, action, parallel);
                 return;
             }
 
-            for (int i = 0; i < indices.Count; i++)
-                action(source[indices[i]]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter)
-        {
-            if (source is T[] && indices is int[])
-                return ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter);
-
-            U[] result = new U[indices.Count];
-            ConvertSelectionImpl(source, indices, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, IList<U> result)
-        {
-            if (source is T[] && indices is int[] && result is U[])
-                ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, (U[])result);
-            else
-                ConvertSelectionImpl(source, indices, converter, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void ConvertSelectionImpl<T, U>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, IList<U> result)
-        {
-            for (int i = 0; i < indices.Count; i++)
-                result[i] = converter(source[indices[i]]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter)
-        {
-            if (source is T[] && indices is int[])
-                return ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter);
-
-            U[] result = new U[indices.Count];
-            ConvertSelectionImpl(source, indices, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, IList<U> result)
-        {
-            if (source is T[] && indices is int[] && result is U[])
-                ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, (U[])result);
-            else
-                ConvertSelectionImpl(source, indices, converter, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void ConvertSelectionImpl<T, U>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, IList<U> result)
-        {
-            for (int i = 0; i < indices.Count; i++)
+            if (parallel)
             {
-                int j = indices[i];
-                result[i] = converter(source[j], j);
+                Parallel.ForEach(Partitioner.Create(0, indices.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        action(source[indices[i]]);
+                });
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ActionSelectionParallel<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action)
-        {
-            if (source is T[] && indices is int[])
+            else
             {
-                ArrayExtensions.ActionSelectionParallel<T>((T[])source, (int[])indices, action);
-                return;
-            }
-
-            Parallel.ForEach(Partitioner.Create(0, indices.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
+                for (int i = 0; i < indices.Count; i++)
                     action(source[indices[i]]);
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] ConvertSelectionParallel<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter)
+        public static U[] ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, bool parallel = false)
         {
             if (source is T[] && indices is int[])
-                return ArrayExtensions.ConvertSelectionParallel((T[])source, (int[])indices, converter);
+                return ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, parallel);
 
             U[] result = new U[indices.Count];
-            ConvertSelectionParallelImpl(source, indices, converter, result);
+            ConvertSelectionImpl(source, indices, converter, result, parallel);
             return result;
         }
 
@@ -519,38 +316,46 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertSelectionParallel<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, IList<U> result)
+        public static void ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, IList<U> result, bool parallel = false)
         {
             if (source is T[] && indices is int[] && result is U[])
-                ArrayExtensions.ConvertSelectionParallel((T[])source, (int[])indices, converter, (U[])result);
+                ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, (U[])result, parallel);
             else
-                ConvertSelectionParallelImpl(source, indices, converter, result);
+                ConvertSelectionImpl(source, indices, converter, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void ConvertSelectionParallelImpl<T, U>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, IList<U> result)
+        private static void ConvertSelectionImpl<T, U>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, IList<U> result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, indices.Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, indices.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = converter(source[indices[i]]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < indices.Count; i++)
                     result[i] = converter(source[indices[i]]);
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] ConvertSelectionParallel<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter)
+        public static U[] ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, bool parallel = false)
         {
             if (source is T[] && indices is int[])
-                return ArrayExtensions.ConvertSelectionParallel((T[])source, (int[])indices, converter);
+                return ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, parallel);
 
             U[] result = new U[indices.Count];
-            ConvertSelectionParallelImpl(source, indices, converter, result);
+            ConvertSelectionImpl(source, indices, converter, result, parallel);
             return result;
         }
 
@@ -558,30 +363,41 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertSelectionParallel<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, IList<U> result)
+        public static void ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, IList<U> result, bool parallel = false)
         {
             if (source is T[] && indices is int[] && result is U[])
-                ArrayExtensions.ConvertSelectionParallel((T[])source, (int[])indices, converter, (U[])result);
+                ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, (U[])result, parallel);
             else
-                ConvertSelectionParallelImpl(source, indices, converter, result);
+                ConvertSelectionImpl(source, indices, converter, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void ConvertSelectionParallelImpl<T, U>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, IList<U> result)
+        private static void ConvertSelectionImpl<T, U>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, IList<U> result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, indices.Count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, indices.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        int j = indices[i];
+                        result[i] = converter(source[j], j);
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < indices.Count; i++)
                 {
                     int j = indices[i];
                     result[i] = converter(source[j], j);
                 }
-            });
+            }
         }
-
+        
 
         /// <summary>
         /// 
@@ -643,17 +459,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static Color Lerp(this IReadOnlyList<Color> colors, double t)
+        public static Color Lerp(this IReadOnlyList<Color> colors, double factor)
         {
             int last = colors.Count - 1;
-            t = SlurMath.Fract(t * last, out int i);
+            factor = SlurMath.Fract(factor * last, out int i);
 
             if (i < 0)
                 return colors[0];
             else if (i >= last)
                 return colors[last];
 
-            return colors[i].LerpTo(colors[i + 1], t);
+            return colors[i].LerpTo(colors[i + 1], factor);
         }
 
         #endregion
@@ -664,17 +480,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static double Lerp(this IReadOnlyList<double> vector, double t)
+        public static double Lerp(this IReadOnlyList<double> vector, double factor)
         {
             int last = vector.Count - 1;
-            t = SlurMath.Fract(t * last, out int i);
+            factor = SlurMath.Fract(factor * last, out int i);
 
             if (i < 0)
                 return vector[0];
             else if (i >= last)
                 return vector[last];
 
-            return SlurMath.Lerp(vector[i], vector[i + 1], t);
+            return SlurMath.Lerp(vector[i], vector[i + 1], factor);
         }
 
         #endregion
@@ -685,17 +501,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static Vec2d Lerp(this IReadOnlyList<Vec2d> vectors, double t)
+        public static Vec2d Lerp(this IReadOnlyList<Vec2d> vectors, double factor)
         {
             int last = vectors.Count - 1;
-            t = SlurMath.Fract(t * last, out int i);
+            factor = SlurMath.Fract(factor * last, out int i);
 
             if (i < 0)
                 return vectors[0];
             else if (i >= last)
                 return vectors[last];
 
-            return vectors[i].LerpTo(vectors[i + 1], t);
+            return vectors[i].LerpTo(vectors[i + 1], factor);
         }
 
 
@@ -705,7 +521,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.RemoveCoincident(points, p => p, tolerance);
         }
@@ -718,7 +534,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.RemoveCoincident(points, p => p, out indexMap, tolerance);
         }
@@ -732,7 +548,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.RemoveCoincident(points, p => p, grid, out indexMap, tolerance);
         }
@@ -744,7 +560,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(points, p => p, tolerance);
         }
@@ -757,7 +573,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(points, p => p, grid, tolerance);
         }
@@ -770,7 +586,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, tolerance);
         }
@@ -784,7 +600,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
@@ -797,7 +613,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, tolerance);
         }
@@ -811,7 +627,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
@@ -824,17 +640,17 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static Vec3d Lerp(this IReadOnlyList<Vec3d> vectors, double t)
+        public static Vec3d Lerp(this IReadOnlyList<Vec3d> vectors, double factor)
         {
             int last = vectors.Count - 1;
-            t = SlurMath.Fract(t * last, out int i);
+            factor = SlurMath.Fract(factor * last, out int i);
 
             if (i < 0)
                 return vectors[0];
             else if (i >= last)
                 return vectors[last];
 
-            return vectors[i].LerpTo(vectors[i + 1], t);
+            return vectors[i].LerpTo(vectors[i + 1], factor);
         }
 
 
@@ -844,7 +660,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.RemoveCoincident(points, p => p, tolerance);
         }
@@ -857,7 +673,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="indexMap"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.RemoveCoincident(points, p => p, out indexMap, tolerance);
         }
@@ -871,7 +687,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="indexMap"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, out int[] indexMap, double tolerance = 1.0e-8)
+        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.RemoveCoincident(points, p => p, grid, out indexMap, tolerance);
 
@@ -884,7 +700,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(points, p => p, tolerance);
 
@@ -898,7 +714,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(points, p => p, grid, tolerance);
         }
@@ -911,7 +727,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, tolerance);
         }
@@ -925,7 +741,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
@@ -938,7 +754,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = 1.0e-8)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, tolerance);
         }
@@ -952,7 +768,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <param name="grid"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = 1.0e-8)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
         {
             return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, grid, tolerance);
         }
@@ -965,26 +781,26 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this IReadOnlyList<double[]> vectors, double t, double[] result)
+        public static void Lerp(this IReadOnlyList<double[]> vectors, double factor, double[] result)
         {
-            Lerp(vectors, t, vectors[0].Length, result);
+            Lerp(vectors, factor, vectors[0].Length, result);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this IReadOnlyList<double[]> vectors, double t, int size, double[] result)
+        public static void Lerp(this IReadOnlyList<double[]> vectors, double factor, int size, double[] result)
         {
             int last = vectors.Count - 1;
-            t = SlurMath.Fract(t * last, out int i);
+            factor = SlurMath.Fract(factor * last, out int i);
 
             if (i < 0)
                 result.Set(vectors[0]);
             else if (i >= last)
                 result.Set(vectors[last]);
             else
-                ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
+                ArrayMath.Lerp(vectors[i], vectors[i + 1], factor, size, result);
         }
 
         #endregion

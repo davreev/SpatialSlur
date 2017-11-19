@@ -1,5 +1,7 @@
 ﻿using System;
 
+using static System.Math;
+
 /*
  * Notes
  */
@@ -12,11 +14,13 @@ namespace SpatialSlur.SlurCore
     public static class SlurMath
     {
         /// <summary></summary>
-        public const double TwoPI = Math.PI * 2.0;
+        public const double ZeroTolerance = 1.0e-12;
         /// <summary></summary>
-        public const double HalfPI = Math.PI * 0.5;
+        public const double TwoPI = PI * 2.0;
         /// <summary></summary>
-        public const double InvPI = 1.0 / Math.PI;
+        public const double HalfPI = PI * 0.5;
+        /// <summary></summary>
+        public const double InvPI = 1.0 / PI;
 
     
         /// <summary>
@@ -26,9 +30,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static bool ApproxEquals(double x, double y, double tolerance)
+        public static bool ApproxEquals(double x, double y, double tolerance = ZeroTolerance)
         {
-            return Math.Abs(x - y) < tolerance;
+            return Abs(x - y) < tolerance;
         }
 
 
@@ -207,7 +211,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Nearest(double t, double t0, double t1)
         {
-            return (Math.Abs(t1 - t) < Math.Abs(t0 - t)) ? t1 : t0;
+            return (Abs(t1 - t) < Abs(t0 - t)) ? t1 : t0;
         }
 
 
@@ -220,7 +224,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static int Nearest(int t, int t0, int t1)
         {
-            return (Math.Abs(t1 - t) < Math.Abs(t0 - t)) ? t1 : t0;
+            return (Abs(t1 - t) < Abs(t0 - t)) ? t1 : t0;
         }
 
 
@@ -232,18 +236,18 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double NearestPow(double x, double y)
         {
-            return Math.Pow(y, Math.Round(Math.Log(x, y)));
+            return Pow(y, Round(Log(x, y)));
         }
 
 
         /// <summary>
         /// Returns fractional portion of t.
         /// </summary>
-        /// <param name="t"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public static double Fract(double t)
+        public static double Fract(double value)
         {
-            return t - Math.Floor(t);
+            return value - Floor(value);
         }
 
 
@@ -251,13 +255,13 @@ namespace SpatialSlur.SlurCore
         /// Returns fractional portion of t. 
         /// Also returns the whole portion in an out parameter.
         /// </summary>
-        /// <param name="t"></param>
+        /// <param name="value"></param>
         /// <param name="whole"></param>
         /// <returns></returns>
-        public static double Fract(double t, out int whole)
+        public static double Fract(double value, out int whole)
         {
-            whole = (int)Math.Floor(t);
-            return t - whole;
+            whole = (int)Floor(value);
+            return value - whole;
         }
         
 
@@ -295,7 +299,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Mod(double a, double n)
         {
-            return a - Math.Floor(a / n) * n;
+            return a - Floor(a / n) * n;
         }
 
 
@@ -364,7 +368,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// http://www.iquilezles.org/www/articles/functions/functions.htm
         /// </summary>
         /// <param name="center"></param>
         /// <param name="width"></param>
@@ -372,7 +376,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double SmoothPulse(double t, double center, double width)
         {
-            t = Math.Abs(t - center);
+            t = Abs(t - center);
             if (t > width) return 0.0;
             return HermiteC1(1.0 - t / width);
         }
@@ -392,7 +396,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// http://www.iquilezles.org/www/articles/functions/functions.htm
         /// </summary>
         /// <param name="center"></param>
         /// <param name="width"></param>
@@ -400,14 +404,14 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double SmootherPulse(double t, double center, double width)
         {
-            t = Math.Abs(t - center);
+            t = Abs(t - center);
             if (t > width) return 0.0;
             return HermiteC2(1.0 - t / width);
         }
 
 
         /// <summary>
-        /// 
+        /// Assumes x is between 0 and 1 inclusive
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -418,13 +422,25 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Assumes x is between 0 and 1 inclusive
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
         public static double HermiteC2(double t)
         {
             return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+        }
+
+
+        /// <summary>
+        /// Assumes x is between 0 and 1 inclusive
+        /// http://www.iquilezles.org/www/articles/functions/functions.htm
+        /// </summary>
+        /// <returns></returns>
+        public static double PowCurve(double x, double a, double b)
+        {
+            double k = Pow(a + b, a + b) / (Pow(a, a) * Pow(b, b));
+            return k * Pow(x, a) * Pow(1.0 - x, b);
         }
 
 
@@ -459,7 +475,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Sec(double x)
         {
-            return 1.0 / Math.Cos(x);
+            return 1.0 / Cos(x);
         }
 
 
@@ -470,7 +486,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Cosec(double x)
         {
-            return 1.0 / Math.Sin(x);
+            return 1.0 / Sin(x);
         }
 
 
@@ -481,7 +497,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Cotan(double x)
         {
-            return 1.0 / Math.Tan(x);
+            return 1.0 / Tan(x);
         }
 
 
@@ -492,9 +508,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Sigmoid(double t)
         {
-            return 1.0 / (1.0 + Math.Exp(t));
+            return 1.0 / (1.0 + Exp(t));
         }
-
+        
 
         /// <summary>
         /// 
@@ -503,7 +519,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double ToDegrees(double radians)
         {
-            const double toDeg = 180.0 / Math.PI;
+            const double toDeg = 180.0 / PI;
             return radians * toDeg;
         }
  
@@ -515,7 +531,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double ToRadians(double degrees)
         {
-            const double toRad = Math.PI / 180.0;
+            const double toRad = PI / 180.0;
             return degrees * toRad;
         }
     }

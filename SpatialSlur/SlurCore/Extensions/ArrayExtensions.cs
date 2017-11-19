@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using SpatialSlur.SlurData;
-
-using static SpatialSlur.SlurCore.ArrayMath;
 
 /*
  * Notes
@@ -212,95 +210,47 @@ namespace SpatialSlur.SlurCore
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void Action<T>(this T[] source, Action<T> action)
+        public static void Action<T>(this T[] source, Action<T> action, bool parallel = false)
         {
-            ActionRange(source, 0, source.Length, action);
+            ActionRange(source, 0, source.Length, action, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] Convert<T, U>(this T[] source, Func<T, U> converter)
+        public static U[] Convert<T, U>(this T[] source, Func<T, U> converter, bool parallel = false)
         {
-            return ConvertRange(source, 0, source.Length, converter);
+            return ConvertRange(source, 0, source.Length, converter, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Convert<T, U>(this T[] source, Func<T, U> converter, U[] result)
+        public static void Convert<T, U>(this T[] source, Func<T, U> converter, U[] result, bool parallel = false)
         {
-            ConvertRange(source, 0, source.Length, converter, result);
+            ConvertRange(source, 0, source.Length, converter, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] Convert<T, U>(this T[] source, Func<T, int, U> converter)
+        public static U[] Convert<T, U>(this T[] source, Func<T, int, U> converter, bool parallel = false)
         {
-            return ConvertRange(source, 0, source.Length, converter);
+            return ConvertRange(source, 0, source.Length, converter, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Convert<T, U>(this T[] source, Func<T, int, U> converter, U[] result)
+        public static void Convert<T, U>(this T[] source, Func<T, int, U> converter, U[] result, bool parallel = false)
         {
-            ConvertRange(source, 0, source.Length, converter, result);
+            ConvertRange(source, 0, source.Length, converter, result, parallel);
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="action"></param>
-        public static void ActionParallel<T>(this T[] source, Action<T> action)
-        {
-            ActionRangeParallel(source, 0, source.Length, action);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertParallel<T, U>(this T[] source, Func<T, U> converter)
-        {
-            return ConvertRangeParallel(source, 0, source.Length, converter);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertParallel<T, U>(this T[] source, Func<T, U> converter, U[] result)
-        {
-            ConvertRangeParallel(source, 0, source.Length, converter, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertParallel<T, U>(this T[] source, Func<T, int, U> converter)
-        {
-            return ConvertRangeParallel(source, 0, source.Length, converter);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertParallel<T, U>(this T[] source, Func<T, int, U> converter, U[] result)
-        {
-            ConvertRangeParallel(source, 0, source.Length, converter, result);
-        }
-
+       
 
         /// <summary>
         /// 
@@ -310,54 +260,20 @@ namespace SpatialSlur.SlurCore
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <param name="action"></param>
-        public static void ActionRange<T>(this T[] source, int index, int count, Action<T> action)
+        public static void ActionRange<T>(this T[] source, int index, int count, Action<T> action, bool parallel = false)
         {
-            for (int i = 0; i < count; i++)
-                action(source[i + index]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertRange<T, U>(this T[] source, int index, int count, Func<T, U> converter)
-        {
-            U[] result = new U[count];
-            source.ConvertRange(index, count, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertRange<T, U>(this T[] source, int index, int count, Func<T, U> converter, U[] result)
-        {
-            for (int i = 0; i < count; i++)
-                result[i] = converter(source[i + index]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertRange<T, U>(this T[] source, int index, int count, Func<T, int, U> converter)
-        {
-            U[] result = new U[count];
-            source.ConvertRange(index, count, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertRange<T, U>(this T[] source, int index, int count, Func<T, int, U> converter, U[] result)
-        {
-            for (int i = 0; i < count; i++)
+            if (parallel)
             {
-                int j = i + index;
-                result[i] = converter(source[j], j);
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        action(source[i + index]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                    action(source[i + index]);
             }
         }
 
@@ -365,28 +281,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
-        /// <param name="action"></param>
-        public static void ActionRangeParallel<T>(this T[] source, int index, int count, Action<T> action)
-        {
-            Parallel.ForEach(Partitioner.Create(0, count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
-                    action(source[i + index]);
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertRangeParallel<T, U>(this T[] source, int index, int count, Func<T, U> converter)
+        public static U[] ConvertRange<T, U>(this T[] source, int index, int count, Func<T, U> converter, bool parallel = false)
         {
             U[] result = new U[count];
-            source.ConvertRangeParallel(index, count, converter, result);
+            source.ConvertRange(index, count, converter, result, parallel);
             return result;
         }
 
@@ -394,23 +292,31 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertRangeParallel<T, U>(this T[] source, int index, int count, Func<T, U> converter, U[] result)
+        public static void ConvertRange<T, U>(this T[] source, int index, int count, Func<T, U> converter, U[] result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = converter(source[i + index]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
                     result[i] = converter(source[i + index]);
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] ConvertRangeParallel<T, U>(this T[] source, int index, int count, Func<T, int, U> converter)
+        public static U[] ConvertRange<T, U>(this T[] source, int index, int count, Func<T, int, U> converter, bool parallel = false)
         {
             U[] result = new U[count];
-            source.ConvertRangeParallel(index, count, converter, result);
+            source.ConvertRange(index, count, converter, result, parallel);
             return result;
         }
 
@@ -418,70 +324,26 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertRangeParallel<T, U>(this T[] source, int index, int count, Func<T, int, U> converter, U[] result)
+        public static void ConvertRange<T, U>(this T[] source, int index, int count, Func<T, int, U> converter, U[] result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, count), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        int j = i + index;
+                        result[i] = converter(source[j], j);
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
                 {
                     int j = i + index;
                     result[i] = converter(source[j], j);
                 }
-            });
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ActionSelection<T>(this T[] source, int[] indices, Action<T> action)
-        {
-            for (int i = 0; i < indices.Length; i++)
-                action(source[indices[i]]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, U> converter)
-        {
-            U[] result = new U[indices.Length];
-            source.ConvertSelection(indices, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, U> converter, U[] result)
-        {
-            for (int i = 0; i < indices.Length; i++)
-                result[i] = converter(source[indices[i]]);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static U[] ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, int, U> converter)
-        {
-            U[] result = new U[indices.Length];
-            source.ConvertSelection(indices, converter, result);
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, int, U> converter, U[] result)
-        {
-            for (int i = 0; i < indices.Length; i++)
-            {
-                int j = indices[i];
-                result[i] = converter(source[j], j);
             }
         }
 
@@ -489,23 +351,31 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ActionSelectionParallel<T>(this T[] source, int[] indices, Action<T> action)
+        public static void ActionSelection<T>(this T[] source, int[] indices, Action<T> action, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        action(source[indices[i]]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < indices.Length; i++)
                     action(source[indices[i]]);
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] ConvertSelectionParallel<T, U>(this T[] source, int[] indices, Func<T, U> converter)
+        public static U[] ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, U> converter, bool parallel = false)
         {
             U[] result = new U[indices.Length];
-            source.ConvertSelectionParallel(indices, converter, result);
+            ConvertSelection(source, indices, converter, result, parallel);
             return result;
         }
 
@@ -513,23 +383,31 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertSelectionParallel<T, U>(this T[] source, int[] indices, Func<T, U> converter, U[] result)
+        public static void ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, U> converter, U[] result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
+            if (parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = converter(source[indices[i]]);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < indices.Length; i++)
                     result[i] = converter(source[indices[i]]);
-            });
+            }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static U[] ConvertSelectionParallel<T, U>(this T[] source, int[] indices, Func<T, int, U> converter)
+        public static U[] ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, int, U> converter, bool parallel = false)
         {
             U[] result = new U[indices.Length];
-            source.ConvertSelectionParallel(indices, converter, result);
+            source.ConvertSelection(indices, converter, result, parallel);
             return result;
         }
 
@@ -537,18 +415,29 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void ConvertSelectionParallel<T, U>(this T[] source, int[] indices, Func<T, int, U> converter, U[] result)
+        public static void ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, int, U> converter, U[] result, bool parallel = false)
         {
-            Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
+            if(parallel)
             {
-                for (int i = range.Item1; i < range.Item2; i++)
+                Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        int j = indices[i];
+                        result[i] = converter(source[j], j);
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < indices.Length; i++)
                 {
                     int j = indices[i];
-                    result[i] = converter(source[j] , j);
+                    result[i] = converter(source[j], j);
                 }
-            });
+            }
         }
-
+        
 
         /// <summary>
         /// 
@@ -646,6 +535,37 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        public static void Shuffle<T>(this T[] array, int index, int count)
+        {
+            Shuffle(array, new Random(), index, count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Shuffle<T>(this T[] array, int seed, int index, int count)
+        {
+            Shuffle(array, new Random(seed), index, count);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Shuffle<T>(this T[] array, Random random, int index, int count)
+        {
+            for (int i = count - 1; i > 0; i--)
+            {
+                int j = random.Next(i);
+                array.Swap(i + index, j + index);
+            }
+        }
+
+
+        /// <summary>
         /// Shifts an array of items in place.
         /// </summary>
         public static void Shift<T>(this T[] array, int offset)
@@ -729,40 +649,123 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns the nth smallest item in linear amortized time.
+        /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
         /// </summary>
-        public static T QuickSelect<T, U>(this T[] array, int n)
+        public static T QuickSelect<T>(this T[] array, int n)
             where T : IComparable<T>
         {
-            return array.QuickSelect(n, 0, array.Length - 1, (x, y) => x.CompareTo(y));
+            return array.QuickSelect(n, 0, array.Length - 1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T, U>(this T[] array, int n, int from, int to)
+        public static T QuickSelect<T>(this T[] array, int n, int from, int to)
             where T : IComparable<T>
         {
-            return array.QuickSelect(n, from, to, (x, y) => x.CompareTo(y));
+            if (n < from || n > to)
+                throw new IndexOutOfRangeException();
+
+            while (to > from)
+            {
+                int i = array.Partition(from, to);
+                if (i > n) to = i - 1;
+                else if (i < n) from = i + 1;
+                else return array[i];
+            }
+            return array[from];
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T, U>(this T[] array, int n, IComparer<T> comparer)
+        private static int Partition<T>(this T[] array, int from, int to)
+            where T : IComparable<T>
         {
-            return array.QuickSelect(n, 0, array.Length - 1, comparer.Compare);
+            T pivot = array[from]; // get pivot element
+            int i = from;
+            int j = to + 1;
+
+            while (true)
+            {
+                while (pivot.CompareTo(array[++i]) > 0)
+                    if (i == to) break;
+
+                while (pivot.CompareTo(array[--j]) < 0)
+                    if (j == from) break;
+
+                if (i >= j) break; // check if indices have crossed
+                array.Swap(i, j);
+            }
+
+            // swap with pivot element
+            array.Swap(from, j);
+            return j;
+        }
+
+
+        /// <summary>
+        /// Returns the nth smallest key in linear amortized time.
+        /// Partially sorts the keys with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
+        /// Also partially sorts an array of corresponding values.
+        /// </summary>
+        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n)
+            where K : IComparable<K>
+        {
+            return keys.QuickSelect(values, n, 0, keys.Length - 1);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T, U>(this T[] array, int n, int from, int to, IComparer<T> comparer)
+        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n, int from, int to)
+            where K : IComparable<K>
         {
-            return array.QuickSelect(n, from, to, comparer.Compare);
+            if (n < from || n > to)
+                throw new IndexOutOfRangeException();
+
+            while (to > from)
+            {
+                int i = keys.Partition(values, from, to);
+                if (i > n) to = i - 1;
+                else if (i < n) from = i + 1;
+                else return keys[i];
+            }
+            return keys[from];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static int Partition<K, V>(this K[] keys, V[] values, int from, int to)
+            where K : IComparable<K>
+        {
+            K pivot = keys[from]; // get pivot element
+            int i = from;
+            int j = to + 1;
+
+            while (true)
+            {
+                while (pivot.CompareTo(keys[++i]) > 0)
+                    if (i == to) break;
+
+                while (pivot.CompareTo(keys[--j]) < 0)
+                    if (j == from) break;
+
+                if (i >= j) break; // check if indices have crossed
+                keys.Swap(i, j);
+                values.Swap(i, j);
+            }
+
+            // swap with pivot element
+            keys.Swap(from, j);
+            values.Swap(from, j);
+            return j;
         }
 
 
@@ -773,6 +776,24 @@ namespace SpatialSlur.SlurCore
         public static T QuickSelect<T>(this T[] array, int n, Comparison<T> compare)
         {
             return array.QuickSelect(n, 0, array.Length - 1, compare);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static T QuickSelect<T>(this T[] array, int n, IComparer<T> comparer)
+        {
+            return array.QuickSelect(n, 0, array.Length - 1, comparer.Compare);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static T QuickSelect<T>(this T[] array, int n, int from, int to, IComparer<T> comparer)
+        {
+            return array.QuickSelect(n, from, to, comparer.Compare);
         }
 
 
@@ -818,103 +839,6 @@ namespace SpatialSlur.SlurCore
 
             // swap with pivot element
             array.Swap(from, j);
-            return j;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n)
-            where K : IComparable<K>
-        {
-            return keys.QuickSelect(values, n, 0, keys.Length - 1, (x, y) => x.CompareTo(y));
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n, int from, int to)
-            where K : IComparable<K>
-        {
-            return keys.QuickSelect(values, n, from, to, (x, y) => x.CompareTo(y));
-        }
-
-
-        /// <summary>
-        /// Returns the nth smallest key in linear amortized time.
-        /// Partially sorts the keys with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
-        /// Also partially sorts an array of corresponding values.
-        /// </summary>
-        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n, IComparer<K> comparer)
-        {
-            return keys.QuickSelect(values, n, 0, keys.Length - 1, comparer.Compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n, int from, int to, IComparer<K> comparer)
-        {
-            return keys.QuickSelect(values, n, from, to, comparer.Compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n, Comparison<K> compare)
-        {
-            return keys.QuickSelect(values, n, 0, keys.Length - 1, compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static K QuickSelect<K, V>(this K[] keys, V[] values, int n, int from, int to, Comparison<K> compare)
-        {
-            if (n < from || n > to)
-                throw new IndexOutOfRangeException();
-
-            while (to > from)
-            {
-                int i = keys.Partition(values, from, to, compare);
-                if (i > n) to = i - 1;
-                else if (i < n) from = i + 1;
-                else return keys[i];
-            }
-            return keys[from];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static int Partition<K, V>(this K[] keys, V[] values, int from, int to, Comparison<K> compare)
-        {
-            K pivot = keys[from]; // get pivot element
-            int i = from;
-            int j = to + 1;
-
-            while (true)
-            {
-                while (compare(pivot, keys[++i]) > 0)
-                    if (i == to) break;
-
-                while (compare(pivot, keys[--j]) < 0)
-                    if (j == from) break;
-
-                if (i >= j) break; // check if indices have crossed
-                keys.Swap(i, j);
-                values.Swap(i, j);
-            }
-
-            // swap with pivot element
-            keys.Swap(from, j);
-            values.Swap(from, j);
             return j;
         }
 
@@ -1010,16 +934,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this double[][] vectors, double t, double[] result)
+        public static void Lerp(this double[][] vectors, double t, double[] result, bool parallel = false)
         {
-            Lerp(vectors, t, vectors[0].Length, result);
+            Lerp(vectors, t, vectors[0].Length, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this double[][] vectors, double t, int size, double[] result)
+        public static void Lerp(this double[][] vectors, double t, int size, double[] result, bool parallel = false)
         {
             int last = vectors.Length - 1;
             t = SlurMath.Fract(t * last, out int i);
@@ -1028,6 +952,9 @@ namespace SpatialSlur.SlurCore
                 result.Set(vectors[0]);
             else if (i >= last)
                 result.Set(vectors[last]);
+         
+            if(parallel)
+                ArrayMath.Parallel.Lerp(vectors[i], vectors[i + 1], t, size, result);
             else
                 ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
         }
@@ -1036,89 +963,38 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this double[][] vectors, double[] t, double[] result)
+        public static void Lerp(this double[][] vectors, double[] t, double[] result, bool parallel = false)
         {
-            Lerp(vectors, t, vectors[0].Length, result);
+            Lerp(vectors, t, vectors[0].Length, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this double[][] vectors, double[] t, int size, double[] result)
+        public static void Lerp(this double[][] vectors, double[] t, int size, double[] result, bool parallel = false)
         {
-            int last = vectors.Length - 1;
-
-            for (int j = 0; j < size; j++)
-            {
-                double tj = SlurMath.Fract(t[j] * last, out int i);
-
-                if (i < 0)
-                    result[j] = vectors[0][j];
-                else if (i >= last)
-                    result[j] = vectors[last][j];
-                else
-                    result[j] = SlurMath.Lerp(vectors[i][j], vectors[i + 1][j], tj);
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this double[][] vectors, double t, double[] result)
-        {
-            LerpParallel(vectors, t, vectors[0].Length, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this double[][] vectors, double t, int size, double[] result)
-        {
-            int last = vectors.Length - 1;
-            t = SlurMath.Fract(t * last, out int i);
-
-            if (i < 0)
-                result.Set(vectors[0]);
-            else if (i >= last)
-                result.Set(vectors[last]);
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, size), range => Body(range.Item1, range.Item2));
             else
-                ArrayMath.LerpParallel(vectors[i], vectors[i + 1], t, size, result);
-        }
+                Body(0, size);
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this double[][] vectors, double[] t, double[] result)
-        {
-            LerpParallel(vectors, t, vectors[0].Length, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this double[][] vectors, double[] t, int size, double[] result)
-        {
-            int last = vectors.Length - 1;
-
-            Parallel.ForEach(Partitioner.Create(0, size), range =>
+            void Body(int from, int to)
             {
-                for (int j = range.Item1; j < range.Item2; j++)
+                int last = vectors.Length - 1;
+                
+                for (int j = from; j < to; j++)
                 {
-                    double tj = SlurMath.Fract((double)(t[j] * last), out int i);
+                    double tj = SlurMath.Fract(t[j] * last, out int i);
 
                     if (i < 0)
                         result[j] = vectors[0][j];
                     else if (i >= last)
                         result[j] = vectors[last][j];
-                    else
-                        result[j] = SlurMath.Lerp(vectors[i][j], vectors[i + 1][j], tj);
+                    
+                    result[j] = SlurMath.Lerp(vectors[i][j], vectors[i + 1][j], tj);
                 }
-            });
+            }
         }
 
         #endregion
@@ -1129,7 +1005,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double t, Vec2d[] result)
+        public static void Lerp(this Vec2d[][] vectors, double t, Vec2d[] result, bool parallel = false)
         {
             Lerp(vectors, t, vectors[0].Length, result);
         }
@@ -1138,7 +1014,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double t, int size, Vec2d[] result)
+        public static void Lerp(this Vec2d[][] vectors, double t, int size, Vec2d[] result, bool parallel = false)
         {
             int last = vectors.Length - 1;
             t = SlurMath.Fract(t * last, out int i);
@@ -1147,6 +1023,9 @@ namespace SpatialSlur.SlurCore
                 result.Set(vectors[0]);
             else if (i >= last)
                 result.Set(vectors[last]);
+
+            if(parallel)
+                ArrayMath.Parallel.Lerp(vectors[i], vectors[i + 1], t, size, result);
             else
                 ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
         }
@@ -1155,78 +1034,27 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double[] t, Vec2d[] result)
+        public static void Lerp(this Vec2d[][] vectors, double[] t, Vec2d[] result, bool parallel = false)
         {
-            Lerp(vectors, t, vectors[0].Length, result);
+            Lerp(vectors, t, vectors[0].Length, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double[] t, int size, Vec2d[] result)
+        public static void Lerp(this Vec2d[][] vectors, double[] t, int size, Vec2d[] result, bool parallel = false)
         {
-            int last = vectors.Length - 1;
-
-            for (int j = 0; j < size; j++)
-            {
-                double tj = SlurMath.Fract(t[j] * last, out int i);
-
-                if (i < 0)
-                    result[j] = vectors[0][j];
-                else if (i >= last)
-                    result[j] = vectors[last][j];
-                else
-                    result[j] = Vec2d.Lerp(vectors[i][j], vectors[i + 1][j], tj);
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec2d[][] vectors, double t, Vec2d[] result)
-        {
-            LerpParallel(vectors, t, vectors[0].Length, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec2d[][] vectors, double t, int size, Vec2d[] result)
-        {
-            int last = vectors.Length - 1;
-            t = SlurMath.Fract(t * last, out int i);
-
-            if (i < 0)
-                result.Set(vectors[0]);
-            else if (i >= last)
-                result.Set(vectors[last]);
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, size), range => Body(range.Item1, range.Item2));
             else
-                ArrayMath.LerpParallel(vectors[i], vectors[i + 1], t, size, result);
-        }
+                Body(0, size);
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec2d[][] vectors, double[] t, Vec2d[] result)
-        {
-            LerpParallel(vectors, t, vectors[0].Length, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec2d[][] vectors, double[] t, int size, Vec2d[] result)
-        {
-            int last = vectors.Length - 1;
-
-            Parallel.ForEach(Partitioner.Create(0, size), range =>
+            void Body(int from, int to)
             {
-                for (int j = range.Item1; j < range.Item2; j++)
+                int last = vectors.Length - 1;
+
+                for (int j = from; j < to; j++)
                 {
                     double tj = SlurMath.Fract(t[j] * last, out int i);
 
@@ -1237,7 +1065,7 @@ namespace SpatialSlur.SlurCore
                     else
                         result[j] = Vec2d.Lerp(vectors[i][j], vectors[i + 1][j], tj);
                 }
-            });
+            }
         }
 
         #endregion
@@ -1248,16 +1076,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double t, Vec3d[] result)
+        public static void Lerp(this Vec3d[][] vectors, double t, Vec3d[] result, bool parallel = false)
         {
-            Lerp(vectors, t, vectors[0].Length, result);
+            Lerp(vectors, t, vectors[0].Length, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double t, int size, Vec3d[] result)
+        public static void Lerp(this Vec3d[][] vectors, double t, int size, Vec3d[] result, bool parallel = false)
         {
             int last = vectors.Length - 1;
             t = SlurMath.Fract(t * last, out int i);
@@ -1266,6 +1094,9 @@ namespace SpatialSlur.SlurCore
                 result.Set(vectors[0]);
             else if (i >= last)
                 result.Set(vectors[last]);
+
+            if(parallel)
+                ArrayMath.Parallel.Lerp(vectors[i], vectors[i + 1], t, size, result);
             else
                 ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
         }
@@ -1274,78 +1105,27 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double[] t, Vec3d[] result)
+        public static void Lerp(this Vec3d[][] vectors, double[] t, Vec3d[] result, bool parallel = false)
         {
-            Lerp(vectors, t, vectors[0].Length, result);
+            Lerp(vectors, t, vectors[0].Length, result, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double[] t, int size, Vec3d[] result)
+        public static void Lerp(this Vec3d[][] vectors, double[] t, int size, Vec3d[] result, bool parallel = false)
         {
-            int last = vectors.Length - 1;
-
-            for (int j = 0; j < size; j++)
-            {
-                double tj = SlurMath.Fract(t[j] * last, out int i);
-
-                if (i < 0)
-                    result[j] = vectors[0][j];
-                else if (i >= last)
-                    result[j] = vectors[last][j];
-                else
-                    result[j] = Vec3d.Lerp(vectors[i][j], vectors[i + 1][j], tj);
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec3d[][] vectors, double t, Vec3d[] result)
-        {
-            LerpParallel(vectors, t, vectors[0].Length, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec3d[][] vectors, double t, int size, Vec3d[] result)
-        {
-            int last = vectors.Length - 1;
-            t = SlurMath.Fract(t * last, out int i);
-
-            if (i < 0)
-                result.Set(vectors[0]);
-            else if (i >= last)
-                result.Set(vectors[last]);
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, size), range => Body(range.Item1, range.Item2));
             else
-                ArrayMath.LerpParallel(vectors[i], vectors[i + 1], t, size, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec3d[][] vectors, double[] t, Vec3d[] result)
-        {
-            LerpParallel(vectors, t, vectors[0].Length, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void LerpParallel(this Vec3d[][] vectors, double[] t, int size, Vec3d[] result)
-        {
-            int last = vectors.Length - 1;
-
-            Parallel.ForEach(Partitioner.Create(0, size), range =>
+                Body(0, size);
+            
+            void Body(int from, int to)
             {
-                for (int j = range.Item1; j < range.Item2; j++)
+                int last = vectors.Length - 1;
+
+                for (int j = from; j < to; j++)
                 {
                     double tj = SlurMath.Fract(t[j] * last, out int i);
 
@@ -1356,7 +1136,7 @@ namespace SpatialSlur.SlurCore
                     else
                         result[j] = Vec3d.Lerp(vectors[i][j], vectors[i + 1][j], tj);
                 }
-            });
+            }
         }
 
         #endregion

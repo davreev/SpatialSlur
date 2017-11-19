@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -20,7 +20,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly Orient3d Identity = new Orient3d(Rotation3d.Identity, Vec3d.Zero);
+        public static readonly Orient3d Identity = new Orient3d(OrthoBasis3d.Identity, Vec3d.Zero);
 
 
         /// <summary>
@@ -37,56 +37,34 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public static implicit operator Orient3d(Rotation3d rotation)
+        public static implicit operator Orient3d(OrthoBasis3d rotation)
         {
             return new Orient3d(rotation, Vec3d.Zero);
         }
 
 
         /// <summary>
-        /// 
+        /// Applies the given transformation to the given point.
         /// </summary>
-        /// <param name="orient"></param>
+        /// <param name="transform"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static Vec3d operator *(Orient3d orient, Vec3d point)
+        public static Vec3d operator *(Orient3d transform, Vec3d point)
         {
-            return orient.Apply(point);
+            return transform.Apply(point);
         }
 
 
         /// <summary>
-        /// 
+        /// Concatenates the given transformations by applying the first to the second.
         /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <returns></returns>
         public static Orient3d operator *(Orient3d t0, Orient3d t1)
         {
-            return t0.Apply(t1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="orient"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static Vec3d Multiply(ref Orient3d orient, Vec3d point)
-        {
-            return orient.Apply(point);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public static Orient3d Multiply(ref Orient3d t0, ref Orient3d t1)
-        {
-            return t0.Apply(t1);
+            t0.Apply(ref t1);
+            return t1;
         }
 
 
@@ -111,7 +89,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Orient3d CreateRelative(Orient3d t0, Orient3d t1)
         {
-            return CreateRelative(ref t0, ref t1);
+            return t1.Apply(t0.Inverse);
         }
 
 
@@ -136,7 +114,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Orient3d CreateLookAt(Vec3d eye, Vec3d target, Vec3d up)
         {
-            var rot = new Rotation3d(target - eye, up);
+            var rot = new OrthoBasis3d(target - eye, up);
             rot.SwapZX();
 
             var orient = new Orient3d(rot, eye);
@@ -161,7 +139,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Rotation3d Rotation;
+        public OrthoBasis3d Rotation;
         /// <summary></summary>
         public Vec3d Translation;
 
@@ -171,7 +149,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="rotation"></param>
         /// <param name="translation"></param>
-        public Orient3d(Rotation3d rotation, Vec3d translation)
+        public Orient3d(OrthoBasis3d rotation, Vec3d translation)
         {
             Rotation = rotation;
             Translation = translation;
@@ -186,7 +164,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         public Orient3d(Vec3d origin, Vec3d x, Vec3d y)
         {
-            Rotation = new Rotation3d(x, y);
+            Rotation = new OrthoBasis3d(x, y);
             Translation = origin;
         }
   
@@ -236,18 +214,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies this transformation to the given transformation.
-        /// </summary>
-        /// <param name="other"></param>
-        public Orient3d Apply(Orient3d other)
-        {
-            other.Rotation = Rotation.Apply(other.Rotation);
-            other.Translation = Apply(other.Translation);
-            return other;
-        }
-
-
-        /// <summary>
         /// Applies the inverse of this transformation to the given point.
         /// </summary>
         /// <param name="point"></param>
@@ -259,14 +225,65 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public Orient3d Apply(Orient3d other)
+        {
+            Apply(ref other);
+            return other;
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Apply(ref Orient3d other)
+        {
+            Rotation.Apply(ref other.Rotation);
+            other.Translation = Apply(other.Translation);
+        }
+
+        
+        /// <summary>
         /// Applies the inverse of this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
         public Orient3d ApplyInverse(Orient3d other)
         {
-            other.Rotation = Rotation.ApplyInverse(other.Rotation);
-            other.Translation = ApplyInverse(other.Translation);
+            ApplyInverse(ref other);
             return other;
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void ApplyInverse(ref Orient3d other)
+        {
+            Rotation.ApplyInverse(ref other.Rotation);
+            other.Translation = ApplyInverse(other.Translation);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Matrix4d ToMatrix()
+        {
+            var rx = Rotation.X;
+            var ry = Rotation.Y;
+            var rz = Rotation.Z;
+
+            return new Matrix4d(
+                rx.X, ry.X, rz.X, Translation.X,
+                rx.Y, ry.Y, rz.Y, Translation.Y,
+                rx.Z, ry.Z, rz.Z, Translation.Z,
+                0.0, 0.0, 0.0, 1.0
+                );
         }
     }
 }

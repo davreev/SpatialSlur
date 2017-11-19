@@ -155,9 +155,63 @@ namespace SpatialSlur.SlurCore
         /// <param name="random"></param>
         /// <param name="items"></param>
         /// <returns></returns>
+        public static IEnumerable<T> NextItem<T>(this Random random, IReadOnlyList<T> items, int count)
+        {
+            while (count > 0)
+                yield return random.NextItem(items);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="random"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
         public static T NextItem<T>(this Random random, T[] items)
         {
             return items[random.Next(items.Length)];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="random"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> NextItem<T>(this Random random, T[] items, int count)
+        {
+            while (count > 0)
+                yield return random.NextItem(items);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="random"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> Next(this Random random, int count)
+        {
+            while (count > 0)
+                yield return random.Next();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="random"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static IEnumerable<double> NextDouble(this Random random, int count)
+        {
+            while (count > 0)
+                yield return random.NextDouble();
         }
     }
 }

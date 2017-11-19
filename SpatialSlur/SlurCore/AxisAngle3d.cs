@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
+/*
+ * Notes
+ */ 
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Axis angle representation of a 3d rotation.
+    /// Axis angle representation of a 3 dimensional rotation.
     /// </summary>
     [Serializable]
     public struct AxisAngle3d
@@ -15,7 +18,96 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly AxisAngle3d Zero = new AxisAngle3d(Vec3d.UnitZ, 0.0, 1.0, 0.0);
+        public static readonly AxisAngle3d Identity = new AxisAngle3d()
+        {
+            _axis = Vec3d.UnitZ,
+            _cosAngle = 1.0
+        };
+
+
+        /// <summary>Describes a half rotation around the X axis</summary>
+        public static readonly AxisAngle3d HalfX = new AxisAngle3d()
+        {
+            _axis = Vec3d.UnitX,
+            _angle = Math.PI,
+            _cosAngle = -1.0
+        };
+
+
+        /// <summary>Describes a half rotation around the Y axis</summary>
+        public static readonly AxisAngle3d HalfY = new AxisAngle3d()
+        {
+            _axis = Vec3d.UnitY,
+            _angle = Math.PI,
+            _cosAngle = -1.0
+        };
+
+
+        /// <summary>Describes a half rotation around the Z axis</summary>
+        public static readonly AxisAngle3d HalfZ = new AxisAngle3d()
+        {
+            _axis = Vec3d.UnitZ,
+            _angle = Math.PI,
+            _cosAngle = -1.0
+        };
+
+
+        /// <summary>
+        /// Applies this rotation to the given vector.
+        /// </summary>
+        /// <param name="quatern"></param>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static Vec3d operator *(AxisAngle3d rotation, Vec3d vector)
+        {
+            return rotation.Apply(vector);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        public static AxisAngle3d CreateFromTo(Vec3d from, Vec3d to)
+        {
+            if (!from.Unitize() || !to.Unitize())
+                return Identity;
+
+            var ct = Vec3d.Dot(from, to);
+
+            // parallel check
+            if (1.0 - Math.Abs(ct) < SlurMath.ZeroTolerance)
+            {
+                // opposite check
+                if (ct < 0.0)
+                {
+                    var perp = from.X < 1.0 ? from.CrossX() : from.CrossY();
+                    return new AxisAngle3d()
+                    {
+                        _axis = perp / perp.Length,
+                        _angle = Math.PI,
+                        _cosAngle = -1.0,
+                        _sinAngle = 0.0
+                    };
+                }
+
+                return Identity;
+            }
+
+            // can assume axis is valid
+            var axis = Vec3d.Cross(from, to);
+            var st = axis.Length;
+
+            return new AxisAngle3d()
+            {
+                _axis = axis / st,
+                _angle = Math.Acos(ct),
+                _sinAngle = st,
+                _cosAngle = ct
+            };
+        }
 
         #endregion
 
@@ -42,38 +134,33 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// The axis and angle of rotation are taken from the direction and length of the given vector respectively.
         /// </summary>
-        /// <param name="vector"></param>
-        public AxisAngle3d(Vec3d vector)
+        /// <param name="rotation"></param>
+        public AxisAngle3d(Vec3d rotation)
             : this()
         {
-            Set(vector);
-        }
-
-
-        /// <summary>
-        /// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
-        /// </summary>
-        /// <param name="rotation"></param>
-        public AxisAngle3d(ref Rotation3d rotation)
-            :this()
-        {
-            throw new NotImplementedException();
+            Set(rotation);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="axis"></param>
-        /// <param name="angle"></param>
-        /// <param name="cosAngle"></param>
-        /// <param name="sinAngle"></param>
-        private AxisAngle3d(Vec3d axis, double angle, double cosAngle, double sinAngle)
+        /// <param name="rotation"></param>
+        public AxisAngle3d(Quaterniond rotation)
+            : this()
         {
-            _axis = axis;
-            _angle = angle;
-            _cosAngle = cosAngle;
-            _sinAngle = sinAngle;
+            Set(rotation);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotation"></param>
+        public AxisAngle3d(OrthoBasis3d rotation)
+            : this()
+        {
+            Set(rotation);
         }
 
 
@@ -114,7 +201,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public double CosAngle
+        internal double CosAngle
         {
             get { return _cosAngle; }
         }
@@ -123,7 +210,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public double SinAngle
+        internal double SinAngle
         {
             get { return _sinAngle; }
         }
@@ -134,7 +221,16 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public AxisAngle3d Inverse
         {
-            get { return new AxisAngle3d(_axis, -_angle, _cosAngle, -_sinAngle); }
+            get
+            {
+                return new AxisAngle3d()
+                {
+                    _axis = _axis,
+                    _angle = -_angle,
+                    _cosAngle = _cosAngle,
+                    _sinAngle = -_sinAngle
+                };
+            }
         }
 
 
@@ -150,15 +246,15 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// The axis and angle of rotation are taken from the direction and length of the given vector respectively.
         /// </summary>
-        /// <param name="vector"></param>
-        public void Set(Vec3d vector)
+        /// <param name="rotation"></param>
+        public void Set(Vec3d rotation)
         {
-            var d = vector.SquareLength;
+            var d = rotation.SquareLength;
 
             if (d > 0.0)
             {
                 d = Math.Sqrt(d);
-                _axis = vector / d;
+                _axis = rotation / d;
                 Angle = d;
             }
             else
@@ -168,6 +264,37 @@ namespace SpatialSlur.SlurCore
                 _cosAngle = 1.0;
                 _sinAngle = 0.0;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void Set(Quaterniond rotation)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void Set(OrthoBasis3d rotation)
+        {
+            Set(ref rotation);
+        }
+
+
+        /// <summary>
+        /// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void Set(ref OrthoBasis3d rotation)
+        {
+            throw new NotImplementedException();
         }
 
 
@@ -182,24 +309,78 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Applies this rotation to the given vector.
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public Vec3d Rotate(Vec3d vector)
+        public Vec3d Apply(Vec3d vector)
         {
-            return vector * _cosAngle + Vec3d.Cross(_axis, vector) * _sinAngle + _axis * Vec3d.Dot(_axis, vector) * (1.0 - _cosAngle);
+            return _cosAngle * vector +  _sinAngle * Vec3d.Cross(_axis, vector) + Vec3d.Dot(_axis, vector) * (1.0 - _cosAngle) * _axis;
+        }
+
+
+        /// <summary>
+        /// Applies the given rotation to the axis of this rotation.
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void RotateAxis(AxisAngle3d rotation)
+        {
+            _axis = rotation.Apply(_axis);
+        }
+
+
+        /// <summary>
+        /// Applies the given rotation to the axis of this rotation.
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void RotateAxis(Quaterniond rotation)
+        {
+            _axis = rotation.Apply(_axis);
+        }
+
+
+        /// <summary>
+        /// Applies the given rotation to the axis of this rotation.
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void RotateAxis(OrthoBasis3d rotation)
+        {
+            RotateAxis(ref rotation);
+        }
+
+
+        /// <summary>
+        /// Applies the given rotation to the axis of this rotation.
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void RotateAxis(ref OrthoBasis3d rotation)
+        {
+            _axis = rotation.Apply(_axis);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vector"></param>
         /// <returns></returns>
-        public Vec3d RotateInverse(Vec3d vector)
+        public Matrix3d ToMatrix()
         {
-            return vector * _cosAngle - Vec3d.Cross(_axis, vector) * _sinAngle + _axis * Vec3d.Dot(_axis, vector) * (1.0 - _cosAngle);
+            var t = 1.0 - _cosAngle;
+
+            var cxy = _axis.X * _axis.Y * t;
+            var sz = _axis.Z * _sinAngle;
+
+            var cxz = _axis.X * _axis.Z * t;
+            var sy = _axis.Y * _sinAngle;
+
+            var cyz = _axis.Y * _axis.Z * t;
+            var sx = _axis.X * _sinAngle;
+            
+            return new Matrix3d(
+                _cosAngle + _axis.X * _axis.X * t, cxy - sz, cxz + sy,
+                cxy + sz, _cosAngle + _axis.Y * _axis.Y * t, cyz - sx,
+                cxz - sy, cyz + sx, _cosAngle + _axis.Z * _axis.Z * t
+                );
         }
     }
 }

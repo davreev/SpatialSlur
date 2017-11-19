@@ -75,7 +75,6 @@ namespace SpatialSlur.SlurCore
         public static Vec3d LineLineShortestVector2(Vec3d startA, Vec3d deltaA, Vec3d startB, Vec3d deltaB)
         {
             Vec3d w = startA - startB;
-
             LineLineClosestPoints(deltaA, deltaB, w, out double tu, out double tv);
             return deltaB * tv - deltaA * tu - w;
         }
@@ -87,8 +86,9 @@ namespace SpatialSlur.SlurCore
         private static void LineLineClosestPoints(Vec3d u, Vec3d v, Vec3d w, out double tu, out double tv)
         {
             double uu = u.SquareLength;
-            double uv = Vec3d.Dot(u, v);
             double vv = v.SquareLength;
+
+            double uv = Vec3d.Dot(u, v);
             double uw = Vec3d.Dot(u, w);
             double vw = Vec3d.Dot(v, w);
 
@@ -132,6 +132,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="origin"></param>
         /// <param name="normal"></param>
         /// <returns></returns>
+        [Obsolete("Use ProjectToPlaneAlong instead")]
         public static Vec3d ProjectToPlane(Vec3d point, Vec3d origin, Vec3d normal, Vec3d direction)
         {
             return point + Vec3d.MatchProjection(direction, origin - point, normal);
@@ -139,13 +140,40 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Orthonormalizes the 2 given vectors and returns a third mutually perpendicular unit vector.
+        /// Projects a vector to the given plane along the given direction.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="normal"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public static Vec3d ProjectToPlaneAlong(Vec3d vector, Vec3d normal, Vec3d direction)
+        {
+            return vector - Vec3d.MatchProjection(direction, vector, normal);
+        }
+
+
+        /// <summary>
+        /// Projects a point to the given plane along the given direction.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <param name="origin"></param>
+        /// <param name="normal"></param>
+        /// <returns></returns>
+        public static Vec3d ProjectToPlaneAlong(Vec3d point, Vec3d origin, Vec3d normal, Vec3d direction)
+        {
+            return point + Vec3d.MatchProjection(direction, origin - point, normal);
+        }
+    
+
+        /// <summary>
         /// Returns false if the 2 given vectors are parallel.
+        /// The direction of the first vector is maintained.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public static bool OrthoNormalize(ref Vec3d x, ref Vec3d y, out Vec3d z)
+        public static bool Orthonormalize(ref Vec3d x, ref Vec3d y, out Vec3d z)
         {
             z = Vec3d.Cross(x, y);
             double m = z.SquareLength;
@@ -218,7 +246,7 @@ namespace SpatialSlur.SlurCore
             return p0 * (d12 * pInv) + p1 * (d20 * pInv) + p2 * (d01 * pInv);
         }
 
-
+        
         /// <summary>
         /// Assumes the given axes are orthonormal.
         /// </summary>
@@ -261,20 +289,7 @@ namespace SpatialSlur.SlurCore
             // TODO
             throw new NotImplementedException();
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="p0"></param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
-        public static double GetTriAspect(Vec3d p0, Vec3d p1, Vec3d p2)
-        {
-            return GetTriAspect(new Vec3d[] { p0, p1, p2 });
-        }
-
+        
 
         /// <summary>
         /// Returns the aspect ratio of the triangle defined by 3 given points.
@@ -282,25 +297,26 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        public static double GetTriAspect(Vec3d[] points)
+        public static double GetTriAspect(Vec3d p0, Vec3d p1, Vec3d p2)
         {
             double maxEdge = 0.0; // longest edge
             double minAlt = Double.PositiveInfinity; // shortest altitude
 
-            for(int i = 0; i < 3; i++)
-            {
-                Vec3d p0 = points[i];
-                Vec3d p1 = points[(i + 1) % 3];
-                Vec3d p2 = points[(i + 2) % 3];
+            Vec3d v0 = p1 - p0;
+            Vec3d v1 = p2 - p1;
+            Vec3d v2 = p0 - p2;
 
-                Vec3d v0 = p1 - p0;
-                Vec3d v1 = p2 - p1;
-
-                maxEdge = Math.Max(maxEdge, v0.SquareLength);
-                minAlt = Math.Min(minAlt, Vec3d.Reject(v1, v0).SquareLength);
-            }
+            Sub(v0, v1);
+            Sub(v1, v2);
+            Sub(v2, v0);
 
             return Math.Sqrt(maxEdge) / Math.Sqrt(minAlt);
+
+            void Sub(Vec3d a, Vec3d b)
+            {
+                maxEdge = Math.Max(maxEdge, a.SquareLength);
+                minAlt = Math.Min(minAlt, Vec3d.Reject(b, a).SquareLength);
+            }
         }
 
 
@@ -349,46 +365,50 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns the aspect ratio of the tetrahedra defined by 4 given points.
+        /// This is defined as the longest edge / shortest altitude.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static double GetTetraAspect(Vec3d p0, Vec3d p1, Vec3d p2, Vec3d p3)
+        {
+            double minEdge = 0.0;
+            double maxAlt = double.PositiveInfinity;
+
+            Vec3d v0 = p1 - p0;
+            Vec3d v1 = p2 - p1;
+            Vec3d v2 = p3 - p2;
+            Vec3d v3 = p0 - p3;
+
+            Sub(v0, v1, v2);
+            Sub(v1, v2, v3);
+            Sub(v2, v3, v0);
+            Sub(v3, v0, v1);
+
+            return Math.Sqrt(minEdge) / Math.Sqrt(maxAlt);
+
+            void Sub(Vec3d a, Vec3d b, Vec3d c)
+            {
+                minEdge = Math.Max(minEdge, a.SquareLength);
+                maxAlt = Math.Min(maxAlt, Vec3d.Project(c, Vec3d.Cross(a, b)).SquareLength);
+            }
+        }
+
+
+        /// <summary>
+        /// Calculates planarity as the shortest distance between the 2 diagonals over the mean diagonal length.
         /// </summary>
         /// <param name="p0"></param>
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <param name="p3"></param>
         /// <returns></returns>
-        public static double GetTetraAspect(Vec3d p0, Vec3d p1, Vec3d p2, Vec3d p3)
+        public static double GetQuadPlanarity(Vec3d p0, Vec3d p1, Vec3d p2, Vec3d p3)
         {
-            return GetTetraAspect(new Vec3d[] { p0, p1, p2, p3 });
-        }
-
-
-        /// <summary>
-        /// Returns the aspect ratio of the tetrahedra defined by 4 given points.
-        /// This is defined as the longest edge / shortest altitude.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        public static double GetTetraAspect(Vec3d[] points)
-        {
-            double minEdge = 0.0;
-            double maxAlt = double.PositiveInfinity;
-
-            for (int i = 0; i < 4; i++)
-            {
-                Vec3d p0 = points[i];
-                Vec3d p1 = points[(i + 1) & 3];
-                Vec3d p2 = points[(i + 2) & 3];
-                Vec3d p3 = points[(i + 3) & 3];
-
-                Vec3d v0 = p1 - p0;
-                Vec3d v1 = p2 - p1;
-                Vec3d v2 = p3 - p2;
-
-                minEdge = Math.Max(minEdge, v0.SquareLength);
-                maxAlt = Math.Min(maxAlt, Vec3d.Project(v2, Vec3d.Cross(v0, v1)).SquareLength);
-            }
-
-            return Math.Sqrt(minEdge) / Math.Sqrt(maxAlt);
+            var d0 = p2 - p0;
+            var d1 = p3 - p1;
+            var d2 = LineLineShortestVector2(p0, d0, p1, d1);
+            return d2.Length / ((d1.Length + d0.Length) * 0.5);
         }
 
 
