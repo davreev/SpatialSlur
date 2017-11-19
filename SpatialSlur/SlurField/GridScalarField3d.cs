@@ -277,18 +277,22 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetLaplacian(double[] result, bool parallel)
         {
-            (var dx, var dy, var dz) = Scale.Components;
-            dx = 1.0 / (dx * dx);
-            dy = 1.0 / (dy * dy);
-            dz = 1.0 / (dz * dz);
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => Body(range.Item1, range.Item2));
+            else
+                Body(0, Count);
 
-            (int di, int dj, int dk) = GetBoundaryOffsets();
-
-            Action<Tuple<int, int>> body = range =>
+            void Body(int from, int to)
             {
-                (int i, int j, int k) = IndicesAt(range.Item1);
+                (var dx, var dy, var dz) = Scale.Components;
+                dx = 1.0 / (dx * dx);
+                dy = 1.0 / (dy * dy);
+                dz = 1.0 / (dz * dz);
 
-                for (int index = range.Item1; index < range.Item2; index++, i++)
+                (int di, int dj, int dk) = GetBoundaryOffsets();
+                (int i, int j, int k) = IndicesAt(from);
+
+                for (int index = from; index < to; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
@@ -305,12 +309,7 @@ namespace SpatialSlur.SlurField
                     double t = Values[index] * 2.0;
                     result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy + (tz0 + tz1 - t) * dz;
                 }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), body);
-            else
-                body(Tuple.Create(0, Count));
+            }
         }
 
 
@@ -345,14 +344,19 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetGradient(Vec3d[] result, bool parallel = false)
         {
-            (var dx, var dy, var dz) = (0.5 / Scale).Components;
-            (var di, var dj, var dk) = GetBoundaryOffsets();
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => Body(range.Item1, range.Item2));
+            else
+                Body(0, Count);
 
-            Action<Tuple<int, int>> body = range =>
+            void Body(int from, int to)
             {
-                (int i, int j, int k) = IndicesAt(range.Item1);
+                (var dx, var dy, var dz) = (0.5 / Scale).Components;
 
-                for (int index = range.Item1; index < range.Item2; index++, i++)
+                (int di, int dj, int dk) = GetBoundaryOffsets();
+                (int i, int j, int k) = IndicesAt(from);
+
+                for (int index = from; index < to; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
                     if (j == CountY) { k++; j = 0; }
@@ -368,12 +372,7 @@ namespace SpatialSlur.SlurField
 
                     result[index] = new Vec3d((tx1 - tx0) * dx, (ty1 - ty0) * dy, (tz1 - tz0) * dz);
                 }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), body);
-            else
-                body(Tuple.Create(0, Count));
+            }
         }
 
 

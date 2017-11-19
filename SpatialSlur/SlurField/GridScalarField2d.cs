@@ -37,6 +37,26 @@ namespace SpatialSlur.SlurField
             return result;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <param name="mapper"></param>
+        /// <param name="origin"></param>
+        /// <param name="scale"></param>
+        /// <returns></returns>
+        public static GridScalarField2d CreateFromImage(Bitmap bitmap, Func<Color, double> mapper, Vec2d origin, Vec2d scale)
+        {
+            int nx = bitmap.Width;
+            int ny = bitmap.Height;
+
+            var result = new GridScalarField2d(origin, scale, nx, ny);
+            FieldIO.ReadFromImage(bitmap, result, mapper);
+
+            return result;
+        }
+
         #endregion
 
 
@@ -248,17 +268,21 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetLaplacian(double[] result, bool parallel)
         {
-            (var dx, var dy) = Scale.Components;
-            dx = 1.0 / (dx * dx);
-            dy = 1.0 / (dy * dy);
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => Body(range.Item1, range.Item2));
+            else
+                Body(0, Count);
 
-            (int di, int dj) = GetBoundaryOffsets();
-
-            Action<Tuple<int, int>> body = range =>
+            void Body(int from, int to)
             {
-                (int i, int j) = IndicesAt(range.Item1);
+                (var dx, var dy) = Scale.Components;
+                dx = 1.0 / (dx * dx);
+                dy = 1.0 / (dy * dy);
 
-                for (int index = range.Item1; index < range.Item2; index++, i++)
+                (int di,int dj) = GetBoundaryOffsets();
+                (int i, int j) = IndicesAt(from);
+
+                for (int index = from; index < to; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
 
@@ -271,12 +295,7 @@ namespace SpatialSlur.SlurField
                     double t = Values[index] * 2.0;
                     result[index] = (tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy;
                 }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), body);
-            else
-                body(Tuple.Create(0, Count));
+            }
         }
 
 
@@ -311,14 +330,18 @@ namespace SpatialSlur.SlurField
         /// <param name="parallel"></param>
         public void GetGradient(Vec2d[] result, bool parallel = false)
         {
-            (var dx, var dy) = (0.5 / Scale).Components;
-            (int di, int dj) = GetBoundaryOffsets();
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Count), range => Body(range.Item1, range.Item2));
+            else
+                Body(0, Count);
 
-            Action<Tuple<int, int>> body = range =>
+            void Body(int from, int to)
             {
-                (int i, int j) = IndicesAt(range.Item1);
+                (var dx, var dy) = (0.5 / Scale).Components;
+                (int di, int dj) = GetBoundaryOffsets();
+                (int i, int j) = IndicesAt(from);
 
-                for (int index = range.Item1; index < range.Item2; index++, i++)
+                for (int index = from; index < to; index++, i++)
                 {
                     if (i == CountX) { j++; i = 0; }
 
@@ -330,12 +353,7 @@ namespace SpatialSlur.SlurField
 
                     result[index] = new Vec2d((tx1 - tx0) * dx, (ty1 - ty0) * dy);
                 }
-            };
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, Count), body);
-            else
-                body(Tuple.Create(0, Count));
+            }
         }
 
 
