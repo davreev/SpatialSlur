@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurDynamics;
@@ -50,7 +51,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         public bool IsConverged
         {
-            get { return _maxDelta < _settings.ToleranceSquared && _maxAngleDelta < _settings.AnglularToleranceSquared; }
+            get { return _maxDelta < _settings.ToleranceSquared && _maxAngleDelta < _settings.AngularToleranceSquared; }
         }
 
 
@@ -72,16 +73,18 @@ namespace SpatialSlur.SlurDynamics
 
 
         /// <summary>
-        /// 
+        /// Returns true if the projection magnitude for all given constraints is less than the current tolerance.
         /// </summary>
-        /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        public void Step(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
+        /// <returns></returns>
+        public bool AreSatisfied(IEnumerable<IConstraint> constraints)
         {
-            LocalStep(bodies, constraints);
-            GlobalStep(bodies, constraints);
-            UpdateBodies(bodies);
-            _stepCount++;
+            var allHandles = constraints.SelectMany(c => c.Handles);
+
+            return (
+                allHandles.Max(h => h.Delta.SquareLength) < _settings.ToleranceSquared &&
+                allHandles.Max(h => h.AngleDelta.SquareLength) < _settings.AngularToleranceSquared
+            );
         }
 
 
@@ -90,11 +93,21 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        public void StepParallel(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
+        public void Step(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints, bool parallel = false)
         {
-            LocalStepParallel(bodies, constraints);
-            GlobalStep(bodies, constraints);
-            UpdateBodiesParallel(bodies);
+            if (parallel)
+            {
+                LocalStepParallel(bodies, constraints);
+                GlobalStep(bodies, constraints);
+                UpdateBodiesParallel(bodies);
+            }
+            else
+            {
+                LocalStep(bodies, constraints);
+                GlobalStep(bodies, constraints);
+                UpdateBodies(bodies);
+            }
+
             _stepCount++;
         }
 
