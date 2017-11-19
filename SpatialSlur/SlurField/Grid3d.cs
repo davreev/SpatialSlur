@@ -21,11 +21,11 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public class Grid3d
     {
-        private double _x, _y, _z;
         private double _dx, _dy, _dz;
-        private double _dxInv, _dyInv, _dzInv; // cached to avoid divs
+        private double _tx, _ty, _tz;
+        private double _txInv, _tyInv, _tzInv; // cached to avoid divs
         private readonly int _nx, _ny, _nz, _nxy, _n;
-        private WrapMode _wrapModeX, _wrapModeY, _wrapModeZ;
+        private WrapMode _wrapX, _wrapY, _wrapZ;
 
 
         /// <summary>
@@ -36,8 +36,8 @@ namespace SpatialSlur.SlurField
         /// <param name="countZ"></param>
         private Grid3d(int countX, int countY, int countZ)
         {
-            if (countX < 1 || countY < 1 || countZ < 1)
-                throw new System.ArgumentException("The resolution of the grid must be greater than 0 in each dimension.");
+            if (countX < 2 || countY < 2 || countZ < 2)
+                throw new System.ArgumentException("The resolution of the grid must be greater than 1 in each dimension.");
 
             _nx = countX;
             _ny = countY;
@@ -61,7 +61,7 @@ namespace SpatialSlur.SlurField
         {
             Origin = origin;
             Scale = scale;
-            _wrapModeX = _wrapModeY = _wrapModeZ = wrapMode;
+            _wrapX = _wrapY = _wrapZ = wrapMode;
         }
 
 
@@ -81,9 +81,9 @@ namespace SpatialSlur.SlurField
         {
             Origin = origin;
             Scale = scale;
-            _wrapModeX = wrapModeX;
-            _wrapModeY = wrapModeY;
-            _wrapModeZ = wrapModeZ;
+            _wrapX = wrapModeX;
+            _wrapY = wrapModeY;
+            _wrapZ = wrapModeZ;
         }
 
 
@@ -99,7 +99,7 @@ namespace SpatialSlur.SlurField
             : this(countX, countY, countZ)
         {
             Bounds = bounds;
-            _wrapModeX = _wrapModeY = _wrapModeZ = wrapMode;
+            _wrapX = _wrapY = _wrapZ = wrapMode;
         }
 
 
@@ -117,9 +117,9 @@ namespace SpatialSlur.SlurField
             : this(countX, countY, countZ)
         {
             Bounds = bounds;
-            _wrapModeX = wrapModeX;
-            _wrapModeY = wrapModeY;
-            _wrapModeZ = wrapModeZ;
+            _wrapX = wrapModeX;
+            _wrapY = wrapModeY;
+            _wrapZ = wrapModeZ;
         }
 
 
@@ -129,17 +129,17 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public Grid3d(Grid3d other)
         {
-            _x = other._x;
-            _y = other._y;
-            _z = other._z;
-
             _dx = other._dx;
             _dy = other._dy;
             _dz = other._dz;
 
-            _dxInv = other._dxInv;
-            _dyInv = other._dyInv;
-            _dzInv = other._dzInv;
+            _tx = other._tx;
+            _ty = other._ty;
+            _tz = other._tz;
+
+            _txInv = other._txInv;
+            _tyInv = other._tyInv;
+            _tzInv = other._tzInv;
 
             _nx = other._nx;
             _ny = other._ny;
@@ -147,9 +147,9 @@ namespace SpatialSlur.SlurField
             _nxy = other._nxy;
             _n = other._n;
 
-            _wrapModeX = other._wrapModeX;
-            _wrapModeY = other._wrapModeY;
-            _wrapModeZ = other._wrapModeZ;
+            _wrapX = other._wrapX;
+            _wrapY = other._wrapY;
+            _wrapZ = other._wrapZ;
         }
 
 
@@ -159,8 +159,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public Vec3d Origin
         {
-            get { return new Vec3d(_x, _y, _z); }
-            set { (_x, _y, _z) = value.Components; }
+            get { return new Vec3d(_dx, _dy, _dz); }
+            set { (_dx, _dy, _dz) = value.Components; }
         }
 
 
@@ -169,13 +169,13 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public Vec3d Scale
         {
-            get { return new Vec3d(_dx, _dy, _dz); }
+            get { return new Vec3d(_tx, _ty, _tz); }
             set
             {
-                (_dx, _dy, _dz) = value.Components;
-                _dxInv = 1.0 / _dx;
-                _dyInv = 1.0 / _dy;
-                _dzInv = 1.0 / _dz;
+                (_tx, _ty, _tz) = value.Components;
+                _txInv = 1.0 / _tx;
+                _tyInv = 1.0 / _ty;
+                _tzInv = 1.0 / _tz;
             }
         }
 
@@ -188,9 +188,9 @@ namespace SpatialSlur.SlurField
             get
             {
                 return new Vec3d(
-                    (_nx + 1) * _dx, 
-                    (_ny + 1) * _dy,
-                    (_nz + 1) * _dz
+                    (_nx + 1) * _tx, 
+                    (_ny + 1) * _ty,
+                    (_nz + 1) * _tz
                     );
             }
         }
@@ -204,9 +204,9 @@ namespace SpatialSlur.SlurField
             get
             {
                 return new Interval3d(
-                   _x, _x + (_nx + 1) * _dx,
-                   _y, _y + (_ny + 1) * _dy,
-                   _z, _z + (_nz + 1) * _dz
+                   _dx, _dx + (_nx + 1) * _tx,
+                   _dy, _dy + (_ny + 1) * _ty,
+                   _dz, _dz + (_nz + 1) * _tz
                    );
             }
             set
@@ -274,8 +274,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public WrapMode WrapModeX
         {
-            get { return _wrapModeX; }
-            set { _wrapModeX = value; }
+            get { return _wrapX; }
+            set { _wrapX = value; }
         }
 
 
@@ -284,8 +284,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public WrapMode WrapModeY
         {
-            get { return _wrapModeY; }
-            set { _wrapModeY = value; }
+            get { return _wrapY; }
+            set { _wrapY = value; }
         }
 
 
@@ -294,8 +294,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public WrapMode WrapModeZ
         {
-            get { return _wrapModeZ; }
-            set { _wrapModeZ = value; }
+            get { return _wrapZ; }
+            set { _wrapZ = value; }
         }
 
 
@@ -328,9 +328,9 @@ namespace SpatialSlur.SlurField
         public Vec3d CoordinateAt(int i, int j, int k)
         {
             return new Vec3d(
-                i * _dx + _x,
-                j * _dy + _y,
-                k * _dz + _z);
+                i * _tx + _dx,
+                j * _ty + _dy,
+                k * _tz + _dz);
         }
 
 
@@ -347,6 +347,24 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vec3d CoordinateAt(GridPoint3d point)
+        {
+            var corners = point.Corners;
+            var weights = point.Weights;
+            var sum = new Vec3d();
+
+            for (int i = 0; i < 8; i++)
+                sum += CoordinateAt(corners[i]) * weights[i];
+
+            return sum;
+        }
+
+
+        /// <summary>
         /// Returns true if the grid has the same resolution in each dimension as another.
         /// </summary>
         /// <param name="other"></param>
@@ -356,9 +374,9 @@ namespace SpatialSlur.SlurField
             return (_nx == other._nx && _ny == other._ny && _nz == other._nz);
         }
 
-
+        
         /// <summary>
-        /// 
+        /// Convention is (i, j, k) => (x, y, z)
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
@@ -377,7 +395,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapX(int i)
         {
-            return GridUtil.Wrap(i, _nx, _wrapModeX);
+            return GridUtil.Wrap(i, _nx, _wrapX);
         }
 
 
@@ -388,7 +406,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapY(int j)
         {
-            return GridUtil.Wrap(j, _ny, _wrapModeY);
+            return GridUtil.Wrap(j, _ny, _wrapY);
         }
 
 
@@ -399,7 +417,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapZ(int k)
         {
-            return GridUtil.Wrap(k, _nz, _wrapModeZ);
+            return GridUtil.Wrap(k, _nz, _wrapZ);
         }
 
         
@@ -454,7 +472,7 @@ namespace SpatialSlur.SlurField
             return GridUtil.FlattenIndices(i, j, k, _nx, _nxy);
         }
 
-
+        
         /// <summary>
         /// Expands a 1 dimensional index into a 3 dimensional index.
         /// </summary>
@@ -473,12 +491,12 @@ namespace SpatialSlur.SlurField
         public (int, int, int) IndicesAt(Vec3d point)
         {
             return (
-                (int)Math.Round((point.X - _x) * _dxInv),
-                (int)Math.Round((point.Y - _y) * _dyInv),
-                (int)Math.Round((point.Z - _z) * _dzInv)
+                (int)Math.Round((point.X - _dx) * _txInv),
+                (int)Math.Round((point.Y - _dy) * _tyInv),
+                (int)Math.Round((point.Z - _dz) * _tzInv)
                 );
         }
-     
+
 
         /// <summary>
         /// Returns a grid point at the given point.
@@ -584,9 +602,9 @@ namespace SpatialSlur.SlurField
         public Vec3d ToGridSpace(Vec3d point)
         {
             return new Vec3d(
-                (point.X - _x) * _dxInv,
-                (point.Y - _y) * _dyInv,
-                (point.Z - _z) * _dzInv
+                (point.X - _dx) * _txInv,
+                (point.Y - _dy) * _tyInv,
+                (point.Z - _dz) * _tzInv
             );
         }
 
@@ -599,9 +617,9 @@ namespace SpatialSlur.SlurField
         public Vec3d ToWorldSpace(Vec3d point)
         {
             return new Vec3d(
-               point.X * _dx + _x,
-               point.Y * _dy + _y,
-               point.Z * _dz + _z
+               point.X * _tx + _dx,
+               point.Y * _ty + _dy,
+               point.Z * _tz + _dz
            );
         }
 
@@ -610,7 +628,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        internal (int, int, int) GetBoundaryOffsets()
+        internal (int,int,int) GetBoundaryOffsets()
         {
             return (GetX(), GetY(), GetZ());
 
@@ -622,7 +640,7 @@ namespace SpatialSlur.SlurField
                         return 0;
                     case WrapMode.Repeat:
                         return _nx - 1;
-                    case WrapMode.MirrorRepeat:
+                    case WrapMode.Mirror:
                         return 0;
                 }
 
@@ -637,7 +655,7 @@ namespace SpatialSlur.SlurField
                         return 0;
                     case WrapMode.Repeat:
                         return _nxy - _nx;
-                    case WrapMode.MirrorRepeat:
+                    case WrapMode.Mirror:
                         return 0;
                 }
 
@@ -652,7 +670,7 @@ namespace SpatialSlur.SlurField
                         return 0;
                     case WrapMode.Repeat:
                         return _n - _nxy;
-                    case WrapMode.MirrorRepeat:
+                    case WrapMode.Mirror:
                         return 0;
                 }
 

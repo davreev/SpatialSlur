@@ -9,7 +9,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// 
+    /// Interface for field defined by a finite set of known values.
     /// </summary>
     public interface IDiscreteField<TValue>
     {

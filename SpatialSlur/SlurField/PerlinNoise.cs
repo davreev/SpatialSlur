@@ -17,11 +17,17 @@ namespace SpatialSlur.SlurField
         private const double _offsetY = 10.0;
         private const double _offsetZ = 20.0;
 
-        private const double _delta = 1.0;
-        private const double _d2Inv = 0.5 / _delta;
+        private const double _delta = 1.0e-8;
+        private const double _d2Inv = 1.0 / (_delta * 2.0);
         
         // permutation table
-        private static readonly int[] _perm = new int[256];
+        //private static readonly int[] _perm = new int[256];
+
+
+        // permutation tables
+        private static readonly int[] _perm = new int[512]; // double size to remove need for wrapping
+        private static readonly int[] _permMod12 = new int[512];
+
 
         // 2d gradient table
         private static readonly double[] _grad2 =
@@ -61,7 +67,7 @@ namespace SpatialSlur.SlurField
         {
             SetPermutation(0);
         }
-
+        
 
         /// <summary>
         /// Sets the permutation table.
@@ -69,10 +75,21 @@ namespace SpatialSlur.SlurField
         /// <param name="seed"></param>
         public static void SetPermutation(int seed)
         {
-            for (int i = 0; i < 256; i++)
+            const int n = 256;
+
+            // fill in 1st half
+            for (int i = 0; i < n; i++)
                 _perm[i] = i;
 
-            _perm.Shuffle(seed);
+            // shuffle
+            _perm.Shuffle(seed, 0, n);
+
+            // copy to 2nd half
+            for (int i = 0; i < n; i++)
+            {
+                _perm[i + n] = _perm[i];
+                _permMod12[i] = _permMod12[i + n] = _perm[i] % 12;
+            }
         }
 
 
@@ -101,6 +118,10 @@ namespace SpatialSlur.SlurField
             x = SlurMath.Fract(x, out int i);
             y = SlurMath.Fract(y, out int j);
 
+            // wrap to perm table
+            i &= 255;
+            j &= 255;
+
             // calculate noise contributions from each corner
             double n00 = GradDot(ToIndex(i, j), x, y);
             double n10 = GradDot(ToIndex(i + 1, j), x - 1.0, y);
@@ -124,7 +145,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static int ToIndex(int i, int j)
         {
-            return (_perm[(i + _perm[j & 255]) & 255] & 7) << 1;
+            return _perm[(i + _perm[j])] & 7;
         }
 
 
@@ -133,6 +154,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static double GradDot(int index, double x, double y)
         {
+            index <<= 1;
             return _grad2[index] * x + _grad2[index + 1] * y;
         }
 
@@ -262,6 +284,11 @@ namespace SpatialSlur.SlurField
             y = SlurMath.Fract(y, out int j);
             z = SlurMath.Fract(z, out int k);
 
+            // wrap to perm table
+            i &= 255;
+            j &= 255;
+            k &= 255;
+
             // calculate noise contributions from each corner
             double n000 = GradDot(ToIndex(i, j, k), x, y, z);
             double n100 = GradDot(ToIndex(i + 1, j, k), x - 1.0, y, z);
@@ -297,7 +324,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static int ToIndex(int i, int j, int k)
         {
-            return _perm[(i + _perm[(j + _perm[k & 255]) & 255]) & 255] % 12 * 3;
+            return _permMod12[i + _perm[j + _perm[k]]];
         }
 
 
@@ -306,6 +333,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static double GradDot(int index, double x, double y, double z)
         {
+            index *= 3;
             return _grad3[index] * x + _grad3[index + 1] * y + _grad3[index + 2] * z;
         }
 

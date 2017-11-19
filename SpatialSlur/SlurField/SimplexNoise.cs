@@ -6,6 +6,13 @@ using SpatialSlur.SlurCore;
  * 
  * References
  * http://webstaff.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
+ * 
+ * http://staffwww.itn.liu.se/~stegu/simplexnoise/SimplexNoise.java
+ * 
+ * TODO
+ * debug gradient
+ * - producing sharp discontinuities when evaluated @ 0
+ * - only appears to effect the 3d gradient
  */
 
 namespace SpatialSlur.SlurField
@@ -18,17 +25,20 @@ namespace SpatialSlur.SlurField
         private const double _offsetY = 10.0;
         private const double _offsetZ = 20.0;
 
-        private const double _delta = 1.0;
-        private const double _d2Inv = 0.5 / _delta;
+        private const double _delta = 1.0e-8;
+        private const double _d2Inv = 1.0 / (_delta * 2.0);
 
-        // Skew and unskew constants for 2 and 3 dimensions
+        // skew constants for 2 dimensions
         private static readonly double _skew2 = (Math.Sqrt(3.0) - 1.0) / 2.0;
-        private static readonly double _invSkew2 = (3.0 - Math.Sqrt(3.0)) / 6.0;
-        private const double _skew3 = 1.0 / 3.0;
-        private const double _invSkew3 = 1.0 / 6.0;
+        private static readonly double _skew2Inv = (3.0 - Math.Sqrt(3.0)) / 6.0;
 
-         // permutation table
-        private static readonly int[] _perm = new int[256];
+        // skew constants for 3 dimensions
+        private const double _skew3 = 1.0 / 3.0;
+        private const double _skew3Inv = 1.0 / 6.0;
+
+        // permutation tables
+        private static readonly int[] _perm = new int[512]; // double size to remove need for wrapping
+        private static readonly int[] _permMod12 = new int[512]; // double size to remove need for wrapping
 
         // 2d gradient table
         private static readonly double[] _grad2 =
@@ -76,10 +86,21 @@ namespace SpatialSlur.SlurField
         /// <param name="seed"></param>
         public static void SetPermutation(int seed)
         {
-            for (int i = 0; i < 256; i++)
+            const int n = 256;
+
+            // fill in 1st half
+            for (int i = 0; i < n; i++)
                 _perm[i] = i;
 
-            _perm.Shuffle(seed);
+            // shuffle
+            _perm.Shuffle(seed, 0, n);
+
+            // copy to 2nd half
+            for (int i = 0; i < n; i++)
+            {
+                _perm[i + n] = _perm[i];
+                _permMod12[i] = _permMod12[i + n] = _perm[i] % 12;
+            }
         }
 
 
@@ -105,52 +126,68 @@ namespace SpatialSlur.SlurField
         public static double ValueAt(double x, double y)
         {
             // find unit grid cell containing point in skewed coordinates
-            double t = (x + y) * _skew2;
-            int i = (int)Math.Floor(x + t);
-            int j = (int)Math.Floor(y + t);
-
-            // offset and gradient index for first corner
-            t = (i + j) * _invSkew2;
+            double s = (x + y) * _skew2;
+            int i = (int)Math.Floor(x + s);
+            int j = (int)Math.Floor(y + s);
+            
+            // unskew and make relative to origin
+            double t = (i + j) * _skew2Inv;
             double x0 = x - i + t;
             double y0 = y - j + t;
-            int g0 = ToIndex(i, j);
 
-            // get offset and gradient index for the second corner (depends on which simplex the point lies in)
-            double x1, y1;
-            int g1;
-            if (y0 < x0)
+            // collect offsets for remaining corners of simplex
+            int i1, j1;
+            
+            if (x0 > y0)
             {
-                // point is in the 1st simplex
-                x1 = x0 - 1.0 + _invSkew2;
-                y1 = y0 + _invSkew2;
-                g1 = ToIndex(i + 1, j);
+                // point is in first simplex
+                i1 = 1;
+                j1 = 0;
             }
             else
             {
-                // point is in the 2nd simplex
-                x1 = x0 + _invSkew2;
-                y1 = y0 - 1.0 + _invSkew2;
-                g1 = ToIndex(i, j + 1);
+                // point is in second simplex
+                i1 = 0;
+                j1 = 1;
             }
+  
+            double a = 2.0 * _skew2Inv - 1.0;
+            
+            var x1 = x0 - i1 + _skew2Inv;
+            var y1 = y0 - j1 + _skew2Inv;
 
-            // get offset and gradient index for third corner
-            t = 2.0 * _invSkew2 - 1.0;
-            double x2 = x0 + t;
-            double y2 = y0 + t;
+            var x2 = x0 + a;
+            var y2 = y0 + a;
+
+            // wrap to perm table
+            i &= 255;
+            j &= 255;
+
+            int g0 = ToIndex(i, j);
+            int g1 = ToIndex(i + i1, j + j1);
             int g2 = ToIndex(i + 1, j + 1);
 
-            // calculate noise contributions from each corner
-            t = 0.5 - x0 * x0 - y0 * y0;
-            double n0 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g0, x0, y0);
-      
-            t = 0.5 - x1 * x1 - y1 * y1;
-            double n1 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g1, x1, y1);
-
-            t = 0.5 - x2 * x2 - y2 * y2;
-            double n2 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g2, x2, y2);
+            var n0 = GetNoise(g0, x0, y0);
+            var n1 = GetNoise(g1, x1, y1);
+            var n2 = GetNoise(g2, x2, y2);
 
             // add contributions from each corner to get final value between -1 and 1
             return 70.0 * (n0 + n1 + n2);
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetNoise(int index, double x, double y)
+        {
+            var t = 0.5 - x * x - y * y;
+
+            if (t < 0.0)
+                return 0.0;
+
+            t *= t;
+            return t * t * GradDot(index, x, y);
         }
 
 
@@ -159,7 +196,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static int ToIndex(int i, int j)
         {
-            return (_perm[(i + _perm[j & 255]) & 255] & 7) << 1;
+            return _perm[i + _perm[j]] & 7;
         }
 
 
@@ -168,12 +205,13 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static double GradDot(int index, double x, double y)
         {
+            index <<= 1;
             return _grad2[index] * x + _grad2[index + 1] * y;
         }
 
 
         /// <summary>
-        /// 
+        /// Returns a vector composed of offset noise values.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -298,58 +336,35 @@ namespace SpatialSlur.SlurField
             int j = (int)Math.Floor(y + s);
             int k = (int)Math.Floor(z + s);
 
-            // get offset and gradient index for first corner
-            double t = (i + j + k) * _invSkew3;
+            // unskew and make relative to origin
+            double t = (i + j + k) * _skew3Inv;
             double x0 = x - i + t;
             double y0 = y - j + t;
             double z0 = z - k + t;
-            int g0 = ToIndex(i, j, k);
 
-            // get gradient table indices and offsets for second and third corner (depends on which simplex the point lies in)
-            double x1, y1, z1, x2, y2, z2;
-            int g1, g2;
-            t = 2.0 * _invSkew3;
+            // collect offsets for remaining corners of simplex
+            int i1, j1, k1;
+            int i2, j2, k2;
 
-            if (y0 < x0)
+            if (x0 >= y0)
             {
-                if (z0 < y0)
+                if (y0 >= z0)
                 {
                     // point is in the 1st simplex
-                    x1 = x0 - 1.0 + _invSkew3;
-                    y1 = y0 + _invSkew3;
-                    z1 = z0 + _invSkew3;
-                    g1 = ToIndex(i + 1, j, k);
-
-                    x2 = x0 - 1.0 + t;
-                    y2 = y0 - 1.0 + t;
-                    z2 = z0 + t;
-                    g2 = ToIndex(i + 1, j + 1, k);
+                    i1 = 1; j1 = 0; k1 = 0;
+                    i2 = 1; j2 = 1; k2 = 0;
                 }
-                else if (z0 < x0)
+                else if (x0 >= z0)
                 {
                     // point is in the 2nd simplex
-                    x1 = x0 - 1.0 + _invSkew3;
-                    y1 = y0 + _invSkew3;
-                    z1 = z0 + _invSkew3;
-                    g1 = ToIndex(i + 1, j, k);
-
-                    x2 = x0 - 1.0 + t;
-                    y2 = y0 + t;
-                    z2 = z0 - 1.0 + t;
-                    g2 = ToIndex(i + 1, j, k + 1);
+                    i1 = 1; j1 = 0; k1 = 0;
+                    i2 = 1; j2 = 0; k2 = 1;
                 }
                 else
                 {
                     // point is in the 3rd simplex
-                    x1 = x0 + _invSkew3;
-                    y1 = y0 + _invSkew3;
-                    z1 = z0 - 1.0 + _invSkew3;
-                    g1 = ToIndex(i, j, k + 1);
-
-                    x2 = x0 - 1.0 + t;
-                    y2 = y0 + t;
-                    z2 = z0 - 1.0 + t;
-                    g2 = ToIndex(i + 1, j, k + 1);
+                    i1 = 0; j1 = 0; k1 = 1;
+                    i2 = 1; j2 = 0; k2 = 1;
                 }
             }
             else
@@ -357,66 +372,70 @@ namespace SpatialSlur.SlurField
                 if (y0 < z0)
                 {
                     // point is in the 4th simplex
-                    x1 = x0 + _invSkew3;
-                    y1 = y0 + _invSkew3;
-                    z1 = z0 - 1.0 + _invSkew3;
-                    g1 = ToIndex(i, j, k + 1);
-
-                    x2 = x0 + t;
-                    y2 = y0 - 1.0 + t;
-                    z2 = z0 - 1.0 + t;
-                    g2 = ToIndex(i, j + 1, k + 1);
+                    i1 = 0; j1 = 0; k1 = 1;
+                    i2 = 0; j2 = 1; k2 = 1;
                 }
                 else if (x0 < z0)
                 {
                     // point is in the 5th simplex
-                    x1 = x0 + _invSkew3;
-                    y1 = y0 - 1.0 + _invSkew3;
-                    z1 = z0 + _invSkew3;
-                    g1 = ToIndex(i, j + 1, k);
-
-                    x2 = x0 + t;
-                    y2 = y0 - 1.0 + t;
-                    z2 = z0 - 1.0 + t;
-                    g2 = ToIndex(i, j + 1, k + 1);
+                    i1 = 0; j1 = 1; k1 = 0;
+                    i2 = 0; j2 = 1; k2 = 1;
                 }
                 else
                 {
                     // point is in the 6th simplex
-                    x1 = x0 + _invSkew3;
-                    y1 = y0 - 1.0 + _invSkew3;
-                    z1 = z0 + _invSkew3;
-                    g1 = ToIndex(i, j + 1, k);
-
-                    x2 = x0 - 1.0 + t;
-                    y2 = y0 - 1.0 + t;
-                    z2 = z0 + t;
-                    g2 = ToIndex(i + 1, j + 1, k);
+                    i1 = 0; j1 = 1; k1 = 0;
+                    i2 = 1; j2 = 1; k2 = 0;
                 }
             }
+            
+            const double a0 = 2.0 * _skew3Inv;
+            const double a1 = 3.0 * _skew3Inv - 1.0;
 
-            // get offset for last corner in unskewed coordinates
-            t = 3.0 * _invSkew3 - 1.0;
-            double x3 = x0 + t;
-            double y3 = y0 + t;
-            double z3 = z0 + t;
-            int g3 = ToIndex(i + 1, j + 1, k + 1);
+            var x1 = x0 - i1 + _skew3Inv;
+            var y1 = y0 - j1 + _skew3Inv;
+            var z1 = z0 - k1 + _skew3Inv;
+
+            var x2 = x0 - i2 + a0;
+            var y2 = y0 - j2 + a0;
+            var z2 = z0 - k2 + a0;
+            
+            var x3 = x0 + a1;
+            var y3 = y0 + a1;
+            var z3 = z0 + a1;
+
+            i &= 255;
+            j &= 255;
+            k &= 255;
+
+            int g0 = ToIndex(i, j, k);
+            var g1 = ToIndex(i + i1, j + j1, k + k1);
+            var g2 = ToIndex(i + i2, j + j2, k + k2);
+            var g3 = ToIndex(i + 1, j + 1, k + 1);
 
             // calculate noise contributions from each corner
-            t = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-            double n0 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g0, x0, y0, z0);
-
-            t = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-            double n1 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g1, x1, y1, z1);
-         
-            t = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-            double n2 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g2, x2, y2, z2);
-         
-            t = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-            double n3 = (t < 0.0) ? 0.0 : t * t * t * t * GradDot(g3, x3, y3, z3);
+            var n0 = GetNoise(g0, x0, y0, z0);
+            var n1 = GetNoise(g1, x1, y1, z1);
+            var n2 = GetNoise(g2, x2, y2, z2);
+            var n3 = GetNoise(g3, x3, y3, z3);
 
             // add contributions from each corner to get final value between -1 and 1
             return 32.0 * (n0 + n1 + n2 + n3);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetNoise(int index, double x, double y, double z)
+        {
+            var t = 0.5 - x * x - y * y - z * z;
+
+            if (t < 0.0)
+                return 0.0;
+
+            t *= t;
+            return t * t * GradDot(index, x, y, z);
         }
 
 
@@ -425,7 +444,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static int ToIndex(int i, int j, int k)
         {
-            return _perm[(i + _perm[(j + _perm[k & 255]) & 255]) & 255] % 12 * 3;
+            return _permMod12[i + _perm[j + _perm[k]]];
         }
 
 
@@ -434,12 +453,13 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static double GradDot(int index, double x, double y, double z)
         {
+            index *= 3;
             return _grad3[index] * x + _grad3[index + 1] * y + _grad3[index + 2] * z;
         }
 
 
         /// <summary>
-        /// 
+        /// Returns a vector composed of offset noise values.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -450,7 +470,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Returns a vector composed of offset noise values.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>

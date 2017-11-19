@@ -29,7 +29,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static IEnumerable<Vec2d> IntegrateFrom(this IField2d<Vec2d> field, Vec2d point, double stepSize, IntegrationMode mode = IntegrationMode.Euler)
         {
-            return FieldSim.IntegrateFrom(field, point, stepSize, mode);
+            return SimulationUtil.IntegrateFrom(field, point, stepSize, mode);
         }
 
         #endregion

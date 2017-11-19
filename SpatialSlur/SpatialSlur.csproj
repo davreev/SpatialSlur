@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SpatialSlur</RootNamespace>
     <AssemblyName>SpatialSlur</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -34,13 +34,59 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\SpatialSlur.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugRhino|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DebugRhino\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;USING_RHINO</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseRhino|AnyCPU'">
+    <OutputPath>bin\ReleaseRhino\</OutputPath>
+    <DefineConstants>TRACE;USING_RHINO</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugUnity|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DebugUnity\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;USING_UNITY</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseUnity|AnyCPU'">
+    <OutputPath>bin\ReleaseUnity\</OutputPath>
+    <DefineConstants>TRACE;USING_UNITY</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="RhinoCommon">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -49,12 +95,57 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Sketch\SteinerFinder\HeGraphSim.cs" />
-    <Compile Include="Sketch\SteinerFinder\SteinerFinder.cs" />
-    <Compile Include="Sketch\SteinerFinder\SteinerFinderSettings.cs" />
     <Compile Include="SlurCore\ArrayMath.cs" />
+    <Compile Include="SlurCore\Matrix2d.cs" />
+    <Compile Include="SlurCore\Obsolete\Rotation2d.cs" />
+    <Compile Include="SlurCore\Obsolete\Rotation3d.cs" />
+    <Compile Include="SlurCore\Quaterniond.cs" />
+    <Compile Include="SlurData\HashGrid3d.cs" />
+    <Compile Include="SlurData\HashGrid2d.cs" />
+    <Compile Include="SlurDynamics\Constraints\SphereCollide.cs" />
+    <Compile Include="SlurDynamics\Constraints\Weight.cs" />
+    <Compile Include="SlurDynamics\BodyHandle.cs" />
+    <Compile Include="SlurMesh\Extensions\IHeElementExtensions.cs" />
+    <Compile Include="SlurMesh\Abstract\HeGraphBase.cs" />
+    <Compile Include="SlurMesh\Abstract\HeMeshBase.cs" />
+    <Compile Include="SlurMesh\Abstract\Halfedge.cs" />
+    <Compile Include="SlurMesh\Abstract\HeStructure.cs" />
+    <Compile Include="SlurRhino\Conversions.cs" />
+    <Compile Include="SlurRhino\RhinoUtil.cs" />
+    <Compile Include="SlurRhino\OnCurve.cs" />
+    <Compile Include="SlurRhino\OnExtendedMesh.cs" />
+    <Compile Include="SlurRhino\OnExtendedSurface.cs" />
+    <Compile Include="SlurRhino\OnMesh.cs" />
+    <Compile Include="SlurRhino\OnSurface.cs" />
+    <Compile Include="SlurRhino\Extensions\GeometryExtensions.cs" />
+    <Compile Include="SlurRhino\Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="SlurRhino\Extensions\IReadOnlyListExtensions.cs" />
+    <Compile Include="SlurRhino\Extensions\SlurCoreExtensions.cs" />
+    <Compile Include="SlurRhino\Extensions\SlurFieldExtensions.cs" />
+    <Compile Include="SlurRhino\Extensions\SlurMeshExtensions.cs" />
+    <Compile Include="SlurRhino\Interfaces\IMeshField.cs" />
+    <Compile Include="SlurRhino\Isosurface.cs" />
+    <Compile Include="SlurRhino\MeshField.cs" />
+    <Compile Include="SlurRhino\MeshScalarField.cs" />
+    <Compile Include="SlurRhino\MeshVectorField.cs" />
+    <Compile Include="SlurRhino\Obsolete\MeshVertexScalarField.cs" />
+    <Compile Include="SlurRhino\Obsolete\MeshVertexVectorField.cs" />
+    <Compile Include="SlurRhino\RhinoFactory.cs" />
+    <Compile Include="SlurTools\Features\CurveFeature.cs" />
+    <Compile Include="SlurTools\Features\ExtendedMeshFeature.cs" />
+    <Compile Include="SlurTools\Features\IFeature.cs" />
+    <Compile Include="SlurTools\Features\MeshFeature.cs" />
+    <Compile Include="SlurTools\Features\PointFeature.cs" />
+    <Compile Include="SlurTools\DynamicRemesher.cs" />
+    <Compile Include="SlurTools\LoopGrower.cs" />
+    <Compile Include="SlurTools\MinimalRemesher.cs" />
+    <Compile Include="SlurTools\SteinerFinder.cs" />
     <Compile Include="SlurCore\AxisAngle3d.cs" />
     <Compile Include="SlurCore\CoreUtil.cs" />
     <Compile Include="SlurCore\Extensions\ColorExtensions.cs" />
@@ -69,16 +160,14 @@
     <Compile Include="SlurCore\Orient2d.cs" />
     <Compile Include="SlurCore\Property.cs" />
     <Compile Include="SlurCore\Orient3d.cs" />
-    <Compile Include="SlurCore\Rotation2d.cs" />
+    <Compile Include="SlurCore\OrthoBasis2d.cs" />
     <Compile Include="SlurCore\Matrix3d.cs" />
     <Compile Include="SlurCore\Transform2d.cs" />
     <Compile Include="SlurCore\Transform3d.cs" />
     <Compile Include="SlurData\DataUtil.cs" />
     <Compile Include="SlurData\Extensions\IListExtensions.cs" />
     <Compile Include="SlurData\KMeans.cs" />
-    <Compile Include="SlurData\HashGrid2d.cs" />
-    <Compile Include="SlurData\HashGrid3d.cs" />
-    <Compile Include="SlurDynamics\Constraints\BodyConstraint.cs" />
+    <Compile Include="SlurDynamics\Abstract\BodyConstraint.cs" />
     <Compile Include="SlurDynamics\ConstraintSolver.cs" />
     <Compile Include="SlurDynamics\ConstraintSolverSettings.cs" />
     <Compile Include="SlurDynamics\Constraints\AbovePlane.cs" />
@@ -89,16 +178,14 @@
     <Compile Include="SlurDynamics\Constraints\ForceField.cs" />
     <Compile Include="SlurDynamics\Constraints\InsideInterval.cs" />
     <Compile Include="SlurDynamics\Constraints\OnTarget.cs" />
-    <Compile Include="SlurDynamics\Constraints\SphereCollide.cs" />
-    <Compile Include="SlurDynamics\Constraints\Weight.cs" />
-    <Compile Include="SlurDynamics\Constraints\ParticleConstraint.cs" />
+    <Compile Include="SlurDynamics\Abstract\ParticleConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\Coplanar.cs" />
     <Compile Include="SlurDynamics\Constraints\Cospherical.cs" />
     <Compile Include="SlurDynamics\Constraints\FalseWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\CyclicQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\DihedralConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\DirectionConstraint.cs" />
-    <Compile Include="SlurDynamics\Constraints\MultiParticleConstraint.cs" />
+    <Compile Include="SlurDynamics\Abstract\MultiParticleConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\EqualizeLengths.cs" />
     <Compile Include="SlurDynamics\Constraints\LaplacianSmooth.cs" />
     <Compile Include="SlurDynamics\Constraints\LengthConstraint.cs" />
@@ -115,16 +202,16 @@
     <Compile Include="SlurDynamics\Constraints\VariableSphereCollide.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialSmooth.cs" />
-    <Compile Include="SlurDynamics\Constraints\MultiBodyConstraint.cs" />
+    <Compile Include="SlurDynamics\Abstract\MultiBodyConstraint.cs" />
     <Compile Include="SlurDynamics\DynamicsUtil.cs" />
     <Compile Include="SlurDynamics\Interfaces\IConstraint.cs" />
-    <Compile Include="SlurDynamics\Interfaces\IUpdatable.cs" />
     <Compile Include="SlurDynamics\Interfaces\IBody.cs" />
     <Compile Include="SlurDynamics\Constraints\LineCollide.cs" />
+    <Compile Include="SlurDynamics\Interfaces\IHandle.cs" />
     <Compile Include="SlurDynamics\Particle.cs" />
-    <Compile Include="SlurDynamics\HandleTypes.cs" />
+    <Compile Include="SlurDynamics\ParticleHandle.cs" />
     <Compile Include="SlurDynamics\Body.cs" />
-    <Compile Include="SlurCore\Rotation3d.cs" />
+    <Compile Include="SlurCore\OrthoBasis3d.cs" />
     <Compile Include="SlurDynamics\Constraints\OnThreshold.cs" />
     <Compile Include="SlurField\Enums\IntegrationMode.cs" />
     <Compile Include="SlurField\Enums\SampleMode.cs" />
@@ -137,7 +224,7 @@
     <Compile Include="SlurField\Grid2d.cs" />
     <Compile Include="SlurField\Grid3d.cs" />
     <Compile Include="SlurField\GridUtil.cs" />
-    <Compile Include="SlurField\IDWField3d.cs" />
+    <Compile Include="SlurField\Abstract\IDWField3d.cs" />
     <Compile Include="SlurField\IDWPoint3d.cs" />
     <Compile Include="SlurField\IDWScalarField3d.cs" />
     <Compile Include="SlurField\IDWVectorField3d.cs" />
@@ -154,34 +241,30 @@
     <Compile Include="SlurCore\Extensions\IReadOnlyListExtensions.cs" />
     <Compile Include="SlurCore\GeometryUtil.cs" />
     <Compile Include="SlurCore\Extensions\ListExtensions.cs" />
-    <Compile Include="SlurCore\IOUtil.cs" />
+    <Compile Include="SlurCore\CoreIO.cs" />
     <Compile Include="SlurField\SimplexNoiseField.cs" />
     <Compile Include="SlurField\PerlinNoiseField.cs" />
-    <Compile Include="SlurMesh\Extensions\IHalfedgeExtensions.cs" />
-    <Compile Include="SlurMesh\Extensions\IHeFaceExtensions.cs" />
-    <Compile Include="SlurMesh\Extensions\IHeStructureExtensions.cs" />
-    <Compile Include="SlurMesh\Extensions\IHeVertexExtensions.cs" />
+    <Compile Include="SlurMesh\Extensions\HeStructureExtensions.cs" />
     <Compile Include="SlurMesh\HalfedgeList.cs" />
     <Compile Include="SlurMesh\HeEdgeList.cs" />
-    <Compile Include="SlurMesh\HeElementProvider.cs" />
-    <Compile Include="SlurMesh\HeGraph\HeGraph.cs" />
-    <Compile Include="SlurMesh\HeGraph\HeGraph3d.cs" />
-    <Compile Include="SlurMesh\HeGraph\HeGraphBase.cs" />
+    <Compile Include="SlurMesh\HeGraph.cs" />
+    <Compile Include="SlurMesh\HeGraph3d.cs" />
     <Compile Include="SlurMesh\HeMeshUnroller.cs" />
-    <Compile Include="SlurMesh\HeMesh\FaceQuadrangulators.cs" />
-    <Compile Include="SlurMesh\HeMesh\HeMesh.cs" />
-    <Compile Include="SlurMesh\HeGraph\HeGraphFactoryBase.cs" />
-    <Compile Include="SlurMesh\HeMesh\HeMeshIO.cs" />
+    <Compile Include="SlurMesh\FaceQuadrangulators.cs" />
+    <Compile Include="SlurMesh\HeMesh.cs" />
+    <Compile Include="SlurMesh\MeshIO.cs" />
     <Compile Include="SlurMesh\HeQuadStrip.cs" />
     <Compile Include="SlurMesh\HeSubdivide.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeElementList.cs" />
-    <Compile Include="SlurMesh\HeMesh\Enums\PrimitiveType.cs" />
+    <Compile Include="SlurMesh\Enums\PrimitiveType.cs" />
     <Compile Include="Properties\VersionInfo.cs" />
-    <Compile Include="SlurMesh\HeMesh\HeMeshBase.cs" />
-    <Compile Include="SlurMesh\HeMesh\HeMesh3d.cs" />
-    <Compile Include="SlurMesh\HeMesh\HeMeshFactoryBase.cs" />
-    <Compile Include="SlurMesh\HeMesh\FaceTriangulators.cs" />
-    <None Include="packages.config" />
+    <Compile Include="SlurMesh\HeMesh3d.cs" />
+    <Compile Include="SlurMesh\FaceTriangulators.cs" />
+    <Compile Include="SlurUnity\Conversions.cs" />
+    <Compile Include="SlurUnity\Extensions\EngineExtensions.cs" />
+    <Compile Include="SlurUnity\Extensions\IReadOnlyListExtensions.cs" />
+    <Compile Include="SlurUnity\Interfaces\IVertex3f.cs" />
+    <Compile Include="SlurUnity\SlurMathf.cs" />
     <Compile Include="SlurCore\Vec2i.cs" />
     <Compile Include="SlurCore\Interval1d.cs" />
     <Compile Include="SlurCore\Interval2d.cs" />
@@ -197,12 +280,12 @@
     <Compile Include="SlurData\ReadOnlySubList.cs" />
     <Compile Include="SlurData\SubArray.cs" />
     <Compile Include="SlurData\SubList.cs" />
-    <Compile Include="SlurField\FieldSim.cs" />
+    <Compile Include="SlurField\SimulationUtil.cs" />
     <Compile Include="SlurField\Enums\WrapMode.cs" />
     <Compile Include="SlurField\FieldIO.cs" />
     <Compile Include="SlurField\Interfaces\IDiscreteField.cs" />
-    <Compile Include="SlurField\GridField2d.cs" />
-    <Compile Include="SlurField\GridField3d.cs" />
+    <Compile Include="SlurField\Abstract\GridField2d.cs" />
+    <Compile Include="SlurField\Abstract\GridField3d.cs" />
     <Compile Include="SlurField\GridPoint2d.cs" />
     <Compile Include="SlurField\GridPoint3d.cs" />
     <Compile Include="SlurField\ImplicitSurfaces.cs" />
@@ -215,24 +298,17 @@
     <Compile Include="SlurField\GridVectorField2d.cs" />
     <Compile Include="SlurField\GridVectorField3d.cs" />
     <Compile Include="SlurCore\Interfaces\IFactory.cs" />
-    <Compile Include="SlurMesh\HeElement.cs" />
+    <Compile Include="SlurMesh\Abstract\HeElement.cs" />
     <Compile Include="SlurMesh\HeElementList.cs" />
-    <Compile Include="SlurMesh\HeGraph\Halfedge.cs" />
-    <Compile Include="SlurMesh\HeGraph\HeGraphIO.cs" />
-    <Compile Include="SlurMesh\HeGraph\HeVertex.cs" />
-    <Compile Include="SlurMesh\HeMesh\Enums\SmoothBoundaryType.cs" />
-    <Compile Include="SlurMesh\HeMesh\HeFace.cs" />
-    <Compile Include="SlurMesh\HeMesh\Halfedge.cs" />
-    <Compile Include="SlurMesh\HeMesh\HeVertex.cs" />
+    <Compile Include="SlurMesh\Enums\SmoothBoundaryType.cs" />
     <Compile Include="SlurMesh\HeSelection.cs" />
     <Compile Include="SlurMesh\Interfaces\IHalfedge.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeCell.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeElement.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeFace.cs" />
-    <Compile Include="SlurMesh\Interfaces\IHeStructure.cs" />
     <Compile Include="SlurMesh\Interfaces\IHeVertex.cs" />
-    <Compile Include="SlurMesh\HeMesh\Interfaces\IFaceQuadrangulator.cs" />
-    <Compile Include="SlurMesh\HeMesh\Interfaces\IFaceTriangulator.cs" />
+    <Compile Include="SlurMesh\Interfaces\IFaceQuadrangulator.cs" />
+    <Compile Include="SlurMesh\Interfaces\IFaceTriangulator.cs" />
     <Compile Include="SlurMesh\Interfaces\IVertex3d.cs" />
     <Compile Include="SlurMesh\MeshUtil.cs" />
   </ItemGroup>
@@ -240,9 +316,13 @@
     <Folder Include="SlurDynamics\Obsolete\" />
     <Folder Include="SlurField\Obsolete\" />
     <Folder Include="SlurMesh\Obsolete\" />
+    <Folder Include="SlurMesh\WIP\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SlurCore\Matrix4d.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

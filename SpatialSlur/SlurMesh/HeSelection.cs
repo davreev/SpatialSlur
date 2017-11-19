@@ -19,9 +19,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes quadrilateral faces.
         /// </summary>
         public static IEnumerable<HeQuadStrip<V, E, F>> GetQuadStrips<V, E, F>(HeMeshBase<V, E, F> mesh, bool flip)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var faces = mesh.Faces;
             
@@ -32,7 +32,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < faces.Count; i++)
             {
                 var f = faces[i];
-                if (f.IsRemoved || f.Tag == currTag || !f.IsDegree4) continue; // skip if unused, visited, or non-quads
+                if (f.IsUnused || f.Tag == currTag || !f.IsDegree(4)) continue; // skip if unused, visited, or non-quads
 
                 stack.Push((flip) ? f.First.NextInFace : f.First);
 
@@ -45,17 +45,17 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Assumes quadrilateral faces.
         /// </summary>
-        public static IEnumerable<HeQuadStrip<V, E, F>> GetQuadStrips<V, E, F>(IHeStructure<V, E, F> mesh, F start, bool flip)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+        public static IEnumerable<HeQuadStrip<V, E, F>> GetQuadStrips<V, E, F>(HeStructure<V, E, F> mesh, F start, bool flip)
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
-            if (!start.IsDegree4)
+            if (!start.IsDegree(4))
                 return Enumerable.Empty<HeQuadStrip<V, E, F>>();
 
             var faces = mesh.Faces;
             faces.ContainsCheck(start);
-            start.RemovedCheck();
+            start.UnusedCheck();
 
             var stack = new Stack<E>();
             stack.Push((flip) ? start.First.NextInFace : start.First);
@@ -68,9 +68,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static IEnumerable<HeQuadStrip<V, E, F>> GetQuadStrips<V, E, F>(Stack<E> stack, int currTag)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             while (stack.Count > 0)
             {
@@ -86,14 +86,14 @@ namespace SpatialSlur.SlurMesh
                     foreach(var he1 in AdjacentQuads(he0))
                     {
                         var f = he1.Face;
-                        if (f != null && f.Tag != currTag && f.IsDegree4) stack.Push(he1);
+                        if (f != null && f.Tag != currTag && f.IsDegree(4)) stack.Push(he1);
                     }
                 }
             }
 
             IEnumerable<E> AdjacentQuads(E hedge)
             {
-                yield return hedge.PrevAtStart.PrevInFace; // left
+                yield return hedge.PreviousAtStart.PreviousInFace; // left
                 yield return hedge.NextInFace.NextAtStart; // right
             }
         }
@@ -109,9 +109,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="hedge"></param>
         /// <returns></returns>
         public static HeQuadStrip<V, E, F> GetQuadStrip<V, E, F>(HeMeshBase<V, E, F> mesh, E hedge)
-          where V : HeVertex<V, E, F>
-          where E : Halfedge<V, E, F>
-          where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             mesh.Halfedges.ContainsCheck(hedge);
             return GetQuadStrip<V, E, F>(hedge, mesh.Faces.NextTag);
@@ -126,9 +126,9 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="F"></typeparam>
         /// <returns></returns>
         private static HeQuadStrip<V, E, F> GetQuadStrip<V, E, F>(E hedge, int currTag)
-        where V : HeVertex<V, E, F>
-        where E : Halfedge<V, E, F>
-        where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var he1 = Advance(hedge);
             if (he1 == hedge) return new HeQuadStrip<V, E, F>(he1, he1); // periodic
@@ -141,7 +141,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var f = he.Face;
 
-                while (f != null && f.Tag != currTag && f.IsDegree4)
+                while (f != null && f.Tag != currTag && f.IsDegree(4))
                 {
                     f.Tag = currTag;
                     he = he.NextInFace.NextInFace.Twin;
@@ -158,9 +158,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes quadrilateral faces.
         /// </summary>
         public static List<List<TE>> GetQuadStrips<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, bool flip)
-            where TV : HeVertex<TV, TE, TF>
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+            where TV : HeMeshBase<TV, TE, TF>.Vertex
+            where TE : HeMeshBase<TV, TE, TF>.Halfedge
+            where TF : HeMeshBase<TV, TE, TF>.Face
         {
             var faces = mesh.Faces;
 
@@ -172,7 +172,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < faces.Count; i++)
             {
                 var f = faces[i];
-                if (f.IsRemoved || f.Tag == currTag) continue; // skip if unused or already visited
+                if (f.IsUnused || f.Tag == currTag) continue; // skip if unused or already visited
                 
                 stack.Push((flip) ? f.First.NextInFace : f.First);
                 GetQuadStrips<TV, TE, TF>(stack, currTag, result);
@@ -186,9 +186,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes quadrilateral faces.
         /// </summary>
         public static List<List<TE>> GetQuadStrips<TV, TE, TF>(IHeStructure<TV, TE, TF> mesh, TF start, bool flip)
-            where TV : HeVertex<TV, TE, TF>
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+            where TV : HeMeshBase<TV, TE, TF>.Vertex
+            where TE : HeMeshBase<TV, TE, TF>.Halfedge
+            where TF : HeMeshBase<TV, TE, TF>.Face
         {
             var faces = mesh.Faces;
 
@@ -210,9 +210,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void GetQuadStrips<TV, TE, TF>(Stack<TE> stack, int currTag, List<List<TE>> result)
-            where TV : HeVertex<TV, TE, TF>
-            where TE : Halfedge<TV, TE, TF>
-            where TF : HeFace<TV, TE, TF>
+            where TV : HeMeshBase<TV, TE, TF>.Vertex
+            where TE : HeMeshBase<TV, TE, TF>.Halfedge
+            where TF : HeMeshBase<TV, TE, TF>.Face
         {
             while (stack.Count > 0)
             {
@@ -255,5 +255,98 @@ namespace SpatialSlur.SlurMesh
             }
         }
         */
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hedge"></param>
+        /// <returns></returns>
+        public static IEnumerable<E> GetEdgeLoop<V, E, F>(E hedge)
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
+        {
+            if (hedge.Face == null)
+                return GetEdgeLoopBoundary<V, E, F>(hedge);
+
+            return GetEdgeLoopInterior<V, E, F>(hedge);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="hedge"></param>
+        /// <returns></returns>
+        private static IEnumerable<E> GetEdgeLoopBoundary<V, E, F>(E hedge)
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
+        {
+            var he = hedge;
+
+            // march backwards to corner or start
+            do
+            {
+                if (he.IsAtDegree2) break;
+                he = he.PreviousInFace;
+            } while (he != hedge);
+
+            hedge = he;
+
+            // march forward to corner or start
+            do
+            {
+                yield return he;
+                he = he.NextInFace;
+            } while (!he.IsAtDegree2 && he != hedge);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="hedge"></param>
+        /// <returns></returns>
+        private static IEnumerable<E> GetEdgeLoopInterior<V, E, F>(E hedge)
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
+        {
+            var he = hedge;
+
+            // march backwards to irregular vertex, boundary, or start
+            do
+            {
+                if (he.Twin.Face == null)
+                    if (!he.IsAtDegree3) break;
+                else
+                    if (he.Start.IsBoundary || !he.IsAtDegree(4)) break;
+
+                he = he.PreviousInFace.Twin.PreviousInFace;
+            } while (he != hedge);
+
+            hedge = he;
+
+            // march forward to irregular vertex, boundary, or start
+            do
+            {
+                yield return he;
+                he = he.NextInFace.Twin.NextInFace;
+
+                if (he.Twin.Face == null)
+                    if (!he.IsAtDegree3) break;
+                else
+                    if (he.Start.IsBoundary || !he.IsAtDegree(4)) break;
+
+            } while (he != hedge);
+        }
     }
 }

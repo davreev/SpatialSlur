@@ -26,7 +26,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getNeighbours"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public static T NearestMin<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
+        internal static T NearestMin<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
             where K : IComparable<K>
         {
             var t0 = start;
@@ -57,7 +57,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getNeighbours"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public static T NearestMax<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
+        internal static T NearestMax<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
             where K : IComparable<K>
         {
             var t0 = start;
@@ -88,7 +88,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getNeighbours"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public static IEnumerable<T> WalkToMin<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
+        internal static IEnumerable<T> WalkToMin<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
             where K : IComparable<K>
         {
             var t0 = start;
@@ -119,7 +119,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getNeighbours"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public static IEnumerable<T> WalkToMax<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
+        internal static IEnumerable<T> WalkToMax<T, K>(T start, Func<T, IEnumerable<T>> getNeighbours, Func<T, K> getKey)
             where K : IComparable<K>
         {
             var t0 = start;

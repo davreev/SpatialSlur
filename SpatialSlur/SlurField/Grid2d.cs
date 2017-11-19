@@ -20,11 +20,11 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public class Grid2d
     {
-        private double _x, _y;
         private double _dx, _dy;
-        private double _dxInv, _dyInv; // cached to avoid divs
+        private double _tx, _ty;
+        private double _txInv, _tyInv; // cached to avoid divs
         private readonly int _nx, _ny, _n;
-        private WrapMode _wrapModeX, _wrapModeY;
+        private WrapMode _wrapX, _wrapY;
 
 
         /// <summary>
@@ -34,8 +34,8 @@ namespace SpatialSlur.SlurField
         /// <param name="countY"></param>
         private Grid2d(int countX, int countY)
         {
-            if (countX < 1 || countY < 1)
-                throw new System.ArgumentException("The resolution of the grid must be greater than 0 in each dimension.");
+            if (countX < 2 || countY < 2)
+                throw new System.ArgumentException("The resolution of the grid must be greater than 1 in each dimension.");
 
             _nx = countX;
             _ny = countY;
@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurField
         {
             Origin = origin;
             Scale = scale;
-            _wrapModeX = _wrapModeY = wrapMode;
+            _wrapX = _wrapY = wrapMode;
         }
 
 
@@ -74,8 +74,8 @@ namespace SpatialSlur.SlurField
         {
             Origin = origin;
             Scale = scale;
-            _wrapModeX = wrapModeX;
-            _wrapModeY = wrapModeY;
+            _wrapX = wrapModeX;
+            _wrapY = wrapModeY;
         }
 
 
@@ -90,7 +90,7 @@ namespace SpatialSlur.SlurField
             : this(countX, countY)
         {
             Bounds = bounds;
-            _wrapModeX = _wrapModeY = wrapMode;
+            _wrapX = _wrapY = wrapMode;
         }
 
 
@@ -106,8 +106,8 @@ namespace SpatialSlur.SlurField
             : this(countX, countY)
         {
             Bounds = bounds;
-            _wrapModeX = wrapModeX;
-            _wrapModeY = wrapModeY;
+            _wrapX = wrapModeX;
+            _wrapY = wrapModeY;
         }
 
 
@@ -117,21 +117,21 @@ namespace SpatialSlur.SlurField
         /// <param name="other"></param>
         public Grid2d(Grid2d other)
         {
-            _x = other._x;
-            _y = other._y;
-
             _dx = other._dx;
             _dy = other._dy;
 
-            _dxInv = other._dxInv;
-            _dyInv = other._dyInv;
+            _tx = other._tx;
+            _ty = other._ty;
+
+            _txInv = other._txInv;
+            _tyInv = other._tyInv;
 
             _nx = other._nx;
             _ny = other._ny;
             _n = other._n;
             
-            _wrapModeX = other._wrapModeX;
-            _wrapModeY = other._wrapModeY;
+            _wrapX = other._wrapX;
+            _wrapY = other._wrapY;
         }
 
         
@@ -141,8 +141,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public Vec2d Origin
         {
-            get { return new Vec2d(_x, _y); }
-            set { (_x, _y) = value.Components; }
+            get { return new Vec2d(_dx, _dy); }
+            set { (_dx, _dy) = value.Components; }
         }
 
 
@@ -151,12 +151,12 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public Vec2d Scale
         {
-            get { return new Vec2d(_dx, _dy); }
+            get { return new Vec2d(_tx, _ty); }
             set
             {
-                (_dx, _dy) = value.Components;
-                _dxInv = 1.0 / _dx;
-                _dyInv = 1.0 / _dy;
+                (_tx, _ty) = value.Components;
+                _txInv = 1.0 / _tx;
+                _tyInv = 1.0 / _ty;
             }
         }
 
@@ -169,8 +169,8 @@ namespace SpatialSlur.SlurField
             get
             {
                 return new Vec2d(
-                    (_nx + 1) * _dx, 
-                    (_ny + 1) * _dy
+                    (_nx + 1) * _tx, 
+                    (_ny + 1) * _ty
                     );
             }
         }
@@ -184,8 +184,8 @@ namespace SpatialSlur.SlurField
             get
             {
                 return new Interval2d(
-                    _x, _x + (_nx + 1) * _dx,
-                    _y, _y + (_ny + 1) * _dy
+                    _dx, _dx + (_nx + 1) * _tx,
+                    _dy, _dy + (_ny + 1) * _ty
                     );
             }
             set
@@ -234,8 +234,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public WrapMode WrapModeX
         {
-            get { return _wrapModeX; }
-            set { _wrapModeX = value; }
+            get { return _wrapX; }
+            set { _wrapX = value; }
         }
 
 
@@ -244,8 +244,8 @@ namespace SpatialSlur.SlurField
         /// </summary>
         public WrapMode WrapModeY
         {
-            get { return _wrapModeY; }
-            set { _wrapModeY = value; }
+            get { return _wrapY; }
+            set { _wrapY = value; }
         }
 
 
@@ -266,7 +266,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
+        /// Convention is (i, j) => (x, y)
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
@@ -274,8 +274,8 @@ namespace SpatialSlur.SlurField
         public Vec2d CoordinateAt(int i, int j)
         {
             return new Vec2d(
-                i * _dx + _x,
-                j * _dy + _y);
+                i * _tx + _dx,
+                j * _ty + _dy);
         }
 
 
@@ -288,6 +288,24 @@ namespace SpatialSlur.SlurField
         {
             (int i, int j) = IndicesAt(index);
             return CoordinateAt(i, j);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vec2d CoordinateAt(GridPoint2d point)
+        {
+            var corners = point.Corners;
+            var weights = point.Weights;
+            var sum = new Vec2d();
+
+            for (int i = 0; i < 4; i++)
+                sum += CoordinateAt(corners[i]) * weights[i];
+
+            return sum;
         }
 
 
@@ -321,7 +339,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapX(int i)
         {
-            return GridUtil.Wrap(i, _nx, _wrapModeX);
+            return GridUtil.Wrap(i, _nx, _wrapX);
         }
 
 
@@ -332,7 +350,7 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public int WrapY(int j)
         {
-            return GridUtil.Wrap(j, _ny, _wrapModeY);
+            return GridUtil.Wrap(j, _ny, _wrapY);
         }
 
 
@@ -386,7 +404,7 @@ namespace SpatialSlur.SlurField
             return GridUtil.FlattenIndices(i, j, _nx);
         }
 
-
+        
         /// <summary>
         /// Expands a 1 dimensional index into a 2 dimensional index.
         /// </summary>
@@ -405,8 +423,8 @@ namespace SpatialSlur.SlurField
         public (int, int) IndicesAt(Vec2d point)
         {
             return (
-                (int)Math.Round((point.X - _x) * _dxInv),
-                (int)Math.Round((point.Y - _y) * _dyInv)
+                (int)Math.Round((point.X - _dx) * _txInv),
+                (int)Math.Round((point.Y - _dy) * _tyInv)
                 );
         }
 
@@ -501,8 +519,8 @@ namespace SpatialSlur.SlurField
         public Vec2d ToGridSpace(Vec2d point)
         {
             return new Vec2d(
-                (point.X - _x) * _dxInv,
-                (point.Y - _y) * _dyInv
+                (point.X - _dx) * _txInv,
+                (point.Y - _dy) * _tyInv
             );
         }
 
@@ -515,8 +533,8 @@ namespace SpatialSlur.SlurField
         public Vec2d ToWorldSpace(Vec2d point)
         {
             return new Vec2d(
-               point.X * _dx + _x,
-               point.Y * _dy + _y
+               point.X * _tx + _dx,
+               point.Y * _ty + _dy
            );
         }
 
@@ -525,9 +543,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        internal (int, int) GetBoundaryOffsets()
+        internal (int,int) GetBoundaryOffsets()
         {
-            return (GetX(), GetY());
+            return(GetX(), GetY());
 
             int GetX()
             {
@@ -537,7 +555,7 @@ namespace SpatialSlur.SlurField
                         return 0;
                     case WrapMode.Repeat:
                         return _nx - 1;
-                    case WrapMode.MirrorRepeat:
+                    case WrapMode.Mirror:
                         return 0;
                 }
 
@@ -552,7 +570,7 @@ namespace SpatialSlur.SlurField
                         return 0;
                     case WrapMode.Repeat:
                         return _n - _nx;
-                    case WrapMode.MirrorRepeat:
+                    case WrapMode.Mirror:
                         return 0;
                 }
 

@@ -24,7 +24,7 @@ namespace SpatialSlur.SlurField
         /// <summary></summary>
         public T Value;
         /// <summary></summary>
-        public double Weight = 1.0;
+        public double Influence = 1.0;
     }
 
 
@@ -39,11 +39,11 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
         /// <param name="point"></param>
-        /// <param name="weight"></param>
+        /// <param name="influence"></param>
         /// <returns></returns>
-        public static IDWPoint3d<T> Create<T>(T data, Vec3d point, double weight = 1.0)
+        public static IDWPoint3d<T> Create<T>(T data, Vec3d point, double influence = 1.0)
         {
-            return new IDWPoint3d<T>() { Value = data, Point = point, Weight = weight };
+            return new IDWPoint3d<T>() { Value = data, Point = point, Influence = influence };
         }
     }
 }

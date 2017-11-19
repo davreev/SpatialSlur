@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 
 /*
  * Notes
@@ -11,7 +12,7 @@ using System.Drawing.Imaging;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Various methods for exporting and importing field data.
+    /// Static methods for importing and exporting SlurField types.
     /// </summary>
     public static class FieldIO
     {
@@ -104,6 +105,47 @@ namespace SpatialSlur.SlurField
             return result;
         }
         */
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="path"></param>
+        /// <param name="mapper"></param>
+        public static void SaveAsImageStack<T>(GridField3d<T> field, string path, Func<T, Color> mapper)
+            where T : struct
+        {
+            string dir = Path.GetDirectoryName(path);
+            string name = Path.GetFileNameWithoutExtension(path);
+            string ext = Path.GetExtension(path);
+
+            Parallel.For(0, field.CountZ, z =>
+            {
+                using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, PixelFormat.Format32bppArgb))
+                {
+                    WriteToImage(field, z, bmp, mapper);
+                    bmp.Save(String.Format(@"{0}\{1}_{2}{3}", dir, name, z, ext));
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="path"></param>
+        /// <param name="mapper"></param>
+        public static void SaveAsImage<T>(GridField2d<T> field, string path, Func<T, Color> mapper)
+            where T : struct
+        {
+            using (Bitmap bmp = new Bitmap(field.CountX, field.CountY, PixelFormat.Format32bppArgb))
+            {
+                WriteToImage(field, bmp, mapper);
+                bmp.Save(path);
+            }
+        }
 
 
         /// <summary>

@@ -28,9 +28,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="position"></param>
         public static void TriSplit<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             // TODO
         }
@@ -49,9 +49,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="position"></param>
         public static void Loop<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             // TODO
             throw new NotImplementedException();
@@ -72,9 +72,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="position"></param>
         public static void QuadSplit<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             QuadSplitGeometry(mesh, position);
             QuadSplitTopology(mesh);
@@ -90,16 +90,16 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="position"></param>
         private static void QuadSplitGeometry<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             // create face vertices
             foreach (var f in mesh.Faces)
             {
                 var v = mesh.AddVertex();
 
-                if (!f.IsRemoved)
+                if (!f.IsUnused)
                     position.Set(v, f.Vertices.Mean(position.Get));
             }
 
@@ -108,7 +108,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var v = mesh.AddVertex();
 
-                if (!he.IsRemoved)
+                if (!he.IsUnused)
                     position.Set(v, he.Lerp(position.Get, 0.5));
             }
         }
@@ -122,9 +122,9 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         private static void QuadSplitTopology<V, E, F>(HeMeshBase<V, E, F> mesh)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var verts = mesh.Vertices;
             var hedges = mesh.Halfedges;
@@ -140,7 +140,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < ne; i++)
             {
                 var he = hedges[i << 1];
-                if (he.IsRemoved) continue;
+                if (he.IsUnused) continue;
 
                 var ev = verts[i + ev0];
                 mesh.SplitEdgeImpl(he, ev);
@@ -150,10 +150,10 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < nf; i++)
             {
                 var f = faces[i];
-                if (f.IsRemoved) continue;
+                if (f.IsUnused) continue;
 
                 var he = f.First;
-                if (he.Start.Index >= fv0) he = he.PrevInFace; // ensure halfedge starts from an old vertex
+                if (he.Start.Index >= fv0) he = he.PreviousInFace; // ensure halfedge starts from an old vertex
                 mesh.QuadSplitFace(he, verts[i + fv0]);
             }
         }
@@ -165,7 +165,7 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary>
         /// Applies a single iteration of Catmull-Clark subdivision to the given mesh.
-        /// If using external buffers to store vertex attributes, the number of vertices after subdivision equals the sum of the number of vertices edges and faces in the initial mesh.
+        /// If using external buffers to store vertex attributes, the number of vertices after subdivision equals the sum of the number of vertices, edges, and faces in the initial mesh.
         /// http://rosettacode.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
         /// http://w3.impa.br/~lcruz/courses/cma/surfaces.html
         /// </summary>
@@ -176,9 +176,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="position"></param>
         /// <param name="boundaryType"></param>
         public static void CatmullClark<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             CatmullClarkGeometry(mesh, position, boundaryType);
             QuadSplitTopology(mesh);
@@ -195,9 +195,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="position"></param>
         /// <param name="boundaryType"></param>
         private static void CatmullClarkGeometry<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var verts = mesh.Vertices;
             int fv0 = verts.Count; // index of first face vertex
@@ -207,7 +207,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var v = mesh.AddVertex();
 
-                if (!f.IsRemoved)
+                if (!f.IsUnused)
                     position.Set(v, f.Vertices.Mean(position.Get));
             }
 
@@ -215,7 +215,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var he0 in mesh.Edges)
             {
                 var v = mesh.AddVertex();
-                if (he0.IsRemoved) continue;
+                if (he0.IsUnused) continue;
 
                 if (he0.IsBoundary)
                 {
@@ -240,9 +240,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void CatmullClarkSmooth<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             switch (boundaryType)
             {
@@ -265,9 +265,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void CatmullClarkSmoothFixed<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var verts = mesh.Vertices;
 
@@ -278,7 +278,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < fv0; i++)
             {
                 var v = verts[i];
-                if (v.IsRemoved || v.IsBoundary) continue; // skip boundary verts
+                if (v.IsUnused || v.IsBoundary) continue; // skip boundary verts
 
                 var fsum = new Vec3d();
                 var esum = new Vec3d();
@@ -301,9 +301,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void CatmullClarkSmoothCornerFixed<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var verts = mesh.Vertices;
 
@@ -314,14 +314,14 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < fv0; i++)
             {
                 var v = verts[i];
-                if (v.IsRemoved) continue;
+                if (v.IsUnused) continue;
 
                 if (v.IsBoundary)
                 {
-                    var he0 = v.FirstOut;
+                    var he0 = v.First;
                     if (he0.IsAtDegree2) continue; // skip corner verts
 
-                    var he1 = he0.PrevInFace;
+                    var he1 = he0.PreviousInFace;
                     var p0 = position.Get(verts[(he0.Index >> 1) + ev0]);
                     var p1 = position.Get(verts[(he1.Index >> 1) + ev0]);
                     position.Set(v, position.Get(v) * 0.5 + (p0 + p1) * 0.25);
@@ -350,9 +350,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void CatmullClarkSmoothFree<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var verts = mesh.Vertices;
 
@@ -363,12 +363,12 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < fv0; i++)
             {
                 var v = verts[i];
-                if (v.IsRemoved) continue;
+                if (v.IsUnused) continue;
 
                 if (v.IsBoundary)
                 {
-                    var he0 = v.FirstOut;
-                    var he1 = he0.PrevInFace;
+                    var he0 = v.First;
+                    var he1 = he0.PreviousInFace;
                     var p0 = position.Get(verts[(he0.Index >> 1) + ev0]);
                     var p1 = position.Get(verts[(he1.Index >> 1) + ev0]);
                     position.Set(v, position.Get(v) * 0.5 + (p0 + p1) * 0.25);
@@ -406,9 +406,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="position"></param>
         /// <param name="boundaryType"></param>
         public static void CatmullClark<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType, bool parallel)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             CatmullClarkGeometry(mesh, position, boundaryType, parallel);
             QuadSplitTopology(mesh);
@@ -419,9 +419,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void CatmullClarkGeometry<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType, bool parallel)
-        where V : HeVertex<V, E, F>
-        where E : Halfedge<V, E, F>
-        where F : HeFace<V, E, F>
+        where V : HeMeshBase<V, E, F>.Vertex
+        where E : HeMeshBase<V, E, F>.Halfedge
+        where F : HeMeshBase<V, E, F>.Face
         {
             var verts = mesh.Vertices;
             var edges = mesh.Edges;
@@ -441,7 +441,7 @@ namespace SpatialSlur.SlurMesh
                  {
                      var f = faces[i];
 
-                     if (!f.IsRemoved)
+                     if (!f.IsUnused)
                          position.Set(verts[i + fv0], f.Vertices.Mean(position.Get));
                  }
              };
@@ -452,7 +452,7 @@ namespace SpatialSlur.SlurMesh
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var he0 = edges[i];
-                    if (he0.IsRemoved) continue;
+                    if (he0.IsUnused) continue;
 
                     if (he0.IsBoundary)
                     {
@@ -476,7 +476,7 @@ namespace SpatialSlur.SlurMesh
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var v = verts[i];
-                    if (v.IsRemoved) continue;
+                    if (v.IsUnused) continue;
 
                     if (v.IsBoundary)
                     {
@@ -534,9 +534,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="position"></param>
         /// <param name="skipBoundary"></param>
         public static void Diagonalize<V, E, F>(HeMeshBase<V, E, F> mesh, Property<V, Vec3d> position, bool skipBoundary)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var edges = mesh.Edges;
             var faces = mesh.Faces;
@@ -548,7 +548,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < nf; i++)
             {
                 var f = faces[i];
-                if (f.IsRemoved) continue;
+                if (f.IsUnused) continue;
 
                 var v = mesh.AddVertex();
                 position.Set(v, f.GetBarycenter(position.Get));
@@ -561,7 +561,7 @@ namespace SpatialSlur.SlurMesh
                 for (int i = 0; i < ne; i++)
                 {
                     var he = edges[i];
-                    if (he.IsRemoved || he.IsBoundary) continue;
+                    if (he.IsUnused || he.IsBoundary) continue;
                     mesh.MergeFaces(he);
                 }
 
@@ -571,7 +571,7 @@ namespace SpatialSlur.SlurMesh
                 for (int i = 0; i < ne; i++)
                 {
                     var he = edges[i];
-                    if (he.IsRemoved) continue;
+                    if (he.IsUnused) continue;
                     mesh.MergeFaces(he);
                 }
             }
@@ -594,9 +594,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="position"></param>
         /// <param name="boundaryType"></param>
         public static void CatmullClark<V, E, F>(HeMesh<V, E, F> mesh, Property<V, Vec3d> position, SmoothBoundaryType boundaryType)
-            where V : HeVertex<V, E, F>
-            where E : Halfedge<V, E, F>
-            where F : HeFace<V, E, F>
+            where V : HeMeshBase<V, E, F>.Vertex
+            where E : HeMeshBase<V, E, F>.Halfedge
+            where F : HeMeshBase<V, E, F>.Face
         {
             var verts = mesh.Vertices;
             var hedges = mesh.Halfedges;
@@ -612,7 +612,7 @@ namespace SpatialSlur.SlurMesh
                 var f = faces[i];
                 var v = mesh.AddVertex();
 
-                if (!f.IsRemoved)
+                if (!f.IsUnused)
                     position.Set(v, f.Vertices.Mean(position.Get));
             }
 
@@ -620,7 +620,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < nhe; i += 2)
             {
                 var he = hedges[i];
-                if (he.IsRemoved)
+                if (he.IsUnused)
                 {
                     mesh.AddVertex();
                     continue;
@@ -633,7 +633,7 @@ namespace SpatialSlur.SlurMesh
 
 
                 var he0 = hedges[i];
-                if (he0.IsRemoved) continue;
+                if (he0.IsUnused) continue;
 
                 var he1 = hedges[i + 1];
 
@@ -656,7 +656,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < nf; i++)
             {
                 var f = faces[i];
-                if (f.IsRemoved)
+                if (f.IsUnused)
                 {
                     mesh.AddVertex();
                     continue;
@@ -740,7 +740,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var he = hedges[i];
                 var f = he.Face;
-                if (he.IsRemoved || f == null) continue;
+                if (he.IsUnused || f == null) continue;
 
                 int fi = f.Index;
                 var p = vertexPositions[he.Start.Index];
@@ -769,7 +769,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var he = hedges[i];
                 var f = he.Face;
-                if (he.IsRemoved || f == null) continue;
+                if (he.IsUnused || f == null) continue;
 
                 int fi = f.Index;
                 var p = vertexPositions[he.Start.Index];
@@ -805,7 +805,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < nhe; i += 2)
             {
                 var he0 = hedges[i];
-                if (he0.IsRemoved || he0.IsBoundary) continue;
+                if (he0.IsUnused || he0.IsBoundary) continue;
                 var he1 = he0.Twin;
 
                 fv[0] = newVerts[he0.NextInFace.Index];
@@ -821,7 +821,7 @@ namespace SpatialSlur.SlurMesh
                 for (int i = 0; i < nv; i++)
                 {
                     var v = verts[i];
-                    if (v.IsRemoved || v.IsBoundary) continue;
+                    if (v.IsUnused || v.IsBoundary) continue;
 
                     // circulate vertex in reverse for consistent face windings
                     fv.Clear();
@@ -842,7 +842,7 @@ namespace SpatialSlur.SlurMesh
                 for (int i = 0; i < nf; i++)
                 {
                     var f = faces[i];
-                    if (f.IsRemoved) continue;
+                    if (f.IsUnused) continue;
 
                     // collect indices of face halfedges
                     fv.Clear();
@@ -916,7 +916,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var he = hedges[i];
                 var f = he.Face;
-                if (he.IsRemoved || f == null) continue;
+                if (he.IsUnused || f == null) continue;
 
                 int fi = f.Index;
                 var p = vertexPositions[he.Start.Index];
@@ -950,7 +950,7 @@ namespace SpatialSlur.SlurMesh
             {
                 var he = hedges[i];
                 var f = he.Face;
-                if (he.IsRemoved || f == null) continue;
+                if (he.IsUnused || f == null) continue;
 
                 int fi = f.Index;
                 var p = vertexPositions[he.Start.Index];
@@ -989,7 +989,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < nhe; i += 2)
             {
                 var he0 = hedges[i];
-                if (he0.IsRemoved || he0.IsBoundary) continue;
+                if (he0.IsUnused || he0.IsBoundary) continue;
                 var he1 = he0.Twin;
 
                 var f0 = he0.Face;
@@ -1014,7 +1014,7 @@ namespace SpatialSlur.SlurMesh
                 for (int i = 0; i < nv; i++)
                 {
                     var v = verts[i];
-                    if (v.IsRemoved || v.IsBoundary) continue;
+                    if (v.IsUnused || v.IsBoundary) continue;
 
                     // circulate vertex in reverse for consistent face windings
                     fv.Clear();

@@ -16,9 +16,9 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     [Serializable]
     public class HeQuadStrip<V, E, F> : IEnumerable<E>
-        where V : HeVertex<V, E, F>
-        where E : Halfedge<V, E, F>
-        where F : HeFace<V, E, F>
+        where V : HeMeshBase<V, E, F>.Vertex
+        where E : HeMeshBase<V, E, F>.Halfedge
+        where F : HeMeshBase<V, E, F>.Face
     {
         private E _first;
         private E _last;

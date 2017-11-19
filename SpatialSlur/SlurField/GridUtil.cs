@@ -30,8 +30,8 @@ namespace SpatialSlur.SlurField
                     return Clamp;
                 case WrapMode.Repeat:
                     return Repeat;
-                case WrapMode.MirrorRepeat:
-                    return MirrorRepeat;
+                case WrapMode.Mirror:
+                    return Mirror;
             }
 
             throw new NotSupportedException();
@@ -53,8 +53,8 @@ namespace SpatialSlur.SlurField
                     return Clamp(i, n);
                 case (WrapMode.Repeat):
                     return Repeat(i, n);
-                case (WrapMode.MirrorRepeat):
-                    return MirrorRepeat(i, n);
+                case (WrapMode.Mirror):
+                    return Mirror(i, n);
             }
 
             throw new NotSupportedException();
@@ -92,7 +92,7 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        internal static int MirrorRepeat(int i, int n)
+        internal static int Mirror(int i, int n)
         {
             i = Repeat(i, n + n);
             return (i < n) ? i : n + n - i - 1;
@@ -126,7 +126,7 @@ namespace SpatialSlur.SlurField
             return x + y * nx + z * nxy;
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>

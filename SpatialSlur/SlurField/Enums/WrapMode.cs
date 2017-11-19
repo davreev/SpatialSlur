@@ -15,6 +15,6 @@ namespace SpatialSlur.SlurField
         /// <summary></summary>
         Repeat,
         /// <summary></summary>
-        MirrorRepeat
+        Mirror
     }
 }
