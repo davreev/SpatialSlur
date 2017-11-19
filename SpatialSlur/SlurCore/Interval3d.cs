@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurCore
     /// Represents a double precision interval in 3 dimensions.
     /// </summary>
     [Serializable]
-    public struct Interval3d
+    public partial struct Interval3d
     {
         #region Static
 
@@ -284,6 +284,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        public Vec3i Orientation
+        {
+            get { return new Vec3i(X.Orientation, Y.Orientation, Z.Orientation); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsValid
         {
             get { return X.IsValid && Y.IsValid && Z.IsValid; }
@@ -317,6 +327,15 @@ namespace SpatialSlur.SlurCore
                 Y.B = value.Y;
                 Z.B = value.Z;
             }
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public (Interval1d, Interval1d, Interval1d) Components
+        {
+            get { return (X, Y, Z); }
         }
 
 
@@ -372,7 +391,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Interval3d other, double tolerance)
+        public bool ApproxEquals(Interval3d other, double tolerance = SlurMath.ZeroTolerance)
         {
             return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance) && Z.ApproxEquals(other.Z, tolerance);
         }

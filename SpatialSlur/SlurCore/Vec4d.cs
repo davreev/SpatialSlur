@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 /*
  * Notes
@@ -14,7 +13,7 @@ namespace SpatialSlur.SlurCore
     /// 
     /// </summary>
     [Serializable]
-    public struct Vec4d
+    public partial struct Vec4d
     {
         #region Static
 
@@ -28,18 +27,6 @@ namespace SpatialSlur.SlurCore
         public static Vec4d UnitZ = new Vec4d(0.0, 0.0, 1.0, 0.0);
         /// <summary></summary>
         public static Vec4d UnitW = new Vec4d(0.0, 0.0, 0.0, 1.0);
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tuple"></param>
-        public static implicit operator Vec4d((double, double, double, double) tuple)
-        {
-            return new Vec4d(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
-        }
-        */
 
 
         /// <summary>
@@ -61,6 +48,17 @@ namespace SpatialSlur.SlurCore
         public static implicit operator Vec4d(Vec3d vector)
         {
             return new Vec4d(vector.X, vector.Y, vector.Z, 0.0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="quaternion"></param>
+        /// <returns></returns>
+        public static implicit operator Vec4d(Quaterniond quaternion)
+        {
+            return new Vec4d(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W);
         }
 
 
@@ -277,10 +275,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Angle(Vec4d v0, Vec4d v1)
         {
-            double d = v0.Length * v1.Length;
+            double d = v0.SquareLength * v1.SquareLength;
 
             if (d > 0.0)
-                return Math.Acos(SlurMath.Clamp(Dot(v0, v1) / d, -1.0, 1.0)); // clamp dot product to remove noise
+                return Math.Acos(SlurMath.Clamp(Dot(v0, v1) / Math.Sqrt(d), -1.0, 1.0)); // clamp dot product to remove noise
 
             return double.NaN;
         }
@@ -355,15 +353,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
-        /// <param name="t"></param>
+        /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vec4d Lerp(Vec4d v0, Vec4d v1, double t)
+        public static Vec4d Lerp(Vec4d v0, Vec4d v1, double factor)
         {
-            v0.X += (v1.X - v0.X) * t;
-            v0.Y += (v1.Y - v0.Y) * t;
-            v0.Z += (v1.Z - v0.Z) * t;
-            v0.W += (v1.W - v0.W) * t;
-            return v0;
+            return v0.LerpTo(v1, factor);
         }
 
 
@@ -372,11 +366,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
-        /// <param name="t"></param>
+        /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vec4d Slerp(Vec4d v0, Vec4d v1, double t)
+        public static Vec4d Slerp(Vec4d v0, Vec4d v1, double factor)
         {
-            return Slerp(v0, v1, Angle(v0, v1), t);
+            return v0.SlerpTo(v1, Angle(v0, v1), factor);
         }
 
 
@@ -385,13 +379,12 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
-        /// <param name="theta"></param>
-        /// <param name="t"></param>
+        /// <param name="angle"></param>
+        /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vec4d Slerp(Vec4d v0, Vec4d v1, double theta, double t)
+        public static Vec4d Slerp(Vec4d v0, Vec4d v1, double angle, double factor)
         {
-            double st = 1.0 / Math.Sin(theta);
-            return v0 * (Math.Sin((1.0 - t) * theta) * st) + v1 * (Math.Sin(t * theta) * st);
+            return v0.SlerpTo(v1, angle, factor);
         }
 
         #endregion
@@ -426,10 +419,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="w"></param>
         public Vec4d(double x, double y, double z, double w)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
-            this.W = w;
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
         }
 
 
@@ -443,8 +436,8 @@ namespace SpatialSlur.SlurCore
         {
             X = other.X;
             Y = other.Y;
-            this.Z = z;
-            this.W = w;
+            Z = z;
+            W = w;
         }
 
 
@@ -458,7 +451,7 @@ namespace SpatialSlur.SlurCore
             X = other.X;
             Y = other.Y;
             Z = other.Z;
-            this.W = w;
+            W = w;
         }
 
 
@@ -471,8 +464,8 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                double d = SquareLength;
-                return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
+                var v = this;
+                return v.Unitize() ? v : Zero;
             }
         }
 
@@ -552,20 +545,23 @@ namespace SpatialSlur.SlurCore
         }
 
 
-
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance)
+        public bool IsZero(double tolerance = SlurMath.ZeroTolerance)
         {
-            return (Math.Abs(X) < tolerance) && (Math.Abs(Y) < tolerance) && (Math.Abs(Z) < tolerance) && (Math.Abs(W) < tolerance);
+            return 
+                Math.Abs(X) < tolerance && 
+                Math.Abs(Y) < tolerance && 
+                Math.Abs(Z) < tolerance && 
+                Math.Abs(W) < tolerance;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance)
+        public bool IsUnit(double tolerance = SlurMath.ZeroTolerance)
         {
             return Math.Abs(SquareLength - 1.0) < tolerance;
         }
@@ -613,9 +609,13 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vec4d other, double tolerance)
+        public bool ApproxEquals(Vec4d other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return (Math.Abs(other.X - X) < tolerance) && (Math.Abs(other.Y - Y) < tolerance) && (Math.Abs(other.Z - Z) < tolerance) && (Math.Abs(other.W - W) < tolerance);
+            return 
+                Math.Abs(other.X - X) < tolerance && 
+                Math.Abs(other.Y - Y) < tolerance && 
+                Math.Abs(other.Z - Z) < tolerance && 
+                Math.Abs(other.W - W) < tolerance;
         }
 
 
@@ -627,7 +627,11 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec4d other, Vec4d tolerance)
         {
-            return (Math.Abs(other.X - X) < tolerance.X) && (Math.Abs(other.Y - Y) < tolerance.Y) && (Math.Abs(other.Z - Z) < tolerance.Z) && (Math.Abs(other.W - W) < tolerance.W);
+            return 
+                Math.Abs(other.X - X) < tolerance.X && 
+                Math.Abs(other.Y - Y) < tolerance.Y && 
+                Math.Abs(other.Z - Z) < tolerance.Z && 
+                Math.Abs(other.W - W) < tolerance.W;
         }
 
 
@@ -701,6 +705,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        public void Negate()
+        {
+            X = -X;
+            Y = -Y;
+            Z = -Z;
+            W = -W;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="other"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
@@ -711,6 +727,31 @@ namespace SpatialSlur.SlurCore
                 Y + (other.Y - Y) * factor,
                 Z + (other.Z - Z) * factor,
                 W + (other.W - W) * factor);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Vec4d SlerpTo(Vec4d other, double factor)
+        {
+            return SlerpTo(other, Angle(this, other), factor);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Vec4d SlerpTo(Vec4d other, double angle, double factor)
+        {
+            double st = 1.0 / Math.Sin(angle);
+            return this * (Math.Sin((1.0 - factor) * angle) * st) + other * (Math.Sin(factor * angle) * st);
         }
 
 

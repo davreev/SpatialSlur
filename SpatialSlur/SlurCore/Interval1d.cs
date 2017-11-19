@@ -4,15 +4,16 @@ using System.Linq;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// Represents a double precision interval.
+    /// https://en.wikipedia.org/wiki/Interval_(mathematics)
     /// </summary>
     [Serializable]
-    public struct Interval1d
+    public partial struct Interval1d
     {
         #region Static
         
@@ -102,6 +103,7 @@ namespace SpatialSlur.SlurCore
             return SlurMath.Remap(t, from.A, from.B, to.A, to.B);
         }
 
+
         /// <summary>
         /// Returns the union of a and b.
         /// </summary>
@@ -131,10 +133,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the region of a that is not in b.
         /// </summary>
-        /// <param name="d0"></param>
-        /// <param name="d1"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         /// <returns></returns>
-        public static Interval1d Difference(Interval1d d0, Interval1d d1)
+        public static Interval1d Difference(Interval1d a, Interval1d b)
         {
             throw new NotImplementedException();
         }
@@ -202,6 +204,16 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public int Orientation
+        {
+            get { return Math.Sign(B - A); }
+        }
+
+
+        /// <summary>
         /// Returns true if A equals B.
         /// </summary>
         public bool IsValid
@@ -259,22 +271,22 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
-        public void Set(double t)
+        /// <param name="ab"></param>
+        public void Set(double ab)
         {
-            A = B = t;
+            A = B = ab;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public void Set(double t0, double t1)
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        public void Set(double a, double b)
         {
-            this.A = t0;
-            this.B = t1;
+            this.A = a;
+            this.B = b;
         }
 
 
@@ -284,7 +296,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Interval1d other, double tolerance)
+        public bool ApproxEquals(Interval1d other, double tolerance = SlurMath.ZeroTolerance)
         {
             return Math.Abs(other.A - A) < tolerance && Math.Abs(other.B - B) < tolerance;
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
+
 using SpatialSlur.SlurData;
 
 /*
@@ -14,9 +13,9 @@ namespace SpatialSlur.SlurCore
     /// 
     /// </summary>
     [Serializable]
-    public struct Vec2d
+    public partial struct Vec2d
     {
-        #region Static
+#region Static
 
         /// <summary></summary>
         public static readonly Vec2d Zero = new Vec2d();
@@ -24,18 +23,6 @@ namespace SpatialSlur.SlurCore
         public static readonly Vec2d UnitX = new Vec2d(1.0, 0.0);
         /// <summary></summary>
         public static readonly Vec2d UnitY = new Vec2d(0.0, 1.0);
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tuple"></param>
-        public static implicit operator Vec2d((double, double) tuple)
-        {
-            return new Vec2d(tuple.Item1, tuple.Item2);
-        }
-        */
 
 
         /// <summary>
@@ -253,7 +240,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Cross(Vec2d v0, Vec2d v1)
         {
-            return -v0.Y * v1.X + v0.X * v1.Y;
+            return v0.X * v1.Y - v0.Y * v1.X;
         }
 
 
@@ -266,12 +253,24 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static double Angle(Vec2d v0, Vec2d v1)
         {
-            double d = v0.Length * v1.Length;
+            var d = v0.SquareLength * v1.SquareLength;
 
             if (d > 0.0)
-                return Math.Acos(SlurMath.Clamp(Dot(v0, v1) / d, -1.0, 1.0)); // clamp dot product to remove noise
+                return Math.Acos(SlurMath.Clamp(Dot(v0, v1) / Math.Sqrt(d), -1.0, 1.0)); // clamp dot product to remove noise
 
             return double.NaN;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static double SignedAngle(Vec2d v0, Vec3d v1)
+        {
+            return Math.Atan2(Cross(v0, v1), Dot(v0, v1));
         }
 
 
@@ -343,13 +342,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
-        /// <param name="t"></param>
+        /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vec2d Lerp(Vec2d v0, Vec2d v1, double t)
+        public static Vec2d Lerp(Vec2d v0, Vec2d v1, double factor)
         {
-            v0.X += (v1.X - v0.X) * t;
-            v0.Y += (v1.Y - v0.Y) * t;
-            return v0;
+            return v0.LerpTo(v1, factor);
         }
 
 
@@ -358,11 +355,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
-        /// <param name="t"></param>
+        /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vec2d Slerp(Vec2d v0, Vec2d v1, double t)
+        public static Vec2d Slerp(Vec2d v0, Vec2d v1, double factor)
         {
-            return Slerp(v0, v1, Angle(v0, v1), t);
+            return v0.SlerpTo(v1, Angle(v0, v1), factor);
         }
 
 
@@ -371,16 +368,15 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
-        /// <param name="theta"></param>
-        /// <param name="t"></param>
+        /// <param name="angle"></param>
+        /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vec2d Slerp(Vec2d v0, Vec2d v1, double theta, double t)
+        public static Vec2d Slerp(Vec2d v0, Vec2d v1, double angle, double factor)
         {
-            double st = 1.0 / Math.Sin(theta);
-            return v0 * (Math.Sin((1.0 - t) * theta) * st) + v1 * (Math.Sin(t * theta) * st);
+            return v0.SlerpTo(v1, angle, factor);
         }
 
-        #endregion
+#endregion
 
 
         /// <summary></summary>
@@ -406,8 +402,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         public Vec2d(double x, double y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
 
@@ -420,8 +416,8 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                double d = SquareLength;
-                return (d > 0.0) ? this / Math.Sqrt(d) : Zero;
+                var v = this;
+                return v.Unitize() ? v : Zero;
             }
         }
 
@@ -528,16 +524,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance)
+        public bool IsZero(double tolerance = SlurMath.ZeroTolerance)
         {
-            return (Math.Abs(X) < tolerance) && (Math.Abs(Y) < tolerance);
+            return 
+                Math.Abs(X) < tolerance && 
+                Math.Abs(Y) < tolerance;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance)
+        public bool IsUnit(double tolerance = SlurMath.ZeroTolerance)
         {
             return Math.Abs(SquareLength - 1.0) < tolerance;
         }
@@ -603,9 +601,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vec2d other, double tolerance)
+        public bool ApproxEquals(Vec2d other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return (Math.Abs(other.X - X) < tolerance) && (Math.Abs(other.Y - Y) < tolerance);
+            return 
+                Math.Abs(other.X - X) < tolerance && 
+                Math.Abs(other.Y - Y) < tolerance;
         }
 
 
@@ -617,7 +617,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec2d other, Vec2d tolerance)
         {
-            return (Math.Abs(other.X - X) < tolerance.X) && (Math.Abs(other.Y - Y) < tolerance.Y);
+            return 
+                Math.Abs(other.X - X) < tolerance.X && 
+                Math.Abs(other.Y - Y) < tolerance.Y;
         }
 
 
@@ -683,6 +685,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        public void Negate()
+        {
+            X = -X;
+            Y = -Y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="other"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
@@ -691,6 +703,31 @@ namespace SpatialSlur.SlurCore
             return new Vec2d(
                 X + (other.X - X) * factor,
                 Y + (other.Y - Y) * factor);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Vec2d SlerpTo(Vec2d other, double factor)
+        {
+            return SlerpTo(other, Angle(this, other), factor);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Vec2d SlerpTo(Vec2d other, double angle, double factor)
+        {
+            double st = 1.0 / Math.Sin(angle);
+            return this * (Math.Sin((1.0 - factor) * angle) * st) + other * (Math.Sin(factor * angle) * st);
         }
 
 

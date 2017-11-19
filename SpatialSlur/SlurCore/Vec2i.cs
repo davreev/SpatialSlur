@@ -256,7 +256,7 @@ namespace SpatialSlur.SlurCore
             get { return Math.Abs(X) + Math.Abs(Y); }
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -421,6 +421,16 @@ namespace SpatialSlur.SlurCore
         {
             other -= this;
             return other.ManhattanLength;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Negate()
+        {
+            X = -X;
+            Y = -Y;
         }
 
 

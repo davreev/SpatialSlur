@@ -264,6 +264,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        public Vec2i Orientation
+        {
+            get { return new Vec2i(X.Orientation, Y.Orientation); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsValid
         {
             get { return X.IsValid && Y.IsValid; }
@@ -295,6 +305,15 @@ namespace SpatialSlur.SlurCore
                 X.B = value.X;
                 Y.B = value.Y;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public (Interval1d, Interval1d) Components
+        {
+            get { return (X, Y); }
         }
 
 
@@ -350,7 +369,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Interval2d other, double tolerance)
+        public bool ApproxEquals(Interval2d other, double tolerance = SlurMath.ZeroTolerance)
         {
             return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance);
         }
