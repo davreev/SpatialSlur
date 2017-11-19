@@ -66,7 +66,7 @@ namespace SlurGH.Components
 
             var result = mesh.Value.GetHoles().Select(he0 =>
             {
-                var poly = new Polyline(he0.CirculateFace.Select(he => he.Start.Position.ToPoint3d()));
+                var poly = new Polyline(he0.CirculateFace.Select(he => (Point3d)he.Start.Position));
                 poly.Add(poly[0]);
 
                 return new GH_Curve(poly.ToNurbsCurve());

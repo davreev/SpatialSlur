@@ -23,9 +23,6 @@ namespace SpatialSlur.SlurGH.Components
     /// </summary>
     public class IntegrateField : GH_Component
     {
-        private bool _parallel = true;
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -112,7 +109,7 @@ namespace SpatialSlur.SlurGH.Components
 
             Parallel.For(0, points.Count, i =>
             {
-                var pts = field.IntegrateFrom(points[i].ToVec3d(), stepSize, mode).Take(stepCount).Select(p => p.ToPoint3d());
+                var pts = field.IntegrateFrom(points[i], stepSize, mode).Take(stepCount).Select(p => (Point3d)p);
                 result[i] = new PolylineCurve(pts);
             });
 
@@ -134,7 +131,7 @@ namespace SpatialSlur.SlurGH.Components
 
             Parallel.For(0, points.Count, i =>
             {
-                var p0 = points[i].ToVec3d();
+                Vec3d p0 = points[i];
                 var z = p0.Z;
 
                 var pts = field.IntegrateFrom(p0, stepSize, mode).Take(stepCount).Select(p => new Point3d(p.X, p.Y, z));

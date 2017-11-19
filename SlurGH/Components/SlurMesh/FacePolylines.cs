@@ -66,9 +66,9 @@ namespace SlurGH.Components
 
             var result = mesh.Value.Faces.Select(f =>
             {
-                if (f.IsRemoved) return new GH_Curve();
+                if (f.IsUnused) return new GH_Curve();
 
-                var poly = new Polyline(f.Halfedges.Select(he => he.Start.Position.ToPoint3d()));
+                var poly = new Polyline(f.Halfedges.Select(he => (Point3d)he.Start.Position));
                 poly.Add(poly[0]);
 
                 return new GH_Curve(poly.ToNurbsCurve());

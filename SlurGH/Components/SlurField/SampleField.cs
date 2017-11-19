@@ -42,8 +42,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("fieldA", "fieldA", "Field to sample", GH_ParamAccess.item);
-            pManager.AddGenericParameter("fieldB", "fieldB", "Field to sample with", GH_ParamAccess.item);
+            pManager.AddGenericParameter("source", "source", "Field to sample", GH_ParamAccess.item);
+            pManager.AddGenericParameter("sampler", "sampler", "Field to sample with", GH_ParamAccess.item);
         }
 
 
@@ -63,40 +63,42 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_ObjectWrapper gooA = null;
-            if (!DA.GetData(0, ref gooA)) return;
+            GH_ObjectWrapper sourceGoo = null;
+            if (!DA.GetData(0, ref sourceGoo)) return;
 
-            GH_ObjectWrapper gooB = null;
-            if (!DA.GetData(1, ref gooB)) return;
+            GH_ObjectWrapper sampleGoo = null;
+            if (!DA.GetData(1, ref sampleGoo)) return;
 
-            var valA = gooA.Value;
-            var valB = gooB.Value;
-
-            if(valA is IField3d<double>)
+            var source = sourceGoo.Value;
+            var sampler = sampleGoo.Value;
+      
+            if (sampler is IDiscreteField3d<double>)
             {
-                if(valB is IDiscreteField3d<double>)
+                if (source is IField3d<double>)
                 {
-                    var fA = (IField3d<double>)valA;
-                    var fB = ((IDiscreteField3d<double>)valB).Duplicate(false);
+                    var f0 = (IField3d<double>)source;
+                    var f1 = ((IDiscreteField3d<double>)sampler).Duplicate(false);
 
-                    fB.Sample(fA, _parallel);
-                    DA.SetData(0, new GH_ObjectWrapper(fB));
+                    f1.Sample(f0, _parallel);
+                    DA.SetData(0, new GH_ObjectWrapper(f1));
+                    return;
                 }
-                return;
             }
-            
-            if(valA is IField3d<Vec3d>)
+
+            if (sampler is IDiscreteField3d<Vec3d>)
             {
-                if (valB is IDiscreteField3d<Vec3d>)
+                if (source is IField3d<Vec3d>)
                 {
-                    var fA = (IField3d<Vec3d>)valA;
-                    var fB = ((IDiscreteField3d<Vec3d>)valB).Duplicate(false);
+                    var f0 = (IField3d<Vec3d>)source;
+                    var f1 = ((IDiscreteField3d<Vec3d>)sampler).Duplicate(false);
 
-                    fB.Sample(fA, _parallel);
-                    DA.SetData(0, new GH_ObjectWrapper(fB));
+                    f1.Sample(f0, _parallel);
+                    DA.SetData(0, new GH_ObjectWrapper(f1));
+                    return;
                 }
-                return;
             }
+
+            throw new ArgumentException("The given fields could not be cast to an appropriate type.");
         }
 
 

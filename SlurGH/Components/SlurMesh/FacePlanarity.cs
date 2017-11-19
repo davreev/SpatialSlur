@@ -64,7 +64,7 @@ namespace SlurGH.Components
             GH_HeMesh3d mesh = null;
             if (!DA.GetData(0, ref mesh)) return;
             
-            var result = mesh.Value.Faces.Select(f => f.IsRemoved ? 0.0 : f.GetPlanarity(v => v.Position));
+            var result = mesh.Value.Faces.Select(f => f.IsUnused ? 0.0 : f.GetPlanarity(v => v.Position));
             DA.SetDataList(0, result);
         }
 

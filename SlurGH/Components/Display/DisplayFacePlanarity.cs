@@ -73,10 +73,10 @@ namespace SpatialSlur.SlurGH.Components
             if (!DA.GetDataList(1, colors)) return;
             DA.GetData(2, ref interval);
 
-            var dispMesh = SolveInstanceImpl(mesh, colors, interval.ToInterval1d(), out Interval1d range);
+            var dispMesh = SolveInstanceImpl(mesh, colors, interval, out Interval1d range);
 
             DA.SetData(0, new GH_Mesh(dispMesh));
-            DA.SetData(1, new GH_Interval(range.ToInterval()));
+            DA.SetData(1, new GH_Interval(range));
         }
 
 

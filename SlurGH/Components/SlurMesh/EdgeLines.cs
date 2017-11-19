@@ -107,11 +107,11 @@ namespace SpatialSlur.SlurGH.Components
         /// <param name="graph"></param>
         /// <param name="getPosition"></param>
         /// <returns></returns>
-        IEnumerable<GH_Line> GetEdgeLines<V, E>(IHeStructure<V, E> graph, Func<V, Vec3d> getPosition)
-            where V : HeElement, IHeVertex<V, E>
-            where E : HeElement, IHalfedge<V, E>
+        IEnumerable<GH_Line> GetEdgeLines<V, E>(HeStructure<V, E> graph, Func<V, Vec3d> getPosition)
+            where V : HeElement<V, E>, IHeVertex<V, E>
+            where E : Halfedge<V, E>, IHalfedge<V, E>
         {
-            return graph.Edges.Select(he => (he.IsRemoved) ? new GH_Line(Line.Unset) : new GH_Line(he.ToLine(getPosition)));
+            return graph.Edges.Select(he => (he.IsUnused) ? new GH_Line(Line.Unset) : new GH_Line(he.ToLine(getPosition)));
         }
 
 

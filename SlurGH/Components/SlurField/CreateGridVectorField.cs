@@ -63,7 +63,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.item);
         }
 
 
@@ -123,9 +123,9 @@ namespace SpatialSlur.SlurGH.Components
                 if (vals != null)
                 {
                     if (vals.Count == 1)
-                        f.Set(vals[0].Value.ToVec3d());
+                        f.Set(vals[0].Value);
                     else
-                        f.Set(vals.Select(x => x.Value.ToVec3d()));
+                        f.Set(vals.Select(x => (Vec3d)x.Value));
                 }
 
                 DA.SetData(0, new GH_ObjectWrapper(f));

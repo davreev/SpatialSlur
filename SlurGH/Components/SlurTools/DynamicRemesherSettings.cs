@@ -6,11 +6,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-using SpatialSlur.SlurCore;
-
-using SpatialSlur.SlurRhino;
-using SpatialSlur.SlurRhino.Remesher;
-
+using SpatialSlur.SlurTools;
 using SpatialSlur.SlurGH.Types;
 using SpatialSlur.SlurGH.Params;
 
@@ -18,7 +14,7 @@ using SpatialSlur.SlurGH.Params;
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Remesher
+namespace SpatialSlur.SlurGH.Components
 {
     /// <summary>
     /// 
@@ -44,12 +40,10 @@ namespace SpatialSlur.SlurGH.Remesher
             pManager.AddIntervalParameter("lengthRange", "lengthRange", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("lengthTolerance", "lengthTolerance", "", GH_ParamAccess.item, 0.1);
             pManager.AddNumberParameter("featureWeight", "featureWeight", "", GH_ParamAccess.item, 100.0);
-            pManager.AddNumberParameter("smoothWeight", "smoothWeight", "", GH_ParamAccess.item, 1.0);
 
             pManager.AddNumberParameter("timeStep", "timeStep", "", GH_ParamAccess.item, 1.0);
             pManager.AddNumberParameter("damping", "damping", "", GH_ParamAccess.item, 0.5);
 
-            pManager.AddIntegerParameter("subSteps", "subSteps", "", GH_ParamAccess.item, 10);
             pManager.AddIntegerParameter("refineFrequency", "refineFreq", "", GH_ParamAccess.item, 5);
         }
 
@@ -79,29 +73,21 @@ namespace SpatialSlur.SlurGH.Remesher
             double feature = 0.0;
             if (!DA.GetData(2, ref feature)) return;
 
-            double smooth = 0.0;
-            if (!DA.GetData(3, ref smooth)) return;
-
             double timeStep = 0.0;
-            if (!DA.GetData(4, ref timeStep)) return;
+            if (!DA.GetData(3, ref timeStep)) return;
 
             double damping = 0.0;
-            if (!DA.GetData(5, ref damping)) return;
-
-            int subSteps = 0;
-            if (!DA.GetData(6, ref subSteps)) return;
+            if (!DA.GetData(4, ref damping)) return;
 
             int refineFreq = 0;
-            if (!DA.GetData(7, ref refineFreq)) return;
+            if (!DA.GetData(5, ref refineFreq)) return;
 
-            var settings = new SlurRhino.Remesher.DynamicRemesherSettings();
-            settings.LengthRange = lengthRng.ToInterval1d();
+            var settings = new DynamicRemesher.Settings();
+            settings.LengthRange = lengthRng;
             settings.LengthTolerance = lengthTol;
             settings.FeatureWeight = feature;
-            settings.SmoothWeight = smooth;
             settings.TimeStep = timeStep;
             settings.Damping = damping;
-            settings.SubSteps = subSteps;
             settings.RefineFrequency = refineFreq;
 
             DA.SetData(0, settings);

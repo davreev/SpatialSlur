@@ -71,10 +71,10 @@ namespace SlurSketchGH.Grasshopper.Components
             switch(metric)
             {
                 case 0:
-                    FieldSim.GeodesicDistanceL1(cost, sources.Select(x => x.Value), dist.Values);
+                    SimulationUtil.GeodesicDistanceL1(cost, sources.Select(x => x.Value), dist.Values);
                     break;
                 case 1:
-                    FieldSim.GeodesicDistanceL2(cost, sources.Select(x => x.Value), dist.Values);
+                    SimulationUtil.GeodesicDistanceL2(cost, sources.Select(x => x.Value), dist.Values);
                     break;
                 default:
                     throw new NotSupportedException("The specified distance metric is not supported.");

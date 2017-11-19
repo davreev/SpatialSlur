@@ -66,12 +66,12 @@ namespace SpatialSlur.SlurGH.Components
             if (obj is HeGraph3d)
             {
                 var graph = (HeGraph3d)obj;
-                DA.SetDataList(0, graph.Vertices.Select(v => new GH_Point(v.Position.ToPoint3d())));
+                DA.SetDataList(0, graph.Vertices.Select(v => new GH_Point(v.Position)));
             }
             else if (obj is HeMesh3d)
             {
                 var mesh = (HeMesh3d)obj;
-                DA.SetDataList(0, mesh.Vertices.Select(v => new GH_Point(v.Position.ToPoint3d())));
+                DA.SetDataList(0, mesh.Vertices.Select(v => new GH_Point(v.Position)));
             }
         }
 

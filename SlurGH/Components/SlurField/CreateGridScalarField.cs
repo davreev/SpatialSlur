@@ -64,7 +64,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.item);
         }
 
 
