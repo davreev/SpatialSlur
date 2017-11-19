@@ -24,45 +24,45 @@ namespace SpatialSlur.SlurData
     [Serializable]
     public class HashGrid2d<T>
     {
-        private Bin[] _bins;
-        private double _scale, _invScale; // scale of implicit grid
+        #region Static
 
-        private int _currVersion = int.MinValue;
-        private int _currQuery = int.MinValue;
+        private const int DefaultCapacity = 4;
+
+        #endregion
+
+
+        private Dictionary<BinKey, Bin> _bins;
+        private double _scale = 1.0;
+        private double _invScale = 1.0;
+        private int _version = int.MinValue;
         private int _count;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public HashGrid2d(int binCount, double binScale = 1.0)
+        public HashGrid2d(int capacity = DefaultCapacity)
         {
-            if (binCount < 1)
-                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
+            _bins = new Dictionary<BinKey, Bin>(capacity, new BinKeyComparer());
+        }
 
-            BinScale = binScale;
-            _bins = new Bin[binCount];
 
-            for (int i = 0; i < binCount; i++)
-                _bins[i] = new Bin(int.MinValue);
+        /// <summary>
+        /// 
+        /// </summary>
+        public HashGrid2d(double scale, int capacity = DefaultCapacity)
+            :this(capacity)
+        {
+            Scale = scale;
         }
 
 
         /// <summary>
         /// Returns the number of objects currently in the grid.
         /// </summary>
-        public int ObjectCount
+        public int Count
         {
             get { return _count; }
-        }
-
-
-        /// <summary>
-        /// Returns the number of bins in the grid.
-        /// </summary>
-        public int BinCount
-        {
-            get { return _bins.Length; }
         }
 
 
@@ -70,7 +70,7 @@ namespace SpatialSlur.SlurData
         /// Gets or sets the scale of the implicit grid used to discretize coordinates.
         /// Note that setting this property also clears the grid.
         /// </summary>
-        public double BinScale
+        public double Scale
         {
             get { return _scale; }
             set
@@ -85,55 +85,7 @@ namespace SpatialSlur.SlurData
             }
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private int NextQuery
-        {
-            get
-            {
-                if (_currQuery == int.MaxValue)
-                    ResetBinQueryTags();
-
-                return ++_currQuery;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void ResetBinQueryTags()
-        {
-            _currQuery = int.MinValue;
-
-            foreach (var bin in _bins)
-                bin.LastQuery = int.MinValue;
-        }
-
-
-        /// <summary>
-        /// Resizes the underlying array.
-        /// Note that this also clears the grid.
-        /// </summary>
-        /// <param name="binCount"></param>
-        public void Resize(int binCount)
-        {
-            if (binCount < 1)
-                throw new System.ArgumentOutOfRangeException("binCount", "The value must be greater than 0.");
-
-            Clear(); // expire old bins
-
-            int count = _bins.Length;
-            Array.Resize(ref _bins, binCount);
-
-            // init any new bins
-            for (int i = count; i < binCount; i++)
-                _bins[i] = new Bin(_currVersion);
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -141,21 +93,21 @@ namespace SpatialSlur.SlurData
         {
             _count = 0;
 
-            if (_currVersion == int.MaxValue)
-                ResetBinVersionTags();
+            if (_version == int.MaxValue)
+                ResetVersion();
 
-            _currVersion++;
+            _version++;
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
-        private void ResetBinVersionTags()
+        private void ResetVersion()
         {
-            _currVersion = int.MinValue;
+            _version = int.MinValue;
 
-            foreach (var bin in _bins)
+            foreach (var bin in _bins.Values)
                 bin.LastVersion = int.MinValue;
         }
 
@@ -163,39 +115,27 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        private (int, int) IndicesAt(Vec2d point)
+        /// <param name="point"></param>
+        private BinKey ToKey(Vec2d point)
         {
-            return (Discretize(point.X), Discretize(point.Y));
+            return new BinKey(
+                (int)Math.Floor(point.X * _invScale),
+                (int)Math.Floor(point.Y * _invScale)
+                );
         }
 
 
         /// <summary>
-        /// 
+        /// Returns the bin associated with the given key if one exists.
+        /// If not, creates a new bin, assigns it to the given key, and returns it.
+        /// Used for insertion.
         /// </summary>
-        private int Discretize(double t)
+        private Bin GetBin(BinKey key)
         {
-            return (int)Math.Floor(t * _invScale);
-        }
+            if (!_bins.TryGetValue(key, out Bin bin))
+                _bins[key] = bin = new Bin(_version);
 
-
-        /// <summary>
-        /// Hash function for a given set of discrete indices
-        /// http://cybertron.cg.tu-berlin.de/eitz/pdf/2007_hsh.pdf
-        /// </summary>
-        private int IndexAt(int i, int j)
-        {
-            const int p0 = 73856093;
-            const int p1 = 19349663;
-            return SlurMath.Mod2(i * p0 ^ j * p1, BinCount);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private Bin GetBin(int i, int j)
-        {
-            return _bins[IndexAt(i, j)];
+            return bin;
         }
 
 
@@ -206,17 +146,16 @@ namespace SpatialSlur.SlurData
         /// <param name="value"></param>
         public void Insert(Vec2d point, T value)
         {
-            (int i, int j) = IndicesAt(point);
-            var bin = GetBin(i, j);
+            var bin = GetBin(ToKey(point));
 
             // sync bin if necessary
-            if (bin.LastVersion != _currVersion)
+            if (bin.LastVersion != _version)
             {
-                bin.LastVersion = _currVersion;
+                bin.LastVersion = _version;
                 bin.Clear();
             }
 
-            bin.Add(value);
+            bin.Push(value);
             _count++;
         }
 
@@ -230,28 +169,23 @@ namespace SpatialSlur.SlurData
         {
             box.MakeIncreasing();
 
-            (int i0, int j0) = IndicesAt(box.A);
-            (int i1, int j1) = IndicesAt(box.B);
-            var currQuery = NextQuery;
+            var key0 = ToKey(box.A);
+            var key1 = ToKey(box.B);
 
-            for (int j = j0; j <= j1; j++)
+            for (int j = key0.J; j <= key1.J; j++)
             {
-                for (int i = i0; i <= i1; i++)
+                for (int i = key0.I; i <= key1.I; i++)
                 {
-                    var bin = GetBin(i, j);
-
-                    // skip bin if already visited
-                    if (bin.LastQuery == currQuery) continue;
-                    bin.LastQuery = currQuery;
+                    var bin = GetBin(new BinKey(i, j));
 
                     // sync bin if necessary
-                    if (bin.LastVersion != _currVersion)
+                    if (bin.LastVersion != _version)
                     {
-                        bin.LastVersion = _currVersion;
+                        bin.LastVersion = _version;
                         bin.Clear();
                     }
 
-                    bin.Add(value);
+                    bin.Push(value);
                     _count++;
                 }
             }
@@ -264,14 +198,10 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public bool Search(Vec2d point, Func<T, bool> callback)
         {
-            (int i, int j) = IndicesAt(point);
-            var bin = GetBin(i, j);
-
-            // skip bin if not synced
-            if (bin.LastVersion == _currVersion)
+            if(SearchImpl(point, out Bin bin))
             {
-                foreach (var t in bin)
-                    if (!callback(t)) return false;
+                foreach (var value in bin)
+                    if (!callback(value)) return false;
             }
 
             return true;
@@ -288,8 +218,8 @@ namespace SpatialSlur.SlurData
         {
             foreach (var bin in SearchImpl(box))
             {
-                foreach (var t in bin)
-                    if (!callback(t)) return false;
+                foreach (var value in bin)
+                    if (!callback(value)) return false;
             }
 
             return true;
@@ -303,14 +233,10 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public IEnumerable<T> Search(Vec2d point)
         {
-            (int i, int j) = IndicesAt(point);
-            var bin = GetBin(i, j);
+            if (SearchImpl(point, out Bin bin))
+                return bin;
 
-            // skip bin if not synced
-            if (bin.LastVersion != _currVersion)
-                return Enumerable.Empty<T>();
-
-            return bin;
+            return Enumerable.Empty<T>();
         }
 
 
@@ -324,15 +250,19 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Adds the contents of each intersecting bin to the given stack.
-        /// This implementation separates the the collection of bins (not threadsafe) from the processing of their contents (potentially threadsafe) making it better suited to concurrent applications.
+        /// Returns the intersecting bin if one exists.
         /// </summary>
-        /// <param name="box"></param>
-        /// <param name="result"></param>
-        public void Search(Interval2d box, Stack<IEnumerable<T>> result)
+        private bool SearchImpl(Vec2d point, out Bin bin)
         {
-            foreach (var bin in SearchImpl(box))
-                result.Push(bin);
+            // return empty if no bin at key
+            if (!_bins.TryGetValue(ToKey(point), out bin))
+                return false;
+
+            // skip bin if not synced
+            if (bin.LastVersion != _version)
+                return false;
+
+            return true;
         }
 
 
@@ -343,21 +273,21 @@ namespace SpatialSlur.SlurData
         {
             box.MakeIncreasing();
 
-            (int i0, int j0) = IndicesAt(box.A);
-            (int i1, int j1) = IndicesAt(box.B);
-            var currQuery = NextQuery;
+            var key0 = ToKey(box.A);
+            var key1 = ToKey(box.B);
 
-            for (int j = j0; j <= j1; j++)
+            for (int j = key0.J; j <= key1.J; j++)
             {
-                for (int i = i0; i <= i1; i++)
+                for (int i = key0.I; i <= key1.I; i++)
                 {
-                    var bin = GetBin(i, j);
-
-                    // skip bin if not synced or already visited
-                    if (bin.LastVersion != _currVersion || bin.LastQuery == currQuery)
+                    // skip if no bin at key
+                    if (!_bins.TryGetValue(new BinKey(i, j), out Bin bin))
                         continue;
 
-                    bin.LastQuery = currQuery;
+                    // skip bin if not synced
+                    if (bin.LastVersion != _version)
+                        continue;
+                    
                     yield return bin;
                 }
             }
@@ -367,12 +297,11 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        private class Bin : List<T>
+        private class Bin : Stack<T>
         {
             /// <summary></summary>
             public int LastVersion = int.MinValue;
-            public int LastQuery = int.MinValue;
-
+  
 
             /// <summary>
             /// 
@@ -381,6 +310,61 @@ namespace SpatialSlur.SlurData
             public Bin(int version)
             {
                 LastVersion = version;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private struct BinKey
+        {
+            /// <summary></summary>
+            public readonly int I;
+            /// <summary></summary>
+            public readonly int J;
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="i"></param>
+            /// <param name="j"></param>
+            public BinKey(int i, int j)
+            {
+                I = i;
+                J = j;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class BinKeyComparer : EqualityComparer<BinKey>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="a"></param>
+            /// <param name="b"></param>
+            /// <returns></returns>
+            public override bool Equals(BinKey a, BinKey b)
+            {
+                return a.I == b.I && a.J == b.J;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <returns></returns>
+            public override int GetHashCode(BinKey obj)
+            {
+                const int p0 = 73856093;
+                const int p1 = 19349663;
+                return obj.I * p0 ^ obj.J * p1;
             }
         }
     }
