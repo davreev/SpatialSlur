@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
+using SpatialSlur.SlurMesh;
 
 /*
  * Notes
@@ -20,7 +21,7 @@ namespace SpatialSlur.Examples
         /// </summary>
         public static void Main()
         {
-            PlanarizeHeMesh.Run();
+            PlanarizeHeMesh.Start();
         }
     }
 }

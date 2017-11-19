@@ -27,7 +27,7 @@ namespace SpatialSlur.Examples
         /// <summary>
         /// 
         /// </summary>
-        public static void Run()
+        public static void Start()
         {
             // import halfedge mesh
             var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + _fileIn);
@@ -50,7 +50,7 @@ namespace SpatialSlur.Examples
             // step the solver until converged
             while (!solver.IsConverged)
             {
-                solver.StepParallel(particles, constraints);
+                solver.Step(particles, constraints, true);
                 Console.WriteLine($"    step {solver.StepCount}");
             }
             Console.WriteLine("\nSolver converged! Press return to exit.");

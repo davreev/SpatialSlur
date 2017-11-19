@@ -22,7 +22,7 @@ namespace SpatialSlur.Examples
         /// 
         /// </summary>
         /// <param name="args"></param>
-        public static void Run()
+        public static void Start()
         {
             var random = new Random(0);
             var box = new Interval3d(new Vec3d(0.0), new Vec3d(10.0)); // create a interval between the (0,0,0) and (10,10,10)

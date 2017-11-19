@@ -27,7 +27,7 @@ namespace SpatialSlur.Examples
         /// 
         /// </summary>
         /// <param name="args"></param>
-        public static void Run()
+        public static void Start()
         {
             var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + _fileIn);
 
