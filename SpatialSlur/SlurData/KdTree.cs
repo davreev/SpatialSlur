@@ -18,6 +18,10 @@ using static SpatialSlur.SlurCore.ArrayMath;
  * References
  * https://www.cs.umd.edu/class/spring2008/cmsc420/L19.kd-trees.pdf
  * http://www.cs.umd.edu/~meesh/420/Notes/MountNotes/lecture18-kd2.pdf
+ * 
+ * TODO
+ * Compare to array-based implementation
+ * Would be better for rebalancing/updating points
  */
 
 namespace SpatialSlur.SlurData
@@ -36,7 +40,7 @@ namespace SpatialSlur.SlurData
         public static KdTree<T> CreateBalanced(IEnumerable<double[]> points, IEnumerable<T> values)
         {
             KdTree<T> result = new KdTree<T>(points.First().Length);
-            var nodes = points.Zip(values, (p, v) => new Node(p, v)).ToArray();
+            Node[] nodes = points.Zip(values, (p, v) => new Node(p, v)).ToArray();
 
             result._root = result.InsertBalanced(nodes, 0, nodes.Length - 1, 0);
             result._count = nodes.Length;
@@ -50,7 +54,7 @@ namespace SpatialSlur.SlurData
         public static KdTree<T> CreateBalanced(double[][] points, T[] values)
         {
             KdTree<T> result = new KdTree<T>(points[0].Length);
-            var nodes = points.Convert((p, i) => new Node(p, values[i]));
+            Node[] nodes = points.Convert((p, i) => new Node(p, values[i]));
 
             result._root = result.InsertBalanced(nodes, 0, nodes.Length - 1, 0);
             result._count = nodes.Length;
@@ -75,7 +79,7 @@ namespace SpatialSlur.SlurData
 
 
         private Node _root;
-        private double _tolerance = 1.0e-8;
+        private double _tolerance = SlurMath.ZeroTolerance;
         private readonly int _k;
         private int _count;
 
@@ -122,7 +126,6 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Sets the tolerance used for finding equal points in the tree.
-        /// By default, this is set to 1.0e-8.
         /// </summary>
         public double Tolerance
         {
@@ -581,9 +584,10 @@ namespace SpatialSlur.SlurData
             // callback on node if within range
             if (ApproxEquals(point, node.Point, range))
                 if (!callback(node.Value)) return false;
+            
+            // signed distance to cut plane
+            double d = point[i] - node.Point[i];
 
-            // if left side of tree
-            double d = point[i] - node.Point[i]; // signed distance to cut plane
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
@@ -656,7 +660,9 @@ namespace SpatialSlur.SlurData
             if (SquareDistanceL2(point, node.Point) < range)
                 if(!callback(node.Value)) return false;
 
-            double d = point[i] - node.Point[i]; // signed distance to cut plane
+            // signed distance to cut plane
+            double d = point[i] - node.Point[i];
+
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
@@ -729,7 +735,9 @@ namespace SpatialSlur.SlurData
             if (DistanceL1(point, node.Point) < range)
                 if (!callback(node.Value)) return false;
 
-            double d = point[i] - node.Point[i]; // signed distance to cut plane
+            // signed distance to cut plane
+            double d = point[i] - node.Point[i];
+
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
@@ -756,7 +764,6 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Returns the nearest value in the tree using a Euclidean distance metric.
         /// If the tree is empty the default value of T is returned.
-        /// Also returns the square distance to the nearest value as an out parameter.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -779,7 +786,6 @@ namespace SpatialSlur.SlurData
             T nearest = default(T);
             distance = double.MaxValue;
             NearestL2(_root, point, 0, ref nearest, ref distance);
-
             return nearest;
         }
 
@@ -807,7 +813,9 @@ namespace SpatialSlur.SlurData
                 distance = d;
             }
 
-            d = point[i] - node.Point[i]; // signed distance to cut plane
+            // signed distance to cut plane
+            d = point[i] - node.Point[i];
+
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
@@ -830,7 +838,8 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// 
+        /// Returns the nearest value in the tree using a Manhattan distance metric.
+        /// If the tree is empty the default value of T is returned.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
@@ -853,7 +862,6 @@ namespace SpatialSlur.SlurData
             T nearest = default(T);
             distance = Double.MaxValue;
             NearestL1(_root, point, 0, ref nearest, ref distance);
-
             return nearest;
         }
 
@@ -881,7 +889,9 @@ namespace SpatialSlur.SlurData
                 distance = d;
             }
 
-            d = point[i] - node.Point[i]; // signed distance to cut plane
+            // signed distance to cut plane
+            d = point[i] - node.Point[i];
+
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
@@ -904,14 +914,15 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Returns the nearest k values and their Euclidean distances.
+        /// Returns the nearest k values and their squared Euclidean distances.
+        /// Note distances will be negative as the search uses a max priority queue.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public PriorityQueue<(T, double)> KNearestL2(double[] point, int k)
+        public PriorityQueue<double, T> KNearestL2(double[] point, int k)
         {
-            var result = new PriorityQueue<(T, double)>((t0, t1) => t1.Item2.CompareTo(t0.Item2), k);
+            var result = new PriorityQueue<double, T>(k);
             KNearestL2(_root, point, k, 0, result);
             return result;
         }
@@ -925,29 +936,32 @@ namespace SpatialSlur.SlurData
         /// <param name="k"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void KNearestL2(Node node, double[] point, int k, int i, PriorityQueue<(T, double)> result)
+        private void KNearestL2(Node node, double[] point, int k, int i, PriorityQueue<double, T> result)
         {
             if (node == null) return;
 
             // wrap dimension
             if (i == _k) i = 0;
 
-            // add node if closer than nth element
-            double d = SquareDistanceL2(point, node.Point);
+            // use negative square distance for max priority queue
+            double d = -SquareDistanceL2(point, node.Point); 
 
+            // insert node if closer than nth element
             if (result.Count < k)
-                result.Insert((node.Value, d));
-            else if (d < result.Min.Item2)
-                result.ReplaceMin((node.Value, d));
+                result.Insert(d, node.Value);
+            else if (d > result.Min.Item1)
+                result.ReplaceMin(d, node.Value);
 
-            d = point[i] - node.Point[i]; // signed distance to cut plane
+            // signed distance to cut plane
+            d = point[i] - node.Point[i];
+
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
                 KNearestL2(node.Left, point, k, i + 1, result);
 
                 // recall in right subtree only if necessary
-                if (result.Count < k || d * d < result.Min.Item2)
+                if (result.Count < k || d * d < -result.Min.Item1)
                     KNearestL2(node.Right, point, k, i + 1, result);
             }
             else
@@ -956,7 +970,7 @@ namespace SpatialSlur.SlurData
                 KNearestL2(node.Right, point, k, i + 1, result);
 
                 // recall in left subtree only if necessary
-                if (result.Count < k || d * d < result.Min.Item2)
+                if (result.Count < k || d * d < -result.Min.Item1)
                     KNearestL2(node.Left, point, k, i + 1, result);
             }
         }
@@ -964,13 +978,14 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Returns the nearest k values and their Manhattan distances.
+        /// Note distances will be negative as the search uses a max priority queue.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public PriorityQueue<(T, double)> KNearestL1(double[] point, int k)
+        public PriorityQueue<double, T> KNearestL1(double[] point, int k)
         {
-            var result = new PriorityQueue<(T, double)>((t0, t1) => t1.Item2.CompareTo(t0.Item2), k);
+            var result = new PriorityQueue<double, T>(k);
             KNearestL1(_root, point, k, 0, result);
             return result;
         }
@@ -984,29 +999,32 @@ namespace SpatialSlur.SlurData
         /// <param name="k"></param>
         /// <param name="i"></param>
         /// <param name="result"></param>
-        private void KNearestL1(Node node, double[] point, int k, int i, PriorityQueue<(T, double)> result)
+        private void KNearestL1(Node node, double[] point, int k, int i, PriorityQueue<double, T> result)
         {
             if (node == null) return;
 
             // wrap dimension
             if (i == _k) i = 0;
 
-            // add node if closer than nth element
-            double d = DistanceL1(point, node.Point);
+            // use negative distance for max priority queue
+            double d = -DistanceL1(point, node.Point);
 
+            // insert node if closer than nth element
             if (result.Count < k)
-                result.Insert((node.Value, d));
-            else if (d < result.Min.Item2)
-                result.ReplaceMin((node.Value, d));
+                result.Insert(d, node.Value);
+            else if (d > result.Min.Item1)
+                result.ReplaceMin(d, node.Value);
 
-            d = point[i] - node.Point[i]; // signed distance to cut plane
+            // signed distance to cut plane
+            d = point[i] - node.Point[i];
+
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
                 KNearestL1(node.Left, point, k, i + 1, result);
 
                 // recall in right subtree only if necessary
-                if (result.Count < k || Math.Abs(d) < result.Min.Item2)
+                if (result.Count < k || Math.Abs(d) < -result.Min.Item1)
                     KNearestL1(node.Right, point, k, i + 1, result); 
             }
             else
@@ -1015,7 +1033,7 @@ namespace SpatialSlur.SlurData
                 KNearestL1(node.Right, point, k, i + 1, result);
 
                 // recall in left subtree only if necessary
-                if (result.Count < k || Math.Abs(d) < result.Min.Item2)
+                if (result.Count < k || Math.Abs(d) < -result.Min.Item1)
                     KNearestL1(node.Left, point, k, i + 1, result); 
             }
         }

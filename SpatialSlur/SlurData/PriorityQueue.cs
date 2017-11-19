@@ -10,39 +10,16 @@ namespace SpatialSlur.SlurData
 {
     /// <summary>
     /// Simple heap-based implementation of a min priority queue.
-    /// Can be used as a max priority queue by inverting the given comparison delegate.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class PriorityQueue<T>
+    public class PriorityQueue<K, V>
+        where K : IComparable<K>
     {
         private const int _minCapacity = 4;
-
-        private readonly Comparison<T> _compare;
-        private T[] _items;
+        
+        private (K, V)[] _items;
         private int _count;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="comparer"></param>
-        /// <param name="capacity"></param>
-        public PriorityQueue(Comparer<T> comparer, int capacity = _minCapacity)
-            : this(comparer.Compare, capacity)
-        {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="comparer"></param>
-        /// <param name="capacity"></param>
-        public PriorityQueue(IComparer<T> comparer, int capacity = _minCapacity)
-            : this(comparer.Compare, capacity)
-        {
-        }
 
 
         /// <summary>
@@ -50,10 +27,9 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="compare"></param>
         /// <param name="capacity"></param>
-        public PriorityQueue(Comparison<T> compare, int capacity = _minCapacity)
+        public PriorityQueue(int capacity = _minCapacity)
         {
-            _compare = compare ?? throw new ArgumentNullException();
-            _items = new T[Math.Max(capacity, _minCapacity)];
+            _items = new (K, V)[Math.Max(capacity, _minCapacity)];
             _count = 0;
         }
 
@@ -88,7 +64,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Returns the minimum element in the queue.
         /// </summary>
-        public T Min
+        public (K, V) Min
         {
             get
             {
@@ -104,10 +80,10 @@ namespace SpatialSlur.SlurData
         /// Creates a shallow copy of the internal array.
         /// </summary>
         /// <returns></returns>
-        public PriorityQueue<T> Duplicate()
+        public PriorityQueue<K, V> Duplicate()
         {
-            var copy = new PriorityQueue<T>(_compare);
-            copy._items = _items.ShallowCopy();
+            var copy = new PriorityQueue<K, V>(Capacity);
+            copy._items.SetRange(_items, _count);
             copy._count = _count;
             return copy;
         }
@@ -117,14 +93,13 @@ namespace SpatialSlur.SlurData
         /// Removes the minimum element from the queue and returns it.
         /// </summary>
         /// <returns></returns>
-        public T RemoveMin()
+        public (K, V) RemoveMin()
         {
-            T min = Min;
-
-            // place the last item on top and sink to maintain heap invariant
-            _items[0] = _items[--_count];
-            _items[_count] = default(T); // avoids object loitering when T is a reference type
-            Sink(0);
+            var min = Min;
+            
+            _items[0] = _items[--_count]; // move last item to the top
+            _items[_count] = default((K, V)); // avoids object loitering if K or V is a reference type
+            Sink(0); // sink to maintain heap invariant
 
             return min;
         }
@@ -134,35 +109,44 @@ namespace SpatialSlur.SlurData
         /// Removes the minimum element from the queue by replacing it with the given item.
         /// </summary>
         /// <param name="item"></param>
-        public void ReplaceMin(T item)
+        public void ReplaceMin(K key, V value)
         {
-            _items[0] = item;
-            Sink(0); // sink to maintain heap invariant
+            _items[0] = (key, value);
+            Sink(0); // maintain heap invariant
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i"></param>
-        private void Sink(int i)
+        /// <param name="parent"></param>
+        private void Sink(int parent)
         {
-            int j0 = (i << 1) + 1; // left child
-            int j1 = j0 + 1; // right child
+            GetChildren(parent, out int leftChild, out int rightChild);
 
-            while (j0 < _count)
+            while (leftChild < _count)
             {
-                int j = (j1 < _count && HasPriority(j1, j0)) ? j1 : j0; // higher priority child
+                int minChild = (rightChild < _count && HasPriority(rightChild, leftChild)) ? rightChild : leftChild;
+                if (!HasPriority(minChild, parent)) break; // break if heap invariant is satisfied
 
-                // break if heap invariant is satisfied
-                if (!HasPriority(j, i)) break;
+                _items.Swap(parent, minChild);
 
-                // otherwise, swap and continue
-                _items.Swap(i, j);
-                i = j;
-                j0 = (i << 1) + 1;
-                j1 = j0 + 1;
+                parent = minChild;
+                GetChildren(parent, out leftChild, out rightChild);
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="leftChild"></param>
+        /// <param name="rightChild"></param>
+        private void GetChildren(int parent, out int leftChild, out int rightChild)
+        {
+            leftChild = (parent << 1) + 1;
+            rightChild = leftChild + 1;
         }
 
 
@@ -170,13 +154,13 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="item"></param>
-        public void Insert(T item)
+        public void Insert(K key, V value)
         {
             // increment and increase array capacity if necessary
             if (_count == _items.Length)
                 Array.Resize(ref _items, _items.Length << 1);
 
-            _items[_count] = item;
+            _items[_count] = (key, value);
             Swim(_count++); // swim last element to maintain heap invariant
         }
 
@@ -184,17 +168,29 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i"></param>
-        private void Swim(int i)
+        /// <param name="child"></param>
+        private void Swim(int child)
         {
-            int j = (i - 1) >> 1; // parent
+            int parent = GetParent(child);
 
-            while (i > 0 && HasPriority(i, j))
+            while (child > 0 && HasPriority(child, parent))
             {
-                _items.Swap(i, j);
-                i = j;
-                j = (i - 1) >> 1;
+                _items.Swap(child, parent);
+
+                child = parent;
+                parent = GetParent(child);
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="child"></param>
+        /// <returns></returns>
+        private int GetParent(int child)
+        {
+            return (child - 1) >> 1;
         }
 
 
@@ -206,7 +202,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         private bool HasPriority(int i, int j)
         {
-            return _compare(_items[i], _items[j]) < 0;
+            return _items[i].Item1.CompareTo(_items[j].Item1) < 0;
         }
 
 
@@ -214,7 +210,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <returns></returns>
-        public T[] ToArray()
+        public (K, V)[] ToArray()
         {
             return _items.GetRange(0, _count);
         }
