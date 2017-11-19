@@ -16,17 +16,23 @@ namespace SpatialSlur.SlurDynamics
     public interface IConstraint
     {
         /// <summary>
+        /// Handles to all bodies used by this constraint.
+        /// </summary>
+        IEnumerable<IHandle> Handles { get; }
+
+
+        /// <summary>
         /// 
         /// </summary>
         double Weight { get; set; }
-        
+
 
         /// <summary>
-        /// Returns true if this constraint acts on the orientation of particles.
+        /// Returns true if this constraint acts on the orientation of given bodies.
         /// </summary>
         /// <returns></returns>
         bool AppliesRotation { get; }
-
+        
 
         /// <summary>
         /// This method is responsible for calculating all deltas and weights associated with the constraint.
@@ -40,11 +46,5 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="bodies"></param>
         void Apply(IReadOnlyList<IBody> bodies);
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void SetHandles(IEnumerable<int> indices);
     }
 }

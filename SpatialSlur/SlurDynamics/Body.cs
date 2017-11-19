@@ -8,69 +8,34 @@ using SpatialSlur.SlurCore;
 
 /*
  * Notes
+ * 
+ * TODO
+ * Revise rotation representation as per
+ * http://www.cg.informatik.uni-mainz.de/files/2016/06/Position-and-Orientation-Based-Cosserat-Rods.pdf
  */
- 
+
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class Body : IBody
+    public class Body : Particle, IBody
     {
-        private Vec3d _position;
-        private Vec3d _velocity;
-        private Vec3d _moveSum;
-        private double _moveWeightSum;
-
-        private Rotation3d _rotation = Rotation3d.Identity;
+        private Quaterniond _rotation = Quaterniond.Identity;
         private Vec3d _angleVelocity;
-        private Vec3d _rotateSum; // direction = rotation axis, length = rotation angle
+        private Vec3d _rotateSum;
         private double _rotateWeightSum;
 
-        private double _mass = 1.0;
+        // TODO consider inertia tensor?
+        // http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf
+        // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch29.html
 
 
         /// <summary>
         /// 
         /// </summary>
-        public Vec3d Position
-        {
-            get { return _position; }
-            set { _position = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vec3d Velocity
-        {
-            get { return _velocity; }
-            set { _velocity = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Mass
-        {
-            get { return _mass; }
-            set
-            {
-                if (value <= 0.0)
-                    throw new ArgumentException("The value must be greater than zero.");
-
-                _mass = value;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Rotation3d Rotation
+        public Quaterniond Rotation
         {
             get { return _rotation; }
             set { _rotation = value; }
@@ -100,8 +65,8 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="position"></param>
         public Body(Vec3d position)
+            : base(position)
         {
-            _position = position;
         }
 
 
@@ -110,22 +75,10 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="position"></param>
         /// <param name="rotation"></param>
-        public Body(Vec3d position, Rotation3d rotation)
+        public Body(Vec3d position, Quaterniond rotation)
+            :base(position)
         {
-            _position = position;
             _rotation = rotation;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="delta"></param>
-        /// <param name="weight"></param>
-        public void ApplyMove(Vec3d delta, double weight)
-        {
-            _moveSum += delta * weight;
-            _moveWeightSum += weight;
         }
 
 
@@ -146,36 +99,15 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="timeStep"></param>
         /// <param name="damping"></param>
-        /// <returns></returns>
-        public double UpdatePosition(double timeStep, double damping)
-        {
-            _velocity *= damping;
-
-            if (_moveWeightSum > 0.0)
-                _velocity += _moveSum * (timeStep / (_moveWeightSum * _mass));
-
-            _position += _velocity * timeStep;
-
-            _moveSum.Set(0.0);
-            _moveWeightSum = 0.0;
-
-            return _velocity.SquareLength;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeStep"></param>
-        /// <param name="damping"></param>
         public double UpdateRotation(double timeStep, double damping)
         {
             _angleVelocity *= damping;
 
             if (_rotateWeightSum > 0.0)
-                _angleVelocity += _rotateSum  * (timeStep / (_rotateWeightSum * _mass));
+                _angleVelocity += _rotateSum * (timeStep / (_rotateWeightSum * Mass)); // TODO assumes uniform inertia tensor
 
-            _rotation.Rotate(new AxisAngle3d(_angleVelocity * timeStep));
+            //_rotation.Rotate(new AxisAngle3d(_angleVelocity * timeStep));
+            _rotation = new Quaterniond(_angleVelocity * timeStep) * _rotation;
 
             _rotateSum.Set(0.0);
             _rotateWeightSum = 0.0;
@@ -185,13 +117,56 @@ namespace SpatialSlur.SlurDynamics
 
 
         #region Explicit interface implementations
-
+        
         /// <summary>
         /// 
         /// </summary>
         bool IBody.HasRotation
         {
             get { return true; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        Quaterniond IBody.Rotation
+        {
+            get { return _rotation; }
+            set { _rotation = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        Vec3d IBody.AngularVelocity
+        {
+            get { return _angleVelocity; }
+            set { _angleVelocity = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        /// <param name="weight"></param>
+        void IBody.ApplyRotate(Vec3d delta, double weight)
+        {
+            ApplyRotate(delta, weight);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="timeStep"></param>
+        /// <param name="damping"></param>
+        /// <returns></returns>
+        double IBody.UpdateRotation(double timeStep, double damping)
+        {
+            return UpdateRotation(timeStep, damping);
         }
 
         #endregion

@@ -9,7 +9,7 @@ namespace SpatialSlur.SlurDynamics
     /// <summary>
     /// Interface for a dynamic body with position and orientation.
     /// </summary>
-    public interface IBody : IUpdatable
+    public interface IBody
     {
         /// <summary>
         /// 
@@ -23,10 +23,18 @@ namespace SpatialSlur.SlurDynamics
         Vec3d Velocity { get; set; }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
-        Rotation3d Rotation { get; set; }
+        OrthoBasis3d Rotation { get; set; }
+        */
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        Quaterniond Rotation { get; set; }
 
 
         /// <summary>
@@ -61,5 +69,23 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="delta"></param>
         /// <param name="weight"></param>
         void ApplyRotate(Vec3d delta, double weight);
+
+
+        /// <summary>
+        /// Updates position and returns speed.
+        /// </summary>
+        /// <param name="timeStep"></param>
+        /// <param name="damping"></param>
+        /// <returns></returns>
+        double UpdatePosition(double timeStep, double damping);
+
+
+        /// <summary>
+        /// Updates rotation and returns angular speed.
+        /// </summary>
+        /// <param name="timeStep"></param>
+        /// <param name="damping"></param>
+        /// <returns></returns>
+        double UpdateRotation(double timeStep, double damping);
     }
 }

@@ -12,11 +12,18 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// 
+    /// Interface for a dynamic position-only body (no rotation)
     /// </summary>
     [Serializable]
     public class Particle : IBody
     {
+        #region Static
+
+        private const string _rotationMessage = "This implementation of IBody does not support rotation.";
+
+        #endregion
+
+
         private Vec3d _position;
         private Vec3d _velocity;
 
@@ -115,9 +122,6 @@ namespace SpatialSlur.SlurDynamics
 
         #region Explicit interface implementations
 
-        private const string _message = "This implementation of IBody does not support rotation.";
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -130,10 +134,10 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        Rotation3d IBody.Rotation
+        Quaterniond IBody.Rotation
         {
-            get { return Rotation3d.Identity; }
-            set { throw new NotSupportedException(_message); }
+            get { return Quaterniond.Identity; }
+            set { throw new NotSupportedException(_rotationMessage); }
         }
 
 
@@ -143,7 +147,7 @@ namespace SpatialSlur.SlurDynamics
         Vec3d IBody.AngularVelocity
         {
             get { return Vec3d.Zero; }
-            set { throw new NotSupportedException(_message); }
+            set { throw new NotSupportedException(_rotationMessage); }
         }
 
 
@@ -154,7 +158,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         void IBody.ApplyRotate(Vec3d delta, double weight)
         {
-            throw new NotSupportedException(_message);
+            throw new NotSupportedException(_rotationMessage);
         }
 
 
@@ -164,7 +168,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="timeStep"></param>
         /// <param name="damping"></param>
         /// <returns></returns>
-        double IUpdatable.UpdateRotation(double timeStep, double damping)
+        double IBody.UpdateRotation(double timeStep, double damping)
         {
             return 0.0;
         }
