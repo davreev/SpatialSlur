@@ -21,43 +21,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        E FirstOut { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        E FirstIn { get; }
+        E First { get; }
 
 
         /// <summary>
         /// Returns the number of edges incident to this vertex.
         /// </summary>
         int Degree { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree1 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree2 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree3 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree4 { get; }
 
 
         /// <summary>
@@ -76,6 +46,14 @@ namespace SpatialSlur.SlurMesh
         /// Forward circulates through all halfedges ending at this vertex.
         /// </summary>
         IEnumerable<E> IncomingHalfedges { get; }
+
+
+        /// <summary>
+        /// Returns true if the degree of this vertex equals the given value.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        bool IsDegree(int n);
 
 
         /// <summary>

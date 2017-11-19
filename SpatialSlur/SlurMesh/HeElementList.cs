@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public class HeElementList<T> : IHeElementList<T>
-        where T : HeElement
+        where T : HeElement, IHeElement
     {
         private const int _minCapacity = 4;
 
@@ -137,19 +137,19 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        public int CountRemoved()
+        public int CountUnused()
         {
             int result = 0;
 
             for (int i = 0; i < _count; i++)
-                if (_items[i].IsRemoved) result++;
+                if (_items[i].IsUnused) result++;
 
             return result;
         }
 
 
         /// <summary>
-        /// Removes all flagged elements in the list and re-indexes the remaining.
+        /// Removes all unused elements in the list and re-indexes the remaining.
         /// Does not change the capacity of the list.
         /// If the list has any associated attributes, be sure to compact those first.
         /// </summary>
@@ -160,7 +160,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < _count; i++)
             {
                 T element = _items[i];
-                if (element.IsRemoved) continue; // skip unused elements
+                if (element.IsUnused) continue; // skip unused elements
 
                 element.Index = marker;
                 _items[marker++] = element;
@@ -172,7 +172,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Removes all attributes corresponding with flagged elements.
+        /// Removes all attributes corresponding with unused elements.
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
@@ -184,7 +184,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Moves attributes that correspond with unflagged elements to the front of the given list.
+        /// Moves attributes corresponding with used elements to the front of the given list.
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="attributes"></param>
@@ -194,7 +194,7 @@ namespace SpatialSlur.SlurMesh
 
             for (int i = 0; i < _count; i++)
             {
-                if (_items[i].IsRemoved) continue; // skip unused elements
+                if (_items[i].IsUnused) continue; // skip unused elements
                 attributes[marker++] = attributes[i];
             }
 

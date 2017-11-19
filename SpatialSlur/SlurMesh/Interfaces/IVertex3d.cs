@@ -26,4 +26,22 @@ namespace SpatialSlur.SlurMesh
         /// <summary></summary>
         Vec2d Texture { get; set; }
     }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="V"></typeparam>
+    public static class IVertex3dStatic<V>
+        where V : IVertex3d
+    {
+        public static readonly Func<V, Vec3d> GetPosition = v => v.Position;
+        public static readonly Action<V, Vec3d> SetPosition = (v, p) => v.Position = p;
+
+        public static readonly Func<V, Vec3d> GetNormal = v => v.Normal;
+        public static readonly Action<V, Vec3d> SetNormal = (v, n) => v.Normal = n;
+
+        public static readonly Func<V, Vec2d> GetTexture = v => v.Texture;
+        public static readonly Action<V, Vec2d> SetTexture = (v, t) => v.Texture = t;
+    }
 }

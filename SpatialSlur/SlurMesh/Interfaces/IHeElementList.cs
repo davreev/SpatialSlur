@@ -48,10 +48,10 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns the number of elements that have been flagged for removal.
+        /// Returns the number of unused elements in the list.
         /// </summary>
         /// <returns></returns>
-        int CountRemoved();
+        int CountUnused();
 
 
         /// <summary>

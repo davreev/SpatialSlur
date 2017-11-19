@@ -23,27 +23,16 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns the edge that this halfedge belongs to.
+        /// Note that edges are implicitly represented via their first halfedge.
         /// </summary>
-        E Next { get; }
+        E Edge { get; }
 
 
         /// <summary>
-        /// 
+        /// Returns true if this halfedge is the first of its edge.
         /// </summary>
-        E Previous { get; }
-
-
-        /// <summary>
-        /// Returns the first halfedge in the pair.
-        /// </summary>
-        E Older { get; }
-
-
-        /// <summary>
-        /// Returns a halfedge from each pair connected to this one.
-        /// </summary>
-        IEnumerable<E> ConnectedPairs { get; }
+        bool IsFirstInEdge { get; }
     }
 
 
@@ -71,37 +60,13 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the previous halfedge at the start vertex of this halfedge.
         /// </summary>
-        E PrevAtStart { get; }
+        E PreviousAtStart { get; }
 
 
         /// <summary>
         /// Returns the next halfedge at the start vertex of this halfedge.
         /// </summary>
         E NextAtStart { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsAtDegree1 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsAtDegree2 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsAtDegree3 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsAtDegree4 { get; }
 
 
         /// <summary>
@@ -115,11 +80,25 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         IEnumerable<E> CirculateEnd { get; }
 
+        
+        /// <summary>
+        /// Returns a halfedge from each pair connected to this one.
+        /// </summary>
+        IEnumerable<E> ConnectedPairs { get; }
+
 
         /// <summary>
         /// Returns true if this halfedge is the first at its start vertex.
         /// </summary>
         bool IsFirstAtStart { get; }
+
+
+        /// <summary>
+        /// Returns true if this halfedge starts at a vertex of the given degree.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        bool IsAtDegree(int n);
 
 
         /// <summary>
@@ -132,9 +111,9 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="count"></param>
+        /// <param name="offset"></param>
         /// <returns></returns>
-        E OffsetAtStart(int count);
+        E GetRelativeAtStart(int offset);
     }
 
 
@@ -152,7 +131,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Returns the previous halfedge within the face.
         /// </summary>
-        E PrevInFace { get; }
+        E PreviousInFace { get; }
 
 
         /// <summary>
@@ -175,7 +154,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if this halfedge or its twin has a null face reference.
+        /// Returns true if this halfedge or its twin is in a hole.
         /// </summary>
         /// <returns></returns>
         bool IsBoundary { get; }
@@ -196,35 +175,19 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
+        /// Returns true if this halfedge is in a face or hole of the given degree.
         /// </summary>
-        bool IsInDegree1 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsInDegree2 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsInDegree3 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsInDegree4 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="count"></param>
+        /// <param name="n"></param>
         /// <returns></returns>
-        E OffsetInFace(int count);
+        bool IsInDegree(int n);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        E GetRelativeInFace(int offset);
 
 
         /// <summary>
@@ -269,8 +232,27 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
+        /// Returns the edge bundle that this halfedge belongs to.
+        /// Note that edge bundles are implicitly represented via their first halfedge.
+        /// </summary>
+        E Bundle { get; }
+
+
+        /// <summary>
         /// 
         /// </summary>
         C Cell { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsFirstInBundle { get; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IsFirstInCell { get; }
     }
 }

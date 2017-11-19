@@ -39,30 +39,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree1 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree2 {get;}
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree3 { get; }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IsDegree4 { get; }
-
-
-        /// <summary>
         /// Forward circulates through all the halfedges in this face.
         /// </summary>
         IEnumerable<E> Halfedges { get; }
@@ -80,6 +56,14 @@ namespace SpatialSlur.SlurMesh
         /// Also if mutliple edges are shared with an adjacent face, that face will be returned multiple times.
         /// </summary>
         IEnumerable<F> AdjacentFaces { get; }
+
+
+        /// <summary>
+        /// Returns true if the degree of this face equals the given value.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        bool IsDegree(int n);
 
 
         /// <summary>

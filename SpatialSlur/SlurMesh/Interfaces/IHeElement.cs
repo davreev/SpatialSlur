@@ -18,8 +18,8 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the element has been flagged for removal.
+        /// Returns true if the element is not used by the halfedge structure.
         /// </summary>
-        bool IsRemoved { get; }
+        bool IsUnused { get; }
     }
 }
