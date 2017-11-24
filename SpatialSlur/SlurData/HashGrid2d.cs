@@ -43,7 +43,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public HashGrid2d(int capacity = DefaultCapacity)
         {
-            _bins = new Dictionary<BinKey, Bin>(capacity, new BinKeyComparer());
+            _bins = new Dictionary<BinKey, Bin>(capacity);
         }
 
 
@@ -194,7 +194,8 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each value within the intersecting bin.
-        /// The search can be aborted by returning false from the given callback. If this occurs, this function will also return false.
+        /// The search can be aborted by returning false from the given callback. 
+        /// If aborted, this function will also return false.
         /// </summary>
         public bool Search(Vec2d point, Func<T, bool> callback)
         {
@@ -210,9 +211,8 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each value within each intersecting bin.
-        /// The search can be aborted by returning false from the given callback at any time. If this occurs, this function will also return false.
-        /// This method is technically not threadsafe as concurrent calls could result in the same bin being processed multiple times within a single search.
-        /// For some applications, this isn't an issue however.
+        /// The search can be aborted by returning false from the given callback. 
+        /// If aborted, this function will also return false.
         /// </summary>
         public bool Search(Interval2d box, Func<T, bool> callback)
         {
@@ -317,7 +317,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        private struct BinKey
+        private struct BinKey: IEquatable<BinKey>
         {
             /// <summary></summary>
             public readonly int I;
@@ -335,23 +335,28 @@ namespace SpatialSlur.SlurData
                 I = i;
                 J = j;
             }
-        }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private class BinKeyComparer : EqualityComparer<BinKey>
-        {
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="a"></param>
-            /// <param name="b"></param>
+            /// <param name="other"></param>
             /// <returns></returns>
-            public override bool Equals(BinKey a, BinKey b)
+            public bool Equals(BinKey other)
             {
-                return a.I == b.I && a.J == b.J;
+                return I == other.I && J == other.J;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override int GetHashCode()
+            {
+                const int p0 = 73856093;
+                const int p1 = 19349663;
+                return I * p0 ^ J * p1;
             }
 
 
@@ -360,11 +365,9 @@ namespace SpatialSlur.SlurData
             /// </summary>
             /// <param name="obj"></param>
             /// <returns></returns>
-            public override int GetHashCode(BinKey obj)
+            public override bool Equals(object obj)
             {
-                const int p0 = 73856093;
-                const int p1 = 19349663;
-                return obj.I * p0 ^ obj.J * p1;
+                return obj is BinKey && Equals((BinKey)obj);
             }
         }
     }

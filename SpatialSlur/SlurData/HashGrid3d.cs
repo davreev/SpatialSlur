@@ -43,7 +43,7 @@ namespace SpatialSlur.SlurData
         /// <param name="capacity"></param>
         public HashGrid3d(int capacity = DefaultCapacity)
         {
-            _bins = new Dictionary<BinKey, Bin>(capacity, new BinKeyComparer());
+            _bins = new Dictionary<BinKey, Bin>(capacity);
         }
 
 
@@ -197,7 +197,8 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each value within the intersecting bin.
-        /// The search can be aborted by returning false from the given callback. If this occurs, this function will also return false.
+        /// The search can be aborted by returning false from the given callback. 
+        /// If aborted, this function will also return false.
         /// </summary>
         public bool Search(Vec3d point, Func<T, bool> callback)
         {
@@ -213,9 +214,8 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each value within each intersecting bin.
-        /// The search can be aborted by returning false from the given callback at any time. If this occurs, this function will also return false.
-        /// This method is technically not threadsafe as concurrent calls could result in the same bin being processed multiple times within a single search.
-        /// For some applications, this isn't an issue however.
+        /// The search can be aborted by returning false from the given callback. 
+        /// If aborted, this function will also return false.
         /// </summary>
         public bool Search(Interval3d box, Func<T, bool> callback)
         {
@@ -251,20 +251,7 @@ namespace SpatialSlur.SlurData
             return SearchImpl(box).SelectMany(x => x);
         }
 
-
-        /// <summary>
-        /// Adds the contents of each intersecting bin to the given stack.
-        /// This implementation separates the the collection of bins (not threadsafe) from the processing of their contents (potentially threadsafe) making it better suited to concurrent applications.
-        /// </summary>
-        /// <param name="box"></param>
-        /// <param name="result"></param>
-        public void Search(Interval3d box, Stack<IEnumerable<T>> result)
-        {
-            foreach (var bin in SearchImpl(box))
-                result.Push(bin);
-        }
-
-
+        
         /// <summary>
         /// Returns the intersecting bin if one exists.
         /// </summary>
@@ -333,11 +320,11 @@ namespace SpatialSlur.SlurData
             }
         }
 
-
+    
         /// <summary>
         /// 
         /// </summary>
-        private struct BinKey
+        private struct BinKey : IEquatable<BinKey>
         {
             /// <summary></summary>
             public readonly int I;
@@ -358,37 +345,40 @@ namespace SpatialSlur.SlurData
                 J = j;
                 K = k;
             }
-        }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private class BinKeyComparer : EqualityComparer<BinKey>
-        {
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="a"></param>
-            /// <param name="b"></param>
+            /// <param name="other"></param>
             /// <returns></returns>
-            public override bool Equals(BinKey a, BinKey b)
+            public bool Equals(BinKey other)
             {
-                return a.I == b.I && a.J == b.J && a.K == b.K;
+                return I == other.I && J == other.J && K == other.K;
             }
 
 
             /// <summary>
-            /// http://cybertron.cg.tu-berlin.de/eitz/pdf/2007_hsh.pdf
+            /// 
             /// </summary>
-            /// <param name="obj"></param>
             /// <returns></returns>
-            public override int GetHashCode(BinKey obj)
+            public override int GetHashCode()
             {
                 const int p0 = 73856093;
                 const int p1 = 19349663;
                 const int p2 = 83492791;
-                return obj.I * p0 ^ obj.J * p1 ^ obj.K * p2;
+                return I * p0 ^ J * p1 ^ K * p2;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <returns></returns>
+            public override bool Equals(object obj)
+            {
+                return obj is BinKey && Equals((BinKey)obj);
             }
         }
     }
