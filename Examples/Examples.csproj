@@ -86,11 +86,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Console\Program.cs" />
-    <Compile Include="Console\HeMeshFromFile.cs" />
-    <Compile Include="Console\Paths.cs" />
-    <Compile Include="Console\PlanarizeHeMesh.cs" />
-    <Compile Include="Console\PlanarizeQuad.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="HeMeshFromFile.cs" />
+    <Compile Include="Paths.cs" />
+    <Compile Include="PlanarizeHeMesh.cs" />
+    <Compile Include="PlanarizeQuad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

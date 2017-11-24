@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SlurCore\ArrayMath.cs" />
+    <Compile Include="SlurCore\Obsolete\Interval1d.cs" />
     <Compile Include="SlurCore\Matrix2d.cs" />
     <Compile Include="SlurCore\Obsolete\Rotation2d.cs" />
     <Compile Include="SlurCore\Obsolete\Rotation3d.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="SlurDynamics\Constraints\SphereCollide.cs" />
     <Compile Include="SlurDynamics\Constraints\Weight.cs" />
     <Compile Include="SlurDynamics\BodyHandle.cs" />
+    <Compile Include="SlurDynamics\Constraints\RelativeConstraint.cs" />
     <Compile Include="SlurMesh\Extensions\IHeElementExtensions.cs" />
     <Compile Include="SlurMesh\Abstract\HeGraphBase.cs" />
     <Compile Include="SlurMesh\Abstract\HeMeshBase.cs" />
@@ -167,25 +169,23 @@
     <Compile Include="SlurData\DataUtil.cs" />
     <Compile Include="SlurData\Extensions\IListExtensions.cs" />
     <Compile Include="SlurData\KMeans.cs" />
-    <Compile Include="SlurDynamics\Abstract\BodyConstraint.cs" />
+    <Compile Include="SlurDynamics\Abstract\Constraint.cs" />
     <Compile Include="SlurDynamics\ConstraintSolver.cs" />
     <Compile Include="SlurDynamics\ConstraintSolverSettings.cs" />
     <Compile Include="SlurDynamics\Constraints\AbovePlane.cs" />
-    <Compile Include="SlurDynamics\Constraints\AlignPairs.cs" />
+    <Compile Include="SlurDynamics\Constraints\ParallelPairs.cs" />
     <Compile Include="SlurDynamics\Constraints\AreaWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\Coincident.cs" />
     <Compile Include="SlurDynamics\Constraints\Colinear.cs" />
     <Compile Include="SlurDynamics\Constraints\ForceField.cs" />
     <Compile Include="SlurDynamics\Constraints\InsideInterval.cs" />
     <Compile Include="SlurDynamics\Constraints\OnTarget.cs" />
-    <Compile Include="SlurDynamics\Abstract\ParticleConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\Coplanar.cs" />
     <Compile Include="SlurDynamics\Constraints\Cospherical.cs" />
     <Compile Include="SlurDynamics\Constraints\FalseWeight.cs" />
     <Compile Include="SlurDynamics\Constraints\CyclicQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\DihedralConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\DirectionConstraint.cs" />
-    <Compile Include="SlurDynamics\Abstract\MultiParticleConstraint.cs" />
     <Compile Include="SlurDynamics\Constraints\EqualizeLengths.cs" />
     <Compile Include="SlurDynamics\Constraints\LaplacianSmooth.cs" />
     <Compile Include="SlurDynamics\Constraints\LengthConstraint.cs" />
@@ -202,7 +202,7 @@
     <Compile Include="SlurDynamics\Constraints\VariableSphereCollide.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialSmooth.cs" />
-    <Compile Include="SlurDynamics\Abstract\MultiBodyConstraint.cs" />
+    <Compile Include="SlurDynamics\Abstract\MultiConstraint.cs" />
     <Compile Include="SlurDynamics\DynamicsUtil.cs" />
     <Compile Include="SlurDynamics\Interfaces\IConstraint.cs" />
     <Compile Include="SlurDynamics\Interfaces\IBody.cs" />
@@ -266,7 +266,7 @@
     <Compile Include="SlurUnity\Interfaces\IVertex3f.cs" />
     <Compile Include="SlurUnity\SlurMathf.cs" />
     <Compile Include="SlurCore\Vec2i.cs" />
-    <Compile Include="SlurCore\Interval1d.cs" />
+    <Compile Include="SlurCore\Intervald.cs" />
     <Compile Include="SlurCore\Interval2d.cs" />
     <Compile Include="SlurCore\Interval3d.cs" />
     <Compile Include="SlurCore\Vec2d.cs" />
@@ -316,7 +316,6 @@
     <Folder Include="SlurDynamics\Obsolete\" />
     <Folder Include="SlurField\Obsolete\" />
     <Folder Include="SlurMesh\Obsolete\" />
-    <Folder Include="SlurMesh\WIP\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SlurCore\Matrix4d.cs" />
