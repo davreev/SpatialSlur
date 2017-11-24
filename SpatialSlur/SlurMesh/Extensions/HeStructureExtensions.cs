@@ -253,7 +253,7 @@ namespace SpatialSlur.SlurMesh
             // search
             while (pq.Count > 0)
             {
-                var he0 = pq.RemoveMin().Item2;
+                var he0 = pq.RemoveMin().Value;
                 yield return he0;
 
                 foreach (var he1 in he0.ConnectedPairs)
@@ -544,7 +544,7 @@ namespace SpatialSlur.SlurMesh
             // search
             while (pq.Count > 0)
             {
-                var he = pq.RemoveMin().Item2;
+                var he = pq.RemoveMin().Value;
                 yield return he;
 
                 foreach (var he0 in he.CirculateStart)
@@ -1749,7 +1749,7 @@ namespace SpatialSlur.SlurMesh
             // search
             while (pq.Count > 0)
             {
-                var he = pq.RemoveMin().Item2;
+                var he = pq.RemoveMin().Value;
                 yield return he;
 
                 foreach (var he0 in he.CirculateFace)

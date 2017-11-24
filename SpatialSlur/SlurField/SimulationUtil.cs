@@ -355,7 +355,7 @@ namespace SpatialSlur.SlurField
                 int nx = field.CountX;
                 int ny = field.CountY;
 
-                (double dx, double dy) = field.Scale.Components;
+                (double dx, double dy) = field.Scale;
                 dx = 1.0 / (dx * dx);
                 dy = 1.0 / (dy * dy);
 
@@ -416,7 +416,7 @@ namespace SpatialSlur.SlurField
                 int nz = field.CountZ;
                 int nxy = field.CountXY;
 
-                (double dx, double dy, double dz) = field.Scale.Components;
+                (double dx, double dy, double dz) = field.Scale;
                 dx = 1.0 / (dx * dx);
                 dy = 1.0 / (dy * dy);
                 dz = 1.0 / (dz * dz);
@@ -585,7 +585,7 @@ namespace SpatialSlur.SlurField
                 int nx = field.CountX;
                 int ny = field.CountY;
 
-                (double dx, double dy) = field.Scale.Components;
+                (double dx, double dy) = field.Scale;
                 dx = 1.0 / Math.Abs(dx);
                 dy = 1.0 / Math.Abs(dy);
 
@@ -667,7 +667,7 @@ namespace SpatialSlur.SlurField
                 int nz = field.CountZ;
                 int nxy = field.CountXY;
 
-                (double dx, double dy, double dz) = field.Scale.Components;
+                (double dx, double dy, double dz) = field.Scale;
                 dx = 1.0 / Math.Abs(dx);
                 dy = 1.0 / Math.Abs(dy);
                 dz = 1.0 / Math.Abs(dz);
@@ -750,7 +750,7 @@ namespace SpatialSlur.SlurField
             int nx = cost.CountX;
             int ny = cost.CountY;
 
-            (double dx, double dy) = Vec2d.Abs(cost.Scale).Components;
+            (double dx, double dy) = Vec2d.Abs(cost.Scale);
             
             var pq = new PriorityQueue<double, int>();
             result.SetRange(double.PositiveInfinity, 0, cost.Count);
@@ -879,7 +879,7 @@ namespace SpatialSlur.SlurField
             var nx = cost.CountX;
             var ny = cost.CountY;
             
-            (var dx, var dy) = Vec2d.Abs(cost.Scale).Components;
+            (var dx, var dy) = Vec2d.Abs(cost.Scale);
 
             var pq = new PriorityQueue<double, int>();
             var eikonal = new Eikonal2d(dx, dy);

@@ -160,7 +160,7 @@ namespace SpatialSlur.SlurField
         public Vec3d Origin
         {
             get { return new Vec3d(_dx, _dy, _dz); }
-            set { (_dx, _dy, _dz) = value.Components; }
+            set { (_dx, _dy, _dz) = value; }
         }
 
 
@@ -172,7 +172,7 @@ namespace SpatialSlur.SlurField
             get { return new Vec3d(_tx, _ty, _tz); }
             set
             {
-                (_tx, _ty, _tz) = value.Components;
+                (_tx, _ty, _tz) = value;
                 _txInv = 1.0 / _tx;
                 _tyInv = 1.0 / _ty;
                 _tzInv = 1.0 / _tz;

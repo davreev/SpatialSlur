@@ -275,7 +275,7 @@ namespace SpatialSlur.SlurField
 
             void Body(int from, int to)
             {
-                (var dx, var dy) = Scale.Components;
+                (var dx, var dy) = Scale;
                 dx = 1.0 / (dx * dx);
                 dy = 1.0 / (dy * dy);
 
@@ -337,7 +337,7 @@ namespace SpatialSlur.SlurField
 
             void Body(int from, int to)
             {
-                (var dx, var dy) = (0.5 / Scale).Components;
+                (var dx, var dy) = (0.5 / Scale);
                 (int di, int dj) = GetBoundaryOffsets();
                 (int i, int j) = IndicesAt(from);
 

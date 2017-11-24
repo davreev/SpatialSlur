@@ -705,7 +705,7 @@ namespace SpatialSlur.SlurTools
         [Serializable]
         public class Settings
         {
-            private Interval1d _lengthRange = new Interval1d(1.0, 1.0);
+            private Intervald _lengthRange = new Intervald(1.0, 1.0);
             private double _lengthTolerance = 0.01;
             private double _featureWeight = 100.0;
             private double _damping = 0.1;
@@ -716,7 +716,7 @@ namespace SpatialSlur.SlurTools
             /// <summary>
             /// 
             /// </summary>
-            public Interval1d LengthRange
+            public Intervald LengthRange
             {
                 get { return _lengthRange; }
                 set { _lengthRange = value; }

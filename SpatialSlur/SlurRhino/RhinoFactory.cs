@@ -611,7 +611,7 @@ namespace SpatialSlur.SlurRhino
             /// <param name="vertexValues"></param>
             /// <param name="interval"></param>
             /// <returns></returns>
-            public static T CreateIsoTrim(T mesh, IReadOnlyList<double> vertexValues, Interval1d interval)
+            public static T CreateIsoTrim(T mesh, IReadOnlyList<double> vertexValues, Intervald interval)
             {
                 // TODO
                 throw new NotImplementedException();

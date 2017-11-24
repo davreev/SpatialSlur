@@ -142,7 +142,7 @@ namespace SpatialSlur.SlurField
         public Vec2d Origin
         {
             get { return new Vec2d(_dx, _dy); }
-            set { (_dx, _dy) = value.Components; }
+            set { (_dx, _dy) = value; }
         }
 
 
@@ -154,7 +154,7 @@ namespace SpatialSlur.SlurField
             get { return new Vec2d(_tx, _ty); }
             set
             {
-                (_tx, _ty) = value.Components;
+                (_tx, _ty) = value;
                 _txInv = 1.0 / _tx;
                 _tyInv = 1.0 / _ty;
             }

@@ -29,7 +29,7 @@ namespace SpatialSlur.SlurField
 
 
         private List<IDWPoint3d<T>> _valuePoints = new List<IDWPoint3d<T>>();
-        private double _epsilon = 1.0e-4;
+        private double _epsilon = SlurMath.ZeroTolerance;
 
 
         /// <summary>

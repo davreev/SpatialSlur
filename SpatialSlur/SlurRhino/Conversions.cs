@@ -17,16 +17,16 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// Represents a double precision interval.
     /// </summary>
-    public partial struct Interval1d
+    public partial struct Intervald
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static implicit operator Interval1d(Interval interval)
+        public static implicit operator Intervald(Interval interval)
         {
-            return new Interval1d(interval.T0, interval.T1);
+            return new Intervald(interval.T0, interval.T1);
         }
 
 
@@ -35,9 +35,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static implicit operator Interval(Interval1d interval)
+        public static implicit operator Interval(Intervald interval)
         {
-            return new Interval1d(interval.A, interval.B);
+            return new Intervald(interval.A, interval.B);
         }
     }
 

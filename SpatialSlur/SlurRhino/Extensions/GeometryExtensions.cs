@@ -312,7 +312,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="vertexValues"></param>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static Mesh IsoTrim(this Mesh mesh, IReadOnlyList<double> vertexValues, Interval1d interval)
+        public static Mesh IsoTrim(this Mesh mesh, IReadOnlyList<double> vertexValues, Intervald interval)
         {
             return RhinoFactory.Mesh.CreateIsoTrim(mesh, vertexValues, interval);
         }

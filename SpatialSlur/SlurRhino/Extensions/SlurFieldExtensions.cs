@@ -71,7 +71,7 @@ namespace SpatialSlur.SlurRhino
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
 
-            (var dx, var dy) = (field.Scale * 0.5).Components;
+            (var dx, var dy) = (field.Scale * 0.5);
 
             // add vertices
             foreach (int index in selection)
@@ -107,7 +107,7 @@ namespace SpatialSlur.SlurRhino
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
             
-            (var dx, var dy) = ((Vec2d)field.Scale * 0.5).Components;
+            (var dx, var dy) = ((Vec2d)field.Scale * 0.5);
 
             // add vertices
             foreach (int index in selection)
@@ -208,7 +208,7 @@ namespace SpatialSlur.SlurRhino
             var faces = mesh.Faces;
             
             var values = field.Values;
-            (var dx, var dy) = (field.Scale * 0.5).Components;
+            (var dx, var dy) = (field.Scale * 0.5);
 
             int index = 0;
 
@@ -253,7 +253,7 @@ namespace SpatialSlur.SlurRhino
             var faces = mesh.Faces;
             
             var values = field.Values;
-            (var dx, var dy) = (field.Scale * 0.5).Components;
+            (var dx, var dy) = (field.Scale * 0.5);
 
             // add vertices
             foreach (int index in selection)
