@@ -297,7 +297,7 @@ namespace SpatialSlur.SlurMesh
 
             Vec3d x = p1 - p0;
 
-            return Orient3d.CreateRelative(
+            return Orient3d.CreateFromTo(
                 new Orient3d(p0, x, p2 - p0), 
                 new Orient3d(p0, x, p1 - p3)
                 );
@@ -368,7 +368,7 @@ namespace SpatialSlur.SlurMesh
             Vec3d y0 = p2 - p0;
             Vec3d y1 = (unrollFactor < 1.0) ? y0.SlerpTo(p1 - p3, unrollFactor) : p1 - p3;
 
-            return Orient3d.CreateRelative(
+            return Orient3d.CreateFromTo(
                 new Orient3d(p0, x, y0),
                 new Orient3d(p0, x, y1)
                 );
