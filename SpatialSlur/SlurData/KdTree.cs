@@ -149,6 +149,37 @@ namespace SpatialSlur.SlurData
         }
 
 
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public int CountDebug()
+        {
+            int count = 0;
+            CountDebug(_root, ref count);
+            return count;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="count"></param>
+        private void CountDebug(Node node, ref int count)
+        {
+            if (node == null)
+                return;
+
+            count++;
+
+            CountDebug(node.Left, ref count);
+            CountDebug(node.Right, ref count);
+        }
+        */
+
+
         /// <summary>
         /// Creates a shallow copy of the tree
         /// </summary>
@@ -219,9 +250,19 @@ namespace SpatialSlur.SlurData
                 while (q0.Count > 0)
                 {
                     var node = q0.Dequeue();
-                    if (node.IsLeaf) return depth;
-                    q1.Enqueue(node.Left);
-                    q1.Enqueue(node.Right);
+                    var left = node.Left;
+                    var right = node.Right;
+
+                    if(left == null)
+                    {
+                        if (right == null) return depth; // reached leaf
+                        q1.Enqueue(right);
+                    }
+                    else
+                    {
+                        q1.Enqueue(left);
+                        if (right != null) q1.Enqueue(right);
+                    }
                 }
 
                 // swap queues and continue on the next level
@@ -229,19 +270,6 @@ namespace SpatialSlur.SlurData
                 depth++;
             }
         }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        private void DimCheck(double[] point)
-        {
-            if (_k != point.Length)
-                throw new System.ArgumentException("The given point must have the same number of dimensions as this tree.");
-        }
-        */
 
 
         /// <summary>
@@ -362,24 +390,23 @@ namespace SpatialSlur.SlurData
 
             // sort the median element
             int mid = ((to - from) >> 1) + from;
-            var midNode = nodes.QuickSelect(mid, from, to, (n0, n1) => n0.Point[i].CompareTo(n1.Point[i]));
+            var midValue = nodes.QuickSelect(mid, from, to, (n0, n1) => n0.Point[i].CompareTo(n1.Point[i])).Point[i];
 
             // ensure no duplicate elements to the left of the median
             int j = from;
-            var t = midNode.Point[i];
-
             while (j < mid)
             {
-                if (nodes[j].Point[i] == t)
+                if (nodes[j].Point[i] == midValue)
                     nodes.Swap(j, --mid);
                 else
                     j++;
             }
-
-            // create node and recall on left and right children
+            
+            // recall on left and right children
+            var midNode = nodes[mid];
             midNode.Left = InsertBalanced(nodes, from, mid - 1, i + 1);
             midNode.Right = InsertBalanced(nodes, mid + 1, to, i + 1);
-            return nodes[mid];
+            return midNode;
         }
 
 
@@ -537,7 +564,8 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each found value.
-        /// Returns false if the search was aborted which occurs if the delegate return false.
+        /// The search can be aborted by returning false from the given callback. 
+        /// If aborted, this function will also return false.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
@@ -613,14 +641,15 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each found value.
-        /// Returns false if the search was aborted which occurs if the delegate return false.
+        /// The search can be aborted by returning false from the given callback. 
+        /// If aborted, this function will also return false.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
         /// <param name="callback"></param>
         public bool RangeSearchL2(double[] point, double range, Func<T, bool> callback)
         {
-            return RangeSearchL2Impl(_root, point, range, callback, 0);
+            return RangeSearchL2Impl(_root, point, range * range, callback, 0);
         }
 
 
@@ -645,11 +674,11 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="node"></param>
         /// <param name="point"></param>
-        /// <param name="range"></param>
+        /// <param name="squareRange"></param>
         /// <param name="callback"></param>
         /// <param name="i"></param>
         /// <returns></returns>
-        private bool RangeSearchL2Impl(Node node, double[] point, double range, Func<T,bool> callback, int i)
+        private bool RangeSearchL2Impl(Node node, double[] point, double squareRange, Func<T, bool> callback, int i)
         {
             if (node == null) return true;
 
@@ -657,7 +686,7 @@ namespace SpatialSlur.SlurData
             if (i == _k) i = 0;
 
             // enqueue value if node is within range
-            if (SquareDistanceL2(point, node.Point) < range)
+            if (SquareDistanceL2(point, node.Point) < squareRange)
                 if(!callback(node.Value)) return false;
 
             // signed distance to cut plane
@@ -666,20 +695,20 @@ namespace SpatialSlur.SlurData
             if (d < 0.0)
             {
                 // point is to the left, recall in left subtree first
-                RangeSearchL2Impl(node.Left, point, range, callback, i + 1);
+                RangeSearchL2Impl(node.Left, point, squareRange, callback, i + 1);
 
                 // recall in right subtree only if necessary
-                if (d * d < range)
-                    RangeSearchL2Impl(node.Right, point, range, callback, i + 1);
+                if (d * d < squareRange)
+                    RangeSearchL2Impl(node.Right, point, squareRange, callback, i + 1);
             }
             else
             {
                 // point is to the right, recall in right subtree first
-                RangeSearchL2Impl(node.Right, point, range, callback, i + 1);
+                RangeSearchL2Impl(node.Right, point, squareRange, callback, i + 1);
 
                 // recall in left subtree only if necessary
-                if (d * d < range)
-                    RangeSearchL2Impl(node.Left, point, range, callback, i + 1);
+                if (d * d < squareRange)
+                    RangeSearchL2Impl(node.Left, point, squareRange, callback, i + 1);
             }
 
             return true;
@@ -688,7 +717,8 @@ namespace SpatialSlur.SlurData
 
         /// <summary>
         /// Calls the given delegate on each found value.
-        /// Returns false if the search was aborted which occurs if the delegate return false.
+        /// The search can be aborted by returning false from the given callback. 
+        /// If aborted, this function will also return false.
         /// </summary>
         /// <param name="point"></param>
         /// <param name="range"></param>
@@ -949,7 +979,7 @@ namespace SpatialSlur.SlurData
             // insert node if closer than nth element
             if (result.Count < k)
                 result.Insert(d, node.Value);
-            else if (d > result.Min.Item1)
+            else if (d > result.Min.Key)
                 result.ReplaceMin(d, node.Value);
 
             // signed distance to cut plane
@@ -961,7 +991,7 @@ namespace SpatialSlur.SlurData
                 KNearestL2(node.Left, point, k, i + 1, result);
 
                 // recall in right subtree only if necessary
-                if (result.Count < k || d * d < -result.Min.Item1)
+                if (result.Count < k || d * d < -result.Min.Key)
                     KNearestL2(node.Right, point, k, i + 1, result);
             }
             else
@@ -970,7 +1000,7 @@ namespace SpatialSlur.SlurData
                 KNearestL2(node.Right, point, k, i + 1, result);
 
                 // recall in left subtree only if necessary
-                if (result.Count < k || d * d < -result.Min.Item1)
+                if (result.Count < k || d * d < -result.Min.Key)
                     KNearestL2(node.Left, point, k, i + 1, result);
             }
         }
@@ -1012,7 +1042,7 @@ namespace SpatialSlur.SlurData
             // insert node if closer than nth element
             if (result.Count < k)
                 result.Insert(d, node.Value);
-            else if (d > result.Min.Item1)
+            else if (d > result.Min.Key)
                 result.ReplaceMin(d, node.Value);
 
             // signed distance to cut plane
@@ -1024,7 +1054,7 @@ namespace SpatialSlur.SlurData
                 KNearestL1(node.Left, point, k, i + 1, result);
 
                 // recall in right subtree only if necessary
-                if (result.Count < k || Math.Abs(d) < -result.Min.Item1)
+                if (result.Count < k || Math.Abs(d) < -result.Min.Key)
                     KNearestL1(node.Right, point, k, i + 1, result); 
             }
             else
@@ -1033,7 +1063,7 @@ namespace SpatialSlur.SlurData
                 KNearestL1(node.Right, point, k, i + 1, result);
 
                 // recall in left subtree only if necessary
-                if (result.Count < k || Math.Abs(d) < -result.Min.Item1)
+                if (result.Count < k || Math.Abs(d) < -result.Min.Key)
                     KNearestL1(node.Left, point, k, i + 1, result); 
             }
         }
