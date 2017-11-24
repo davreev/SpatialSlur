@@ -7,7 +7,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// Applies a force proportional to the mass of each particle.
     /// </summary>
     [Serializable]
-    public class Weight : MultiParticleConstraint<H>
+    public class Weight : MultiConstraint<H>, IConstraint
     {
         /// <summary>Describes the direction and magnitude of the applied weight</summary>
         public Vec3d Force;
@@ -38,27 +38,60 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="indices"></param>
-        /// <param name="vector"></param>
+        /// <param name="force"></param>
         /// <param name="weight"></param>
-        public Weight(IEnumerable<int> indices, Vec3d vector, double weight = 1.0, int capacity = DefaultCapacity)
+        public Weight(IEnumerable<int> indices, Vec3d force, double weight = 1.0, int capacity = DefaultCapacity)
             : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
-            Force = vector;
+            Force = force;
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="particles"></param>
+        public void Calculate(IReadOnlyList<IBody> particles)
+        {
+            foreach (var h in Handles)
+                h.Delta = Force * particles[h].Mass;
+        }
+        
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            foreach (var h in Handles)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        IEnumerable<IHandle> IConstraint.Handles
         {
-            foreach (var h in Handles)
-            {
-                h.Delta = Force * particles[h].Mass;
-                h.Weight = Weight;
-            }
+            get { return Handles; }
         }
+
+        #endregion
     }
 }

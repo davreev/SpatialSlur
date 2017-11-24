@@ -12,14 +12,14 @@ using SpatialSlur.SlurField;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class OnThreshold : MultiParticleConstraint<H>
+    public class OnThreshold : MultiConstraint<H>, IConstraint
     {
         /// <summary></summary>
         public double Threshold;
@@ -73,7 +73,7 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             var gp = new GridPoint3d();
 
@@ -87,7 +87,6 @@ namespace SpatialSlur.SlurDynamics
                 var g = _gradient.ValueAt(gp).Direction;
 
                 h.Delta = g * (Threshold - t);
-                h.Weight = Weight;
             }
         }
 
@@ -102,5 +101,40 @@ namespace SpatialSlur.SlurDynamics
 
             _field.GetGradient(_gradient);
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            foreach (var h in Handles)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

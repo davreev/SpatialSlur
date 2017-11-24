@@ -23,14 +23,6 @@ namespace SpatialSlur.SlurDynamics
         Vec3d Velocity { get; set; }
 
 
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        OrthoBasis3d Rotation { get; set; }
-        */
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -87,5 +79,12 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="damping"></param>
         /// <returns></returns>
         double UpdateRotation(double timeStep, double damping);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IBody Duplicate();
     }
 }

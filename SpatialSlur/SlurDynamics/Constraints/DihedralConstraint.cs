@@ -9,15 +9,15 @@ using SpatialSlur.SlurCore;
  * Notes 
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
     /// <summary>
-    /// http://www.tsg.ne.jp/TT/cg/ElasticOrigami_Tachi_IASS2013.pdf
+    /// 
     /// </summary>
     [Serializable]
-    public class DihedralConstraint : ParticleConstraint<H>
+    public class DihedralConstraint : Constraint, IConstraint
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -64,21 +64,6 @@ namespace SpatialSlur.SlurDynamics
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        public override sealed IEnumerable<H> Handles
-        {
-            get
-            {
-                yield return _h0;
-                yield return _h1;
-                yield return _h2;
-                yield return _h3;
-            }
-        }
-
-
-        /// <summary>
         /// Note this value is wrapped between 0 and 2PI.
         /// </summary>
         public double Angle
@@ -109,13 +94,15 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             // TODO revise implementation
+            /// http://www.tsg.ne.jp/TT/cg/ElasticOrigami_Tachi_IASS2013.pdf
             throw new NotImplementedException();
 
             // TODO
@@ -161,8 +148,50 @@ namespace SpatialSlur.SlurDynamics
             _h1.Delta = n0 * (m * c0) + n1 * (m * c2);
             _h2.Delta = n0 * -(m * (c0 + c1));
             _h3.Delta = n1 * -(m * (c2 + c3));
-
-            _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            bodies[_h0].ApplyMove(_h0.Delta, Weight);
+            bodies[_h1].ApplyMove(_h1.Delta, Weight);
+            bodies[_h2].ApplyMove(_h2.Delta, Weight);
+            bodies[_h3].ApplyMove(_h3.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get
+            {
+                yield return _h0;
+                yield return _h1;
+                yield return _h2;
+                yield return _h3;
+            }
+        }
+
+        #endregion
     }
 }

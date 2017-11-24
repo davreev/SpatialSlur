@@ -7,16 +7,40 @@ using SpatialSlur.SlurCore;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = AbovePlane.Handle;
 
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class AbovePlane : MultiParticleConstraint<H>
+    public class AbovePlane : MultiConstraint<H>, IConstraint
     {
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public class Handle : ParticleHandle
+        {
+            /// <summary></summary>
+            internal bool Skip = false;
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public Handle(int index)
+                : base(index)
+            {
+            }
+        }
+
+        #endregion
+
+
         /// <summary></summary>
         public Vec3d Origin;
         /// <summary></summary>
@@ -54,11 +78,12 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             foreach (var h in Handles)
             {
@@ -66,38 +91,49 @@ namespace SpatialSlur.SlurDynamics
 
                 if (d <= 0.0)
                 {
-                    h.Delta = Vec3d.Zero;
+                    h.Skip = true;
                     continue;
                 }
 
                 h.Delta = (d / Normal.SquareLength * Normal);
-                h.Weight = Weight;
+                h.Skip = false;
             }
         }
 
 
-        /*
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
         {
-            foreach(var h in Handles)
-            {
-                double d = (Origin - particles[h].Position) * Normal;
-
-                if (d > 0.0)
-                {
-                    h.Delta = (d / Normal.SquareLength * Normal);
-                    h.Weight = Weight;
-                }
-                else
-                {
-                    h.Weight = 0.0;
-                }
-            }
+            foreach (var h in Handles)
+                if (!h.Skip) bodies[h].ApplyMove(h.Delta, Weight);
         }
-        */
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

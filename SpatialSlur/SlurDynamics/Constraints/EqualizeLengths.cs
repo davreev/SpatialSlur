@@ -9,7 +9,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurDynamics
     /// Each successive pair of handles represents a line segment.
     /// </summary>
     [Serializable]
-    public class EqualizeLengths : MultiParticleConstraint<H>
+    public class EqualizeLengths : MultiConstraint<H>, IConstraint
     {
         /// <summary>
         /// 
@@ -41,35 +41,40 @@ namespace SpatialSlur.SlurDynamics
             Handles.AddRange(indices.Select(i => new H(i)));
         }
 
-        
+
+        /// <summary>
+        /// Need at least 4 handles to define projections.
+        /// </summary>
+        private bool IsValid
+        {
+            get { return Handles.Count > 3; }
+        }
+
+
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
-            int n = Handles.Count;
-
-            // need at least 4 handles to define projections
-            if(n < 4)
-            {
-                foreach (var h in Handles) h.Weight = 0.0;
-                return;
-            }
-
+            if (!IsValid) return;
+            
             double meanLength = 0.0;
-
-            for(int i = 0; i < n; i+=2)
+            int n = Handles.Count;
+            
+            for (int i = 0; i < n; i += 2)
             {
                 var h0 = Handles[i];
                 var h1 = Handles[i + 1];
 
                 Vec3d d = particles[h1].Position - particles[h0].Position;
-                h0.Delta = d;
-                
                 var m = d.Length;
+
+                h0.Delta = d;
+                h1.Delta = new Vec3d(m); // cache length in h1.Delta temporarily
+
                 meanLength += m;
-                h1.Delta = new Vec3d(m); // cache length temporarily
             }
        
             meanLength /= n;
@@ -78,11 +83,51 @@ namespace SpatialSlur.SlurDynamics
             {
                 var h0 = Handles[i];
                 var h1 = Handles[i + 1];
-                
-                h0.Delta *= (1.0 - meanLength / h1.Delta.X) * 0.5;
-                h1.Delta = -h0.Delta;
-                h0.Weight = h1.Weight = Weight;
+
+                var d = h0.Delta;
+                var m = h1.Delta.X;
+
+                d *= (1.0 - meanLength / m) * 0.5;
+                h0.Delta = d;
+                h1.Delta = -d;
             }
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            if (!IsValid) return;
+
+            foreach (var h in Handles)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

@@ -20,9 +20,7 @@ namespace SpatialSlur.SlurDynamics
     {
         /// <summary></summary>
         public Vec3d AngleDelta;
-        /// <summary></summary>
-        public double AngleWeight;
-
+        
 
         /// <summary>
         /// 
@@ -48,15 +46,6 @@ namespace SpatialSlur.SlurDynamics
         Vec3d IHandle.AngleDelta
         {
             get { return AngleDelta; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        double IHandle.AngleWeight
-        {
-            get { return AngleWeight; }
         }
 
         #endregion

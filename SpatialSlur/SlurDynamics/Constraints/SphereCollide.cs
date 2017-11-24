@@ -16,17 +16,41 @@ using static System.Threading.Tasks.Parallel;
  * TODO check grid resizing
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = SphereCollide.Handle;
 
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class SphereCollide : MultiParticleConstraint<H>
+    public class SphereCollide : MultiConstraint<H>, IConstraint
     {
-        /// <summary>If set to true, collisions are calculated in parallel</summary>
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public class Handle : ParticleHandle
+        {
+            /// <summary></summary>
+            internal bool Skip = false;
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public Handle(int index)
+                : base(index)
+            {
+            }
+        }
+
+        #endregion
+
+
+        /// <summary>If true, collisions are calculated in parallel</summary>
         public bool Parallel;
 
         private HashGrid3d<H> _grid;
@@ -83,7 +107,7 @@ namespace SpatialSlur.SlurDynamics
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             UpdateGrid(particles);
 
@@ -109,7 +133,7 @@ namespace SpatialSlur.SlurDynamics
             foreach (var h in Handles)
                 _grid.Insert(particles[h].Position, h);
 
-            // search from each particles
+            // search for collisions from each particle
             ForEach(Partitioner.Create(0, Handles.Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
@@ -119,22 +143,6 @@ namespace SpatialSlur.SlurDynamics
 
                     var deltaSum = new Vec3d();
                     int count = 0;
-
-                    /*
-                    _grid.Search(new Interval3d(p0, diam), h1 =>
-                    {
-                        var d = particles[h1].Position - p0;
-                        var m = d.SquareLength;
-
-                        if (m < diamSqr && m > 0.0)
-                        {
-                            deltaSum += d * (1.0 - diam / Math.Sqrt(m));
-                            count++;
-                        }
-
-                        return true;
-                    });
-                    */
 
                     foreach(var h1 in _grid.Search(new Interval3d(p0, diam)))
                     {
@@ -148,14 +156,15 @@ namespace SpatialSlur.SlurDynamics
                         }
                     }
 
+                    // no projections applied
                     if (count == 0)
                     {
-                        h0.Weight = 0.0;
+                        h0.Skip = true;
                         continue;
                     }
 
                     h0.Delta = deltaSum * 0.5;
-                    h0.Weight = Weight;
+                    h0.Skip = false;
                 }
             });
         }
@@ -174,7 +183,7 @@ namespace SpatialSlur.SlurDynamics
             foreach(var h in Handles)
             {
                 h.Delta = Vec3d.Zero;
-                h.Weight = 0.0;
+                h.Skip = true;
             }
 
             // calculate collisions
@@ -193,7 +202,7 @@ namespace SpatialSlur.SlurDynamics
                         d *= (1.0 - diam / Math.Sqrt(m)) * 0.5;
                         h0.Delta += d;
                         h1.Delta -= d;
-                        h0.Weight = h1.Weight = Weight;
+                        h0.Skip = h1.Skip = false;
                     }
                 }
 
@@ -214,5 +223,41 @@ namespace SpatialSlur.SlurDynamics
             else
                 _grid.Scale = Radius * RadiusToHashScale;
         }
+
+        
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            foreach (var h in Handles)
+                if (!h.Skip) bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

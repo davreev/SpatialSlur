@@ -7,7 +7,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class OnPlane : MultiParticleConstraint<H>
+    public class OnPlane : MultiConstraint<H>, IConstraint
     {
         /// <summary></summary>
         public Vec3d Origin;
@@ -53,17 +53,50 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             foreach (var h in Handles)
-            {
                 h.Delta = Vec3d.Project(Origin - particles[h].Position, Normal);
-                h.Weight = Weight;
-            }
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            foreach (var h in Handles)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

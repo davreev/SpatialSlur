@@ -12,14 +12,14 @@ using SpatialSlur.SlurField;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    public class ForceField : MultiParticleConstraint<H>
+    public class ForceField : MultiConstraint<H>, IConstraint
     {
         private IField3d<Vec3d> _field;
 
@@ -61,18 +61,50 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
-            for (int i = 0; i < Handles.Count; i++)
-            {
-                var h = Handles[i];
+            foreach (var h in Handles)
                 h.Delta = _field.ValueAt(particles[h].Position);
-                h.Weight = Weight;
-            }
         }
+        
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            foreach (var h in Handles)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

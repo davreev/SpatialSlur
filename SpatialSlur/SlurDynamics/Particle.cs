@@ -53,6 +53,18 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="other"></param>
+        public Particle(Particle other)
+        {
+            _position = other._position;
+            _velocity = other._velocity;
+            _mass = other._mass;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Vec3d Position
         {
             get { return _position; }
@@ -171,6 +183,16 @@ namespace SpatialSlur.SlurDynamics
         double IBody.UpdateRotation(double timeStep, double damping)
         {
             return 0.0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IBody IBody.Duplicate()
+        {
+            return new Particle(this);
         }
 
         #endregion

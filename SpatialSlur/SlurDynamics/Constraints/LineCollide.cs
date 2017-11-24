@@ -11,16 +11,39 @@ using SpatialSlur.SlurData;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = LineCollide.Handle;
 
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class LineCollide : MultiParticleConstraint<H>
+    public class LineCollide : MultiConstraint<H>, IConstraint
     {
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public class Handle : ParticleHandle
+        {
+            internal bool Skip = false;
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public Handle(int index)
+                : base(index)
+            {
+            }
+        }
+
+        #endregion
+
+
         private HashGrid3d<H> _grid;
         private double _radius;
 
@@ -62,16 +85,53 @@ namespace SpatialSlur.SlurDynamics
         {
             Handles.AddRange(indices.Select(i => new H(i)));
         }
-        
 
+
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             // TODO
             throw new NotImplementedException();
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            foreach (var h in Handles)
+                if (!h.Skip) bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

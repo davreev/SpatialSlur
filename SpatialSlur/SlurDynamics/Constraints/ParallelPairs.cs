@@ -9,7 +9,7 @@ using SpatialSlur.SlurCore;
  * Notes 
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurDynamics
     ///
     /// </summary>
     [Serializable]
-    public class AlignPairs : ParticleConstraint<H>
+    public class ParallelPairs : Constraint, IConstraint
     {
         private H _hA0 = new H();
         private H _hA1 = new H();
@@ -59,21 +59,6 @@ namespace SpatialSlur.SlurDynamics
         {
             get { return _hB1; }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override sealed IEnumerable<H> Handles
-        {
-            get
-            {
-                yield return _hA0;
-                yield return _hA1;
-                yield return _hB0;
-                yield return _hB1;
-            }
-        }
         
 
         /// <summary>
@@ -84,7 +69,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="startB"></param>
         /// <param name="endB"></param>
         /// <param name="weight"></param>
-        public AlignPairs(int startA, int endA, int startB, int endB, double weight = 1.0)
+        public ParallelPairs(int startA, int endA, int startB, int endB, double weight = 1.0)
         {
             _hA0.Index = startA;
             _hA1.Index = endA;
@@ -95,23 +80,69 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             Vec3d d0 = particles[_hA1].Position - particles[_hA0].Position;
             Vec3d d1 = particles[_hB1].Position - particles[_hB0].Position;
             double d01 = Vec3d.Dot(d0, d1);
-            
-            _hA1.Delta = (d1 - d01 / d0.SquareLength * d0) * 0.25; // perp of d1 realtive to d0
-            _hB1.Delta = (d0 - d01 / d1.SquareLength * d1) * 0.25; // perp of d0 realtive to d1
 
-            _hA0.Delta = -_hA1.Delta;
-            _hB0.Delta = -_hB1.Delta;
+            var r0 = (d0 - d01 / d1.SquareLength * d1) * 0.25; // rejection of d0 onto d1
+            var r1 = (d1 - d01 / d0.SquareLength * d0) * 0.25; // rejection of d1 onto d0
 
-            _hA0.Weight = _hA1.Weight = _hB0.Weight = _hB1.Weight = Weight;
+            _hA1.Delta = r1;
+            _hB1.Delta = r0;
+
+            _hA0.Delta = -r1;
+            _hB0.Delta = -r0;
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            bodies[_hA0].ApplyMove(_hA0.Delta, Weight);
+            bodies[_hA1].ApplyMove(_hA1.Delta, Weight);
+            bodies[_hB0].ApplyMove(_hB0.Delta, Weight);
+            bodies[_hB1].ApplyMove(_hB1.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get
+            {
+                yield return _hA0;
+                yield return _hA1;
+                yield return _hB0;
+                yield return _hB1;
+            }
+        }
+
+        #endregion
     }
 }

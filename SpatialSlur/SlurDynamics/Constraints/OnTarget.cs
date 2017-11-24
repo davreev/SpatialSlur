@@ -10,7 +10,7 @@ using static System.Threading.Tasks.Parallel;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class OnTarget<T> : MultiParticleConstraint<H>
+    public class OnTarget<T> : MultiConstraint<H>, IConstraint
     {
         /// <summary>If set to true, collisions are calculated in parallel</summary>
         public bool Parallel;
@@ -79,11 +79,12 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             if (Parallel)
                 ForEach(Partitioner.Create(0, Handles.Count), range => Body(range.Item1, range.Item2));
@@ -97,9 +98,43 @@ namespace SpatialSlur.SlurDynamics
                     var h = Handles[i];
                     var p = particles[h].Position;
                     h.Delta = _closestPoint(_target, p) - p;
-                    h.Weight = Weight;
                 }
             }
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            foreach (var h in Handles)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

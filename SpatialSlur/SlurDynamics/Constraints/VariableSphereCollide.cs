@@ -11,7 +11,7 @@ using SpatialSlur.SlurData;
  * Notes
  */ 
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = VariableSphereCollide.Handle;
 
@@ -19,8 +19,65 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class VariableSphereCollide : MultiParticleConstraint<H>
+    public class VariableSphereCollide : MultiConstraint<H>, IConstraint
     {
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public class Handle : ParticleHandle
+        {
+            /// <summary></summary>
+            internal bool Skip = false;
+
+            private double _radius = 1.0;
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public double Radius
+            {
+                get { return _radius; }
+                set
+                {
+                    if (value < 0.0)
+                        throw new ArgumentOutOfRangeException("The value can not be negative.");
+
+                    _radius = value;
+                }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public Handle(int index)
+                : base(index)
+            {
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="index"></param>
+            /// <param name="radius"></param>
+            public Handle(int index, double radius)
+                : base(index)
+            {
+                Radius = radius;
+            }
+        }
+
+        #endregion
+
+
+        /// <summary>If true, collisions are calculated in parallel</summary>
+        public bool Parallel;
+
         private HashGrid3d<H> _grid;
 
 
@@ -46,61 +103,51 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             // TODO
             throw new NotImplementedException();
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
-        [Serializable]
-        public class Handle : ParticleHandle
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
         {
-            private double _radius = 1.0;
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double Radius
-            {
-                get { return _radius; }
-                set
-                {
-                    if (value < 0.0)
-                        throw new ArgumentOutOfRangeException("The value can not be negative.");
-
-                    _radius = value;
-                }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public Handle(int index)
-                :base(index)
-            {
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="index"></param>
-            /// <param name="radius"></param>
-            public Handle(int index, double radius)
-                :base(index)
-            {
-                Radius = radius;
-            }
+            foreach (var h in Handles)
+                if (!h.Skip) bodies[h].ApplyMove(h.Delta, Weight);
         }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }

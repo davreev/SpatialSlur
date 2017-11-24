@@ -11,7 +11,7 @@ using SpatialSlur.SlurCore;
  * Can also be used to find tangent incircles for adjacent triangles.
  */
  
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class TangentialQuad : ParticleConstraint<H>
+    public class TangentialQuad : Constraint, IConstraint
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -30,7 +30,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex0
+        public H Handle0
         {
             get { return _h0; }
         }
@@ -39,7 +39,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex1
+        public H Handle1
         {
             get { return _h1; }
         }
@@ -48,7 +48,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex2
+        public H Handle2
         {
             get { return _h2; }
         }
@@ -57,7 +57,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex3
+        public H Handle3
         {
             get { return _h3; }
         }
@@ -66,42 +66,28 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public override sealed IEnumerable<H> Handles
-        {
-            get
-            {
-                yield return _h0;
-                yield return _h1;
-                yield return _h2;
-                yield return _h3;
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vertex0"></param>
-        /// <param name="vertex1"></param>
-        /// <param name="vertex2"></param>
-        /// <param name="vertex3"></param>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="i2"></param>
+        /// <param name="i3"></param>
         /// <param name="weight"></param>
-        public TangentialQuad(int vertex0, int vertex1, int vertex2, int vertex3, double weight = 1.0)
+        public TangentialQuad(int i0, int i1, int i2, int i3, double weight = 1.0)
         {
-            _h0.Index = vertex0;
-            _h1.Index = vertex1;
-            _h2.Index = vertex2;
-            _h3.Index = vertex3;
+            _h0.Index = i0;
+            _h1.Index = i1;
+            _h2.Index = i2;
+            _h3.Index = i3;
 
             Weight = weight;
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
             // equalize sum of opposite edges
             Vec3d p0 = particles[_h0].Position;
@@ -138,8 +124,50 @@ namespace SpatialSlur.SlurDynamics
             _h1.Delta = v1 - v0;
             _h2.Delta = v2 - v1;
             _h3.Delta = v3 - v2;
-
-            _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
         }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            bodies[_h0].ApplyMove(_h0.Delta, Weight);
+            bodies[_h1].ApplyMove(_h1.Delta, Weight);
+            bodies[_h2].ApplyMove(_h2.Delta, Weight);
+            bodies[_h3].ApplyMove(_h3.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get
+            {
+                yield return _h0;
+                yield return _h1;
+                yield return _h2;
+                yield return _h3;
+            }
+        }
+
+        #endregion
     }
 }

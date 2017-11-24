@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+using static SpatialSlur.SlurCore.GeometryUtil;
+
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -17,7 +19,7 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class PlanarQuad : ParticleConstraint<H>
+    public class PlanarQuad : Constraint, IConstraint
     {
         private H _h0 = new H();
         private H _h1 = new H();
@@ -28,7 +30,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex0
+        public H Handle0
         {
             get { return _h0; }
         }
@@ -37,7 +39,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex1
+        public H Handle1
         {
             get { return _h1; }
         }
@@ -46,7 +48,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex2
+        public H Handle2
         {
             get { return _h2; }
         }
@@ -55,7 +57,7 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public H Vertex3
+        public H Handle3
         {
             get { return _h3; }
         }
@@ -64,7 +66,70 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public override sealed IEnumerable<H> Handles
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="i2"></param>
+        /// <param name="i3"></param>
+        /// <param name="weight"></param>
+        public PlanarQuad(int i0, int i1, int i2, int i3, double weight = 1.0)
+        {
+            _h0.Index = i0;
+            _h1.Index = i1;
+            _h2.Index = i2;
+            _h3.Index = i3;
+
+            Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="particles"></param>
+        public void Calculate(IReadOnlyList<IBody> particles)
+        {
+            var d = LineLineShortestVector(
+                particles[_h0].Position,
+                particles[_h2].Position,
+                particles[_h1].Position,
+                particles[_h3].Position) * 0.5;
+
+            _h0.Delta = _h2.Delta = d;
+            _h1.Delta = _h3.Delta = -d;
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            bodies[_h0].ApplyMove(_h0.Delta, Weight);
+            bodies[_h1].ApplyMove(_h1.Delta, Weight);
+            bodies[_h2].ApplyMove(_h2.Delta, Weight);
+            bodies[_h3].ApplyMove(_h3.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
         {
             get
             {
@@ -75,41 +140,6 @@ namespace SpatialSlur.SlurDynamics
             }
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vertex0"></param>
-        /// <param name="vertex1"></param>
-        /// <param name="vertex2"></param>
-        /// <param name="vertex3"></param>
-        /// <param name="weight"></param>
-        public PlanarQuad(int vertex0, int vertex1, int vertex2, int vertex3, double weight = 1.0)
-        {
-            _h0.Index = vertex0;
-            _h1.Index = vertex1;
-            _h2.Index = vertex2;
-            _h3.Index = vertex3;
-
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
-        {
-            var d = GeometryUtil.LineLineShortestVector(
-                particles[_h0].Position,
-                particles[_h2].Position,
-                particles[_h1].Position,
-                particles[_h3].Position) * 0.5;
-
-            _h0.Delta = _h2.Delta = d;
-            _h1.Delta = _h3.Delta = -d;
-            _h0.Weight = _h1.Weight = _h2.Weight = _h3.Weight = Weight;
-        }
+        #endregion
     }
 }

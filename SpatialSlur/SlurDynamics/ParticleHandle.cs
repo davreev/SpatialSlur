@@ -34,8 +34,7 @@ namespace SpatialSlur.SlurDynamics
 
         /// <summary></summary>
         public Vec3d Delta;
-        /// <summary></summary>
-        public double Weight;
+
         /// <summary></summary>
         public int Index = -1;
 
@@ -67,28 +66,10 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        double IHandle.Weight
-        {
-            get { return Weight; }
-        }
-
-
         /// <summary></summary>
         Vec3d IHandle.AngleDelta
         {
             get { return Vec3d.Zero; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        double IHandle.AngleWeight
-        {
-            get { return 0.0; }
         }
 
 

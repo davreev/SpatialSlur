@@ -8,7 +8,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -16,16 +16,55 @@ namespace SpatialSlur.SlurDynamics
     /// The first handle represents the central vertex, remaining handles represent neighbours.
     /// </summary>
     [Serializable]
-    public class LaplacianSmooth : MultiParticleConstraint<H>
+    public class LaplacianSmooth : Constraint, IConstraint
     {
+        #region Static
+
+        protected const int DefaultCapacity = 4;
+
+        #endregion
+
+
+        private List<H> _neighbors;
+        private H _center = new H();
+
+
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="capacity"></param>
-        /// <param name="weight"></param>
-        public LaplacianSmooth(double weight = 1.0, int capacity = DefaultCapacity)
-            : base(weight, capacity)
+        public H Handle
         {
+            get { return _center; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<H> Neighbors
+        {
+            get { return _neighbors; }
+        }
+
+
+        /// <summary>
+        /// Need at least 2 neighbors to define projections.
+        /// </summary>
+        private bool IsValid
+        {
+            get { return Neighbors.Count > 1; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="weight"></param>
+        /// <param name="capacity"></param>
+        public LaplacianSmooth(double weight = 1.0, int capacity = DefaultCapacity)
+        {
+            _neighbors = new List<H>(capacity);
+            Weight = weight;
         }
 
 
@@ -34,48 +73,80 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public LaplacianSmooth(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
-            : base(weight, capacity)
+        public LaplacianSmooth(int index, IEnumerable<int> neighbors, double weight = 1.0, int capacity = DefaultCapacity)
+            : this(weight, capacity)
         {
-            Handles.AddRange(indices.Select(i => new H(i)));
+            _center.Index = index;
+            _neighbors.AddRange(neighbors.Select(i => new H(i)));
         }
 
 
+        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
-            int n = Handles.Count;
-
-            // need at least 3 handles to define projection
-            if (n < 3)
-            {
-                foreach (var h in Handles) h.Weight = 0.0;
-                return;
-            }
+            if (!IsValid) return;
 
             Vec3d sum = new Vec3d();
-            double nInv = 1.0 / (n - 1);
 
-            foreach (var h in Handles.Skip(1))
+            foreach (var h in _neighbors)
                 sum += particles[h].Position;
 
-            var h0 = Handles[0];
-            var d = (sum * nInv - particles[h0].Position) * 0.5;
+            double nInv = 1.0 / (_neighbors.Count - 1);
+            var d = (sum * nInv - particles[_center].Position) * 0.5;
 
-            // apply to central particle
-            h0.Delta = d;
-            h0.Weight = Weight;
-
-            // distribute reverse among neighbours
+            // apply to center
+            _center.Delta = d;
             d *= -nInv;
-            foreach (var h in Handles.Skip(1))
-            {
+
+            // distribute reverse among neighbors
+            foreach (var h in _neighbors)
                 h.Delta = d;
-                h.Weight = Weight;
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            if (!IsValid) return;
+
+            foreach (var h in Neighbors)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get
+            {
+                yield return _center;
+                foreach (var h in _neighbors) yield return h;
             }
         }
+
+        #endregion
     }
 }

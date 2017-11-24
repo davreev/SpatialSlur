@@ -85,6 +85,18 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="other"></param>
+        public Body(Body other)
+            :base(other)
+        {
+            _rotation = other._rotation;
+            _angleVelocity = other._angleVelocity;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
         public void ApplyRotate(Vec3d delta, double weight)
@@ -106,7 +118,6 @@ namespace SpatialSlur.SlurDynamics
             if (_rotateWeightSum > 0.0)
                 _angleVelocity += _rotateSum * (timeStep / (_rotateWeightSum * Mass)); // TODO assumes uniform inertia tensor
 
-            //_rotation.Rotate(new AxisAngle3d(_angleVelocity * timeStep));
             _rotation = new Quaterniond(_angleVelocity * timeStep) * _rotation;
 
             _rotateSum.Set(0.0);
@@ -167,6 +178,16 @@ namespace SpatialSlur.SlurDynamics
         double IBody.UpdateRotation(double timeStep, double damping)
         {
             return UpdateRotation(timeStep, damping);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IBody IBody.Duplicate()
+        {
+            return new Body(this);
         }
 
         #endregion

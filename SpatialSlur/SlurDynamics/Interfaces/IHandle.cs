@@ -22,13 +22,7 @@ namespace SpatialSlur.SlurDynamics
 
         /// <summary></summary>
         Vec3d AngleDelta { get; }
-
-        /// <summary></summary>
-        double Weight { get; }
-
-        /// <summary></summary>
-        double AngleWeight { get; }
-
+        
         /// <summary></summary>
         int Index { get; set; }
     }

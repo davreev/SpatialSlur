@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
+using static SpatialSlur.SlurCore.GeometryUtil;
+
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics
+namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
 
@@ -17,9 +19,8 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class PlanarNgon : MultiParticleConstraint<H>
+    public class PlanarNgon : MultiConstraint<H>, IConstraint
     {
-
         /// <summary>
         /// 
         /// </summary>
@@ -44,20 +45,24 @@ namespace SpatialSlur.SlurDynamics
 
 
         /// <summary>
+        /// Need at least 4 neighbors to define projections.
+        /// </summary>
+        private bool IsValid
+        {
+            get { return Handles.Count > 3; }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        public override sealed void Calculate(IReadOnlyList<IBody> particles)
+        public void Calculate(IReadOnlyList<IBody> particles)
         {
+            if (!IsValid) return;
+            
             int n = Handles.Count;
-
-            // tri case
-            if (n < 4)
-            {
-                foreach (var h in Handles) h.Weight = 0.0;
-                return;
-            }
-
+            
             // quad case
             if (n == 4)
             {
@@ -66,7 +71,7 @@ namespace SpatialSlur.SlurDynamics
                 var h2 = Handles[2];
                 var h3 = Handles[3];
 
-                var d = GeometryUtil.LineLineShortestVector(
+                var d = LineLineShortestVector(
                     particles[h0].Position,
                     particles[h2].Position,
                     particles[h1].Position,
@@ -74,17 +79,13 @@ namespace SpatialSlur.SlurDynamics
 
                 h0.Delta = h2.Delta = d;
                 h1.Delta = h3.Delta = -d;
-                h0.Weight = h1.Weight = h2.Weight = h3.Weight = Weight;
                 return;
             }
 
             // general case
             foreach (var h in Handles)
-            {
                 h.Delta = new Vec3d();
-                h.Weight = Weight;
-            }
-
+      
             for (int i = 0; i < n; i++)
             {
                 var h0 = Handles[i];
@@ -92,7 +93,7 @@ namespace SpatialSlur.SlurDynamics
                 var h2 = Handles[(i + 2) % n];
                 var h3 = Handles[(i + 3) % n];
 
-                var d = GeometryUtil.LineLineShortestVector(
+                var d = LineLineShortestVector(
                     particles[h0].Position,
                     particles[h2].Position,
                     particles[h1].Position,
@@ -104,5 +105,42 @@ namespace SpatialSlur.SlurDynamics
                 h3.Delta -= d;
             }
         }
+
+        
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Apply(IReadOnlyList<IBody> bodies)
+        {
+            if (!IsValid) return;
+
+            foreach (var h in Handles)
+                bodies[h].ApplyMove(h.Delta, Weight);
+        }
+
+
+        #region Explicit interface implementations
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IConstraint.AppliesRotation
+        {
+            get { return false; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<IHandle> IConstraint.Handles
+        {
+            get { return Handles; }
+        }
+
+        #endregion
     }
 }
