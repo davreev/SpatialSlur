@@ -16,9 +16,15 @@ namespace SpatialSlur.SlurData
     public class PriorityQueue<K, V>
         where K : IComparable<K>
     {
+        #region Static
+
+        private static (K Key, V Value) _default = default((K, V));
         private const int _minCapacity = 4;
+
+        #endregion
+
         
-        private (K, V)[] _items;
+        private (K Key, V Value)[] _items;
         private int _count;
 
 
@@ -64,7 +70,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Returns the minimum element in the queue.
         /// </summary>
-        public (K, V) Min
+        public (K Key, V Value) Min
         {
             get
             {
@@ -93,12 +99,12 @@ namespace SpatialSlur.SlurData
         /// Removes the minimum element from the queue and returns it.
         /// </summary>
         /// <returns></returns>
-        public (K, V) RemoveMin()
+        public (K Key, V Value) RemoveMin()
         {
             var min = Min;
-            
+      
             _items[0] = _items[--_count]; // move last item to the top
-            _items[_count] = default((K, V)); // avoids object loitering if K or V is a reference type
+            _items[_count] = _default; // avoids object loitering if K or V is a reference type
             Sink(0); // sink to maintain heap invariant
 
             return min;
@@ -195,14 +201,14 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Returns true if item i is less than item j.
+        /// Returns true if item i has priority over item j.
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
         private bool HasPriority(int i, int j)
         {
-            return _items[i].Item1.CompareTo(_items[j].Item1) < 0;
+            return _items[i].Key.CompareTo(_items[j].Key) < 0;
         }
 
 
@@ -210,10 +216,22 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <returns></returns>
-        public (K, V)[] ToArray()
+        public (K Key, V Value)[] ToArray()
         {
             return _items.GetRange(0, _count);
         }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public V[] ToArrayDebug()
+        {
+            return _items.ConvertRange(0, _count, item => item.Value);
+        }
+        */
 
 
         /// <summary>
