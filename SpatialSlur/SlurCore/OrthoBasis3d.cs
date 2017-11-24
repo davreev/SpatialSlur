@@ -7,7 +7,7 @@ using static SpatialSlur.SlurCore.CoreUtil;
  * Notes
  * 
  * Slower to concatenate than quaternions but faster to transform vectors.
- * See detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+ * See more detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
  */
 
 namespace SpatialSlur.SlurCore
@@ -72,23 +72,23 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Creates a relative rotation from r0 to r1.
         /// </summary>
-        /// <param name="r0"></param>
-        /// <param name="r1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static OrthoBasis3d CreateRelative(OrthoBasis3d r0, OrthoBasis3d r1)
+        public static OrthoBasis3d CreateFromTo(OrthoBasis3d from, OrthoBasis3d to)
         {
-            return r1.Apply(r0.Inverse);
+            return to.Apply(from.Inverse);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="r0"></param>
-        /// <param name="r1"></param>
-        public static OrthoBasis3d CreateRelative(ref OrthoBasis3d r0, ref OrthoBasis3d r1)
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        public static OrthoBasis3d CreateFromTo(ref OrthoBasis3d from, ref OrthoBasis3d to)
         {
-            return r1.Apply(r0.Inverse);
+            return to.Apply(from.Inverse);
         }
 
 
@@ -343,6 +343,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public void Set(AxisAngle3d rotation)
         {
+            if (!rotation.IsValid)
+                return;
+
             var axis = rotation.Axis;
             var cosAngle = rotation.CosAngle;
             var sinAngle = rotation.SinAngle;
@@ -371,7 +374,7 @@ namespace SpatialSlur.SlurCore
             _y.Z = c + s;
             _z.Y = c - s;
         }
-
+        
 
         /// <summary>
         /// 
@@ -379,33 +382,41 @@ namespace SpatialSlur.SlurCore
         /// <param name="rotation"></param>
         public void Set(Quaterniond rotation)
         {
-            var x2 = 2.0 * rotation.X;
-            var y2 = 2.0 * rotation.Y;
-            var z2 = 2.0 * rotation.Z;
+            // implementation ref http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+            var d = rotation.SquareLength;
 
-            var wx2 = rotation.W * x2;
-            var wy2 = rotation.W * y2;
-            var wz2 = rotation.W * z2;
+            if(d > 0.0)
+            {
+                var s = 2.0 / d;
 
-            var xx2 = rotation.X * x2;
-            var xy2 = rotation.X * y2;
-            var xz2 = rotation.X * z2;
+                var x2 = rotation.X * s;
+                var y2 = rotation.Y * s;
+                var z2 = rotation.Z * s;
 
-            var yy2 = rotation.Y * y2;
-            var yz2 = rotation.Y * z2;
-            var zz2 = rotation.Z * z2;
+                var wx2 = rotation.W * x2;
+                var wy2 = rotation.W * y2;
+                var wz2 = rotation.W * z2;
 
-            _x.X = 1.0 - yy2 - zz2;
-            _x.Y = xy2 + wz2;
-            _x.Z = xz2 - wy2;
+                var xx2 = rotation.X * x2;
+                var xy2 = rotation.X * y2;
+                var xz2 = rotation.X * z2;
 
-            _y.X = xy2 - wz2;
-            _y.Y = 1.0 - xx2 - zz2;
-            _y.Z = yz2 + wx2;
+                var yy2 = rotation.Y * y2;
+                var yz2 = rotation.Y * z2;
+                var zz2 = rotation.Z * z2;
 
-            _z.X = xz2 + wy2;
-            _z.Y = yz2 - wx2;
-            _z.Z = 1.0 - xx2 - yy2;
+                _x.X = 1.0 - yy2 - zz2;
+                _x.Y = xy2 + wz2;
+                _x.Z = xz2 - wy2;
+
+                _y.X = xy2 - wz2;
+                _y.Y = 1.0 - xx2 - zz2;
+                _y.Z = yz2 + wx2;
+
+                _z.X = xz2 + wy2;
+                _z.Y = yz2 - wx2;
+                _z.Z = 1.0 - xx2 - yy2;
+            }
         }
 
 
@@ -521,6 +532,20 @@ namespace SpatialSlur.SlurCore
         public Matrix3d ToMatrix()
         {
             return new Matrix3d(X, Y, Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out Vec3d x, out Vec3d y, out Vec3d z)
+        {
+            x = X;
+            y = Y;
+            z = Z;
         }
     }
 }

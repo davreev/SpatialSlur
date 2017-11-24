@@ -10,7 +10,10 @@ using System.Threading.Tasks;
  * http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
  * 
  * Faster to concatenate than rotation matrices but slower to transform vectors.
- * See detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+ * See more detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+ * 
+ * Reference for core quaternion routines
+ * http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
  */
 
 namespace SpatialSlur.SlurCore
@@ -122,7 +125,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="r0"></param>
         /// <param name="r1"></param>
         /// <returns></returns>
-        public static Quaterniond CreateRelative(Quaterniond r0, Quaterniond r1)
+        public static Quaterniond CreateFromTo(Quaterniond r0, Quaterniond r1)
         {
             return r1.Apply(r0.Inverse);
         }
@@ -136,10 +139,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Quaterniond CreateFromTo(Vec3d from, Vec3d to)
         {
-            //TODO
+            // TODO
+            // test implementation
             // https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
-            //throw new NotImplementedException();
-            
+         
             if (!from.Unitize() || !to.Unitize())
                 return Identity;
 
@@ -189,7 +192,6 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Second imaginary component = axis.Y * sin(angle /2)
-        /// 
         /// </summary>
         public double Y;
 
@@ -261,7 +263,7 @@ namespace SpatialSlur.SlurCore
         public Quaterniond(OrthoBasis3d rotation)
             : this()
         {
-            Set(rotation);
+            Set(ref rotation);
         }
 
 
@@ -320,11 +322,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsZero(double tolerance = SlurMath.ZeroTolerance)
         {
-            return
-                Math.Abs(X) < tolerance &&
-                Math.Abs(Y) < tolerance &&
-                Math.Abs(Z) < tolerance &&
-                Math.Abs(W) < tolerance;
+            return SquareLength < tolerance;
         }
 
 
@@ -358,12 +356,12 @@ namespace SpatialSlur.SlurCore
         public void Set(AxisAngle3d rotation)
         {
             var axis = rotation.Axis;
-            var s = Math.Sqrt(0.5 - rotation.CosAngle);
+            var s = Math.Sqrt(0.5 - rotation.CosAngle); // half-angle identity
 
             X = axis.X * s;
             Y = axis.Y * s;
             Z = axis.Z * s;
-            W = Math.Sqrt(0.5 + rotation.CosAngle);
+            W = Math.Sqrt(0.5 + rotation.CosAngle); // half-angle identity
         }
 
 
@@ -401,7 +399,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes axis is unit length
+        /// Assumes the given axis is unit length.
         /// </summary>
         /// <param name="axis"></param>
         /// <param name="angle"></param>
@@ -416,7 +414,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Assumes the given rotation is valid.
         /// </summary>
         /// <param name="rotation"></param>
         public void Set(OrthoBasis3d rotation)
@@ -431,8 +429,50 @@ namespace SpatialSlur.SlurCore
         /// <param name="rotation"></param>
         public void Set(ref OrthoBasis3d rotation)
         {
-            // TODO
-            throw new NotImplementedException();
+            // implementation ref http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+            (var x, var y, var z) = rotation;
+            double trace = x.X + y.Y + z.Z;
+            
+            if (trace > 0.0)
+            {
+                double s = Math.Sqrt(trace + 1.0);
+                W = 0.5 * s;
+
+                s = 0.5 / s;
+                X = (y.Z - z.Y) * s;
+                Y = (z.X - x.Z) * s;
+                Z = (x.Y - y.X) * s;
+            }
+            else if (Math.Abs(x.X) > Math.Abs(y.Y) && Math.Abs(x.X) > Math.Abs(z.Z))
+            {
+                double s = Math.Sqrt(1.0 + x.X - y.Y - z.Z);
+                X = 0.5 * s;
+
+                s = 0.5 / s;
+                Y = (x.Y + y.X) * s;
+                Z = (z.X + x.Z) * s;
+                W = (y.Z - z.Y) * s;
+            }
+            else if (Math.Abs(y.Y) > Math.Abs(z.Z))
+            {
+                double s = Math.Sqrt(1.0 - x.X + y.Y - z.Z);
+                Y = 0.5 * s;
+
+                s = 0.5 / s;
+                X = (x.Y + y.X) * s;
+                Z = (y.Z + z.Y) * s;
+                W = (z.X - x.Z) * s;
+            }
+            else
+            {
+                double s = Math.Sqrt(1.0 - x.X - y.Y + z.Z);
+                Z = 0.5 * s;
+
+                s = 0.5 / s;
+                X = (z.X + x.Z) * s;
+                Y = (y.Z + z.Y) * s;
+                W = (x.Y - y.X) * s;
+            }
         }
 
 
@@ -606,32 +646,81 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Assumes this quaternion is unit length.
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <param name="angle"></param>
+        public void ToAxisAngle(out Vec3d axis, out double angle)
+        {
+            var s = 1.0 - W * W; // pythag's identity
+
+            if (s > 0.0)
+            {
+                s = 1.0 / Math.Sqrt(s);
+                axis.X = X * s;
+                axis.Y = Y * s;
+                axis.Z = Z * s;
+                angle = 2.0 * Math.Acos(W);
+                return;
+            }
+
+            axis = Vec3d.UnitZ;
+            angle = 0.0;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         public Matrix3d ToMatrix()
         {
-            var x2 = 2.0 * X;
-            var y2 = 2.0 * Y;
-            var z2 = 2.0 * Z;
+            // implementation ref http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+            var d = SquareLength;
 
-            var wx2 = W * x2;
-            var wy2 = W * y2;
-            var wz2 = W * z2;
+            if (d > 0.0)
+            {
+                var s = 2.0 / d;
 
-            var xx2 = X * x2;
-            var xy2 = X * y2;
-            var xz2 = X * z2;
+                var x2 = X * s;
+                var y2 = Y * s;
+                var z2 = Z * s;
 
-            var yy2 = Y * y2;
-            var yz2 = Y * z2;
-            var zz2 = Z * z2;
+                var wx2 = W * x2;
+                var wy2 = W * y2;
+                var wz2 = W * z2;
 
-            return new Matrix3d(
-                1.0 - yy2 - zz2, xy2 - wz2, xz2 + wy2,
-                xy2 + wz2, 1.0 - xx2 - zz2, yz2 - wx2,
-                xz2 - wy2, yz2 + wx2, 1.0 - xx2 - yy2
-                );
+                var xx2 = X * x2;
+                var xy2 = X * y2;
+                var xz2 = X * z2;
+
+                var yy2 = Y * y2;
+                var yz2 = Y * z2;
+                var zz2 = Z * z2;
+
+                return new Matrix3d(
+                    1.0 - yy2 - zz2, xy2 - wz2, xz2 + wy2,
+                    xy2 + wz2, 1.0 - xx2 - zz2, yz2 - wx2,
+                    xz2 - wy2, yz2 + wx2, 1.0 - xx2 - yy2
+                    );
+            }
+
+            return new Matrix3d();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out double x, out double y, out double z, out double w)
+        {
+            x = X;
+            y = Y;
+            z = Z;
+            w = W;
         }
     }
 }

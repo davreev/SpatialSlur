@@ -160,7 +160,7 @@ namespace SpatialSlur.SlurCore
         public AxisAngle3d(OrthoBasis3d rotation)
             : this()
         {
-            Set(rotation);
+            Set(ref rotation);
         }
 
 
@@ -223,13 +223,9 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                return new AxisAngle3d()
-                {
-                    _axis = _axis,
-                    _angle = -_angle,
-                    _cosAngle = _cosAngle,
-                    _sinAngle = -_sinAngle
-                };
+                var r = this;
+                r.Invert();
+                return r;
             }
         }
 
@@ -256,14 +252,10 @@ namespace SpatialSlur.SlurCore
                 d = Math.Sqrt(d);
                 _axis = rotation / d;
                 Angle = d;
+                return;
             }
-            else
-            {
-                _axis = new Vec3d();
-                _angle = 0.0;
-                _cosAngle = 1.0;
-                _sinAngle = 0.0;
-            }
+
+            SetIdentity();
         }
 
 
@@ -273,8 +265,31 @@ namespace SpatialSlur.SlurCore
         /// <param name="rotation"></param>
         public void Set(Quaterniond rotation)
         {
-            // TODO
-            throw new NotImplementedException();
+            if (!rotation.Unitize())
+                return;
+
+            var c2 = rotation.W;
+            var s2 = 1.0 - c2 * c2; // pythag's identity
+
+            if (s2 > 0.0)
+            {
+                s2 = Math.Sqrt(s2);
+
+                var s2Inv = 1.0 / s2;
+                _axis.X = rotation.X * s2Inv;
+                _axis.Y = rotation.Y * s2Inv;
+                _axis.Z = rotation.Z * s2Inv;
+                
+                _angle = 2.0 * Math.Acos(c2);
+
+                // half-angle identities
+                _cosAngle = 2.0 * c2 * c2 - 1.0;
+                _sinAngle = 2.0 * c2 * s2;
+
+                return;
+            }
+
+            SetIdentity();
         }
 
 
@@ -289,12 +304,24 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+        /// 
         /// </summary>
         /// <param name="rotation"></param>
         public void Set(ref OrthoBasis3d rotation)
         {
-            throw new NotImplementedException();
+            Set(new Quaterniond(rotation));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void SetIdentity()
+        {
+            _axis = Vec3d.UnitZ;
+            _angle = 0.0;
+            _cosAngle = 1.0;
+            _sinAngle = 0.0;
         }
 
 
@@ -317,7 +344,7 @@ namespace SpatialSlur.SlurCore
         {
             return _cosAngle * vector +  _sinAngle * Vec3d.Cross(_axis, vector) + Vec3d.Dot(_axis, vector) * (1.0 - _cosAngle) * _axis;
         }
-
+        
 
         /// <summary>
         /// Applies the given rotation to the axis of this rotation.
@@ -381,6 +408,19 @@ namespace SpatialSlur.SlurCore
                 cxy + sz, _cosAngle + _axis.Y * _axis.Y * t, cyz - sx,
                 cxz - sy, cyz + sx, _cosAngle + _axis.Z * _axis.Z * t
                 );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out Vec3d axis, out double angle)
+        {
+            axis = _axis;
+            angle = _angle;
         }
     }
 }
