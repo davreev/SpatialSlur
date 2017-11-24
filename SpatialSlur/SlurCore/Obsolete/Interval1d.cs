@@ -12,15 +12,16 @@ namespace SpatialSlur.SlurCore
     /// Represents a double precision interval.
     /// https://en.wikipedia.org/wiki/Interval_(mathematics)
     /// </summary>
+    [Obsolete("Use Intervald instead")]
     [Serializable]
     public partial struct Interval1d
     {
         #region Static
         
         /// <summary></summary>
-        public static readonly Interval1d Zero = new Interval1d();
+        public static readonly Intervald Zero = new Intervald();
         /// <summary></summary>
-        public static readonly Interval1d Unit = new Interval1d(0.0, 1.0);
+        public static readonly Intervald Unit = new Intervald(0.0, 1.0);
 
 
         /// <summary>
@@ -543,6 +544,19 @@ namespace SpatialSlur.SlurCore
         public void MakeDecreasing()
         {
             if (IsIncreasing) Reverse();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out double a, out double b)
+        {
+            a = A;
+            b = B;
         }
     }
 }

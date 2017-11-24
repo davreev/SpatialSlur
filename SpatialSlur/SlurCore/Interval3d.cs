@@ -107,9 +107,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d Remap(Vec3d point, Interval3d from, Interval3d to)
         {
-            point.X = Interval1d.Remap(point.X, from.X, to.X);
-            point.Y = Interval1d.Remap(point.Y, from.Y, to.Y);
-            point.Y = Interval1d.Remap(point.Z, from.Z, to.Z);
+            point.X = Intervald.Remap(point.X, from.X, to.X);
+            point.Y = Intervald.Remap(point.Y, from.Y, to.Y);
+            point.Y = Intervald.Remap(point.Z, from.Z, to.Z);
             return point;
         }
 
@@ -122,9 +122,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Interval3d Intersect(Interval3d d0, Interval3d d1)
         {
-            d0.X = Interval1d.Intersect(d0.X, d1.X);
-            d0.Y = Interval1d.Intersect(d0.Y, d1.Y);
-            d0.Z = Interval1d.Intersect(d0.Z, d1.Z);
+            d0.X = Intervald.Intersect(d0.X, d1.X);
+            d0.Y = Intervald.Intersect(d0.Y, d1.Y);
+            d0.Z = Intervald.Intersect(d0.Z, d1.Z);
             return d0;
         }
 
@@ -137,9 +137,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Interval3d Union(Interval3d a, Interval3d b)
         {
-            a.X = Interval1d.Union(a.X, b.X);
-            a.Y = Interval1d.Union(a.Y, b.Y);
-            a.Z = Interval1d.Union(a.Z, b.Z);
+            a.X = Intervald.Union(a.X, b.X);
+            a.Y = Intervald.Union(a.Y, b.Y);
+            a.Z = Intervald.Union(a.Z, b.Z);
             return a;
         }
 
@@ -151,18 +151,18 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static implicit operator Interval3d(Interval2d d)
         {
-            return new Interval3d(d.X, d.Y, new Interval1d());
+            return new Interval3d(d.X, d.Y, new Intervald());
         }
 
         #endregion
 
 
         /// <summary></summary>
-        public Interval1d X;
+        public Intervald X;
         /// <summary></summary>
-        public Interval1d Y;
+        public Intervald Y;
         /// <summary></summary>
-        public Interval1d Z;
+        public Intervald Z;
 
 
         /// <summary>
@@ -171,11 +171,11 @@ namespace SpatialSlur.SlurCore
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public Interval3d(Interval1d x, Interval1d y, Interval1d z)
+        public Interval3d(Intervald x, Intervald y, Intervald z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
 
@@ -185,9 +185,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="ab"></param>
         public Interval3d(Vec3d ab)
         {
-            X = new Interval1d(ab.X);
-            Y = new Interval1d(ab.Y);
-            Z = new Interval1d(ab.Z);
+            X = new Intervald(ab.X);
+            Y = new Intervald(ab.Y);
+            Z = new Intervald(ab.Z);
         }
         
 
@@ -198,9 +198,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="b"></param>
         public Interval3d(Vec3d a, Vec3d b)
         {
-            X = new Interval1d(a.X, b.X);
-            Y = new Interval1d(a.Y, b.Y);
-            Z = new Interval1d(a.Z, b.Z);
+            X = new Intervald(a.X, b.X);
+            Y = new Intervald(a.Y, b.Y);
+            Z = new Intervald(a.Z, b.Z);
         }
 
 
@@ -224,9 +224,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="offsetZ"></param>
         public Interval3d(Vec3d center, double offsetX, double offsetY, double offsetZ)
         {
-            X = new Interval1d(center.X - offsetX, center.X + offsetX);
-            Y = new Interval1d(center.Y - offsetY, center.Y + offsetY);
-            Z = new Interval1d(center.Z - offsetZ, center.Z + offsetZ);
+            X = new Intervald(center.X - offsetX, center.X + offsetX);
+            Y = new Intervald(center.Y - offsetY, center.Y + offsetY);
+            Z = new Intervald(center.Z - offsetZ, center.Z + offsetZ);
         }
 
 
@@ -241,9 +241,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="z1"></param>
         public Interval3d(double x0, double x1, double y0, double y1, double z0, double z1)
         {
-            X = new Interval1d(x0, x1);
-            Y = new Interval1d(y0, y1);
-            Z = new Interval1d(z0, z1);
+            X = new Intervald(x0, x1);
+            Y = new Intervald(y0, y1);
+            Z = new Intervald(z0, z1);
         }
 
 
@@ -255,9 +255,9 @@ namespace SpatialSlur.SlurCore
             : this()
         {
             var p = points.First();
-            X = new Interval1d(p.X);
-            Y = new Interval1d(p.Y);
-            Z = new Interval1d(p.Z);
+            X = new Intervald(p.X);
+            Y = new Intervald(p.Y);
+            Z = new Intervald(p.Z);
 
             Include(points.Skip(1));
         }
@@ -333,7 +333,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public (Interval1d, Interval1d, Interval1d) Components
+        public (Intervald, Intervald, Intervald) Components
         {
             get { return (X, Y, Z); }
         }
@@ -577,6 +577,20 @@ namespace SpatialSlur.SlurCore
             X.MakeDecreasing();
             Y.MakeDecreasing();
             Z.MakeDecreasing();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out Intervald x, out Intervald y, out Intervald z)
+        {
+            x = X;
+            y = Y;
+            z = Z;
         }
     }
 }

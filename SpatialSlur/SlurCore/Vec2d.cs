@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurCore
     [Serializable]
     public partial struct Vec2d
     {
-#region Static
+        #region Static
 
         /// <summary></summary>
         public static readonly Vec2d Zero = new Vec2d();
@@ -23,6 +23,16 @@ namespace SpatialSlur.SlurCore
         public static readonly Vec2d UnitX = new Vec2d(1.0, 0.0);
         /// <summary></summary>
         public static readonly Vec2d UnitY = new Vec2d(0.0, 1.0);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator string(Vec2d vector)
+        {
+            return vector.ToString();
+        }
 
 
         /// <summary>
@@ -453,15 +463,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        public (double, double) Components
-        {
-            get { return (X, Y); }
-        }
-
-
-        /// <summary>
         /// Returns the sum of components.
         /// </summary>
         public double ComponentSum
@@ -526,9 +527,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsZero(double tolerance = SlurMath.ZeroTolerance)
         {
-            return 
-                Math.Abs(X) < tolerance && 
-                Math.Abs(Y) < tolerance;
+            return SquareLength < tolerance;
         }
 
 
@@ -547,7 +546,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("({0},{1})", X, Y);
+            return $"({X}, {Y})";
         }
 
 
@@ -568,8 +567,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         public void Set(double x, double y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
 
@@ -751,6 +750,19 @@ namespace SpatialSlur.SlurCore
         {
             result[0] = X;
             result[1] = Y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out double x, out double y)
+        {
+            x = X;
+            y = Y;
         }
     }
 }

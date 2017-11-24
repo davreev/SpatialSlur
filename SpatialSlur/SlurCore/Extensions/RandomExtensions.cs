@@ -20,9 +20,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="random"></param>
         /// <returns></returns>
-        public static Interval1d NextInterval(this Random random)
+        public static Intervald NextInterval(this Random random)
         {
-            return new Interval1d(random.NextDouble(), random.NextDouble());
+            return new Intervald(random.NextDouble(), random.NextDouble());
         }
 
 
@@ -57,7 +57,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="random"></param>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static Vec2d NextVec2d(this Random random, Interval1d interval)
+        public static Vec2d NextVec2d(this Random random, Intervald interval)
         {
             return new Vec2d(
                 interval.Evaluate(random.NextDouble()),
@@ -111,7 +111,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="random"></param>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static Vec3d NextVec3d(this Random random, Interval1d interval)
+        public static Vec3d NextVec3d(this Random random, Intervald interval)
         {
             return new Vec3d(
                 interval.Evaluate(random.NextDouble()),

@@ -4,33 +4,23 @@ using System.Linq;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents a double precision numerical domain.
+    /// Represents a double precision interval.
+    /// https://en.wikipedia.org/wiki/Interval_(mathematics)
     /// </summary>
-    [Obsolete("Renamed to Interval1d")]
     [Serializable]
-    public struct Domain1d
+    public partial struct Intervald
     {
         #region Static
         
         /// <summary></summary>
-        public static readonly Domain1d Zero = new Domain1d();
+        public static readonly Intervald Zero = new Intervald();
         /// <summary></summary>
-        public static readonly Domain1d Unit = new Domain1d(0.0, 1.0);
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="domain"></param>
-        public static implicit operator Intervald(Domain1d domain)
-        {
-            return new Intervald(domain.T0, domain.T1);
-        }
+        public static readonly Intervald Unit = new Intervald(0.0, 1.0);
 
 
         /// <summary>
@@ -39,7 +29,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain1d operator +(Domain1d d, double t)
+        public static Intervald operator +(Intervald d, double t)
         {
             d.Translate(t);
             return d;
@@ -52,7 +42,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain1d operator -(Domain1d d, double t)
+        public static Intervald operator -(Intervald d, double t)
         {
             d.Translate(-t);
             return d;
@@ -65,7 +55,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain1d operator *(Domain1d d, double t)
+        public static Intervald operator *(Intervald d, double t)
         {
             d.Scale(t);
             return d;
@@ -78,7 +68,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         /// <param name="d"></param>
         /// <returns></returns>
-        public static Domain1d operator *(double t, Domain1d d)
+        public static Intervald operator *(double t, Intervald d)
         {
             d.Scale(t);
             return d;
@@ -91,7 +81,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Domain1d operator /(Domain1d d, double t)
+        public static Intervald operator /(Intervald d, double t)
         {
             d.Scale(1.0 / t);
             return d;
@@ -105,13 +95,14 @@ namespace SpatialSlur.SlurCore
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        public static double Remap(double t, Domain1d from, Domain1d to)
+        public static double Remap(double t, Intervald from, Intervald to)
         {
             if (!from.IsValid) 
-                throw new InvalidOperationException("Can't remap from an invalid domain");
+                throw new InvalidOperationException("Can't remap from an invalid interval");
 
-            return SlurMath.Remap(t, from.T0, from.T1, to.T0, to.T1);
+            return SlurMath.Remap(t, from.A, from.B, to.A, to.B);
         }
+
 
         /// <summary>
         /// Returns the union of a and b.
@@ -119,10 +110,10 @@ namespace SpatialSlur.SlurCore
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain1d Union(Domain1d a, Domain1d b)
+        public static Intervald Union(Intervald a, Intervald b)
         {
-            a.Include(b.T0);
-            a.Include(b.T1);
+            a.Include(b.A);
+            a.Include(b.B);
             return a;
         }
 
@@ -133,7 +124,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain1d Intersect(Domain1d a, Domain1d b)
+        public static Intervald Intersect(Intervald a, Intervald b)
         {
             throw new NotImplementedException();
         }
@@ -142,10 +133,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Returns the region of a that is not in b.
         /// </summary>
-        /// <param name="d0"></param>
-        /// <param name="d1"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         /// <returns></returns>
-        public static Domain1d Difference(Domain1d d0, Domain1d d1)
+        public static Intervald Difference(Intervald a, Intervald b)
         {
             throw new NotImplementedException();
         }
@@ -154,30 +145,30 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public double T0;
+        public double A;
         /// <summary></summary>
-        public double T1;
+        public double B;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
-        public Domain1d(double t)
+        /// <param name="ab"></param>
+        public Intervald(double ab)
         {
-            T0 = T1 = t;
+            A = B = ab;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public Domain1d(double t0, double t1)
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        public Intervald(double a, double b)
         {
-            T0 = t0;
-            T1 = t1;
+            this.A = a;
+            this.B = b;
         }
 
 
@@ -185,48 +176,58 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="values"></param>
-        public Domain1d(IEnumerable<double> values)
+        public Intervald(IEnumerable<double> values)
             : this()
         {
-            T0 = T1 = values.First();
-            Include(values.Skip(1), ref T0, ref T1);
+            A = B = values.First();
+            Include(values.Skip(1), ref A, ref B);
         }
 
 
         /// <summary>
-        /// Returns true if t1 is greater than t0.
+        /// Returns true if A is greater than B.
         /// </summary>
         public bool IsIncreasing
         {
-            get { return T1 > T0; }
+            get { return B > A; }
         }
 
 
 
         /// <summary>
-        /// Returns true if t1 is less than t0
+        /// Returns true if A is less than B.
         /// </summary>
         public bool IsDecreasing
         {
-            get { return T1 < T0; }
-        }
-
-
-        /// <summary>
-        /// Returns true if t0 equals t1.
-        /// </summary>
-        public bool IsValid
-        {
-            get { return T0 != T1; }
+            get { return B < A; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public double Span
+        /// <returns></returns>
+        public int Orientation
         {
-            get { return T1 - T0; }
+            get { return Math.Sign(B - A); }
+        }
+
+
+        /// <summary>
+        /// Returns true if A equals B.
+        /// </summary>
+        public bool IsValid
+        {
+            get { return A != B; }
+        }
+
+
+        /// <summary>
+        /// Defined as B - A
+        /// </summary>
+        public double Length
+        {
+            get { return B - A; }
         }
 
 
@@ -235,7 +236,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public double Mid
         {
-            get { return (T0 + T1) * 0.5; }
+            get { return (A + B) * 0.5; }
         }
 
 
@@ -244,7 +245,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public double Min
         {
-            get { return Math.Min(T0, T1); }
+            get { return Math.Min(A, B); }
         }
 
 
@@ -253,7 +254,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public double Max
         {
-            get { return Math.Max(T0, T1); }
+            get { return Math.Max(A, B); }
         }
 
 
@@ -263,29 +264,29 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("{0} to {1}", T0, T1);
+            return String.Format("{0} to {1}", A, B);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
-        public void Set(double t)
+        /// <param name="ab"></param>
+        public void Set(double ab)
         {
-            T0 = T1 = t;
+            A = B = ab;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
-        public void Set(double t0, double t1)
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        public void Set(double a, double b)
         {
-            T0 = t0;
-            T1 = t1;
+            this.A = a;
+            this.B = b;
         }
 
 
@@ -295,9 +296,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Domain1d other, double tolerance = SlurMath.ZeroTolerance)
+        public bool ApproxEquals(Intervald other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return Math.Abs(other.T0 - T0) < tolerance && Math.Abs(other.T1 - T1) < tolerance;
+            return Math.Abs(other.A - A) < tolerance && Math.Abs(other.B - B) < tolerance;
         }
 
 
@@ -307,7 +308,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         public double Evaluate(double t)
         {
-            return SlurMath.Lerp(T0, T1, t);
+            return SlurMath.Lerp(A, B, t);
         }
 
 
@@ -315,11 +316,10 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="t"></param>
-        /// <exception cref="DivideByZeroException">
-        /// thrown if the domain is invalid </exception>
+        /// <returns></returns>
         public double Normalize(double t)
         {
-            return SlurMath.Normalize(t, T0, T1);
+            return SlurMath.Normalize(t, A, B);
         }
 
 
@@ -331,9 +331,9 @@ namespace SpatialSlur.SlurCore
         public double Clamp(double t)
         {
             if (IsDecreasing)
-                return SlurMath.Clamp(t, T1, T0);
+                return SlurMath.Clamp(t, B, A);
             else
-                return SlurMath.Clamp(t, T0, T1);
+                return SlurMath.Clamp(t, A, B);
         }
 
 
@@ -344,7 +344,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double Nearest(double t)
         {
-            return SlurMath.Nearest(t, T0, T1);
+            return SlurMath.Nearest(t, A, B);
         }
 
 
@@ -355,7 +355,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double Ramp(double t)
         {
-            return SlurMath.Ramp(t, T0, T1);
+            return SlurMath.Ramp(t, A, B);
         }
 
 
@@ -366,7 +366,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double SmoothStep(double t)
         {
-            return SlurMath.SmoothStep(t, T0, T1);
+            return SlurMath.SmoothStep(t, A, B);
         }
 
 
@@ -377,7 +377,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double SmootherStep(double t)
         {
-            return SlurMath.SmootherStep(t, T0, T1);
+            return SlurMath.SmootherStep(t, A, B);
         }
 
 
@@ -388,7 +388,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public double Wrap(double t)
         {
-            return SlurMath.Wrap(t, T0, T1);
+            return SlurMath.Wrap(t, A, B);
         }
 
 
@@ -400,9 +400,9 @@ namespace SpatialSlur.SlurCore
         public bool Contains(double t)
         {
             if (IsDecreasing)
-                return SlurMath.Contains(t, T1, T0);
+                return SlurMath.Contains(t, B, A);
             else
-                return SlurMath.Contains(t, T0, T1);
+                return SlurMath.Contains(t, A, B);
         }
 
 
@@ -414,9 +414,9 @@ namespace SpatialSlur.SlurCore
         public bool ContainsIncl(double t)
         {
             if (IsDecreasing)
-                return SlurMath.ContainsIncl(t, T1, T0);
+                return SlurMath.ContainsIncl(t, B, A);
             else
-                return SlurMath.ContainsIncl(t, T0, T1);
+                return SlurMath.ContainsIncl(t, A, B);
         }
 
 
@@ -426,8 +426,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         public void Scale(double t)
         {
-            T0 *= t;
-            T1 *= t;
+            A *= t;
+            B *= t;
         }
 
 
@@ -437,57 +437,57 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         public void Translate(double t)
         {
-            T0 += t;
-            T1 += t;
+            A += t;
+            B += t;
         }
 
 
         /// <summary>
-        /// Epands the domain on both sides by the given value
+        /// Expands the interval on both sides by the given value
         /// </summary>
         /// <param name="t"></param>
         public void Expand(double t)
         {
             if (IsDecreasing)
             {
-                T0 += t;
-                T1 -= t;
+                A += t;
+                B -= t;
             }
             else
             {
-                T0 -= t;
-                T1 += t;
+                A -= t;
+                B += t;
             }
         }
 
 
         /// <summary>
-        /// Expands the domain to include the given value.
+        /// Expands the interval to include the given value.
         /// </summary>
         /// <param name="t"></param>
         public void Include(double t)
         {
             if (IsDecreasing)
             {
-                if (t > T0) T0 = t;
-                else if (t < T1) T1 = t;
+                if (t > A) A = t;
+                else if (t < B) B = t;
             }
             else
             {
-                if (t > T1) T1 = t;
-                else if (t < T0) T0 = t;
+                if (t > B) B = t;
+                else if (t < A) A = t;
             }
         }
 
 
         /// <summary>
-        /// Expands this domain to include another
+        /// Expands this interval to include another
         /// </summary>
         /// <param name="other"></param>
-        public void Include(Domain1d other)
+        public void Include(Intervald other)
         {
-            Include(other.T0);
-            Include(other.T1);
+            Include(other.A);
+            Include(other.B);
         }
 
 
@@ -498,9 +498,9 @@ namespace SpatialSlur.SlurCore
         public void Include(IEnumerable<double> values)
         {
             if (IsDecreasing)
-                Include(values, ref T1, ref T0);
+                Include(values, ref B, ref A);
             else
-                Include(values, ref T0, ref T1);
+                Include(values, ref A, ref B);
         }
 
 
@@ -522,9 +522,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public void Reverse()
         {
-            double t = T0;
-            T0 = T1;
-            T1 = t;
+            double t = A;
+            A = B;
+            B = t;
         }
 
 
@@ -543,6 +543,19 @@ namespace SpatialSlur.SlurCore
         public void MakeDecreasing()
         {
             if (IsIncreasing) Reverse();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out double a, out double b)
+        {
+            a = A;
+            b = B;
         }
     }
 }

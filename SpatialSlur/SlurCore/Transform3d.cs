@@ -79,24 +79,24 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Creates relative transformation from t0 to t1.
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static Transform3d CreateRelative(Transform3d t0, Transform3d t1)
+        public static Transform3d CreateFromTo(Transform3d from, Transform3d to)
         {
-            return t1.Apply(t0.Inverse);
+            return to.Apply(from.Inverse);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static Transform3d CreateRelative(ref Transform3d t0, ref Transform3d t1)
+        public static Transform3d CreateFromTo(ref Transform3d from, ref Transform3d to)
         {
-            return t1.Apply(t0.Inverse);
+            return to.Apply(from.Inverse);
         }
 
 
@@ -267,6 +267,20 @@ namespace SpatialSlur.SlurCore
                 rx.Z, ry.Z, rz.Z, Translation.Z,
                 0.0, 0.0, 0.0, 1.0
                 );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out Vec3d scale, out OrthoBasis3d rotation, out Vec3d translation)
+        {
+            scale = Scale;
+            rotation = Rotation;
+            translation = Translation;
         }
     }
 }

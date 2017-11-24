@@ -75,7 +75,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <returns></returns>
-        public static Orient3d CreateFrom3Points(Vec3d p0, Vec3d p1, Vec3d p2)
+        public static Orient3d CreateFromPoints(Vec3d p0, Vec3d p1, Vec3d p2)
         {
             return new Orient3d(p0, p1 - p0, p2 - p1);
         }
@@ -84,24 +84,24 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Creates a relative transformation from t0 to t1.
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static Orient3d CreateRelative(Orient3d t0, Orient3d t1)
+        public static Orient3d CreateFromTo(Orient3d from, Orient3d to)
         {
-            return t1.Apply(t0.Inverse);
+            return to.Apply(from.Inverse);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static Orient3d CreateRelative(ref Orient3d t0, ref Orient3d t1)
+        public static Orient3d CreateFromTo(ref Orient3d from, ref Orient3d to)
         {
-            return t1.Apply(t0.Inverse);
+            return to.Apply(from.Inverse);
         }
         
 
@@ -284,6 +284,19 @@ namespace SpatialSlur.SlurCore
                 rx.Z, ry.Z, rz.Z, Translation.Z,
                 0.0, 0.0, 0.0, 1.0
                 );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out OrthoBasis3d rotation, out Vec3d translation)
+        {
+            rotation = Rotation;
+            translation = Translation;
         }
     }
 }

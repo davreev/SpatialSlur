@@ -51,12 +51,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Creates a relative rotation from t0 to t1.
         /// </summary>
-        /// <param name="r0"></param>
-        /// <param name="r1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static OrthoBasis2d CreateRelative(OrthoBasis2d r0, OrthoBasis2d r1)
+        public static OrthoBasis2d CreateFromTo(OrthoBasis2d from, OrthoBasis2d to)
         {
-            return r1.Apply(r0.Inverse);
+            return to.Apply(from.Inverse);
         }
 
         #endregion
@@ -204,6 +204,19 @@ namespace SpatialSlur.SlurCore
         public Matrix2d ToMatrix()
         {
             return new Matrix2d(X, Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out Vec2d x, out Vec2d y)
+        {
+            x = X;
+            y = Y;
         }
     }
 }

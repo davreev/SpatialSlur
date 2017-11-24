@@ -24,16 +24,14 @@ namespace SpatialSlur.SlurCore
         public static readonly Vec3i UnitZ = new Vec3i(0, 0, 1);
 
 
-        /*
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="tuple"></param>
-        public static implicit operator Vec3i((int, int, int) tuple)
+        /// <param name="vector"></param>
+        public static implicit operator string(Vec3i vector)
         {
-            return new Vec3i(tuple.Item1, tuple.Item2, tuple.Item3);
+            return vector.ToString();
         }
-        */
 
 
         /// <summary>
@@ -249,9 +247,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="z"></param>
         public Vec3i(int x, int y, int z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
 
@@ -281,15 +279,6 @@ namespace SpatialSlur.SlurCore
         public int ManhattanLength
         {
             get { return Math.Abs(X) + Math.Abs(Y) + Math.Abs(Z); }
-        }
-        
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        public (int, int, int) Components
-        {
-            get { return (X, Y, Z); }
         }
 
 
@@ -347,7 +336,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("({0},{1},{2})", X, Y, Z);
+            return $"({X}, {Y}, {Z})";
         }
 
 
@@ -369,9 +358,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="z"></param>
         public void Set(int x, int y, int z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
 
@@ -468,6 +457,20 @@ namespace SpatialSlur.SlurCore
             result[0] = X;
             result[1] = Y;
             result[2] = Z;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out int x, out int y, out int z)
+        {
+            x = X;
+            y = Y;
+            z = Z;
         }
     }
 }

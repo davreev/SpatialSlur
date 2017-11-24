@@ -22,16 +22,14 @@ namespace SpatialSlur.SlurCore
         public static readonly Vec2i UnitY = new Vec2i(0, 1);
 
 
-        /*
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="tuple"></param>
-        public static implicit operator Vec2i((int, int) tuple)
+        /// <param name="vector"></param>
+        public static implicit operator string(Vec2i vector)
         {
-            return new Vec2i(tuple.Item1, tuple.Item2);
+            return vector.ToString();
         }
-        */
 
 
         /// <summary>
@@ -223,8 +221,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         public Vec2i(int x, int y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
 
@@ -254,15 +252,6 @@ namespace SpatialSlur.SlurCore
         public int ManhattanLength
         {
             get { return Math.Abs(X) + Math.Abs(Y); }
-        }
-
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        public (int, int) Components
-        {
-            get { return (X, Y); }
         }
 
 
@@ -338,7 +327,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("({0},{1})", X, Y);
+            return $"({X}, {Y})";
         }
 
 
@@ -359,8 +348,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="y"></param>
         public void Set(int x, int y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
 
@@ -454,6 +443,19 @@ namespace SpatialSlur.SlurCore
         {
             result[0] = X;
             result[1] = Y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out int x, out int y)
+        {
+            x = X;
+            y = Y;
         }
     }
 }

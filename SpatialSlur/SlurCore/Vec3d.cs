@@ -32,6 +32,16 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="vector"></param>
+        public static implicit operator string(Vec3d vector)
+        {
+            return vector.ToString();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
         /// <returns></returns>
         public static implicit operator Vec3d(Vec2d vector)
         {
@@ -494,16 +504,7 @@ namespace SpatialSlur.SlurCore
         {
             get { return Math.Abs(X) + Math.Abs(Y) + Math.Abs(Z); }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public (double, double, double) Components
-        {
-            get { return (X, Y, Z); }
-        }
-
+        
 
         /// <summary>
         /// Returns the sum of components.
@@ -552,10 +553,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public bool IsZero(double tolerance = SlurMath.ZeroTolerance)
         {
-            return 
-                Math.Abs(X) < tolerance && 
-                Math.Abs(Y) < tolerance && 
-                Math.Abs(Z) < tolerance;
+            return SquareLength < tolerance;
         }
 
 
@@ -574,7 +572,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("({0},{1},{2})", X, Y, Z);
+            return $"({X}, {Y}, {Z})";
         }
 
 
@@ -596,9 +594,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="z"></param>
         public void Set(double x, double y, double z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
 
@@ -609,7 +607,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Vec3d ToSpherical()
         {
-            double r = this.Length;
+            double r = Length;
             return new Vec3d(r, Math.Atan(Y / X), Math.Acos(Z / r));
         }
 
@@ -830,6 +828,20 @@ namespace SpatialSlur.SlurCore
             result[0] = X;
             result[1] = Y;
             result[2] = Z;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out double x, out double y, out double z)
+        {
+            x = X;
+            y = Y;
+            z = Z;
         }
     }
 }

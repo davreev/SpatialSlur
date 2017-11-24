@@ -62,7 +62,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="p0"></param>
         /// <param name="p1"></param>
-        public static Orient2d CreateFrom2Points(Vec2d p0, Vec2d p1)
+        public static Orient2d CreateFromPoints(Vec2d p0, Vec2d p1)
         {
             return new Orient2d(p0, p1 - p0);
         }
@@ -71,12 +71,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Creates a relative transformation from t0 to t1.
         /// </summary>
-        /// <param name="t0"></param>
-        /// <param name="t1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static Orient2d CreateRelative(Orient2d t0, Orient2d t1)
+        public static Orient2d CreateFromTo(Orient2d from, Orient2d to)
         {
-            return t1.Apply(t0.Inverse);
+            return to.Apply(from.Inverse);
         }
         
 
@@ -217,6 +217,19 @@ namespace SpatialSlur.SlurCore
                 rx.Y, ry.Y, Translation.Y,
                 0.0, 0.0, 1.0
                 );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out OrthoBasis2d rotation, out Vec2d translation)
+        {
+            rotation = Rotation;
+            translation = Translation;
         }
     }
 }

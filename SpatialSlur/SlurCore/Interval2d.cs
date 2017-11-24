@@ -102,8 +102,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec2d Remap(Vec2d point, Interval2d from, Interval2d to)
         {
-            point.X = Interval1d.Remap(point.X, from.X, to.X);
-            point.Y = Interval1d.Remap(point.Y, from.Y, to.Y);
+            point.X = Intervald.Remap(point.X, from.X, to.X);
+            point.Y = Intervald.Remap(point.Y, from.Y, to.Y);
             return point;
         }
 
@@ -116,8 +116,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Interval2d Intersect(Interval2d d0, Interval2d d1)
         {
-            d0.X = Interval1d.Intersect(d0.X, d1.X);
-            d0.Y = Interval1d.Intersect(d0.Y, d1.Y);
+            d0.X = Intervald.Intersect(d0.X, d1.X);
+            d0.Y = Intervald.Intersect(d0.Y, d1.Y);
             return d0;
         }
 
@@ -130,8 +130,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Interval2d Union(Interval2d a, Interval2d b)
         {
-            a.X = Interval1d.Union(a.X, b.X);
-            a.Y = Interval1d.Union(a.Y, b.Y);
+            a.X = Intervald.Union(a.X, b.X);
+            a.Y = Intervald.Union(a.Y, b.Y);
             return a;
         }
 
@@ -150,9 +150,9 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary></summary>
-        public Interval1d X;
+        public Intervald X;
         /// <summary></summary>
-        public Interval1d Y;
+        public Intervald Y;
 
 
         /// <summary>
@@ -160,10 +160,10 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        public Interval2d(Interval1d x, Interval1d y)
+        public Interval2d(Intervald x, Intervald y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
 
@@ -173,8 +173,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="ab"></param>
         public Interval2d(Vec2d ab)
         {
-            X = new Interval1d(ab.X);
-            Y = new Interval1d(ab.Y);
+            X = new Intervald(ab.X);
+            Y = new Intervald(ab.Y);
         }
 
 
@@ -185,8 +185,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="b"></param>
         public Interval2d(Vec2d a, Vec2d b)
         {
-            X = new Interval1d(a.X, b.X);
-            Y = new Interval1d(a.Y, b.Y);
+            X = new Intervald(a.X, b.X);
+            Y = new Intervald(a.Y, b.Y);
         }
 
 
@@ -209,8 +209,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="offsetY"></param>
         public Interval2d(Vec2d center, double offsetX, double offsetY)
         {
-            X = new Interval1d(center.X - offsetX, center.X + offsetX);
-            Y = new Interval1d(center.Y - offsetY, center.Y + offsetY);
+            X = new Intervald(center.X - offsetX, center.X + offsetX);
+            Y = new Intervald(center.Y - offsetY, center.Y + offsetY);
         }
 
 
@@ -223,8 +223,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="y1"></param>
         public Interval2d(double x0, double x1, double y0, double y1)
         {
-            X = new Interval1d(x0, x1);
-            Y = new Interval1d(y0, y1);
+            X = new Intervald(x0, x1);
+            Y = new Intervald(y0, y1);
         }
 
 
@@ -236,8 +236,8 @@ namespace SpatialSlur.SlurCore
             : this()
         {
             var p = points.First();
-            X = new Interval1d(p.X);
-            Y = new Interval1d(p.Y);
+            X = new Intervald(p.X);
+            Y = new Intervald(p.Y);
 
             Include(points.Skip(1));
         }
@@ -311,7 +311,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public (Interval1d, Interval1d) Components
+        public (Intervald, Intervald) Components
         {
             get { return (X, Y); }
         }
@@ -542,6 +542,19 @@ namespace SpatialSlur.SlurCore
         {
             X.MakeDecreasing();
             Y.MakeDecreasing();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out Intervald x, out Intervald y)
+        {
+            x = X;
+            y = Y;
         }
     }
 }
