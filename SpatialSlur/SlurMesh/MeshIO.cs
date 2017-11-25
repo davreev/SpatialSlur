@@ -19,6 +19,329 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     public static class MeshIO
     {
+        #region Nested types
+
+        /// <summary>
+        /// Json serializable representation of a halfedge graph
+        /// </summary>
+        [DataContract]
+        private class HeJsonBuffer
+        {
+            [DataMember(Name = "Vertices", Order = 0)]
+            private int[] _vertexRefs;
+
+            [DataMember(Name = "Halfedges", Order = 1)]
+            private int[][] _hedgeRefs;
+
+            [DataMember(Name = "Faces", Order = 2)]
+            private int[] _faceRefs;
+
+            [DataMember(Name = "VertexAttributes", Order = 3)]
+            private object[][] _vertexAttributes = Array.Empty<object[]>();
+
+            [DataMember(Name = "HalfedgeAttributes", Order = 4)]
+            private object[][] _hedgeAttributes = Array.Empty<object[]>();
+
+            [DataMember(Name = "FaceAttributes", Order = 5)]
+            private object[][] _faceAttributes = Array.Empty<object[]>();
+
+
+            /// <summary>
+            /// Writes the given graph to this buffer.
+            /// </summary>
+            /// <param name="graph"></param>
+            public void WriteFrom<TV, TE>(HeGraphBase<TV, TE> graph, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null)
+                where TV : HeGraphBase<TV, TE>.Vertex
+                where TE : HeGraphBase<TV, TE>.Halfedge
+            {
+                var verts = graph.Vertices;
+                var hedges = graph.Halfedges;
+
+                _vertexRefs = new int[verts.Count];
+                _hedgeRefs = new int[hedges.Count][];
+
+                // write vertex topology
+                for (int i = 0; i < verts.Count; i++)
+                {
+                    var v = verts[i];
+                    _vertexRefs[i] = v.IsUnused ? -1 : v.First;
+                }
+
+                // write halfedge topology
+                for (int i = 0; i < hedges.Count; i++)
+                {
+                    var he = hedges[i];
+
+                    _hedgeRefs[i] = new int[]
+                    {
+                        he.PreviousAtStart,
+                        he.NextAtStart,
+                        he.IsUnused ? -1 : he.Start
+                    };
+                }
+
+                // write vertex attributes
+                if (getVertexAttributes != null)
+                {
+                    _vertexAttributes = new object[verts.Count][];
+
+                    for (int i = 0; i < verts.Count; i++)
+                        _vertexAttributes[i] = getVertexAttributes(verts[i]).ToArray();
+                }
+
+                // write halfedge attributes
+                if (getHedgeAttributes != null)
+                {
+                    _hedgeAttributes = new object[hedges.Count][];
+
+                    for (int i = 0; i < hedges.Count; i++)
+                        _hedgeAttributes[i] = getHedgeAttributes(hedges[i]).ToArray();
+                }
+            }
+
+
+            /// <summary>
+            /// Writes the given mesh to this buffer.
+            /// </summary>
+            /// <param name="graph"></param>
+            public void WriteFrom<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null, Func<TF, IEnumerable<object>> getFaceAttributes = null)
+                where TV : HeMeshBase<TV, TE, TF>.Vertex
+                where TE : HeMeshBase<TV, TE, TF>.Halfedge
+                where TF : HeMeshBase<TV, TE, TF>.Face
+            {
+                var verts = mesh.Vertices;
+                var hedges = mesh.Halfedges;
+                var faces = mesh.Faces;
+
+                _vertexRefs = new int[verts.Count];
+                _hedgeRefs = new int[hedges.Count][];
+                _faceRefs = new int[faces.Count];
+
+                // write vertex topology
+                for (int i = 0; i < verts.Count; i++)
+                {
+                    var v = verts[i];
+                    _vertexRefs[i] = v.IsUnused ? -1 : v.First;
+                }
+
+                // write halfedge topology
+                for (int i = 0; i < hedges.Count; i++)
+                {
+                    var he = hedges[i];
+
+                    _hedgeRefs[i] = new int[]
+                    {
+                         he.PreviousAtStart,
+                         he.NextAtStart,
+                         he.IsUnused ? -1 : he.Start,
+                         he.IsHole ? -1 : he.Face
+                    };
+                }
+
+                // write face topology
+                for (int i = 0; i < faces.Count; i++)
+                {
+                    var f = faces[i];
+                    _faceRefs[i] = f.IsUnused ? -1 : f.First;
+                }
+
+                // write vertex attributes
+                if (getVertexAttributes != null)
+                {
+                    _vertexAttributes = new object[verts.Count][];
+
+                    for (int i = 0; i < verts.Count; i++)
+                        _vertexAttributes[i] = getVertexAttributes(verts[i]).ToArray();
+                }
+
+                // write halfedge attributes
+                if (getHedgeAttributes != null)
+                {
+                    _hedgeAttributes = new object[hedges.Count][];
+
+                    for (int i = 0; i < hedges.Count; i++)
+                        _hedgeAttributes[i] = getHedgeAttributes(hedges[i]).ToArray();
+                }
+
+                // write face attributes
+                if (getFaceAttributes != null)
+                {
+                    _faceAttributes = new object[faces.Count][];
+
+                    for (int i = 0; i < faces.Count; i++)
+                        _faceAttributes[i] = getFaceAttributes(faces[i]).ToArray();
+                }
+            }
+
+
+            /// <summary>
+            /// Reads this buffer to the given graph.
+            /// </summary>
+            /// <param name="graph"></param>
+            public void ReadTo<TV, TE>(HeGraphBase<TV, TE> graph, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null)
+                where TV : HeGraphBase<TV, TE>.Vertex
+                where TE : HeGraphBase<TV, TE>.Halfedge
+            {
+                var verts = graph.Vertices;
+                var hedges = graph.Halfedges;
+
+                int nv = verts.Count;
+                int nhe = hedges.Count;
+
+                // add new vertices
+                for (int i = 0; i < _vertexRefs.Length; i++)
+                    graph.AddVertex();
+
+                // add new halfedges
+                for (int i = 0; i < _hedgeRefs.Length; i++)
+                    graph.AddEdge();
+
+                // link up vertices
+                for (int i = 0; i < _vertexRefs.Length; i++)
+                {
+                    var v = verts[i + nv];
+
+                    var first = _vertexRefs[i];
+                    if (first > -1) v.First = hedges[first + nhe];
+                }
+
+                // link up halfedges
+                for (int i = 0; i < _hedgeRefs.Length; i++)
+                {
+                    var he = hedges[i + nhe];
+                    var refs = _hedgeRefs[i];
+
+                    he.PreviousAtStart = hedges[refs[0] + nhe];
+                    he.NextAtStart = hedges[refs[1] + nhe];
+
+                    var start = refs[2];
+                    if (start > -1) he.Start = verts[start + nhe];
+                }
+
+                // TODO validate topology?
+
+                // set vertex attributes
+                if (setVertexAttributes != null)
+                {
+                    for (int i = 0; i < _vertexAttributes.Length; i++)
+                        setVertexAttributes(verts[i + nv], _vertexAttributes[i]);
+                }
+
+                // set vertex attributes
+                if (setHedgeAttributes != null)
+                {
+                    for (int i = 0; i < _hedgeAttributes.Length; i++)
+                        setHedgeAttributes(hedges[i + nhe], _hedgeAttributes[i]);
+                }
+            }
+
+
+            /// <summary>
+            /// Reads this buffer to the given graph.
+            /// </summary>
+            /// <param name="mesh"></param>
+            public void ReadTo<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null, Action<TF, object[]> setFaceAttributes = null)
+                where TV : HeMeshBase<TV, TE, TF>.Vertex
+                where TE : HeMeshBase<TV, TE, TF>.Halfedge
+                where TF : HeMeshBase<TV, TE, TF>.Face
+            {
+                var verts = mesh.Vertices;
+                var hedges = mesh.Halfedges;
+                var faces = mesh.Faces;
+
+                int nv = verts.Count;
+                int nhe = hedges.Count;
+                int nf = faces.Count;
+
+                // add new vertices
+                for (int i = 0; i < _vertexRefs.Length; i++)
+                    mesh.AddVertex();
+
+                // add new halfedges
+                for (int i = 0; i < _hedgeRefs.Length; i++)
+                    mesh.AddEdge();
+
+                // add new faces
+                for (int i = 0; i < _faceRefs.Length; i++)
+                    mesh.AddFace();
+
+                // link up vertices
+                for (int i = 0; i < _vertexRefs.Length; i++)
+                {
+                    var v = verts[i + nv];
+
+                    var first = _vertexRefs[i];
+                    if (first > -1) v.First = hedges[first + nhe];
+                }
+
+                // link up halfedges
+                for (int i = 0; i < _hedgeRefs.Length; i++)
+                {
+                    var he = hedges[i + nhe];
+                    var refs = _hedgeRefs[i];
+
+                    he.PreviousInFace = hedges[refs[0] + nhe];
+                    he.NextInFace = hedges[refs[1] + nhe];
+
+                    var start = refs[2];
+                    if (start > -1) he.Start = verts[start + nhe];
+
+                    var face = refs[3];
+                    if (face > -1) he.Face = faces[face + nf];
+                }
+
+                // link up faces
+                for (int i = 0; i < _faceRefs.Length; i++)
+                {
+                    var f = faces[i + nf];
+
+                    var first = _faceRefs[i];
+                    if (first > -1) f.First = hedges[first + nhe];
+                }
+
+                // TODO validate topology?
+
+                // set vertex attributes
+                if (setVertexAttributes != null)
+                {
+                    for (int i = 0; i < _vertexAttributes.Length; i++)
+                        setVertexAttributes(verts[i + nv], _vertexAttributes[i]);
+                }
+
+                // set vertex attributes
+                if (setHedgeAttributes != null)
+                {
+                    for (int i = 0; i < _hedgeAttributes.Length; i++)
+                        setHedgeAttributes(hedges[i + nhe], _hedgeAttributes[i]);
+                }
+
+                // set vertex attributes
+                if (setFaceAttributes != null)
+                {
+                    for (int i = 0; i < _faceAttributes.Length; i++)
+                        setFaceAttributes(faces[i + nf], _faceAttributes[i]);
+                }
+            }
+        }
+
+
+        /*
+        /// <summary>
+        /// 
+        /// </summary>
+        private class ObjBuffer
+        {
+            private Vec3d[] _positions;
+            private Vec3d[] _colors;
+            private Vec3d[] _normals;
+            private Vec3d[] _textures;
+            private int[][] _faces;
+        }
+        */
+
+        #endregion
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -372,630 +695,5 @@ namespace SpatialSlur.SlurMesh
             var buffer = CoreIO.DeserializeJson<HeJsonBuffer>(path);
             buffer.ReadTo(mesh, setVertexAttributes, setHedgeAttributes, setFaceAttributes);
         }
-
-
-        /// <summary>
-        /// Json serializable representation of a halfedge graph
-        /// </summary>
-        [DataContract]
-        private class HeJsonBuffer
-        {
-            [DataMember(Name = "Vertices", Order = 0)]
-            private int[] _vertexRefs;
-
-            [DataMember(Name = "Halfedges", Order = 1)]
-            private int[][] _hedgeRefs;
-
-            [DataMember(Name = "Faces", Order = 2)]
-            private int[] _faceRefs;
-
-            [DataMember(Name = "VertexAttributes", Order = 3)]
-            private object[][] _vertexAttributes = Array.Empty<object[]>();
-
-            [DataMember(Name = "HalfedgeAttributes", Order = 4)]
-            private object[][] _hedgeAttributes = Array.Empty<object[]>();
-
-            [DataMember(Name = "FaceAttributes", Order = 5)]
-            private object[][] _faceAttributes = Array.Empty<object[]>();
-
-
-            /// <summary>
-            /// Writes the given graph to this buffer.
-            /// </summary>
-            /// <param name="graph"></param>
-            public void WriteFrom<TV, TE>(HeGraphBase<TV, TE> graph, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null)
-                where TV : HeGraphBase<TV, TE>.Vertex
-                where TE : HeGraphBase<TV, TE>.Halfedge
-            {
-                var verts = graph.Vertices;
-                var hedges = graph.Halfedges;
-
-                _vertexRefs = new int[verts.Count];
-                _hedgeRefs = new int[hedges.Count][];
-
-                // write vertex topology
-                for (int i = 0; i < verts.Count; i++)
-                {
-                    var v = verts[i];
-                    _vertexRefs[i] = v.IsUnused ? -1 : v.First;
-                }
-
-                // write halfedge topology
-                for (int i = 0; i < hedges.Count; i++)
-                {
-                    var he = hedges[i];
-                    
-                    _hedgeRefs[i] = new int[] 
-                    {
-                        he.PreviousAtStart,
-                        he.NextAtStart,
-                        he.IsUnused ? -1 : he.Start
-                    };
-                }
-
-                // write vertex attributes
-                if (getVertexAttributes != null)
-                {
-                    _vertexAttributes = new object[verts.Count][];
-
-                    for (int i = 0; i < verts.Count; i++)
-                        _vertexAttributes[i] = getVertexAttributes(verts[i]).ToArray();
-                }
-
-                // write halfedge attributes
-                if (getHedgeAttributes != null)
-                {
-                    _hedgeAttributes = new object[hedges.Count][];
-
-                    for (int i = 0; i < hedges.Count; i++)
-                        _hedgeAttributes[i] = getHedgeAttributes(hedges[i]).ToArray();
-                }
-            }
-            
-
-            /// <summary>
-            /// Writes the given mesh to this buffer.
-            /// </summary>
-            /// <param name="graph"></param>
-            public void WriteFrom<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null, Func<TF, IEnumerable<object>> getFaceAttributes = null)
-                where TV : HeMeshBase<TV, TE, TF>.Vertex
-                where TE : HeMeshBase<TV, TE, TF>.Halfedge
-                where TF : HeMeshBase<TV, TE, TF>.Face
-            {
-                var verts = mesh.Vertices;
-                var hedges = mesh.Halfedges;
-                var faces = mesh.Faces;
-
-                _vertexRefs = new int[verts.Count];
-                _hedgeRefs = new int[hedges.Count][];
-                _faceRefs = new int[faces.Count];
-
-                // write vertex topology
-                for (int i = 0; i < verts.Count; i++)
-                {
-                    var v = verts[i];
-                    _vertexRefs[i] = v.IsUnused ? -1 : v.First;
-                }
-
-                // write halfedge topology
-                for (int i = 0; i < hedges.Count; i++)
-                {
-                    var he = hedges[i];
-
-                    _hedgeRefs[i] = new int[]
-                    {
-                         he.PreviousAtStart,
-                         he.NextAtStart,
-                         he.IsUnused ? -1 : he.Start,
-                         he.IsHole ? -1 : he.Face
-                    };
-                }
-
-                // write face topology
-                for (int i = 0; i < faces.Count; i++)
-                {
-                    var f = faces[i];
-                    _faceRefs[i] = f.IsUnused ? -1 : f.First;
-                }
-
-                // write vertex attributes
-                if (getVertexAttributes != null)
-                {
-                    _vertexAttributes = new object[verts.Count][];
-
-                    for (int i = 0; i < verts.Count; i++)
-                        _vertexAttributes[i] = getVertexAttributes(verts[i]).ToArray();
-                }
-
-                // write halfedge attributes
-                if (getHedgeAttributes != null)
-                {
-                    _hedgeAttributes = new object[hedges.Count][];
-
-                    for (int i = 0; i < hedges.Count; i++)
-                        _hedgeAttributes[i] = getHedgeAttributes(hedges[i]).ToArray();
-                }
-
-                // write face attributes
-                if (getFaceAttributes != null)
-                {
-                    _faceAttributes = new object[faces.Count][];
-
-                    for (int i = 0; i < faces.Count; i++)
-                        _faceAttributes[i] = getFaceAttributes(faces[i]).ToArray();
-                }
-            }
-            
-
-            /// <summary>
-            /// Reads this buffer to the given graph.
-            /// </summary>
-            /// <param name="graph"></param>
-            public void ReadTo<TV, TE>(HeGraphBase<TV, TE> graph, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null)
-                where TV : HeGraphBase<TV, TE>.Vertex
-                where TE : HeGraphBase<TV, TE>.Halfedge
-            {
-                var verts = graph.Vertices;
-                var hedges = graph.Halfedges;
-
-                int nv = verts.Count;
-                int nhe = hedges.Count;
-
-                // add new vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                    graph.AddVertex();
-
-                // add new halfedges
-                for (int i = 0; i < _hedgeRefs.Length; i++)
-                    graph.AddHalfedges();
-
-                // link up vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                {
-                    var v = verts[i + nv];
-
-                    var first = _vertexRefs[i];
-                    if (first > -1) v.First = hedges[first + nhe];
-                }
-
-                // link up halfedges
-                for (int i = 0; i < _hedgeRefs.Length; i++)
-                {
-                    var he = hedges[i + nhe];
-                    var refs = _hedgeRefs[i];
-
-                    he.PreviousAtStart = hedges[refs[0] + nhe];
-                    he.NextAtStart = hedges[refs[1] + nhe];
-
-                    var start = refs[2];
-                    if (start > -1) he.Start = verts[start + nhe];
-                }
-                
-                // TODO validate topology?
-
-                // set vertex attributes
-                if (setVertexAttributes != null)
-                {
-                    for (int i = 0; i < _vertexAttributes.Length; i++)
-                        setVertexAttributes(verts[i + nv], _vertexAttributes[i]);
-                }
-
-                // set vertex attributes
-                if (setHedgeAttributes != null)
-                {
-                    for (int i = 0; i < _hedgeAttributes.Length; i++)
-                        setHedgeAttributes(hedges[i + nhe], _hedgeAttributes[i]);
-                }
-            }
-
-
-            /// <summary>
-            /// Reads this buffer to the given graph.
-            /// </summary>
-            /// <param name="mesh"></param>
-            public void ReadTo<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null, Action<TF, object[]> setFaceAttributes = null)
-                where TV : HeMeshBase<TV, TE, TF>.Vertex
-                where TE : HeMeshBase<TV, TE, TF>.Halfedge
-                where TF : HeMeshBase<TV, TE, TF>.Face
-            {
-                var verts = mesh.Vertices;
-                var hedges = mesh.Halfedges;
-                var faces = mesh.Faces;
-
-                int nv = verts.Count;
-                int nhe = hedges.Count;
-                int nf = faces.Count;
-
-                // add new vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                    mesh.AddVertex();
-
-                // add new halfedges
-                for (int i = 0; i < _hedgeRefs.Length; i++)
-                    mesh.AddHalfedges();
-
-                // add new faces
-                for (int i = 0; i < _faceRefs.Length; i++)
-                    mesh.AddFace();
-
-                // link up vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                {
-                    var v = verts[i + nv];
-
-                    var first = _vertexRefs[i];
-                    if (first > -1) v.First = hedges[first + nhe];
-                }
-
-                // link up halfedges
-                for (int i = 0; i < _hedgeRefs.Length; i++)
-                {
-                    var he = hedges[i + nhe];
-                    var refs = _hedgeRefs[i];
-
-                    he.PreviousInFace = hedges[refs[0] + nhe];
-                    he.NextInFace = hedges[refs[1] + nhe];
-
-                    var start = refs[2];
-                    if (start > -1) he.Start = verts[start + nhe];
-
-                    var face = refs[3];
-                    if (face > -1) he.Face = faces[face + nf];
-                }
-
-                // link up faces
-                for (int i = 0; i < _faceRefs.Length; i++)
-                {
-                    var f = faces[i + nf];
-
-                    var first = _faceRefs[i];
-                    if (first > -1) f.First = hedges[first + nhe];
-                }
-                
-                // TODO validate topology?
-
-                // set vertex attributes
-                if (setVertexAttributes != null)
-                {
-                    for (int i = 0; i < _vertexAttributes.Length; i++)
-                        setVertexAttributes(verts[i + nv], _vertexAttributes[i]);
-                }
-
-                // set vertex attributes
-                if (setHedgeAttributes != null)
-                {
-                    for (int i = 0; i < _hedgeAttributes.Length; i++)
-                        setHedgeAttributes(hedges[i + nhe], _hedgeAttributes[i]);
-                }
-
-                // set vertex attributes
-                if (setFaceAttributes != null)
-                {
-                    for (int i = 0; i < _faceAttributes.Length; i++)
-                        setFaceAttributes(faces[i + nf], _faceAttributes[i]);
-                }
-            }
-        }
-
-
-        /*
-        /// <summary>
-        /// Json serializable representation of a halfedge graph
-        /// </summary>
-        [DataContract]
-        private class HeGraphJsonBuffer
-        {
-            private const int _hedgeStride = 3; // previous, next, start
-            private const int _edgeStride = _hedgeStride << 1;
-
-            [DataMember(Name = "Vertices", Order = 0)]
-            private int[] _vertexRefs;
-
-            [DataMember(Name = "Halfedges", Order = 1)]
-            private int[] _hedgeRefs;
-
-            [DataMember(Name = "VertexAttributes", Order = 2)]
-            private object[][] _vertexAttributes = Array.Empty<object[]>();
-
-            [DataMember(Name = "HalfedgeAttributes", Order = 3)]
-            private object[][] _hedgeAttributes = Array.Empty<object[]>();
-
-
-            /// <summary>
-            /// Writes the given graph to this buffer.
-            /// </summary>
-            /// <param name="graph"></param>
-            public void WriteFrom<TV, TE>(HeGraph<TV, TE> graph, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null)
-                where TV : HeGraphBase<TV, TE>.Vertex
-                where TE : HeGraphBase<TV, TE>.Halfedge
-            {
-                var verts = graph.Vertices;
-                var hedges = graph.Halfedges;
-
-                _vertexRefs = new int[verts.Count];
-                _hedgeRefs = new int[hedges.Count * _hedgeStride];
-
-                // write vertex topology
-                for (int i = 0; i < verts.Count; i++)
-                {
-                    var v = verts[i];
-                    _vertexRefs[i] = v.IsUnused ? -1 : v.FirstOut;
-                }
-
-                // write halfedge topology
-                for (int i = 0, j = 0; i < hedges.Count; i++, j += _hedgeStride)
-                {
-                    var he = hedges[i];
-                    _hedgeRefs[j] = he.PreviousAtStart;
-                    _hedgeRefs[j + 1] = he.NextAtStart;
-                    _hedgeRefs[j + 2] = he.IsUnused ? -1 : he.Start;
-                }
-
-                // write vertex attributes
-                if (getVertexAttributes != null)
-                {
-                    _vertexAttributes = new object[verts.Count][];
-
-                    for (int i = 0; i < verts.Count; i++)
-                        _vertexAttributes[i] = getVertexAttributes(verts[i]).ToArray();
-                }
-
-                // write halfedge attributes
-                if (getHedgeAttributes != null)
-                {
-                    _hedgeAttributes = new object[hedges.Count][];
-
-                    for (int i = 0; i < hedges.Count; i++)
-                        _hedgeAttributes[i] = getHedgeAttributes(hedges[i]).ToArray();
-                }
-            }
-
-
-            /// <summary>
-            /// Reads this buffer to the given graph.
-            /// </summary>
-            /// <param name="graph"></param>
-            public void ReadTo<TV, TE>(HeGraph<TV, TE> graph, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null)
-                where TV : HeGraphBase<TV, TE>.Vertex
-                where TE : HeGraphBase<TV, TE>.Halfedge
-            {
-                var verts = graph.Vertices;
-                var hedges = graph.Halfedges;
-
-                int nv = verts.Count;
-                int nhe = hedges.Count;
-
-                // add new vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                    graph.AddVertex();
-
-                // add new halfedges
-                for (int i = 0; i < _hedgeRefs.Length; i += _edgeStride)
-                    graph.AddEdge();
-
-                // link up vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                {
-                    var v = verts[i + nv];
-
-                    var first = _vertexRefs[i];
-                    if (first > -1) v.FirstOut = hedges[first + nhe];
-                }
-
-                // link up halfedges
-                for (int i = 0, j = 0; i < _hedgeRefs.Length; i += _hedgeStride, j++)
-                {
-                    var he = hedges[j + nhe];
-                    he.PreviousAtStart = hedges[_hedgeRefs[i] + nhe];
-                    he.NextAtStart = hedges[_hedgeRefs[i + 1] + nhe];
-
-                    var start = _hedgeRefs[i + 2];
-                    if (start > -1) he.Start = verts[start + nhe];
-                }
-
-                // set vertex attributes
-                if(setVertexAttributes != null)
-                {
-                    for(int i  = 0; i < _vertexAttributes.Length; i++)
-                        setVertexAttributes(verts[i + nv], _vertexAttributes[i]);
-                }
-                
-                // set vertex attributes
-                if (setHedgeAttributes != null)
-                {
-                    for (int i = 0; i < _hedgeAttributes.Length; i++)
-                        setHedgeAttributes(hedges[i + nhe], _hedgeAttributes[i]);
-                }
-
-                // TODO validate topology?
-            }
-        }
-
-
-        /// <summary>
-        /// Json serializable representation of a halfedge graph
-        /// </summary>
-        [DataContract]
-        private class HeMeshJsonBuffer
-        {
-            private const int _hedgeStride = 4; // previous, next, start, face
-            private const int _edgeStride = _hedgeStride << 1;
-
-            [DataMember(Name = "Vertices", Order = 0)]
-            private int[] _vertexRefs;
-
-            [DataMember(Name = "Halfedges", Order = 1)]
-            private int[] _hedgeRefs;
-
-            [DataMember(Name = "Faces", Order = 2)]
-            private int[] _faceRefs;
-
-            [DataMember(Name = "VertexAttributes", Order = 3)]
-            private object[][] _vertexAttributes = Array.Empty<object[]>();
-
-            [DataMember(Name = "HalfedgeAttributes", Order = 4)]
-            private object[][] _hedgeAttributes = Array.Empty<object[]>();
-
-            [DataMember(Name = "FaceAttributes", Order = 5)]
-            private object[][] _faceAttributes = Array.Empty<object[]>();
-
-
-            /// <summary>
-            /// Writes the given graph to this buffer.
-            /// </summary>
-            /// <param name="graph"></param>
-            public void WriteFrom<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null, Func<TF, IEnumerable<object>> getFaceAttributes = null)
-                where TV : HeMeshBase<TV, TE, TF>.Vertex
-                where TE : HeMeshBase<TV, TE, TF>.Halfedge
-                where TF : HeMeshBase<TV, TE, TF>.Face
-            {
-                var verts = mesh.Vertices;
-                var hedges = mesh.Halfedges;
-                var faces = mesh.Faces;
-
-                _vertexRefs = new int[verts.Count];
-                _hedgeRefs = new int[hedges.Count * _hedgeStride];
-                _faceRefs = new int[faces.Count];
-
-                // write vertex topology
-                for (int i = 0; i < verts.Count; i++)
-                {
-                    var v = verts[i];
-                    _vertexRefs[i] = v.IsUnused ? -1 : v.FirstOut;
-                }
-
-                // write halfedge topology
-                for (int i = 0, j = 0; i < hedges.Count; i++, j += _hedgeStride)
-                {
-                    var he = hedges[i];
-                    _hedgeRefs[j] = he.PreviousAtStart;
-                    _hedgeRefs[j + 1] = he.NextAtStart;
-                    _hedgeRefs[j + 2] = he.IsUnused ? -1 : he.Start;
-                    _hedgeRefs[j + 3] = he.IsHole ? -1 : he.Face;
-                }
-
-                // write face topology
-                for (int i = 0; i < faces.Count; i++)
-                {
-                    var f = faces[i];
-                    _faceRefs[i] = f.IsUnused ? -1 : f.First;
-                }
-
-                // write vertex attributes
-                if (getVertexAttributes != null)
-                {
-                    _vertexAttributes = new object[verts.Count][];
-
-                    for (int i = 0; i < verts.Count; i++)
-                        _vertexAttributes[i] = getVertexAttributes(verts[i]).ToArray();
-                }
-
-                // write halfedge attributes
-                if (getHedgeAttributes != null)
-                {
-                    _hedgeAttributes = new object[hedges.Count][];
-
-                    for (int i = 0; i < hedges.Count; i++)
-                        _hedgeAttributes[i] = getHedgeAttributes(hedges[i]).ToArray();
-                }
-
-                // write face attributes
-                if (getFaceAttributes != null)
-                {
-                    _faceAttributes = new object[faces.Count][];
-
-                    for (int i = 0; i < faces.Count; i++)
-                        _faceAttributes[i] = getFaceAttributes(faces[i]).ToArray();
-                }
-            }
-
-
-            /// <summary>
-            /// Reads this buffer to the given graph.
-            /// </summary>
-            /// <param name="mesh"></param>
-            public void ReadTo<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null, Action<TF, object[]> setFaceAttributes = null)
-                where TV : HeMeshBase<TV, TE, TF>.Vertex
-                where TE : HeMeshBase<TV, TE, TF>.Halfedge
-                where TF : HeFace<TV,TE,TF>
-            {
-                var verts = mesh.Vertices;
-                var hedges = mesh.Halfedges;
-                var faces = mesh.Faces;
-
-                int nv = verts.Count;
-                int nhe = hedges.Count;
-                int nf = faces.Count;
-
-                // add new vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                    mesh.AddVertex();
-
-                // add new halfedges
-                for (int i = 0; i < _hedgeRefs.Length; i += _edgeStride)
-                    mesh.AddEdge();
-
-                // add new faces
-                for (int i = 0; i < _faceRefs.Length; i++)
-                    mesh.AddFace();
-
-                // link up vertices
-                for (int i = 0; i < _vertexRefs.Length; i++)
-                {
-                    var v = verts[i + nv];
-
-                    var first = _vertexRefs[i];
-                    if (first > -1) v.FirstOut = hedges[first + nhe];
-                }
-
-                // link up halfedges
-                for (int i = 0, j = 0; i < _hedgeRefs.Length; i += _hedgeStride, j++)
-                {
-                    var he = hedges[j + nhe];
-
-                    he.PreviousInFace = hedges[_hedgeRefs[i] + nhe];
-                    he.NextInFace = hedges[_hedgeRefs[i + 1] + nhe];
-
-                    var start = _hedgeRefs[i + 2];
-                    if (start > -1) he.Start = verts[start + nhe];
-
-                    var face = _hedgeRefs[i + 3];
-                    if (face > -1) he.Face = faces[face + nf];
-                }
-
-                // link up faces
-                for (int i = 0; i < _faceRefs.Length; i++)
-                {
-                    var f = faces[i + nf];
-
-                    var first = _faceRefs[i];
-                    if (first > -1) f.First = hedges[first + nhe];
-                }
-
-                // set vertex attributes
-                if (setVertexAttributes != null)
-                {
-                    for (int i = 0; i < _vertexAttributes.Length; i++)
-                        setVertexAttributes(verts[i + nv], _vertexAttributes[i]);
-                }
-
-                // set vertex attributes
-                if (setHedgeAttributes != null)
-                {
-                    for (int i = 0; i < _hedgeAttributes.Length; i++)
-                        setHedgeAttributes(hedges[i + nhe], _hedgeAttributes[i]);
-                }
-
-                // set vertex attributes
-                if (setFaceAttributes != null)
-                {
-                    for (int i = 0; i < _faceAttributes.Length; i++)
-                        setFaceAttributes(faces[i + nf], _faceAttributes[i]);
-                }
-
-                // TODO validate topology?
-            }
-        }
-        */
     }
 }

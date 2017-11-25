@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurMesh
         where V : IHeVertex<V, E>
     {
         /// <summary>
-        /// 
+        /// Returns the first outgoing halfedge at this vertex.
         /// </summary>
         E First { get; }
 

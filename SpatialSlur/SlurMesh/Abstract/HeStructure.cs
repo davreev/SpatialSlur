@@ -126,7 +126,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns the first halfedge in the pair.
         /// </summary>
         /// <returns></returns>
-        internal E AddHalfedges()
+        internal E AddEdge()
         {
             var he0 = NewHalfedge();
             var he1 = NewHalfedge();

@@ -22,8 +22,8 @@ namespace SpatialSlur.SlurMesh
         /// <summary></summary>
         Octahedron,
         /// <summary></summary>
-        Dodecahedron,
+        Icosahedron,
         /// <summary></summary>
-        Icosahedron
+        Dodecahedron
     }
 }

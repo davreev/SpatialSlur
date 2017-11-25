@@ -561,7 +561,7 @@ namespace SpatialSlur.SlurMesh
                 AddVertex();
 
             for (int i = 0; i < nhB; i += 2)
-                AddHalfedges();
+                AddEdge();
 
             // link new vertices to new halfedges
             for (int i = 0; i < nvB; i++)
@@ -624,7 +624,7 @@ namespace SpatialSlur.SlurMesh
                 AddVertex();
 
             for (int i = 0; i < meshHedges.Count; i += 2)
-                AddHalfedges();
+                AddEdge();
 
             // link new vertices to new halfedges
             for (int i = 0; i < meshVerts.Count; i++)
@@ -687,7 +687,7 @@ namespace SpatialSlur.SlurMesh
                 AddVertex();
 
             for (int i = 0; i < meshHedges.Count; i += 2)
-                AddHalfedges();
+                AddEdge();
 
             // link new vertices to new halfedges
             for (int i = 0; i < meshFaces.Count; i++)
@@ -773,7 +773,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal TE AddEdgeImpl(TV v0, TV v1)
         {
-            var he = AddHalfedges();
+            var he = AddEdge();
             v0.Insert(he);
             v1.Insert(he.Twin);
             return he;
@@ -873,7 +873,7 @@ namespace SpatialSlur.SlurMesh
             var v0 = vertex;
             var v1 = he1.Start;
 
-            var he2 = AddHalfedges();
+            var he2 = AddEdge();
             var he3 = he2.Twin;
 
             // halfedge->vertex refs
@@ -960,7 +960,7 @@ namespace SpatialSlur.SlurMesh
             he0.Bypass();
             he1.Bypass();
 
-            var he2 = AddHalfedges();
+            var he2 = AddEdge();
             var he3 = he2.Twin;
 
             v0.Insert(he2);
@@ -1209,7 +1209,7 @@ namespace SpatialSlur.SlurMesh
             var v1 = AddVertex(); // new vertex
 
             // create new halfedge pair
-            var he2 = AddHalfedges();
+            var he2 = AddEdge();
             var he3 = he2.Twin;
 
             // update halfedge->halfedge refs
@@ -1451,7 +1451,7 @@ namespace SpatialSlur.SlurMesh
                 if (heA.IsUnused) continue;
 
                 var comp = comps[componentIndex.Get(heA)];
-                var heB = comp.AddHalfedges();
+                var heB = comp.AddEdge();
                 edgeIndex.Set(heA, heB.Index >> 1);
             }
 
