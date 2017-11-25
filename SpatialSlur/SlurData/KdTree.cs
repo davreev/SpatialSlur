@@ -27,6 +27,48 @@ using static SpatialSlur.SlurCore.ArrayMath;
 namespace SpatialSlur.SlurData
 {
     /// <summary>
+    /// Constains type-inferred static creation methods.
+    /// </summary>
+    public static class KdTree
+    {
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a balanced tree.
+        /// </summary>
+        public static KdTree<T> CreateBalanced<T>(IEnumerable<double[]> points, IEnumerable<T> values)
+        {
+            return KdTree<T>.CreateBalanced(points, values);
+        }
+
+
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a balanced tree.
+        /// </summary>
+        public static KdTree<T> CreateBalanced<T>(double[][] points, T[] values)
+        {
+            return KdTree<T>.CreateBalanced(points, values);
+        }
+
+
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a balanced tree.
+        /// </summary>
+        public static KdTree<int> CreateBalanced(IEnumerable<double[]> points)
+        {
+            return KdTree<int>.CreateBalanced(points, Sequences.CountFrom(0));
+        }
+
+
+        /// <summary>
+        /// Inserts point value pairs in a way that produces a balanced tree.
+        /// </summary>
+        public static KdTree<int> CreateBalanced(double[][] points)
+        {
+            return KdTree<int>.CreateBalanced(points, Enumerable.Range(0, points.Length).ToArray());
+        }
+    }
+
+    
+    /// <summary>
     /// Generic implementation of a k-dimensional binary search tree.
     /// </summary>
     [Serializable]
@@ -37,7 +79,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Inserts point value pairs in a way that produces a balanced tree.
         /// </summary>
-        public static KdTree<T> CreateBalanced(IEnumerable<double[]> points, IEnumerable<T> values)
+        internal static KdTree<T> CreateBalanced(IEnumerable<double[]> points, IEnumerable<T> values)
         {
             KdTree<T> result = new KdTree<T>(points.First().Length);
             Node[] nodes = points.Zip(values, (p, v) => new Node(p, v)).ToArray();
@@ -51,7 +93,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// Inserts point value pairs in a way that produces a balanced tree.
         /// </summary>
-        public static KdTree<T> CreateBalanced(double[][] points, T[] values)
+        internal static KdTree<T> CreateBalanced(double[][] points, T[] values)
         {
             KdTree<T> result = new KdTree<T>(points[0].Length);
             Node[] nodes = points.Convert((p, i) => new Node(p, values[i]));
