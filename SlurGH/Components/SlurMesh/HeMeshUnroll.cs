@@ -42,6 +42,9 @@ namespace SpatialSlur.SlurGH.Components
         {
             pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "Mesh to unroll", GH_ParamAccess.item);
             pManager.AddIntegerParameter("startFace", "start", "Face to start unrolling from", GH_ParamAccess.item, 0);
+            pManager.AddNumberParameter("unrollFactor", "factor", "Per-edge unroll factors", GH_ParamAccess.list, 1.0);
+
+            pManager[2].Optional = true;
         }
 
 
@@ -61,16 +64,20 @@ namespace SpatialSlur.SlurGH.Components
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_HeMesh3d hemGoo = null;
-            int start = -1;
-
             if (!DA.GetData(0, ref hemGoo)) return;
+
+            int start = -1;
             if (!DA.GetData(1, ref start)) return;
+
+            List<double> factors = new List<double>();
+            DA.GetDataList(2, factors);
 
             var mesh = hemGoo.Value.Duplicate();
             var f = mesh.Faces[start];
 
             // unroll
-            HeMeshUnroller.Unroll(mesh, mesh.Faces[start]);
+            var last = factors.Count - 1;
+            HeMeshUnroller.Unroll(mesh, mesh.Faces[start], he => factors[Math.Min(he >> 1, last)]);
 
             // set normals
             var fn = f.GetNormal(v => v.Position);
