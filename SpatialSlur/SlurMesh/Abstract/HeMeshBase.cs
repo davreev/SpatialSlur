@@ -952,8 +952,8 @@ namespace SpatialSlur.SlurMesh
         }
 
         #endregion
-
         
+
         /// <summary>
         /// 
         /// </summary>
@@ -1172,7 +1172,7 @@ namespace SpatialSlur.SlurMesh
                 AddVertex();
 
             for (int i = 0; i < nhB; i += 2)
-                AddHalfedges();
+                AddEdge();
 
             for (int i = 0; i < nfB; i++)
                 AddFace();
@@ -1272,7 +1272,7 @@ namespace SpatialSlur.SlurMesh
             // spins each halfedge such that its face in the primal mesh corresponds with its start vertex in the dual
             for (int i = 0; i < nhB; i += 2)
             {
-                var heA0 = AddHalfedges();
+                var heA0 = AddEdge();
 
                 var heB0 = hedgesB[i];
                 if (heB0.IsUnused || heB0.IsBoundary) continue; // skip boundary edges
@@ -1367,8 +1367,7 @@ namespace SpatialSlur.SlurMesh
         }
 
         #region Element Operators
-
-
+        
         #region Edge Operators
 
         /// <summary>
@@ -1379,7 +1378,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="v1"></param>
         internal TE AddEdge(TV v0, TV v1)
         {
-            var he = AddHalfedges();
+            var he = AddEdge();
             he.Start = v0;
             he.Twin.Start = v1;
             return he;
@@ -2524,6 +2523,321 @@ namespace SpatialSlur.SlurMesh
 
         #region Face Operators
         
+
+        private List<(TV, TE)> _addFaceBuffer = new List<(TV, TE)>(DefaultCapacity);
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vi0"></param>
+        /// <param name="vi1"></param>
+        /// <param name="vi2"></param>
+        /// <returns></returns>
+        public TF AddFace(int vi0, int vi1, int vi2)
+        {
+            return AddFace(Yield());
+
+            IEnumerable<int> Yield()
+            {
+                yield return vi0;
+                yield return vi1;
+                yield return vi2;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vi0"></param>
+        /// <param name="vi1"></param>
+        /// <param name="vi2"></param>
+        /// <param name="vi3"></param>
+        /// <returns></returns>
+        public TF AddFace(int vi0, int vi1, int vi2, int vi3)
+        {
+            return AddFace(Yield());
+
+            IEnumerable<int> Yield()
+            {
+                yield return vi0;
+                yield return vi1;
+                yield return vi2;
+                yield return vi3;
+            }
+        }
+
+
+        /// <summary>
+        /// Adds a new face to the mesh.
+        /// </summary>
+        /// <param name="vertexIndices"></param>
+        /// <returns></returns>
+        public TF AddFace(IEnumerable<int> vertexIndices)
+        {
+            int currTag = Vertices.NextTag;
+
+            // validate vertices and collect in buffer
+            foreach (var vi in vertexIndices)
+            {
+                var v = Vertices[vi];
+
+                if (v.Tag == currTag)
+                {
+                    _addFaceBuffer.Clear();
+                    return null;
+                }
+
+                _addFaceBuffer.Add((v, null));
+                v.Tag = currTag;
+            }
+
+            // no degenerate faces allowed
+            if (_addFaceBuffer.Count < 3)
+            {
+                _addFaceBuffer.Clear();
+                return null;
+            }
+
+            return AddFace(_addFaceBuffer);
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns></returns>
+        public TF AddFace(TV v0, TV v1, TV v2)
+        {
+            return AddFace(Yield());
+
+            IEnumerable<TV> Yield()
+            {
+                yield return v0;
+                yield return v1;
+                yield return v2;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <param name="v3"></param>
+        /// <returns></returns>
+        public TF AddFace(TV v0, TV v1, TV v2, TV v3)
+        {
+            return AddFace(Yield());
+
+            IEnumerable<TV> Yield()
+            {
+                yield return v0;
+                yield return v1;
+                yield return v2;
+                yield return v3;
+            }
+        }
+
+
+        /// <summary>
+        /// Adds a new face to the mesh.
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        public TF AddFace(IEnumerable<TV> vertices)
+        {
+            int currTag = Vertices.NextTag;
+
+            // validate vertices and collect in buffer
+            foreach (var v in vertices)
+            {
+                Vertices.ContainsCheck(v);
+
+                if (v.Tag == currTag)
+                {
+                    _addFaceBuffer.Clear();
+                    return null;
+                }
+
+                _addFaceBuffer.Add((v, null));
+                v.Tag = currTag;
+            }
+
+            // no degenerate faces allowed
+            if (_addFaceBuffer.Count < 3)
+            {
+                _addFaceBuffer.Clear();
+                return null;
+            }
+            
+            return AddFace(_addFaceBuffer);
+        }
+        
+
+        /// <summary>
+        /// http://pointclouds.org/blog/nvcs/martin/index.php
+        /// </summary>
+        /// <param name="faceVerts"></param>
+        /// <returns></returns>
+        private TF AddFace(List<(TV Vertex, TE Halfedge)> buffer)
+        {
+            int n = _addFaceBuffer.Count;
+
+            // collect all existing halfedges in the new face
+            for (int i = 0; i < n; i++)
+            {
+                var v = buffer[i].Vertex;
+                if (v.IsUnused) continue;
+
+                // can't create a new face with an interior vertex
+                if (!v.IsBoundary)
+                {
+                    buffer.Clear();
+                    return null;
+                }
+
+                // search for an existing halfedge between consecutive vertices
+                var he = v.FindHalfedge(buffer[(i + 1) % n].Vertex);
+                if (he == null) continue; // no halfedge found
+
+                // can't create a new face if the halfedge already has one
+                if (he.Face != null)
+                {
+                    buffer.Clear();
+                    return null;
+                }
+
+                buffer[i] = (v, he);
+            }
+
+            /*
+            // avoids creation of non-manifold vertices
+            // if two consecutive new halfedges share a used vertex then that vertex will be non-manifold upon adding the face
+            for (int i = 0; i < n; i++)
+            {
+                int j = (i + 1) % n;
+                if (faceHedges[i] == null && faceHedges[j] == null && !faceVerts[j].IsUnused) 
+                {
+                    buffer.Clear();
+                    return null;
+                }
+            }
+            */
+
+            // create the new face
+            var newFace = AddFace();
+
+            // create any missing halfedge pairs in the face loop and assign the new face
+            for (int i = 0; i < n; i++)
+            {
+                (var v, var he) = buffer[i];
+
+                // if missing a halfedge, add a pair between consecutive vertices
+                if (he == null)
+                {
+                    he = AddEdge(v, buffer[(i + 1) % n].Vertex);
+                    buffer[i] = (v, he);
+                }
+
+                he.Face = newFace;
+            }
+
+            // link consecutive halfedges
+            for (int i = 0; i < n; i++)
+            {
+                (var v0, var he0) = buffer[i];
+                (var v1, var he1) = buffer[(i + 1) % n];
+
+                var he2 = he0.NextInFace;
+                var he3 = he1.PreviousInFace;
+                var he4 = he0.Twin;
+
+                // check if halfedges are newly created
+                // new halfedges will have null previous or next refs
+                int mask = 0;
+                if (he2 == null) mask |= 1; // e0 is new
+                if (he3 == null) mask |= 2; // e1 is new
+
+                // 0 - neither halfedge is new
+                // 1 - he0 is new, he1 is old
+                // 2 - he1 is new, he0 is old
+                // 3 - both halfedges are new
+                switch (mask)
+                {
+                    case 0:
+                        {
+                            // neither halfedge is new
+                            // if he0 and he1 aren't consecutive, then deal with non-manifold vertex as per http://www.pointclouds.org/blog/nvcs/
+                            // otherwise, update the first halfedge at v1
+                            if (he2 != he1)
+                            {
+                                var he = he1.NextBoundaryAtStart; // find the next boundary halfedge around v1 (must exist if halfedges aren't consecutive)
+                                v1.First = he;
+
+                                he.PreviousInFace.MakeConsecutive(he2);
+                                he3.MakeConsecutive(he);
+                                he0.MakeConsecutive(he1);
+                            }
+                            else
+                            {
+                                v1.SetFirstToBoundary();
+                            }
+
+                            break;
+                        }
+                    case 1:
+                        {
+                            // he0 is new, he1 is old
+                            he3.MakeConsecutive(he4);
+                            v1.First = he4;
+                            goto default;
+                        }
+                    case 2:
+                        {
+                            // he1 is new, he0 is old
+                            he1.Twin.MakeConsecutive(he2);
+                            goto default;
+                        }
+                    case 3:
+                        {
+                            // both halfedges are new
+                            // deal with non-manifold case if v1 is already in use
+                            if (v1.IsUnused)
+                            {
+                                he1.Twin.MakeConsecutive(he4);
+                            }
+                            else
+                            {
+                                v1.First.PreviousInFace.MakeConsecutive(he4);
+                                he1.Twin.MakeConsecutive(v1.First);
+                            }
+
+                            v1.First = he4;
+                            goto default;
+                        }
+                    default:
+                        {
+                            he0.MakeConsecutive(he1); // update refs for inner halfedges
+                            break;
+                        }
+                }
+            }
+
+            newFace.First = buffer[0].Halfedge; // set first halfedge in the new face
+            buffer.Clear();
+
+            return newFace;
+        }
+        
+
+        #if false
         /// <summary>
         /// 
         /// </summary>
@@ -2811,6 +3125,7 @@ namespace SpatialSlur.SlurMesh
             newFace.First = faceHedges[0]; // set first halfedge in the new face
             return newFace;
         }
+        #endif
 
 
         /// <summary>
@@ -3852,7 +4167,7 @@ namespace SpatialSlur.SlurMesh
         }
         */
 
-        #endregion
+#endregion
 
         #endregion
     }
@@ -4034,7 +4349,7 @@ namespace SpatialSlur.SlurMesh
                 if (heA.IsUnused) continue;
 
                 var comp = comps[componentIndex.Get(heA)];
-                var heB = comp.AddHalfedges();
+                var heB = comp.AddEdge();
                 edgeIndex.Set(heA, heB.Index >> 1);
             }
 
@@ -4198,7 +4513,115 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public TM CreatePrimitive(PrimitiveType primitive, Action<TV, Vec3d> setPosition, Action<TV, Vec3d> setNormal)
         {
+            // TODO
             throw new NotImplementedException();
+
+            switch (primitive)
+            {
+                case PrimitiveType.Tetrahedron:
+                    return CreateTetrahedron(setPosition, setNormal);
+                case PrimitiveType.Cube:
+                    break;
+                case PrimitiveType.Octahedron:
+                    break;
+                case PrimitiveType.Icosahedron:
+                    break;
+                case PrimitiveType.Dodecahedron:
+                    break;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private TM CreateTetrahedron(Action<TV, Vec3d> setPosition, Action<TV, Vec3d> setNormal)
+        {
+            var result = CreateTetrahedron();
+            var verts = result.Vertices;
+
+            var n = new Vec3d(1.0);
+            n.Unitize();
+
+            var v = verts[0];
+            setPosition(v, new Vec3d(-0.5, -0.5, -0.5));
+            setNormal(v, new Vec3d(-n.X, -n.Y, -n.Z));
+
+            v = verts[1];
+            setPosition(v, new Vec3d(0.5, 0.5, -0.5));
+            setNormal(v, new Vec3d(n.X, n.Y, -n.Z));
+
+            v = verts[2];
+            setPosition(v, new Vec3d(0.5, -0.5, 0.5));
+            setNormal(v, new Vec3d(n.X, -n.Y, n.Z));
+
+            v = verts[3];
+            setPosition(v, new Vec3d(-0.5, 0.5, 0.5));
+            setNormal(v, new Vec3d(-n.X, n.Y, n.Z));
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private TM CreateTetrahedron()
+        {
+            var result = Create(4, 12, 4);
+
+            var verts = result.Vertices;
+            var hedges = result.Halfedges;
+            var faces = result.Faces;
+            
+            for (int i = 0; i < 4; i++)
+                result.AddVertex();
+
+            for (int i = 0; i < 6; i++)
+                result.AddEdge();
+
+            for (int i = 0; i < 4; i++)
+                result.AddFace();
+
+            verts[0].First = hedges[0];
+            verts[1].First = hedges[2];
+            verts[2].First = hedges[4];
+            verts[3].First = hedges[6];
+
+            faces[0].First = hedges[0];
+            faces[1].First = hedges[3];
+            faces[2].First = hedges[4];
+            faces[3].First = hedges[7];
+
+            SetHedge(hedges[0], 9, 2, 0, 0);
+            SetHedge(hedges[1], 10, 7, 1, 3);
+
+            SetHedge(hedges[2], 0, 9, 1, 0);
+            SetHedge(hedges[3], 5, 11, 2, 1);
+
+            SetHedge(hedges[4], 8, 6, 2, 2);
+            SetHedge(hedges[5], 11, 3, 3, 1);
+    
+            SetHedge(hedges[6], 4, 8, 3, 2);
+            SetHedge(hedges[7], 1, 10, 0, 3);
+            
+            SetHedge(hedges[8], 4, 6, 0, 2);
+            SetHedge(hedges[9], 2, 0, 2, 0);
+            
+            SetHedge(hedges[10], 7, 1, 3, 3);
+            SetHedge(hedges[11], 3, 5, 1, 1);
+
+            void SetHedge(TE hedge, int prev, int next, int start, int face)
+            {
+                hedge.Previous = hedges[prev];
+                hedge.Next = hedges[next];
+                hedge.Start = verts[start];
+                hedge.Face = faces[face];
+            }
+
+            return result;
         }
 
 
@@ -4216,7 +4639,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        #region Weaving
+#region Weaving
 
         /// <summary>
         /// If using external buffers to store vertex attributes, the number of vertices in the resulting mesh equals 8 times the number of edges in the given mesh.
@@ -4422,10 +4845,10 @@ namespace SpatialSlur.SlurMesh
         }
         */
 
-        #endregion
+#endregion
 
 
-        #region Thickening
+#region Thickening
 
         /// <summary>
         /// If using external buffers to store vertex attributes, the number of vertices in the resulting mesh equals the number of halfedges in the given mesh.
@@ -4484,6 +4907,6 @@ namespace SpatialSlur.SlurMesh
             return result;
         }
 
-        #endregion
+#endregion
     }
 }
