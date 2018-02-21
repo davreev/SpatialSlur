@@ -1,6 +1,4 @@
-﻿using System;
-
-using static System.Math;
+﻿using static System.Math;
 
 /*
  * Notes
@@ -11,7 +9,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
-    public static class SlurMath
+    public static partial class SlurMath
     {
         /// <summary></summary>
         public const double ZeroTolerance = 1.0e-12;
@@ -21,8 +19,26 @@ namespace SpatialSlur.SlurCore
         public const double HalfPI = PI * 0.5;
         /// <summary></summary>
         public const double InvPI = 1.0 / PI;
+        /// <summary></summary>
+        public const double Sqrt2 = 1.41421356237309504880168872420969807;
+        /// <summary></summary>
+        public static double[] PowersOfTen = new double[] { 10e0, 10e1, 10e2, 10e3, 10e4, 10e5, 10e6, 10e7, 10e8 };
 
-    
+        /// <summary></summary>
+        public const float ZeroTolerancef = 1.0e-6f;
+        /// <summary></summary>
+        public const float PIf = (float)PI;
+        /// <summary></summary>
+        public const double TwoPIf = (float)TwoPI;
+        /// <summary></summary>
+        public const double HalfPIf = (float)HalfPI;
+        /// <summary></summary>
+        public const double InvPIf = (float)InvPI;
+        /// <summary></summary>
+        public const double Sqrt2f = 1.41421356237f;
+
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -31,6 +47,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="tolerance"></param>
         /// <returns></returns>
         public static bool ApproxEquals(double x, double y, double tolerance = ZeroTolerance)
+        {
+            return Abs(x - y) < tolerance;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static bool ApproxEquals(float x, float y, float tolerance = ZeroTolerancef)
         {
             return Abs(x - y) < tolerance;
         }
@@ -52,11 +81,37 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="t1"></param>
+        /// <param name="t"></param>
+        /// <param name="t0"></param>
+        /// <returns></returns>
+        public static float Lerp(float t0, float t1, float t)
+        {
+            return t0 + (t1 - t0) * t;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <param name="t"></param>
         /// <returns></returns>
         public static double Normalize(double t, double t0, double t1)
+        {
+            return (t - t0) / (t1 - t0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static float Normalize(float t, float t0, float t1)
         {
             return (t - t0) / (t1 - t0);
         }
@@ -78,6 +133,21 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Maps a number from one interval to another
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="a0"></param>
+        /// <param name="a1"></param>
+        /// <param name="b0"></param>
+        /// <param name="b1"></param>
+        /// <returns></returns>
+        public static float Remap(float t, float a0, float a1, float b0, float b1)
+        {
+            return Lerp(b0, b1, Normalize(t, a0, a1));
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="t"></param>
@@ -92,11 +162,34 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="t"></param>
+        /// <returns></returns>
+        public static float Saturate(float t)
+        {
+            return (t > 1.0f) ? 1.0f : (t < 0.0f) ? 0.0f : t;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
         /// <param name="range"></param>
         /// <returns></returns>
         public static double Clamp(double t, double range)
         {
             return (t < 0.0) ? 0.0 : (t > range) ? range : t;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public static float Clamp(float t, float range)
+        {
+            return (t < 0.0f) ? 0.0f : (t > range) ? range : t;
         }
 
 
@@ -120,6 +213,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         /// <returns></returns>
         public static double Clamp(double t, double min, double max)
+        {
+            return (t < min) ? min : (t > max) ? max : t;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static float Clamp(float t, float min, float max)
         {
             return (t < min) ? min : (t > max) ? max : t;
         }
@@ -170,6 +276,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
+        public static bool Contains(float t, float min, float max)
+        {
+            return t >= min && t < max;
+        }
+
+
+        /// <summary>
+        /// Exclusive containment check.
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public static bool Contains(int t, int min, int max)
         {
             return t >= min && t < max;
@@ -196,6 +315,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
+        public static bool ContainsIncl(float t, float min, float max)
+        {
+            return t >= min && t <= max;
+        }
+
+
+        /// <summary>
+        /// Inclusive containment check.
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public static bool ContainsIncl(int t, int min, int max)
         {
             return t >= min && t <= max;
@@ -210,6 +342,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="t1"></param>
         /// <returns></returns>
         public static double Nearest(double t, double t0, double t1)
+        {
+            return (Abs(t1 - t) < Abs(t0 - t)) ? t1 : t0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <returns></returns>
+        public static float Nearest(float t, float t0, float t1)
         {
             return (Abs(t1 - t) < Abs(t0 - t)) ? t1 : t0;
         }
@@ -345,10 +490,35 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="t"></param>
+        /// <param name="edge"></param>
+        /// <returns></returns>
+        public static float Step(float t, float edge)
+        {
+            return (t < edge) ? 0.0f : 1.0f;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
         /// <param name="t0"></param>
         /// <param name="t1"></param>
         /// <returns></returns>
         public static double Ramp(double t, double t0, double t1)
+        {
+            return Saturate(Normalize(t, t0, t1));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <returns></returns>
+        public static float Ramp(float t, float t0, float t1)
         {
             return Saturate(Normalize(t, t0, t1));
         }
@@ -362,6 +532,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         /// <returns></returns>
         public static double SmoothStep(double t, double t0, double t1)
+        {
+            return HermiteC1(Saturate(Normalize(t, t0, t1)));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static float SmoothStep(float t, float t0, float t1)
         {
             return HermiteC1(Saturate(Normalize(t, t0, t1)));
         }
@@ -383,6 +566,21 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// http://www.iquilezles.org/www/articles/functions/functions.htm
+        /// </summary>
+        /// <param name="center"></param>
+        /// <param name="width"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static float SmoothPulse(float t, float center, float width)
+        {
+            t = Abs(t - center);
+            if (t > width) return 0.0f;
+            return HermiteC1(1.0f - t / width);
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="t0"></param>
@@ -390,6 +588,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="t"></param>
         /// <returns></returns>
         public static double SmootherStep(double t, double t0, double t1)
+        {
+            return HermiteC2(Saturate(Normalize(t, t0, t1)));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t0"></param>
+        /// <param name="t1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static float SmootherStep(float t, float t0, float t1)
         {
             return HermiteC2(Saturate(Normalize(t, t0, t1)));
         }
@@ -411,6 +622,21 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// http://www.iquilezles.org/www/articles/functions/functions.htm
+        /// </summary>
+        /// <param name="center"></param>
+        /// <param name="width"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static float SmootherPulse(float t, float center, float width)
+        {
+            t = Abs(t - center);
+            if (t > width) return 0.0f;
+            return HermiteC2(1.0f - t / width);
+        }
+
+
+        /// <summary>
         /// Assumes x is between 0 and 1 inclusive
         /// </summary>
         /// <param name="t"></param>
@@ -426,9 +652,31 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
+        public static float HermiteC1(float t)
+        {
+            return t * t * (3.0f - 2.0f * t);
+        }
+
+
+        /// <summary>
+        /// Assumes x is between 0 and 1 inclusive
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public static double HermiteC2(double t)
         {
             return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+        }
+
+
+        /// <summary>
+        /// Assumes x is between 0 and 1 inclusive
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static float HermiteC2(float t)
+        {
+            return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
         }
 
 
@@ -533,6 +781,41 @@ namespace SpatialSlur.SlurCore
         {
             const double toRad = PI / 180.0;
             return degrees * toRad;
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
+        /// <returns></returns>
+        public static bool SolveQuadratic(double a, double b, double c, out double r0, out double r1)
+        {
+            // impl ref
+            // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (5.6)
+
+            if (a == 0.0 && b == 0.0)
+            {
+                r0 = r1 = 0.0;
+                return true;
+            }
+
+            var disc = b * b - 4.0 * a * c;
+
+            if (disc < 0.0)
+            {
+                r0 = r1 = 0.0;
+                return false;
+            }
+
+            var t = -0.5 * (b + Sign(b) * Sqrt(disc));
+            r0 = t / a;
+            r1 = c / t;
+            return true;
         }
     }
 }
