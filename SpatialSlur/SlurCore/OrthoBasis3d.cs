@@ -1,13 +1,8 @@
 ﻿using System;
-using SpatialSlur.SlurCore;
-
 using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
  * Notes
- * 
- * Slower to concatenate than quaternions but faster to transform vectors.
- * See more detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
  */
 
 namespace SpatialSlur.SlurCore
@@ -74,18 +69,6 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        /// <returns></returns>
-        public static OrthoBasis3d CreateFromTo(OrthoBasis3d from, OrthoBasis3d to)
-        {
-            return to.Apply(from.Inverse);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
         public static OrthoBasis3d CreateFromTo(ref OrthoBasis3d from, ref OrthoBasis3d to)
         {
             return to.Apply(from.Inverse);
@@ -94,13 +77,15 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Creates the rotation between v0 and v1
-        /// https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
         public static OrthoBasis3d CreateFromTo(Vec3d from, Vec3d to)
         {
+            // impl ref
+            // https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+
             if (!from.Unitize() || !to.Unitize())
                 return Identity;
 
@@ -159,7 +144,7 @@ namespace SpatialSlur.SlurCore
         public OrthoBasis3d(AxisAngle3d rotation)
             : this()
         {
-            Set(rotation);
+            Set(ref rotation);
         }
 
 
@@ -341,7 +326,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="rotation"></param>
         /// <returns></returns>
-        public void Set(AxisAngle3d rotation)
+        public void Set(ref AxisAngle3d rotation)
         {
             if (!rotation.IsValid)
                 return;
@@ -382,7 +367,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="rotation"></param>
         public void Set(Quaterniond rotation)
         {
-            // implementation ref http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+            // impl ref 
+            // http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+
             var d = rotation.SquareLength;
 
             if(d > 0.0)
@@ -509,7 +496,7 @@ namespace SpatialSlur.SlurCore
         /// Applies the given rotation to this object.
         /// </summary>
         /// <param name="rotation"></param>
-        public void Rotate(AxisAngle3d rotation)
+        public void Rotate(ref AxisAngle3d rotation)
         {
             SetXY(rotation.Apply(_x), rotation.Apply(_y));
         }
@@ -522,6 +509,20 @@ namespace SpatialSlur.SlurCore
         public void Rotate(Quaterniond rotation)
         {
             SetXY(rotation.Apply(_x), rotation.Apply(_y));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(ref OrthoBasis3d other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return
+                _x.ApproxEquals(other._x, tolerance) &&
+                _y.ApproxEquals(other._y, tolerance);
         }
 
 

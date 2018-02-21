@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes
@@ -10,7 +8,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// Base class for constraints on a dynamic collection of particles.
+    /// Base class for constraints which act on a dynamic collection of bodies.
     /// </summary>
     [Serializable]
     public abstract class MultiConstraint<H>: Constraint
@@ -29,21 +27,21 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public List<H> Handles
+        /// <param name="weight"></param>
+        /// <param name="capacity"></param>
+        public MultiConstraint(double weight, int capacity = DefaultCapacity)
         {
-            get { return _handles; }
+            _handles = new List<H>(capacity);
+            Weight = weight;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="weight"></param>
-        /// <param name="capacity"></param>
-        public MultiConstraint(double weight = 1.0, int capacity = DefaultCapacity)
+        public List<H> Handles
         {
-            _handles = new List<H>(capacity);
-            Weight = weight;
+            get { return _handles; }
         }
     }
 }

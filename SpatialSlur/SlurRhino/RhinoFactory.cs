@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 
 using Rhino.Geometry;
@@ -20,7 +18,7 @@ using SpatialSlur.SlurMesh;
  */
 
 namespace SpatialSlur.SlurRhino
-{ 
+{
     using T = Rhino.Geometry.Mesh;
 
     /// <summary>
@@ -300,10 +298,10 @@ namespace SpatialSlur.SlurRhino
             /// <param name="getColor"></param>
             /// <param name="quadrangulator"></param>
             /// <returns></returns>
-            public static T CreatePolySoup<V, E, F>(HeMeshBase<V, E, F> mesh, Func<V, Point3f> getPosition, Func<F, Color> getColor = null, IFaceQuadrangulator<V, E, F> quadrangulator = null)
-                where V : HeMeshBase<V, E, F>.Vertex
-                where E : HeMeshBase<V, E, F>.Halfedge
-                where F : HeMeshBase<V, E, F>.Face
+            public static T CreatePolySoup<V, E, F>(HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<F, Color> getColor = null, IFaceQuadrangulator<V, E, F> quadrangulator = null)
+                where V : HeMesh<V, E, F>.Vertex
+                where E : HeMesh<V, E, F>.Halfedge
+                where F : HeMesh<V, E, F>.Face
             {
                 var result = new T();
                 var newVerts = result.Vertices;
@@ -362,10 +360,7 @@ namespace SpatialSlur.SlurRhino
                     {
                         // add face vertices
                         foreach (var v in f.Vertices)
-                        {
                             newVerts.Add(getPosition(v));
-                            degree++;
-                        }
 
                         // add face
                         if (degree == 3)
@@ -464,20 +459,19 @@ namespace SpatialSlur.SlurRhino
             /// <param name="getTexture"></param>
             /// <param name="getColor"></param>
             /// <returns></returns>
-            public static T CreateFromHeMesh<V, E, F>(HeMeshBase<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null, IFaceQuadrangulator<V, E, F> quadrangulator = null)
-                where V : HeMeshBase<V, E, F>.Vertex
-                where E : HeMeshBase<V, E, F>.Halfedge
-                where F : HeMeshBase<V, E, F>.Face
+            public static T CreateFromHeMesh<V, E, F>(HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null, IFaceQuadrangulator<V, E, F> quadrangulator = null)
+                where V : HeMesh<V, E, F>.Vertex
+                where E : HeMesh<V, E, F>.Halfedge
+                where F : HeMesh<V, E, F>.Face
             {
                 var verts = mesh.Vertices;
-                var faces = mesh.Faces;
 
                 var result = new T();
                 var newVerts = result.Vertices;
                 var newFaces = result.Faces;
 
                 var newNorms = result.Normals;
-                var newTexCoords = result.TextureCoordinates;
+                var newCoords = result.TextureCoordinates;
                 var newColors = result.VertexColors;
 
                 // default quadrangulator
@@ -490,9 +484,14 @@ namespace SpatialSlur.SlurRhino
                     var v = verts[i];
                     newVerts.Add(getPosition(v));
 
-                    if (getNormal != null) newNorms.Add(getNormal(v));
-                    if (getTexture != null) newTexCoords.Add(getTexture(v));
-                    if (getColor != null) newColors.Add(getColor(v));
+                    if (getNormal != null)
+                        newNorms.Add(getNormal(v));
+
+                    if (getTexture != null)
+                        newCoords.Add(getTexture(v));
+
+                    if (getColor != null)
+                        newColors.Add(getColor(v));
                 }
 
                 // add faces
@@ -506,17 +505,17 @@ namespace SpatialSlur.SlurRhino
                     {
                         newFaces.AddFace(
                             he.Start.Index,
-                            he.NextInFace.Start.Index,
-                            he.PreviousInFace.Start.Index
+                            he.Next.Start.Index,
+                            he.Previous.Start.Index
                             );
                     }
                     else if (degree == 4)
                     {
                         newFaces.AddFace(
                             he.Start.Index,
-                            he.NextInFace.Start.Index,
-                            he.NextInFace.NextInFace.Start.Index,
-                            he.PreviousInFace.Start.Index
+                            he.Next.Start.Index,
+                            he.Next.Next.Start.Index,
+                            he.Previous.Start.Index
                             );
                     }
                     else
@@ -548,9 +547,9 @@ namespace SpatialSlur.SlurRhino
             /// <param name="getColor"></param>
             /// <returns></returns>
             public static T CreateFromQuadStrip<V, E, F>(HeQuadStrip<V, E, F> strip, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null)
-                where V : HeMeshBase<V, E, F>.Vertex
-                where E : HeMeshBase<V, E, F>.Halfedge
-                where F : HeMeshBase<V, E, F>.Face
+                where V : HeMesh<V, E, F>.Vertex
+                where E : HeMesh<V, E, F>.Halfedge
+                where F : HeMesh<V, E, F>.Face
             {
                 var mesh = new T();
 

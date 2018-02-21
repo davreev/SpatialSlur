@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-
-using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -52,6 +49,16 @@ namespace SpatialSlur.SlurCore
         /// <param name="vector"></param>
         /// <returns></returns>
         public static implicit operator Vec2d(Vec4d vector)
+        {
+            return new Vec2d(vector.X, vector.Y);
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Vec2d(Vec2i vector)
         {
             return new Vec2d(vector.X, vector.Y);
         }
@@ -422,7 +429,7 @@ namespace SpatialSlur.SlurCore
         /// Returns the zero vector if this vector is zero length.
         /// </summary>
         /// <returns></returns>
-        public Vec2d Direction
+        public Vec2d Unit
         {
             get
             {
@@ -602,9 +609,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec2d other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return 
-                Math.Abs(other.X - X) < tolerance && 
-                Math.Abs(other.Y - Y) < tolerance;
+            return
+                SlurMath.ApproxEquals(X, other.X, tolerance) &&
+                SlurMath.ApproxEquals(Y, other.Y, tolerance);
         }
 
 
@@ -616,9 +623,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec2d other, Vec2d tolerance)
         {
-            return 
-                Math.Abs(other.X - X) < tolerance.X && 
-                Math.Abs(other.Y - Y) < tolerance.Y;
+            return
+                SlurMath.ApproxEquals(X, other.X, tolerance.X) &&
+                SlurMath.ApproxEquals(Y, other.Y, tolerance.Y);
         }
 
 
@@ -725,8 +732,17 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Vec2d SlerpTo(Vec2d other, double angle, double factor)
         {
-            double st = 1.0 / Math.Sin(angle);
-            return this * (Math.Sin((1.0 - factor) * angle) * st) + other * (Math.Sin(factor * angle) * st);
+            double sa = Math.Sin(angle);
+      
+            // handle aligned cases
+            if (sa > 0.0)
+            {
+                var saInv = 1.0 / sa;
+                var af = angle * factor;
+                return this * Math.Sin(angle - af) * saInv + other * Math.Sin(af) * saInv;
+            }
+
+            return this;
         }
 
 

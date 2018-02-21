@@ -3,22 +3,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 using Rhino.Geometry;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurRhino
 {
     using V = HeMesh3d.Vertex;
     using E = HeMesh3d.Halfedge;
-    using F = HeMesh3d.Face;
 
     /// <summary>
     /// 
@@ -166,7 +161,7 @@ namespace SpatialSlur.SlurRhino
                     while (he1.Tag != currTag && !he1.IsBoundary)
                     {
                         he1.Tag = he1.Twin.Tag = currTag;
-                        he1 = he1.NextInFace.Twin.NextInFace;
+                        he1 = he1.Next.Twin.Next;
                     }
                 }
             }
@@ -217,7 +212,7 @@ namespace SpatialSlur.SlurRhino
             do
             {
                 countU++;
-                heU = heU.NextInFace.Twin.NextInFace;
+                heU = heU.Next.Twin.Next;
             } while (labels[heU.Start] != 2);
 
             var heV = hedge;
@@ -226,7 +221,7 @@ namespace SpatialSlur.SlurRhino
             do
             {
                 countV++;
-                heV = heV.NextInFace.NextInFace.Twin;
+                heV = heV.Next.Next.Twin;
             } while (labels[heV.Start] != 2);
         }
 
@@ -247,11 +242,11 @@ namespace SpatialSlur.SlurRhino
                 {
                     yield return heU;
                     heU.Face.Tag = faceTag;
-                    heU = heU.NextInFace.Twin.NextInFace; // advance in u direction
+                    heU = heU.Next.Twin.Next; // advance in u direction
                 }
 
                 yield return heU; // last in row
-                heV = heV.NextInFace.NextInFace.Twin; // advance in v direction
+                heV = heV.Next.Next.Twin; // advance in v direction
             }
 
             // last row (don't tag faces)
@@ -263,7 +258,7 @@ namespace SpatialSlur.SlurRhino
                     for (int j = 0; j < countU; j++)
                     {
                         yield return heU;
-                        heU = heU.NextInFace; // advance in u direction
+                        heU = heU.Next; // advance in u direction
                     }
                 }
                 else
@@ -273,7 +268,7 @@ namespace SpatialSlur.SlurRhino
                     for (int j = 0; j < countU; j++)
                     {
                         yield return heU;
-                        heU = heU.NextInFace.Twin.NextInFace; // advance in u direction
+                        heU = heU.Next.Twin.Next; // advance in u direction
                     }
                 }
             }

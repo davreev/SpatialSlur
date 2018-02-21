@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.CompilerServices;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Utility class for stray constants and static methods.
+    /// 
     /// </summary>
     public static class CoreUtil
     {
@@ -29,7 +27,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Trick to simplify bounds check
+        /// 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="range"></param>

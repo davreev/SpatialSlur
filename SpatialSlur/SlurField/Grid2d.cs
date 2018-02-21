@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Drawing;
-using System.Drawing.Imaging;
 
 using SpatialSlur.SlurCore;
 
@@ -20,11 +15,21 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public class Grid2d
     {
-        private double _dx, _dy;
-        private double _tx, _ty;
-        private double _txInv, _tyInv; // cached to avoid divs
-        private readonly int _nx, _ny, _n;
-        private WrapMode _wrapX, _wrapY;
+        private double _dx;
+        private double _dy;
+
+        private double _tx = 1.0;
+        private double _ty = 1.0;
+
+        private double _txInv = 1.0; // cached to avoid divs
+        private double _tyInv = 1.0;
+
+        private readonly int _nx;
+        private readonly int _ny;
+        private readonly int _n;
+
+        private WrapMode _wrapX;
+        private WrapMode _wrapY;
 
 
         /// <summary>
@@ -32,82 +37,16 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
-        private Grid2d(int countX, int countY)
+        public Grid2d(int countX, int countY)
         {
+            const string errorMessage = "The resolution of the grid must be greater than 1 in each dimension.";
+
             if (countX < 2 || countY < 2)
-                throw new System.ArgumentException("The resolution of the grid must be greater than 1 in each dimension.");
+                throw new ArgumentException(errorMessage);
 
             _nx = countX;
             _ny = countY;
-            _n = _nx * _ny;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="scale"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="wrapMode"></param>
-        public Grid2d(Vec2d origin, Vec2d scale, int countX, int countY, WrapMode wrapMode = WrapMode.Clamp)
-            : this(countX, countY)
-        {
-            Origin = origin;
-            Scale = scale;
-            _wrapX = _wrapY = wrapMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="scale"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="wrapModeX"></param>
-        /// <param name="wrapModeY"></param>
-        public Grid2d(Vec2d origin, Vec2d scale, int countX, int countY, WrapMode wrapModeX, WrapMode wrapModeY)
-            : this(countX, countY)
-        {
-            Origin = origin;
-            Scale = scale;
-            _wrapX = wrapModeX;
-            _wrapY = wrapModeY;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bounds"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="wrapMode"></param>
-        public Grid2d(Interval2d bounds, int countX, int countY, WrapMode wrapMode = WrapMode.Clamp)
-            : this(countX, countY)
-        {
-            Bounds = bounds;
-            _wrapX = _wrapY = wrapMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bounds"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="wrapModeX"></param>
-        /// <param name="wrapModeY"></param>
-        public Grid2d(Interval2d bounds, int countX, int countY, WrapMode wrapModeX, WrapMode wrapModeY)
-            : this(countX, countY)
-        {
-            Bounds = bounds;
-            _wrapX = wrapModeX;
-            _wrapY = wrapModeY;
+            _n = countX * countY;
         }
 
 
@@ -134,10 +73,9 @@ namespace SpatialSlur.SlurField
             _wrapY = other._wrapY;
         }
 
-        
+
         /// <summary>
         /// Gets or sets the origin of the grid.
-        /// This is the position of the first grid point.
         /// </summary>
         public Vec2d Origin
         {
@@ -154,9 +92,8 @@ namespace SpatialSlur.SlurField
             get { return new Vec2d(_tx, _ty); }
             set
             {
-                (_tx, _ty) = value;
-                _txInv = 1.0 / _tx;
-                _tyInv = 1.0 / _ty;
+                ScaleX = value.X;
+                ScaleY = value.Y;
             }
         }
 
@@ -164,14 +101,33 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public Vec2d Span
+        public double ScaleX
         {
-            get
+            get { return _tx; }
+            set
             {
-                return new Vec2d(
-                    (_nx + 1) * _tx, 
-                    (_ny + 1) * _ty
-                    );
+                if (value == 0.0)
+                    throw new DivideByZeroException();
+
+                _tx = value;
+                _txInv = 1.0 / value;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double ScaleY
+        {
+            get { return _ty; }
+            set
+            {
+                if (value == 0.0)
+                    throw new DivideByZeroException();
+
+                _ty = value;
+                _tyInv = 1.0 / value;
             }
         }
 
@@ -232,6 +188,15 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
+        public WrapMode WrapMode
+        {
+            set { _wrapX = _wrapY = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public WrapMode WrapModeX
         {
             get { return _wrapX; }
@@ -266,6 +231,7 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
+        /// Returns the coordinate at the given indices.
         /// Convention is (i, j) => (x, y)
         /// </summary>
         /// <param name="i"></param>
@@ -326,7 +292,7 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public (int, int) Wrap(int i, int j)
+        public (int i, int j) Wrap(int i, int j)
         {
             return (WrapX(i), WrapY(j));
         }
@@ -410,7 +376,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public (int, int) IndicesAt(int index)
+        public (int i, int j) IndicesAt(int index)
         {
             return GridUtil.ExpandIndex(index, _nx);
         }
@@ -420,7 +386,7 @@ namespace SpatialSlur.SlurField
         /// Returns the indices of the nearest point in the grid.
         /// </summary>
         /// <param name="point"></param>
-        public (int, int) IndicesAt(Vec2d point)
+        public (int i, int j) IndicesAt(Vec2d point)
         {
             return (
                 (int)Math.Round((point.X - _dx) * _txInv),
@@ -543,39 +509,12 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        internal (int,int) GetBoundaryOffsets()
+        internal (int i, int j) GetBoundaryOffsets()
         {
-            return(GetX(), GetY());
-
-            int GetX()
-            {
-                switch (WrapModeX)
-                {
-                    case WrapMode.Clamp:
-                        return 0;
-                    case WrapMode.Repeat:
-                        return _nx - 1;
-                    case WrapMode.Mirror:
-                        return 0;
-                }
-
-                throw new NotSupportedException();
-            }
-
-            int GetY()
-            {
-                switch (WrapModeY)
-                {
-                    case WrapMode.Clamp:
-                        return 0;
-                    case WrapMode.Repeat:
-                        return _n - _nx;
-                    case WrapMode.Mirror:
-                        return 0;
-                }
-
-                throw new NotSupportedException();
-            }
+            return(
+                WrapModeX == WrapMode.Repeat ? _nx - 1 : 0,
+                WrapModeY == WrapMode.Repeat ? _n - _nx : 0
+                );
         }
     }
 }

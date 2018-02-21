@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -200,6 +196,20 @@ namespace SpatialSlur.SlurCore
             other.Rotation = Rotation.ApplyInverse(other.Rotation);
             other.Translation = ApplyInverse(other.Translation);
             return other;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(Orient2d other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return
+                Translation.ApproxEquals(other.Translation, tolerance) &&
+                Rotation.ApproxEquals(other.Rotation, tolerance);
         }
 
 

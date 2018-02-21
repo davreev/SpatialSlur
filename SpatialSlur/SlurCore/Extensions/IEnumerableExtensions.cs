@@ -4,8 +4,6 @@ using System.Linq;
 
 using SpatialSlur.SlurData;
 
-using static SpatialSlur.SlurData.DataUtil;
-
 /*
  * Notes
  */
@@ -18,19 +16,40 @@ namespace SpatialSlur.SlurCore
     public static class IEnumerableExtensions
     {
         #region IEnumerable<T>
-
+        
         /// <summary>
-        /// Assumes the given array is large enough to fit the entire sequence.
-        /// Returns the number of items in the sequence.
+        /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="seqeunce"></param>
+        /// <param name="source"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> IndicesWhere<T>(this IEnumerable<T> source, Predicate<T> predicate)
+        {
+            int index = 0;
+
+            foreach(var item in source)
+            {
+                if (predicate(item))
+                    yield return index;
+
+                index++;
+            }
+        }
+
+
+        /// <summary>
+        /// Assumes the given array is large enough to fit the entire source.
+        /// Returns the number of items in the source.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
         /// <param name="array"></param>
-        public static int ToArray<T>(this IEnumerable<T> seqeunce, T[] array)
+        public static int ToArray<T>(this IEnumerable<T> source, T[] array)
         {
             int n = 0;
 
-            foreach (var item in seqeunce)
+            foreach (var item in source)
                 array[n++] = item;
 
             return n;
@@ -38,17 +57,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes the given array is large enough to fit the entire sequence.
-        /// Returns the number of items in the sequence.
+        /// Assumes the given array is large enough to fit the entire source.
+        /// Returns the number of items in the source.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="seqeunce"></param>
+        /// <param name="source"></param>
         /// <param name="array"></param>
-        public static int ToArray<T>(this IEnumerable<T> seqeunce, T[] array, int index)
+        public static int ToArray<T>(this IEnumerable<T> source, T[] array, int index)
         {
             int n = 0;
 
-            foreach (var item in seqeunce)
+            foreach (var item in source)
             {
                 array[n + index] = item;
                 n++;
@@ -62,11 +81,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="seqeunce"></param>
+        /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void Action<T>(this IEnumerable<T> seqeunce, Action<T> action)
+        public static void Action<T>(this IEnumerable<T> source, Action<T> action)
         {
-            foreach (var t in seqeunce)
+            foreach (var t in source)
                 action(t);
         }
 
@@ -76,16 +95,16 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="K"></typeparam>
-        /// <param name="sequence"></param>
+        /// <param name="source"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public static T SelectMin<T, K>(this IEnumerable<T> sequence, Func<T, K> getKey)
+        public static T SelectMin<T, K>(this IEnumerable<T> source, Func<T, K> getKey)
             where K : IComparable<K>
         {
-            var t0 = sequence.First();
+            var t0 = source.First();
             var k0 = getKey(t0);
 
-            foreach (T t in sequence.Skip(1))
+            foreach (T t in source.Skip(1))
             {
                 var k = getKey(t);
 
@@ -104,15 +123,15 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="sequence"></param>
+        /// <param name="source"></param>
         /// <param name="getValue"></param>
         /// <returns></returns>
-        public static T SelectMin<T>(this IEnumerable<T> sequence, Func<T, double> getValue)
+        public static T SelectMin<T>(this IEnumerable<T> source, Func<T, double> getValue)
         {
-            var t0 = sequence.First();
+            var t0 = source.First();
             var k0 = getValue(t0);
 
-            foreach (T t in sequence.Skip(1))
+            foreach (T t in source.Skip(1))
             {
                 var k = getValue(t);
 
@@ -131,15 +150,15 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="sequence"></param>
+        /// <param name="source"></param>
         /// <param name="getValue"></param>
         /// <returns></returns>
-        public static T SelectMin<T>(this IEnumerable<T> sequence, Func<T, int> getValue)
+        public static T SelectMin<T>(this IEnumerable<T> source, Func<T, int> getValue)
         {
-            var t0 = sequence.First();
+            var t0 = source.First();
             var k0 = getValue(t0);
 
-            foreach (T t in sequence.Skip(1))
+            foreach (T t in source.Skip(1))
             {
                 var k = getValue(t);
 
@@ -159,16 +178,16 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="K"></typeparam>
-        /// <param name="sequence"></param>
+        /// <param name="source"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public static T SelectMax<T, K>(this IEnumerable<T> sequence, Func<T, K> getKey)
+        public static T SelectMax<T, K>(this IEnumerable<T> source, Func<T, K> getKey)
             where K : IComparable<K>
         {
-            var t0 = sequence.First();
+            var t0 = source.First();
             var k0 = getKey(t0);
 
-            foreach (T t in sequence.Skip(1))
+            foreach (T t in source.Skip(1))
             {
                 var k = getKey(t);
                 if (k.CompareTo(k0) > 0)
@@ -186,15 +205,15 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="sequence"></param>
+        /// <param name="source"></param>
         /// <param name="getValue"></param>
         /// <returns></returns>
-        public static T SelectMax<T>(this IEnumerable<T> sequence, Func<T, double> getValue)
+        public static T SelectMax<T>(this IEnumerable<T> source, Func<T, double> getValue)
         {
-            var t0 = sequence.First();
+            var t0 = source.First();
             var k0 = getValue(t0);
 
-            foreach (T t in sequence.Skip(1))
+            foreach (T t in source.Skip(1))
             {
                 var k = getValue(t);
                 if (k.CompareTo(k0) > 0)
@@ -212,15 +231,15 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="sequence"></param>
+        /// <param name="source"></param>
         /// <param name="getValue"></param>
         /// <returns></returns>
-        public static T SelectMax<T>(this IEnumerable<T> sequence, Func<T, int> getValue)
+        public static T SelectMax<T>(this IEnumerable<T> source, Func<T, int> getValue)
         {
-            var t0 = sequence.First();
+            var t0 = source.First();
             var k0 = getValue(t0);
 
-            foreach (T t in sequence.Skip(1))
+            foreach (T t in source.Skip(1))
             {
                 var k = getValue(t);
                 if (k.CompareTo(k0) > 0)
@@ -523,27 +542,28 @@ namespace SpatialSlur.SlurCore
             return sum / count;
         }
 
+
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        public static void GetCovarianceMatrix(this IEnumerable<Vec2d> vectors, double[] result)
+        /// <param name="points"></param>
+        /// <param name="indexMap"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vec2d> RemoveCoincident(this IEnumerable<Vec2d> points, double tolerance = SlurMath.ZeroTolerance)
         {
-            DataUtil.GetCovarianceMatrix(vectors, result);
+            return DataUtil.RemoveCoincident(points, p => p, null, tolerance);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        /// <param name="mean"></param>
+        /// <param name="points"></param>
+        /// <param name="indexMap"></param>
         /// <returns></returns>
-        public static void GetCovarianceMatrix(this IEnumerable<Vec2d> vectors, Vec2d mean, double[] result)
+        public static List<Vec2d> RemoveCoincident(this IEnumerable<Vec2d> points, out List<int> indexMap, double tolerance = SlurMath.ZeroTolerance)
         {
-            DataUtil.GetCovarianceMatrix(vectors, mean, result);
+            return DataUtil.RemoveCoincident(points, p => p, out indexMap, null, tolerance);
         }
 
         #endregion
@@ -585,27 +605,28 @@ namespace SpatialSlur.SlurCore
             return sum / count;
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        public static void GetCovarianceMatrix(this IEnumerable<Vec3d> vectors, double[] result)
+        /// <param name="points"></param>
+        /// <param name="indexMap"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vec3d> RemoveCoincident(this IEnumerable<Vec3d> points, double tolerance = SlurMath.ZeroTolerance)
         {
-            DataUtil.GetCovarianceMatrix(vectors, result);
+            return DataUtil.RemoveCoincident(points, p => p, null, tolerance);
         }
 
 
         /// <summary>
-        /// Returns the entries of the covariance matrix in column-major order.
+        /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        /// <param name="mean"></param>
-        public static void GetCovarianceMatrix(this IEnumerable<Vec3d> vectors, Vec3d mean, double[] result)
+        /// <param name="points"></param>
+        /// <param name="indexMap"></param>
+        /// <returns></returns>
+        public static List<Vec3d> RemoveCoincident(this IEnumerable<Vec3d> points, out List<int> indexMap, double tolerance = SlurMath.ZeroTolerance)
         {
-            DataUtil.GetCovarianceMatrix(vectors, mean, result);
+            return DataUtil.RemoveCoincident(points, p => p, out indexMap, null, tolerance);
         }
 
         #endregion
@@ -656,29 +677,6 @@ namespace SpatialSlur.SlurCore
             }
 
             ArrayMath.Scale(result, 1.0 / count, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        public static void GetCovarianceMatrix(this IEnumerable<double[]> vectors, double[] result)
-        {
-            DataUtil.GetCovarianceMatrix(vectors, result);
-        }
-
-
-        /// <summary>
-        /// Returns the entries of the covariance matrix in column-major order.
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="mean"></param>
-        /// <param name="result"></param>
-        public static void GetCovarianceMatrix(this IEnumerable<double[]> vectors, double[] mean, double[] result)
-        {
-            DataUtil.GetCovarianceMatrix(vectors, result);
         }
 
         #endregion

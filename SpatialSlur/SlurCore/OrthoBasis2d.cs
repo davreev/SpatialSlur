@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -71,7 +65,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="x"></param>
         public OrthoBasis2d(Vec2d x)
         {
-            _x = x.Direction;
+            _x = x.Unit;
         }
 
 
@@ -103,7 +97,7 @@ namespace SpatialSlur.SlurCore
         public Vec2d X
         {
             get { return _x; }
-            set { _x = value.Direction; }
+            set { _x = value.Unit; }
         }
 
 
@@ -194,6 +188,18 @@ namespace SpatialSlur.SlurCore
         {
             other._x = ApplyInverse(other._x);
             return other;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(OrthoBasis2d other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return _x.ApproxEquals(other._x, tolerance);
         }
 
 

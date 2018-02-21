@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * Notes
@@ -16,9 +13,9 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     [Serializable]
     public class HeQuadStrip<V, E, F> : IEnumerable<E>
-        where V : HeMeshBase<V, E, F>.Vertex
-        where E : HeMeshBase<V, E, F>.Halfedge
-        where F : HeMeshBase<V, E, F>.Face
+        where V : HeMesh<V, E, F>.Vertex
+        where E : HeMesh<V, E, F>.Halfedge
+        where F : HeMesh<V, E, F>.Face
     {
         private E _first;
         private E _last;
@@ -145,7 +142,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         private E NextInStrip(E hedge)
         {
-            return hedge.NextInFace.NextInFace.Twin;
+            return hedge.Next.Next.Twin;
         }
 
 
@@ -156,7 +153,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         private E PrevInStrip(E hedge)
         {
-            return hedge.Twin.NextInFace.NextInFace;
+            return hedge.Twin.Next.Next;
         }
 
 

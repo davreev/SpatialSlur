@@ -1,17 +1,12 @@
 ﻿#if USING_RHINO
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Rhino.Geometry;
 
 /*
  * Notes
  */
- 
+
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
@@ -37,7 +32,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static implicit operator Interval(Intervald interval)
         {
-            return new Intervald(interval.A, interval.B);
+            return new Interval(interval.A, interval.B);
         }
     }
 

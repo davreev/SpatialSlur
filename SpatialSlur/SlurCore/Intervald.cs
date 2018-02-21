@@ -26,6 +26,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator string(Intervald interval)
+        {
+            return interval.ToString();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="d"></param>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -144,9 +154,10 @@ namespace SpatialSlur.SlurCore
         #endregion
 
 
-        /// <summary></summary>
+        /// <summary>The start of the interval</summary>
         public double A;
-        /// <summary></summary>
+
+        /// <summary>The end of the interval</summary>
         public double B;
 
 
@@ -167,8 +178,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="b"></param>
         public Intervald(double a, double b)
         {
-            this.A = a;
-            this.B = b;
+            A = a;
+            B = b;
         }
 
 
@@ -177,10 +188,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="values"></param>
         public Intervald(IEnumerable<double> values)
-            : this()
         {
             A = B = values.First();
-            Include(values.Skip(1), ref A, ref B);
+
+            foreach (var t in values.Skip(1))
+                IncludeIncreasing(t);
         }
 
 
@@ -193,7 +205,6 @@ namespace SpatialSlur.SlurCore
         }
 
 
-
         /// <summary>
         /// Returns true if A is less than B.
         /// </summary>
@@ -204,7 +215,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns positive if this interval is increasing, negative if it's decreasing, and zero if it's invalid.
         /// </summary>
         /// <returns></returns>
         public int Orientation
@@ -285,8 +296,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="b"></param>
         public void Set(double a, double b)
         {
-            this.A = a;
-            this.B = b;
+            A = a;
+            B = b;
         }
 
 
@@ -298,7 +309,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Intervald other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return Math.Abs(other.A - A) < tolerance && Math.Abs(other.B - B) < tolerance;
+            return 
+                SlurMath.ApproxEquals(A, other.A, tolerance) &&
+                SlurMath.ApproxEquals(B, other.B, tolerance);
         }
 
 
@@ -468,15 +481,31 @@ namespace SpatialSlur.SlurCore
         public void Include(double t)
         {
             if (IsDecreasing)
-            {
-                if (t > A) A = t;
-                else if (t < B) B = t;
-            }
+                IncludeDecreasing(t);
             else
-            {
-                if (t > B) B = t;
-                else if (t < A) A = t;
-            }
+                IncludeIncreasing(t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        internal void IncludeDecreasing(double t)
+        {
+            if (t > A) A = t;
+            else if (t < B) B = t;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        internal void IncludeIncreasing(double t)
+        {
+            if (t > B) B = t;
+            else if (t < A) A = t;
         }
 
 
@@ -497,23 +526,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="values"></param>
         public void Include(IEnumerable<double> values)
         {
-            if (IsDecreasing)
-                Include(values, ref B, ref A);
-            else
-                Include(values, ref A, ref B);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void Include(IEnumerable<double> values, ref double min, ref double max)
-        {
-            foreach (double t in values)
-            {
-                if (t < min) min = t;
-                else if (t > max) max = t;
-            }
+            Include(new Intervald(values));
         }
 
 

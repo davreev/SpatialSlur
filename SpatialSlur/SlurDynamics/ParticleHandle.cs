@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
@@ -26,17 +22,14 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="handle"></param>
         public static implicit operator int(ParticleHandle handle)
         {
-            return handle.Index;
+            return handle._index;
         }
 
         #endregion
 
 
-        /// <summary></summary>
-        public Vec3d Delta;
-
-        /// <summary></summary>
-        public int Index = -1;
+        private Vec3d _delta;
+        private int _index = -1;
 
 
         /// <summary>
@@ -57,27 +50,24 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vec3d Delta { get => _delta; set => _delta = value; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Index { get => _index; set => _index = value; }
+
+
         #region Explicit interface implementations
-
-        /// <summary></summary>
-        Vec3d IHandle.Delta
-        {
-            get { return Delta; }
-        }
-
 
         /// <summary></summary>
         Vec3d IHandle.AngleDelta
         {
             get { return Vec3d.Zero; }
-        }
-
-
-        /// <summary></summary>
-        int IHandle.Index
-        {
-            get { return Index; }
-            set { Index = value; }
         }
 
         #endregion

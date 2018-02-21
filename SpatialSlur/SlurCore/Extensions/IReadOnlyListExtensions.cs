@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Drawing;
 
@@ -107,6 +106,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="action"></param>
+        public static void Action<T>(this IReadOnlyList<T> source, Action<T, int> action, bool parallel = false)
+        {
+            ActionRange(source, 0, source.Count, action, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static U[] Convert<T, U>(this IReadOnlyList<T> source, Func<T, U> converter, bool parallel = false)
         {
             return ConvertRange(source, 0, source.Count, converter, parallel);
@@ -168,6 +179,44 @@ namespace SpatialSlur.SlurCore
             {
                 for (int i = 0; i < count; i++)
                     action(source[i + index]);
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="action"></param>
+        public static void ActionRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T, int> action, bool parallel = false)
+        {
+            if (source is T[])
+            {
+                ArrayExtensions.ActionRange((T[])source, index, count, action, parallel);
+                return;
+            }
+
+            if (parallel)
+            {
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        int j = i + index;
+                        action(source[j], j);
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    int j = i + index;
+                    action(source[j], j);
+                }
             }
         }
 
@@ -441,12 +490,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Allows enumeration over segments of the given list.
         /// </summary>
-        public static IEnumerable<ReadOnlySubList<T>> Segment<T>(this IReadOnlyList<T> source, IEnumerable<int> sizes)
+        public static IEnumerable<ReadOnlyListView<T>> Batch<T>(this IReadOnlyList<T> source, IEnumerable<int> sizes)
         {
             int marker = 0;
             foreach (int n in sizes)
             {
-                yield return new ReadOnlySubList<T>(source, marker, n);
+                yield return new ReadOnlyListView<T>(source, marker, n);
                 marker += n;
             }
         }
@@ -513,125 +562,7 @@ namespace SpatialSlur.SlurCore
 
             return vectors[i].LerpTo(vectors[i + 1], factor);
         }
-
-
-        /// <summary>
-        /// Removes duplicate points from the same list
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.RemoveCoincident(points, p => p, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="indexMap"></param>
-        /// <returns></returns>
-        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.RemoveCoincident(points, p => p, out indexMap, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="indexMap"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static List<Vec2d> RemoveCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.RemoveCoincident(points, p => p, grid, out indexMap, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(points, p => p, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> points, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(points, p => p, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of the first coincident point in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of the first coincident point in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of all coincident points in B.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of all coincident points in B.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec2d> pointsA, IReadOnlyList<Vec2d> pointsB, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, grid, tolerance);
-        }
-
+        
         #endregion
 
 
@@ -653,126 +584,6 @@ namespace SpatialSlur.SlurCore
             return vectors[i].LerpTo(vectors[i + 1], factor);
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.RemoveCoincident(points, p => p, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="indexMap"></param>
-        /// <returns></returns>
-        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.RemoveCoincident(points, p => p, out indexMap, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="indexMap"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static List<Vec3d> RemoveCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.RemoveCoincident(points, p => p, grid, out indexMap, tolerance);
-
-        }
-
-
-        /// <summary>
-        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(points, p => p, tolerance);
-
-        }
-
-
-        /// <summary>
-        /// For each point, returns the index of the first coincident point within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> points, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(points, p => p, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of the first coincident point in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of the first coincident point in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetFirstCoincident(pointsA, pointsB, p => p, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of all coincident points in B.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each point in A, returns the index of all coincident points in B.
-        /// </summary>
-        /// <param name="pointsA"></param>
-        /// <param name="pointsB"></param>
-        /// <param name="tolerance"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(this IReadOnlyList<Vec3d> pointsA, IReadOnlyList<Vec3d> pointsB, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return DataUtil.GetAllCoincident(pointsA, pointsB, p => p, grid, tolerance);
-        }
-        
         #endregion
 
 

@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -27,9 +23,22 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <returns></returns>
-        public static ReadOnlySubArray<T> AsReadOnly<T>(this IDiscreteField<T> field)
+        public static ArrayView<T> ToView<T>(this IDiscreteField<T> field)
         {
-            return new ReadOnlySubArray<T>(field.Values, 0, field.Count);
+            return field.Values.GetView(0, field.Count);
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public static IDiscreteField<T> Duplicate<T>(this IDiscreteField<T> field)
+            where T : struct
+        {
+            return field.Duplicate(true);
         }
 
 
@@ -77,6 +86,21 @@ namespace SpatialSlur.SlurField
         {
             field.Values.Set(sequence);
         }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="converter"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void Convert<T, U>(this IDiscreteField<T> field, Func<T, U> converter, IDiscreteField<U> result, bool parallel = false)
+        {
+            field.Values.Convert(converter, result.Values, parallel);
+        }
 
 
         /// <summary>
@@ -112,106 +136,6 @@ namespace SpatialSlur.SlurField
                 ArrayMath.Parallel.Function(f0.Values, f1.Values, f2.Values, f0.Count, func, result.Values);
             else
                 ArrayMath.Function(f0.Values, f1.Values, f2.Values, f0.Count, func, result.Values);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="field"></param>
-        /// <param name="other"></param>
-        /// <param name="parallel"></param>
-        public static void Sample<T>(this IDiscreteField2d<T> field, IField2d<T> other, bool parallel = false)
-        {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), range => Body(range.Item1,range.Item2));
-            else
-                Body(0, field.Count);
-
-            void Body(int from, int to)
-            {
-                var vals = field.Values;
-
-                for (int i = from; i < to; i++)
-                    vals[i] = other.ValueAt(field.CoordinateAt(i));
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="field"></param>
-        /// <param name="other"></param>
-        /// <param name="converter"></param>
-        /// <param name="parallel"></param>
-        public static void Sample<T, U>(this IDiscreteField2d<T> field, IField2d<U> other, Func<U, T> converter, bool parallel = false)
-        {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), range => Body(range.Item1, range.Item2));
-            else
-                Body(0, field.Count);
-
-            void Body(int from, int to)
-            {
-                var vals = field.Values;
-
-                for (int i = from; i < to; i++)
-                    vals[i] = converter(other.ValueAt(field.CoordinateAt(i)));
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="field"></param>
-        /// <param name="other"></param>
-        /// <param name="parallel"></param>
-        public static void Sample<T>(this IDiscreteField3d<T> field, IField3d<T> other, bool parallel = false)
-        {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), range => Body(range.Item1, range.Item2));
-            else
-                Body(0, field.Count);
-
-            void Body(int from, int to)
-            {
-                var vals = field.Values;
-
-                for (int i = from; i < to; i++)
-                    vals[i] = other.ValueAt(field.CoordinateAt(i));
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="field"></param>
-        /// <param name="other"></param>
-        /// <param name="converter"></param>
-        /// <param name="parallel"></param>
-        public static void Sample<T, U>(this IDiscreteField3d<T> field, IField3d<U> other, Func<U, T> converter, bool parallel = false)
-        {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, field.Count), range => Body(range.Item1, range.Item2));
-            else
-                Body(0, field.Count);
-
-            void Body(int from, int to)
-            {
-                var vals = field.Values;
-
-                for (int i = from; i < to; i++)
-                    vals[i] = converter(other.ValueAt(field.CoordinateAt(i)));
-            }
         }
 
         #endregion

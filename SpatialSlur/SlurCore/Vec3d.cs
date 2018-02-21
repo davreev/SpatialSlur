@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -55,6 +51,16 @@ namespace SpatialSlur.SlurCore
         /// <param name="vector"></param>
         /// <returns></returns>
         public static implicit operator Vec3d(Vec4d vector)
+        {
+            return new Vec3d(vector.X, vector.Y, vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Vec3d(Vec3i vector)
         {
             return new Vec3d(vector.X, vector.Y, vector.Z);
         }
@@ -466,7 +472,7 @@ namespace SpatialSlur.SlurCore
         /// Returns the zero vector if this vector is zero length.
         /// </summary>
         /// <returns></returns>
-        public Vec3d Direction
+        public Vec3d Unit
         {
             get
             {
@@ -632,10 +638,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec3d other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return 
-                Math.Abs(other.X - X) < tolerance && 
-                Math.Abs(other.Y - Y) < tolerance &&
-                Math.Abs(other.Z - Z) < tolerance;
+            return
+                SlurMath.ApproxEquals(X, other.X, tolerance) &&
+                SlurMath.ApproxEquals(Y, other.Y, tolerance) &&
+                SlurMath.ApproxEquals(Z, other.Z, tolerance);
         }
 
 
@@ -647,10 +653,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Vec3d other, Vec3d tolerance)
         {
-            return 
-                Math.Abs(other.X - X) < tolerance.X && 
-                Math.Abs(other.Y - Y) < tolerance.Y && 
-                Math.Abs(other.Z - Z) < tolerance.Z;
+            return
+                SlurMath.ApproxEquals(X, other.X, tolerance.X) &&
+                SlurMath.ApproxEquals(Y, other.Y, tolerance.Y) &&
+                SlurMath.ApproxEquals(Z, other.Z, tolerance.Z);
         }
 
 
@@ -766,8 +772,17 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Vec3d SlerpTo(Vec3d other, double angle, double factor)
         {
-            double st = 1.0 / Math.Sin(angle);
-            return this * (Math.Sin((1.0 - factor) * angle) * st) + other * (Math.Sin(factor * angle) * st);
+            var sa = Math.Sin(angle);
+
+            // handle aligned cases
+            if (sa > 0.0)
+            {
+                var saInv = 1.0 / sa;
+                var af = angle * factor;
+                return this * Math.Sin(angle - af) * saInv + other * Math.Sin(af) * saInv;
+            }
+
+            return this;
         }
 
 

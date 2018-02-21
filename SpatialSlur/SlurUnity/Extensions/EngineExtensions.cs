@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if USING_UNITY
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,7 +22,7 @@ namespace SpatialSlur.SlurUnity
     /// </summary>
     public static class EngineExtensions
     {
-        #region Matrix4x4
+#region Matrix4x4
 
         /// <summary>
         /// 
@@ -79,6 +81,8 @@ namespace SpatialSlur.SlurUnity
             return matrix;
         }
 
-        #endregion
+#endregion
     }
 }
+
+#endif

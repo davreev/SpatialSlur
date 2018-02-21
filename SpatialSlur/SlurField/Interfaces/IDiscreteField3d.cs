@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using SpatialSlur.SlurCore;
 
 /*
  * Notes 
  */
- 
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>
     /// 
     /// </summary>
-    public interface IDiscreteField3d<TValue> : IDiscreteField<TValue>
+    public interface IDiscreteField3d<T> : IDiscreteField<T>
     {
         /// <summary>
         /// 
@@ -36,6 +32,6 @@ namespace SpatialSlur.SlurField
         /// The value array of the returned field is a deep copy but other fields may be shallow depending on the implementation.
         /// </summary>
         /// <returns></returns>
-        new IDiscreteField3d<TValue> Duplicate(bool copyValues);
+        new IDiscreteField3d<T> Duplicate(bool setValues);
     }
 }

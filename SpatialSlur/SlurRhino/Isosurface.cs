@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
 
 using Rhino.Geometry;
 
@@ -1006,19 +1005,6 @@ namespace SpatialSlur.SlurField
                 });
 
                 return result;
-            }
-
-
-            /// <summary>
-            /// Returns an isosurface mesh at the given threshold.
-            /// </summary>
-            /// <param name="field"></param>
-            /// <param name="normals"></param>
-            /// <param name="threshold"></param>
-            /// <returns></returns>
-            public static Mesh Evaluate(GridField3d<double> field, IDiscreteField<Vec3d> normals, double threshold)
-            {
-                return Evaluate(field, normals.Values, threshold);
             }
 
 

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Text;
 using System.Drawing;
 using SpatialSlur.SlurData;
 
@@ -12,7 +10,7 @@ using SpatialSlur.SlurData;
  */
 
 namespace SpatialSlur.SlurCore
-{ 
+{
     /// <summary>
     /// 
     /// </summary>
@@ -119,11 +117,11 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes the specified range is less than or equal to the number of elements in the given sequence.
+        /// Assumes the specified range is less than or equal to the number of items in the given sequence.
         /// </summary>
-        public static void SetRange<T>(this T[] array, IEnumerable<T> sequence, int index, int count)
+        public static void SetRange<T>(this T[] array, IEnumerable<T> items, int index, int count)
         {
-            var itr = sequence.GetEnumerator();
+            var itr = items.GetEnumerator();
 
             for (int i = 0; i < count; i++)
             {
@@ -160,6 +158,20 @@ namespace SpatialSlur.SlurCore
         {
             for (int i = 0; i < indices.Length; i++)
                 array[indices[i]] = other[i];
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static ArrayView<T> GetView<T>(this T[] array, int index, int count)
+        {
+            return new ArrayView<T>(array, index, count);
         }
 
 
@@ -211,6 +223,18 @@ namespace SpatialSlur.SlurCore
         /// <param name="source"></param>
         /// <param name="action"></param>
         public static void Action<T>(this T[] source, Action<T> action, bool parallel = false)
+        {
+            ActionRange(source, 0, source.Length, action, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="action"></param>
+        public static void Action<T>(this T[] source, Action<T, int> action, bool parallel = false)
         {
             ActionRange(source, 0, source.Length, action, parallel);
         }
@@ -274,6 +298,38 @@ namespace SpatialSlur.SlurCore
             {
                 for (int i = 0; i < count; i++)
                     action(source[i + index]);
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="action"></param>
+        public static void ActionRange<T>(this T[] source, int index, int count, Action<T, int> action, bool parallel = false)
+        {
+            if (parallel)
+            {
+                Parallel.ForEach(Partitioner.Create(0, count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        int j = i + index;
+                        action(source[j], j);
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    int j = i + index;
+                    action(source[j], j);
+                }
             }
         }
 
@@ -481,12 +537,12 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// Allows enumeration over segments of the given list.
         /// </summary>
-        public static IEnumerable<ReadOnlySubArray<T>> Segment<T>(this T[] source, IEnumerable<int> sizes)
+        public static IEnumerable<ReadOnlyArrayView<T>> Batch<T>(this T[] source, IEnumerable<int> sizes)
         {
             int marker = 0;
             foreach (int n in sizes)
             {
-                yield return new ReadOnlySubArray<T>(source, marker, n);
+                yield return new ReadOnlyArrayView<T>(source, marker, n);
                 marker += n;
             }
         }
@@ -606,7 +662,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Equivalent of List.FindIndex for IList.
+        /// Equivalent of List.FindIndex for arrays.
         /// </summary>
         public static int FindIndex<T>(this T[] array, Predicate<T> match)
         {
@@ -615,7 +671,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Equivalent of List.FindIndex for IList.
+        /// Equivalent of List.FindIndex for arrays.
         /// </summary>
         public static int FindIndex<T>(this T[] array, int index, int length, Predicate<T> match)
         {
@@ -633,13 +689,14 @@ namespace SpatialSlur.SlurCore
         /// Moves elements for which the given predicate returns true to the front of the list.
         /// Returns the index after the last used element.
         /// </summary>
-        public static int Compact<T>(this T[] array, Predicate<T> include)
+        public static int Swim<T>(this T[] array, Predicate<T> include)
         {
             int marker = 0;
 
             for (int i = 0; i < array.Length; i++)
             {
                 T t = array[i];
+
                 if (include(t))
                     array[marker++] = t;
             }

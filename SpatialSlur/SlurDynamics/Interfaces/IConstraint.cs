@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics
 {
@@ -16,23 +12,16 @@ namespace SpatialSlur.SlurDynamics
     public interface IConstraint
     {
         /// <summary>
+        /// 
+        /// </summary>
+        ConstraintType Type { get; }
+
+
+        /// <summary>
         /// Handles to all bodies used by this constraint.
         /// </summary>
         IEnumerable<IHandle> Handles { get; }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        double Weight { get; set; }
-
-
-        /// <summary>
-        /// Returns true if this constraint acts on the orientation of given bodies.
-        /// </summary>
-        /// <returns></returns>
-        bool AppliesRotation { get; }
-        
 
         /// <summary>
         /// This method is responsible for calculating all deltas and weights associated with the constraint.

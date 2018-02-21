@@ -1,6 +1,5 @@
 ﻿
 using System;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes

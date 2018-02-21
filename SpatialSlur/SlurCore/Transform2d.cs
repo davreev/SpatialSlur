@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-/*
+﻿/*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents an angle preserving affine transformation in 2 dimensions
+    /// Represents an angle-preserving affine transformation in 2 dimensions.
     /// </summary>
     public struct Transform2d
     {
@@ -176,10 +170,20 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Transform2d Apply(Transform2d other)
         {
+            Apply(ref other);
+            return other;
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Apply(ref Transform2d other)
+        {
             other.Rotation = Rotation.Apply(other.Rotation);
             other.Translation = Apply(other.Translation);
             other.Scale *= Scale;
-            return other;
         }
 
 
@@ -189,10 +193,35 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Transform2d ApplyInverse(Transform2d other)
         {
+            ApplyInverse(ref other);
+            return other;
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void ApplyInverse(ref Transform2d other)
+        {
             other.Rotation = Rotation.ApplyInverse(other.Rotation);
             other.Translation = ApplyInverse(other.Translation);
             other.Scale /= Scale;
-            return other;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(ref Transform2d other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return
+                Translation.ApproxEquals(other.Translation, tolerance) &&
+                Rotation.ApproxEquals(other.Rotation, tolerance) &&
+                Scale.ApproxEquals(other.Scale, tolerance);
         }
 
 

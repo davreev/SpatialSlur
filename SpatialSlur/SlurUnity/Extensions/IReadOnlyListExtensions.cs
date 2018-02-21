@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurUnity
         public static Color Lerp(this IReadOnlyList<Color> colors, float factor)
         {
             int last = colors.Count - 1;
-            factor = SlurMathf.Fract(factor * last, out int i);
+            factor = SlurMath.Fract(factor * last, out int i);
 
             if (i < 0)
                 return colors[0];

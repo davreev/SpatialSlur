@@ -25,6 +25,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator string(Interval3d interval)
+        {
+            return $"({interval.X}, {interval.Y}, {interval.Z})";
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="d"></param>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -254,12 +264,17 @@ namespace SpatialSlur.SlurCore
         public Interval3d(IEnumerable<Vec3d> points)
             : this()
         {
-            var p = points.First();
-            X = new Intervald(p.X);
-            Y = new Intervald(p.Y);
-            Z = new Intervald(p.Z);
+            (var x, var y, var z) = points.First();
+            X = new Intervald(x);
+            Y = new Intervald(y);
+            Z = new Intervald(z);
 
-            Include(points.Skip(1));
+            foreach (var p in points.Skip(1))
+            {
+                X.IncludeIncreasing(p.X);
+                Y.IncludeIncreasing(p.Y);
+                Z.IncludeIncreasing(p.Z);
+            }
         }
 
 
@@ -328,7 +343,7 @@ namespace SpatialSlur.SlurCore
                 Z.B = value.Z;
             }
         }
-        
+
 
         /// <summary>
         /// 
@@ -376,6 +391,15 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Returns the area of the interval.
+        /// </summary>
+        public double Area
+        {
+            get { return Math.Abs(X.Length * Y.Length * Z.Length); }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
@@ -393,7 +417,10 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Interval3d other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance) && Z.ApproxEquals(other.Z, tolerance);
+            return
+                X.ApproxEquals(other.X, tolerance) && 
+                Y.ApproxEquals(other.Y, tolerance) && 
+                Z.ApproxEquals(other.Z, tolerance);
         }
 
 
@@ -541,9 +568,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         public void Include(IEnumerable<Vec3d> points)
         {
-            X.Include(points.Select(p => p.X));
-            Y.Include(points.Select(p => p.Y));
-            Z.Include(points.Select(p => p.Z));
+            Include(new Interval3d(points));
         }
 
 

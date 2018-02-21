@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 
@@ -84,7 +82,7 @@ namespace SpatialSlur.SlurRhino
         /// </summary>
         /// <param name="plane"></param>
         /// <returns></returns>
-        public static Transform ToInverseTransform(this Plane plane)
+        public static Transform ToTransformInverse(this Plane plane)
         {
             return RhinoFactory.Transform.CreateInverseFromPlane(plane);
         }
@@ -192,22 +190,6 @@ namespace SpatialSlur.SlurRhino
              point.X * xform.M10 + point.Y * xform.M11 + point.Z * xform.M12 + xform.M13,
              point.X * xform.M20 + point.Y * xform.M21 + point.Z * xform.M22 + xform.M23
              );
-        }
-
-        #endregion
-
-
-        #region SpaceMorph
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xmorph"></param>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static Vec3d Apply(this SpaceMorph xmorph, Vec3d vector)
-        {
-            return xmorph.MorphPoint(vector);
         }
 
         #endregion

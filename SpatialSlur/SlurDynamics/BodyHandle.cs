@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
@@ -18,8 +14,7 @@ namespace SpatialSlur.SlurDynamics
     [Serializable]
     public class BodyHandle : ParticleHandle, IHandle
     {
-        /// <summary></summary>
-        public Vec3d AngleDelta;
+        private Vec3d _angleDelta;
         
 
         /// <summary>
@@ -40,14 +35,9 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        #region Explicit interface implementations
-
-        /// <summary></summary>
-        Vec3d IHandle.AngleDelta
-        {
-            get { return AngleDelta; }
-        }
-
-        #endregion
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vec3d AngleDelta { get => _angleDelta; set => _angleDelta = value; }
     }
 }

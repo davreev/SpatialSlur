@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Drawing;
+﻿using System.Collections.Generic;
 
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
+ * 
  * All IList extension methods are redirected to equivalent array extension methods where possible for better performance.
  */
 

@@ -4,13 +4,8 @@ using System.Linq;
 
 using SpatialSlur.SlurCore;
 
-using static SpatialSlur.SlurCore.CoreUtil;
-
 /*
  * Notes
- * 
- * TODO
- * Line insert/search based on https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
  */
 
 namespace SpatialSlur.SlurData
@@ -108,7 +103,7 @@ namespace SpatialSlur.SlurData
             _version = int.MinValue;
 
             foreach (var bin in _bins.Values)
-                bin.LastVersion = int.MinValue;
+                bin.Version = int.MinValue;
         }
 
 
@@ -149,9 +144,9 @@ namespace SpatialSlur.SlurData
             var bin = GetBin(ToKey(point));
 
             // sync bin if necessary
-            if (bin.LastVersion != _version)
+            if (bin.Version != _version)
             {
-                bin.LastVersion = _version;
+                bin.Version = _version;
                 bin.Clear();
             }
 
@@ -181,9 +176,9 @@ namespace SpatialSlur.SlurData
                         var bin = GetBin(new BinKey(i, j, k));
 
                         // sync bin if necessary
-                        if (bin.LastVersion != _version)
+                        if (bin.Version != _version)
                         {
-                            bin.LastVersion = _version;
+                            bin.Version = _version;
                             bin.Clear();
                         }
 
@@ -257,15 +252,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         private bool SearchImpl(Vec3d point, out Bin bin)
         {
-            // return empty if no bin at key
-            if (!_bins.TryGetValue(ToKey(point), out bin))
-                return false;
-
-            // skip bin if not synced
-            if (bin.LastVersion != _version)
-                return false;
-
-            return true;
+            return (_bins.TryGetValue(ToKey(point), out bin) && bin.Version == _version);
         }
 
 
@@ -285,15 +272,8 @@ namespace SpatialSlur.SlurData
                 {
                     for (int i = key0.I; i <= key1.I; i++)
                     {
-                        // skip if no bin at key
-                        if (!_bins.TryGetValue(new BinKey(i, j, k), out Bin bin))
-                            continue;
-
-                        // skip bin if not synced
-                        if (bin.LastVersion != _version)
-                            continue;
-
-                        yield return bin;
+                        if (_bins.TryGetValue(new BinKey(i, j, k), out Bin bin) && bin.Version == _version)
+                            yield return bin;
                     }
                 }
             }
@@ -307,7 +287,7 @@ namespace SpatialSlur.SlurData
         private class Bin : Stack<T>
         {
             /// <summary></summary>
-            public int LastVersion = int.MinValue;
+            public int Version = int.MinValue;
 
 
             /// <summary>
@@ -316,7 +296,7 @@ namespace SpatialSlur.SlurData
             /// <param name="version"></param>
             public Bin(int version)
             {
-                LastVersion = version;
+                Version = version;
             }
         }
 

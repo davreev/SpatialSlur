@@ -1,13 +1,8 @@
 ﻿#if USING_RHINO
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-using SpatialSlur.SlurRhino;
 using Rhino.Geometry;
 
 /*
@@ -20,7 +15,7 @@ namespace SpatialSlur.SlurTools.Features
     /// 
     /// </summary>
     [Serializable]
-    public class MeshFeature : IFeature
+    public class MeshFeature : ISurfaceFeature
     {
         private Mesh _mesh;
         

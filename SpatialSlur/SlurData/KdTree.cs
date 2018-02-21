@@ -4,7 +4,7 @@ using System.Linq;
 
 using SpatialSlur.SlurCore;
 
-using static SpatialSlur.SlurCore.ArrayMath;
+using static SpatialSlur.SlurData.ArrayMath;
 
 /*
  * Notes
@@ -21,7 +21,8 @@ using static SpatialSlur.SlurCore.ArrayMath;
  * 
  * TODO
  * Compare to array-based implementation
- * Would be better for rebalancing/updating points
+ * Would be more efficient for rebalancing/updating points
+ * Doesn't improve cache locality though since nodes are heap allocated.
  */
 
 namespace SpatialSlur.SlurData

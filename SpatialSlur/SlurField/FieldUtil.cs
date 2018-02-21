@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 using SpatialSlur.SlurCore;
 
 /*
@@ -13,7 +8,7 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Utility class for related constants and static methods.
+    /// 
     /// </summary>
     public static class FieldUtil
     {

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
@@ -137,6 +134,88 @@ namespace SpatialSlur.SlurMesh
 
                 t0 = v1;
                 k0 = k1;
+            }
+        }
+
+
+        /// <summary>
+        /// Throws an exception if the topology of the given mesh is not valid.
+        /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
+        /// <typeparam name="TF"></typeparam>
+        /// <param name="mesh"></param>
+        internal static void CheckTopology<TV, TE>(HeGraph<TV, TE> graph)
+            where TV : HeGraph<TV, TE>.Vertex
+            where TE : HeGraph<TV, TE>.Halfedge
+        {
+            var verts = graph.Vertices;
+            var hedges = graph.Halfedges;
+
+            // ensure halfedges are reciprocally linked
+            foreach (var he in hedges)
+            {
+                if (he.IsUnused) continue;
+                if (he.Previous.Next != he && he.Next.Previous != he) Throw();
+                if (he.Start.IsUnused) Throw();
+            }
+
+            // ensure consistent start vertex during circulation
+            foreach (var v in verts)
+            {
+                foreach (var he in v.OutgoingHalfedges)
+                    if (he.Start != v) Throw();
+            }
+
+            void Throw()
+            {
+                throw new Exception("The topology of the given mesh is invalid");
+            }
+        }
+
+
+        /// <summary>
+        /// Throws an exception if the topology of the given mesh is not valid.
+        /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
+        /// <typeparam name="TF"></typeparam>
+        /// <param name="mesh"></param>
+        internal static void CheckTopology<TV,TE,TF>(HeMesh<TV,TE,TF> mesh)
+            where TV : HeMesh<TV, TE, TF>.Vertex
+            where TE : HeMesh<TV, TE, TF>.Halfedge
+            where TF : HeMesh<TV, TE, TF>.Face
+        {
+            var verts = mesh.Vertices;
+            var hedges = mesh.Halfedges;
+            var faces = mesh.Faces;
+
+            // ensure halfedges are reciprocally linked
+            foreach (var he in hedges)
+            {
+                if (he.IsUnused) continue;
+                if (he.Previous.Next != he && he.Next.Previous != he) Throw();
+                if (he.Start.IsUnused) Throw();
+                if (he.Face.IsUnused) Throw();
+            }
+
+            // ensure consistent start vertex during circulation
+            foreach (var v in verts)
+            {
+                foreach (var he in v.OutgoingHalfedges)
+                    if (he.Start != v) Throw();
+            }
+
+            // ensure consistent face during circulation
+            foreach (var f in faces)
+            {
+                foreach (var he in f.Halfedges)
+                    if (he.Face != f) Throw();
+            }
+
+            void Throw()
+            {
+                throw new Exception("The topology of the given mesh is invalid");
             }
         }
     }

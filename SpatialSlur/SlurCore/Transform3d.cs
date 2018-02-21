@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * Notes
@@ -11,7 +7,7 @@ using System.Threading.Tasks;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Represents an angle preserving affine transformation in 3 dimensions.
+    /// Represents an angle-preserving affine transformation in 3 dimensions.
     /// </summary>
     public partial struct Transform3d
     {
@@ -78,18 +74,6 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Creates relative transformation from t0 to t1.
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
-        public static Transform3d CreateFromTo(Transform3d from, Transform3d to)
-        {
-            return to.Apply(from.Inverse);
-        }
-
-
-        /// <summary>
-        /// 
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
@@ -195,17 +179,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies this transformation to the given transformation.
-        /// </summary>
-        /// <param name="other"></param>
-        public Transform3d Apply(Transform3d other)
-        {
-            Apply(ref other);
-            return other;
-        }
-
-
-        /// <summary>
         /// Applies the inverse of this transformation to the given point.
         /// </summary>
         /// <param name="point"></param>
@@ -213,6 +186,17 @@ namespace SpatialSlur.SlurCore
         public Vec3d ApplyInverse(Vec3d point)
         {
             return Rotation.ApplyInverse(point - Translation) / Scale;
+        }
+        
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public Transform3d Apply(Transform3d other)
+        {
+            Apply(ref other);
+            return other;
         }
 
 
@@ -248,6 +232,21 @@ namespace SpatialSlur.SlurCore
             Rotation.ApplyInverse(ref other.Rotation);
             other.Translation = ApplyInverse(other.Translation);
             other.Scale /= Scale;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(ref Transform3d other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return
+                Translation.ApproxEquals(other.Translation, tolerance) &&
+                Rotation.ApproxEquals(ref other.Rotation, tolerance) &&
+                Scale.ApproxEquals(other.Scale, tolerance);
         }
 
 

@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using SpatialSlur.SlurCore;
-
-/*
+﻿/*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurField
 {
     /// <summary>
-    /// Interface for field defined by a finite set of known values.
+    /// 
     /// </summary>
-    public interface IDiscreteField<TValue>
+    public interface IDiscreteField<T>
     {
         /// <summary>
         /// Returns a reference to the internal array of values.
         /// </summary>
-        TValue[] Values { get; }
+        T[] Values { get; }
 
 
         /// <summary>
@@ -24,7 +20,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        TValue this[int index] { get; set; }
+        T this[int index] { get; set; }
 
 
         /// <summary>
@@ -33,12 +29,12 @@ namespace SpatialSlur.SlurField
         /// </summary>
         int Count { get; }
 
-
+        
         /// <summary>
         /// Returns a copy of this field.
         /// The value array of the returned field is a deep copy but other fields may be shallow depending on the implementation.
         /// </summary>
         /// <returns></returns>
-        IDiscreteField<TValue> Duplicate(bool copyValues);
+        IDiscreteField<T> Duplicate(bool setValues);
     }
 }

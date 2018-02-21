@@ -25,6 +25,16 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator string(Interval2d interval)
+        {
+            return $"({interval.X}, {interval.Y})";
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="d"></param>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -235,11 +245,15 @@ namespace SpatialSlur.SlurCore
         public Interval2d(IEnumerable<Vec2d> points)
             : this()
         {
-            var p = points.First();
-            X = new Intervald(p.X);
-            Y = new Intervald(p.Y);
+            (var x, var y) = points.First();
+            X = new Intervald(x);
+            Y = new Intervald(y);
 
-            Include(points.Skip(1));
+            foreach(var p in points.Skip(1))
+            {
+                X.IncludeIncreasing(p.X);
+                Y.IncludeIncreasing(p.Y);
+            }
         }
 
 
@@ -352,6 +366,15 @@ namespace SpatialSlur.SlurCore
             get { return new Vec2d(X.Max, Y.Max); }
         }
 
+        
+        /// <summary>
+        /// Returns the area of the interval.
+        /// </summary>
+        public double Area
+        {
+            get { return Math.Abs(X.Length * Y.Length); }
+        }
+
 
         /// <summary>
         /// 
@@ -371,7 +394,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public bool ApproxEquals(Interval2d other, double tolerance = SlurMath.ZeroTolerance)
         {
-            return X.ApproxEquals(other.X, tolerance) && Y.ApproxEquals(other.Y, tolerance);
+            return 
+                X.ApproxEquals(other.X, tolerance) && 
+                Y.ApproxEquals(other.Y, tolerance);
         }
 
 
@@ -510,8 +535,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="points"></param>
         public void Include(IEnumerable<Vec2d> points)
         {
-            X.Include(points.Select(p => p.X));
-            Y.Include(points.Select(p => p.Y));
+            Include(new Interval2d(points));
         }
   
 

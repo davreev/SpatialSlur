@@ -6,13 +6,7 @@ using SpatialSlur.SlurCore;
  * 
  * References
  * http://webstaff.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
- * 
  * http://staffwww.itn.liu.se/~stegu/simplexnoise/SimplexNoise.java
- * 
- * TODO
- * debug gradient
- * - producing sharp discontinuities when evaluated @ 0
- * - only appears to effect the 3d gradient
  */
 
 namespace SpatialSlur.SlurField

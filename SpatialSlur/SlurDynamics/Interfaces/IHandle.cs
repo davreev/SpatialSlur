@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics
 {
@@ -17,13 +12,21 @@ namespace SpatialSlur.SlurDynamics
     /// </summary>
     public interface IHandle
     {
-        /// <summary></summary>
+        /// <summary>
+        /// 
+        /// </summary>
         Vec3d Delta { get; }
 
-        /// <summary></summary>
+
+        /// <summary>
+        /// 
+        /// </summary>
         Vec3d AngleDelta { get; }
         
-        /// <summary></summary>
+
+        /// <summary>
+        /// 
+        /// </summary>
         int Index { get; set; }
     }
 }

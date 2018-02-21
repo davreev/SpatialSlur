@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Drawing;
 
 /*
  * Notes
- * All IList extension methods are redirected to equivalent array extension methods where possible for better performance.
+ * 
+ * IList extension methods are redirected to equivalent array extension methods where possible for better performance.
  */
 
 namespace SpatialSlur.SlurCore
@@ -283,7 +281,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Equivalent of List.FindIndex for IList.
+        /// Equivalent of List.FindIndex for IList
         /// </summary>
         public static int FindIndex<T>(this IList<T> list, Predicate<T> match)
         {
@@ -292,7 +290,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Equivalent of List.FindIndex for IList
         /// </summary>
         public static int FindIndex<T>(this IList<T> list, int index, int length, Predicate<T> match)
         {
@@ -316,13 +314,14 @@ namespace SpatialSlur.SlurCore
         public static int Swim<T>(this IList<T> list, Predicate<T> match)
         {
             if (list is T[])
-                return ArrayExtensions.Compact((T[])list, match);
+                return ArrayExtensions.Swim((T[])list, match);
 
             int marker = 0;
 
             for (int i = 0; i < list.Count; i++)
             {
                 T t = list[i];
+
                 if (match(t))
                     list[marker++] = t;
             }

@@ -16,97 +16,6 @@ namespace SpatialSlur.SlurField
     /// </summary>
     public static class FieldIO
     {
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="F"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
-        /// <param name="mapper"></param>
-        /// <param name="domain"></param>
-        /// <param name="wrapX"></param>
-        /// <param name="wrapY"></param>
-        /// <param name="wrapZ"></param>
-        /// <returns></returns>
-        public static F CreateFromImageStack<F, T>(string path, Func<Color, T> mapper, Domain3d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp, FieldWrapMode wrapZ = FieldWrapMode.Clamp)
-            where F : Field3d<T>
-        {
-            throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bitmaps"></param>
-        /// <param name="mapper"></param>
-        /// <param name="domain"></param>
-        /// <param name="wrapX"></param>
-        /// <param name="wrapY"></param>
-        /// <param name="wrapZ"></param>
-        /// <returns></returns>
-        public static F CreateFromImageStack<F, T>(IReadOnlyList<Bitmap> bitmaps, Func<Color, T> mapper, Domain3d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp, FieldWrapMode wrapZ = FieldWrapMode.Clamp)
-            where F : Field3d<T>
-        {
-            var bmp0 = bitmaps[0];
-            int nx = bmp0.Width;
-            int ny = bmp0.Height;
-            int nz = bitmaps.Count;
-
-            var result = (F)Activator.CreateInstance(typeof(F), new object[] { domain, nx, ny, nz, wrapX, wrapY, wrapZ });
-            FieldIO.ReadFromImageStack<T>(result, bitmaps, mapper);
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="F"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
-        /// <param name="mapper"></param>
-        /// <param name="domain"></param>
-        /// <param name="wrapX"></param>
-        /// <param name="wrapY"></param>
-        /// <returns></returns>
-        public static F CreateFromImage<F, T>(string path, Func<Color, T> mapper, Domain2d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp)
-            where F : Field2d<T>
-        {
-            using (Bitmap bmp = new Bitmap(path))
-            {
-                return CreateFromImage<F,T>(bmp, mapper, domain, wrapX, wrapX);
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="F"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="bitmap"></param>
-        /// <param name="mapper"></param>
-        /// <param name="domain"></param>
-        /// <param name="wrapX"></param>
-        /// <param name="wrapY"></param>
-        /// <returns></returns>
-        public static F CreateFromImage<F, T>(Bitmap bitmap, Func<Color, T> mapper, Domain2d domain, FieldWrapMode wrapX = FieldWrapMode.Clamp, FieldWrapMode wrapY = FieldWrapMode.Clamp)
-            where F : Field2d<T>
-        {
-            int nx = bitmap.Width;
-            int ny = bitmap.Height;
-     
-            var result = (F)Activator.CreateInstance(typeof(F), new object[] { domain, nx, ny, wrapX, wrapY});
-            FieldIO.ReadFromImage<T>(result, bitmap, mapper);
-
-            return result;
-        }
-        */
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -152,18 +61,19 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="bitmaps"></param>
+        /// <param name="images"></param>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        public static void ReadFromImageStack<T>(IEnumerable<Bitmap> bitmaps, GridField3d<T> field, Func<Color, T> mapper)
+        public static void ReadFromImageStack<T>(IEnumerable<Bitmap> images, GridField3d<T> field, Func<Color, T> mapper)
             where T : struct
         {
             int nxy = field.CountXY;
-            int count = 0;
+            int index = 0;
 
-            Parallel.ForEach(bitmaps, bitmap =>
+            Parallel.ForEach(images, image =>
             {
-                ReadFromImage(bitmap, field.Values, count * nxy, mapper);
+                ReadFromImage(image, field.Values, index, mapper);
+                index += nxy;
             });
         }
 
@@ -175,11 +85,11 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="layer"></param>
         /// <param name="mapper"></param>
-        /// <param name="bitmap"></param>
-        public static void ReadFromImage<T>(Bitmap bitmap, GridField3d<T> field, int layer, Func<Color, T> mapper)
+        /// <param name="image"></param>
+        public static void ReadFromImage<T>(Bitmap image, GridField3d<T> field, int layer, Func<Color, T> mapper)
             where T : struct
         {
-            ReadFromImage(bitmap, field.Values, layer * field.CountXY, mapper);
+            ReadFromImage(image, field.Values, layer * field.CountXY, mapper);
         }
 
 
@@ -189,11 +99,11 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="bitmap"></param>
-        public static void ReadFromImage<T>(Bitmap bitmap, GridField2d<T> field, Func<Color, T> mapper)
+        /// <param name="image"></param>
+        public static void ReadFromImage<T>(Bitmap image, GridField2d<T> field, Func<Color, T> mapper)
             where T : struct
         {
-            ReadFromImage(bitmap, field.Values, 0, mapper);
+            ReadFromImage(image, field.Values, 0, mapper);
         }
 
 
@@ -204,11 +114,11 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         /// <param name="layer"></param>
         /// <param name="mapper"></param>
-        /// <param name="bitmap"></param>
-        public static void WriteToImage<T>(GridField3d<T> field, int layer, Bitmap bitmap, Func<T, Color> mapper)
+        /// <param name="image"></param>
+        public static void WriteToImage<T>(GridField3d<T> field, int layer, Bitmap image, Func<T, Color> mapper)
             where T : struct
         {
-            WriteToImage(field.Values, layer * field.CountXY, bitmap, mapper);
+            WriteToImage(field.Values, layer * field.CountXY, image, mapper);
         }
 
 
@@ -218,35 +128,35 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <param name="mapper"></param>
-        /// <param name="bitmap"></param>
-        public static void WriteToImage<T>(GridField2d<T> field, Bitmap bitmap, Func<T, Color> mapper)
+        /// <param name="image"></param>
+        public static void WriteToImage<T>(GridField2d<T> field, Bitmap image, Func<T, Color> mapper)
             where T : struct
         {
-            WriteToImage(field.Values, 0, bitmap, mapper);
+            WriteToImage(field.Values, 0, image, mapper);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static void ReadFromImage<T>(Bitmap bitmap, T[] values, int index, Func<Color, T> mapper)
+        private static void ReadFromImage<T>(Bitmap image, T[] values, int index, Func<Color, T> mapper)
         {
-            PixelFormat pf = bitmap.PixelFormat;
+            PixelFormat pf = image.PixelFormat;
             int bpp = Image.GetPixelFormatSize(pf) >> 3; // bytes per pixel
             PixelFormatCheck(bpp); // ensure 4 bytes per pixel
 
             unsafe
             {
-                BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, pf);
+                BitmapData bmpData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, pf);
                 byte* first = (byte*)bmpData.Scan0;
 
                 if (bpp == 3)
                 {
-                    for (int y = 0; y < bitmap.Height; y++)
+                    for (int y = 0; y < image.Height; y++)
                     {
                         byte* currLn = first + (y * bmpData.Stride);
 
-                        for (int x = 0; x < bitmap.Width; x++)
+                        for (int x = 0; x < image.Width; x++)
                         {
                             int bx = x * bpp;
                             byte b = currLn[bx];
@@ -259,11 +169,11 @@ namespace SpatialSlur.SlurField
                 }
                 else
                 {
-                    for (int y = 0; y < bitmap.Height; y++)
+                    for (int y = 0; y < image.Height; y++)
                     {
                         byte* currLn = first + (y * bmpData.Stride);
 
-                        for (int x = 0; x < bitmap.Width; x++)
+                        for (int x = 0; x < image.Width; x++)
                         {
                             int bx = x * bpp;
                             byte b = currLn[bx];
@@ -277,7 +187,7 @@ namespace SpatialSlur.SlurField
 
                 }
 
-                bitmap.UnlockBits(bmpData);
+                image.UnlockBits(bmpData);
             }
         }
 
@@ -285,24 +195,24 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        private static void WriteToImage<T>(T[] values, int index, Bitmap bitmap, Func<T, Color> mapper)
+        private static void WriteToImage<T>(T[] values, int index, Bitmap image, Func<T, Color> mapper)
         {
-            PixelFormat pf = bitmap.PixelFormat;
+            PixelFormat pf = image.PixelFormat;
             int bpp = Image.GetPixelFormatSize(pf) >> 3; // bytes per pixel
             PixelFormatCheck(bpp);
 
             unsafe
             {
-                BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, pf);
+                BitmapData bmpData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, pf);
                 byte* first = (byte*)bmpData.Scan0;
 
                 if (bpp == 3)
                 {
-                    for (int y = 0; y < bitmap.Height; y++)
+                    for (int y = 0; y < image.Height; y++)
                     {
                         byte* currLn = first + (y * bmpData.Stride);
 
-                        for (int x = 0; x < bitmap.Width; x++)
+                        for (int x = 0; x < image.Width; x++)
                         {
                             Color c = mapper(values[index++]);
 
@@ -315,11 +225,11 @@ namespace SpatialSlur.SlurField
                 }
                 else
                 {
-                    for (int y = 0; y < bitmap.Height; y++)
+                    for (int y = 0; y < image.Height; y++)
                     {
                         byte* currLn = first + (y * bmpData.Stride);
 
-                        for (int x = 0; x < bitmap.Width; x++)
+                        for (int x = 0; x < image.Width; x++)
                         {
                             Color c = mapper(values[index++]);
 
@@ -332,7 +242,7 @@ namespace SpatialSlur.SlurField
                     }
                 }
 
-                bitmap.UnlockBits(bmpData);
+                image.UnlockBits(bmpData);
             }
         }
 
@@ -342,8 +252,10 @@ namespace SpatialSlur.SlurField
         /// </summary>
         private static void PixelFormatCheck(int bytesPerPixel)
         {
+            const string errorMessage = "The pixel format of the given bitmap is not supported.";
+
             if (bytesPerPixel < 3)
-                throw new NotSupportedException("The pixel format of the given bitmap is not supported.");
+                throw new NotSupportedException(errorMessage);
         }
     }
 }

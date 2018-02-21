@@ -8,7 +8,7 @@ using System.Drawing;
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
-    /// Utility class for stray constants and static methods.
+    /// 
     /// </summary>
     public static class ColorUtil
     {

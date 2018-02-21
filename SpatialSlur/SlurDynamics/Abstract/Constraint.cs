@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SpatialSlur.SlurCore;
 
 /*
  * Notes
@@ -31,7 +25,7 @@ namespace SpatialSlur.SlurDynamics
             set
             {
                 if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("Weight cannot be negative.");
+                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
 
                 _weight = value;
             }
