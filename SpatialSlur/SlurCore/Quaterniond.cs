@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * Notes
+ * 
+ * impl refs
+ * http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
  * http://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
  * http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
- * 
- * Faster to concatenate than rotation matrices but slower to transform vectors.
- * See more detailed comparison here https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
- * 
- * Reference for core quaternion routines
- * http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
  */
 
 namespace SpatialSlur.SlurCore
@@ -132,27 +125,27 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
+        /// 
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
         public static Quaterniond CreateFromTo(Vec3d from, Vec3d to)
         {
-            // TODO
-            // test implementation
+            // impl refs
             // https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
-         
+            // http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
+
             if (!from.Unitize() || !to.Unitize())
                 return Identity;
 
-            var ct = Vec3d.Dot(from, to);
+            var ca = Vec3d.Dot(from, to);
 
             // parallel check
-            if (1.0 - Math.Abs(ct) < SlurMath.ZeroTolerance)
+            if (SlurMath.ApproxEquals(Math.Abs(ca), 1.0))
             {
                 //opposite check
-                if(ct < 0.0)
+                if(ca < 0.0)
                 {
                     var perp = from.X < 1.0 ? from.CrossX() : from.CrossY();
                     var t = 1.0 / perp.Length;
@@ -164,9 +157,9 @@ namespace SpatialSlur.SlurCore
 
             // can assume axis is valid
             var axis = Vec3d.Cross(from, to);
-            var q = new Quaterniond(axis.X, axis.Y, axis.Z, ct + 1);
+            var q = new Quaterniond(axis.X, axis.Y, axis.Z, ca + 1);
             q.Unitize();
-
+            
             return q;
         }
 
@@ -252,7 +245,7 @@ namespace SpatialSlur.SlurCore
         public Quaterniond(AxisAngle3d rotation)
             : this()
         {
-            Set(rotation);
+            Set(ref rotation);
         }
 
 
@@ -305,9 +298,9 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a unit length copy of this quaternion.
+        /// Returns a unit length copy or versor of this quaternion.
         /// </summary>
-        public Quaterniond Versor
+        public Quaterniond Unit
         {
             get
             {
@@ -350,22 +343,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes the given rotation is valid.
-        /// </summary>
-        /// <param name="rotation"></param>
-        public void Set(AxisAngle3d rotation)
-        {
-            var axis = rotation.Axis;
-            var s = Math.Sqrt(0.5 - rotation.CosAngle); // half-angle identity
-
-            X = axis.X * s;
-            Y = axis.Y * s;
-            Z = axis.Z * s;
-            W = Math.Sqrt(0.5 + rotation.CosAngle); // half-angle identity
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="axis"></param>
@@ -399,29 +376,30 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void Set(ref AxisAngle3d rotation)
+        {
+            SetImpl(rotation.Axis, rotation.Angle);
+        }
+
+
+        /// <summary>
         /// Assumes the given axis is unit length.
         /// </summary>
         /// <param name="axis"></param>
         /// <param name="angle"></param>
         private void SetImpl(Vec3d axis, double angle)
         {
-            var s = Math.Sin(angle * 0.5);
-            X = axis.X * s;
-            Y = axis.Y * s;
-            Z = axis.Z * s;
-            W = Math.Cos(angle * 0.5);
+            angle *= 0.5;
+            var sa = Math.Sin(angle);
+            X = axis.X * sa;
+            Y = axis.Y * sa;
+            Z = axis.Z * sa;
+            W = Math.Cos(angle);
         }
-
-
-        /// <summary>
-        /// Assumes the given rotation is valid.
-        /// </summary>
-        /// <param name="rotation"></param>
-        public void Set(OrthoBasis3d rotation)
-        {
-            Set(ref rotation);
-        }
-
+        
 
         /// <summary>
         /// 
@@ -520,6 +498,18 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Negates this quaternion in place.
+        /// </summary>
+        public void Negate()
+        {
+            X = -X;
+            Y = -Y;
+            Z = -Z;
+            W = -W;
+        }
+
+
+        /// <summary>
         /// Linear interpolation between this quaternion and another.
         /// </summary>
         /// <param name="other"></param>
@@ -527,9 +517,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Quaterniond LerpTo(Quaterniond other, double factor)
         {
-            var cos = Vec4d.Dot(this, other);
+            var ca = Vec4d.Dot(this, other);
 
-            if (cos < 0.0)
+            if (ca < 0.0)
             {
                 return new Quaterniond(
                     X + (-other.X - X) * factor,
@@ -558,12 +548,12 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Quaterniond NlerpTo(Quaterniond other, double factor)
         {
-            return LerpTo(other, factor).Versor;
+            return LerpTo(other, factor).Unit;
         }
 
 
         /// <summary>
-        /// Spherical interpolation between this quaternion and another.
+        /// Spherical linear interpolation between this quaternion and another.
         /// Assumes both are unit quaternions.
         /// </summary>
         /// <param name="other"></param>
@@ -571,59 +561,73 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Quaterniond SlerpTo(Quaterniond other, double factor)
         {
-            var ct = Dot(this, other);
-
-            // same rotation
-            if (1.0 - Math.Abs(ct) < SlurMath.ZeroTolerance)
+            var ca = Dot(this, other);
+   
+            // TODO handle aligned cases
+            if (Math.Abs(ca) > 1.0 - SlurMath.ZeroTolerance)
                 return this;
 
-            var t = Math.Acos(ct);
-            var st = Math.Sin(t);
-            var stInv = 1.0 / st;
-
-            var ta = factor * t;
-            var k0 = Math.Sin(t - ta) * stInv;
-            var k1 = Math.Sin(ta) * stInv;
-
-            return new Quaterniond()
+            // ensures interpolation takes shortest path
+            if(ca < 0.0)
             {
-                X = k0 * X + k1 * other.X,
-                Y = k0 * Y + k1 * other.Y,
-                Z = k0 * Z + k1 * other.Z,
-                W = k0 * W + k1 * other.W
-            };
+                other.Negate();
+                ca = -ca;
+            }
+
+            var a = Math.Acos(ca); // no need to clamp, already checked above
+            var sa = Math.Sin(a);
+
+            var saInv = 1.0 / sa; 
+            var af = a * factor;
+
+            var t0 = Math.Sin(a - af) * saInv;
+            var t1 = Math.Sin(af) * saInv;
+
+            return new Quaterniond(
+                t0 * X + t1 * other.X,
+                t0 * Y + t1 * other.Y,
+                t0 * Z + t1 * other.Z,
+                t0 * W + t1 * other.W
+            );
         }
 
 
         /// <summary>
         /// Applies this rotation to the given vector.
-        /// Assumes this quaternion is unit length.
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
         public Vec3d Apply(Vec3d vector)
         {
-            var x2 = 2.0 * X;
-            var y2 = 2.0 * Y;
-            var z2 = 2.0 * Z;
+            var a = SquareLength;
 
-            var wx2 = W * x2;
-            var wy2 = W * y2;
-            var wz2 = W * z2;
+            if (a > 0.0)
+            {
+                var b = 2.0 / a;
 
-            var xx2 = X * x2;
-            var xy2 = X * y2;
-            var xz2 = X * z2;
+                a = X * b;
+                var wx2 = W * a;
+                var xx2 = X * a;
 
-            var yy2 = Y * y2;
-            var yz2 = Y * z2;
-            var zz2 = Z * z2;
+                a = Y * b;
+                var wy2 = W * a;
+                var xy2 = X * a;
+                var yy2 = Y * a;
 
-            return new Vec3d(
-                vector.X * (1.0 - yy2 - zz2) + vector.Y * (xy2 - wz2) + vector.Z * (xz2 + wy2),
-                vector.X * (xy2 + wz2) + vector.Y * (1.0 - xx2 - zz2) + vector.Z * (yz2 - wx2),
-                vector.X * (xz2 - wy2) + vector.Y * (yz2 + wx2) + vector.Z * (1.0 - xx2 - yy2)
-                );
+                a = Z * b;
+                var wz2 = W * a;
+                var xz2 = X * a;
+                var yz2 = Y * a;
+                var zz2 = Z * a;
+
+                return new Vec3d(
+                    vector.X * (1.0 - yy2 - zz2) + vector.Y * (xy2 - wz2) + vector.Z * (xz2 + wy2),
+                    vector.X * (xy2 + wz2) + vector.Y * (1.0 - xx2 - zz2) + vector.Z * (yz2 - wx2),
+                    vector.X * (xz2 - wy2) + vector.Y * (yz2 + wx2) + vector.Z * (1.0 - xx2 - yy2)
+                    );
+            }
+
+            return new Vec3d();
         }
 
 
@@ -646,28 +650,38 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(Quaterniond other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return
+                SlurMath.ApproxEquals(X, other.X, tolerance) &&
+                SlurMath.ApproxEquals(Y, other.Y, tolerance) &&
+                SlurMath.ApproxEquals(Z, other.Z, tolerance) &&
+                SlurMath.ApproxEquals(W, other.W, tolerance);
+        }
+
+
+        /// <summary>
         /// Assumes this quaternion is unit length.
         /// </summary>
         /// <param name="axis"></param>
         /// <param name="angle"></param>
-        public void ToAxisAngle(out Vec3d axis, out double angle)
+        public Vec3d ToAxisAngle()
         {
-            var s = 1.0 - W * W; // pythag's identity
+            var s2 = 1.0 - W * W; // pythag's identity
 
-            if (s > 0.0)
+            if (s2 > 0.0)
             {
-                s = 1.0 / Math.Sqrt(s);
-                axis.X = X * s;
-                axis.Y = Y * s;
-                axis.Z = Z * s;
-                angle = 2.0 * Math.Acos(W);
-                return;
+                var t = 2.0 * Math.Acos(W) / Math.Sqrt(s2);
+                return new Vec3d(X * t, Y * t, Z * t);
             }
 
-            axis = Vec3d.UnitZ;
-            angle = 0.0;
+            return Vec3d.Zero;
         }
-
+        
 
         /// <summary>
         /// 
@@ -675,28 +689,29 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Matrix3d ToMatrix()
         {
-            // implementation ref http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
-            var d = SquareLength;
+            // impl ref 
+            // http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
 
-            if (d > 0.0)
+            var a = SquareLength;
+
+            if (a > 0.0)
             {
-                var s = 2.0 / d;
+                var b = 2.0 / a;
 
-                var x2 = X * s;
-                var y2 = Y * s;
-                var z2 = Z * s;
+                a = X * b;
+                var wx2 = W * a;
+                var xx2 = X * a;
 
-                var wx2 = W * x2;
-                var wy2 = W * y2;
-                var wz2 = W * z2;
+                a = Y * b;
+                var wy2 = W * a;
+                var xy2 = X * a;
+                var yy2 = Y * a;
 
-                var xx2 = X * x2;
-                var xy2 = X * y2;
-                var xz2 = X * z2;
-
-                var yy2 = Y * y2;
-                var yz2 = Y * z2;
-                var zz2 = Z * z2;
+                a = Z * b;
+                var wz2 = W * a;
+                var xz2 = X * a;
+                var yz2 = Y * a;
+                var zz2 = Z * a;
 
                 return new Matrix3d(
                     1.0 - yy2 - zz2, xy2 - wz2, xz2 + wy2,
@@ -707,6 +722,36 @@ namespace SpatialSlur.SlurCore
 
             return new Matrix3d();
         }
+        
+
+        /*
+        /// <summary>
+        /// This implementation assumes the given quaternion is unit length
+        /// </summary>
+        /// <returns></returns>
+        public Matrix3d ToMatrix()
+        {
+            // impl ref 
+            // http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+
+            var xx = X * X;
+            var xy = X * Y;
+            var xz = X * Z;
+            var xw = X * W;
+            var yy = Y * Y;
+            var yz = Y * Z;
+            var yw = Y * W;
+            var zz = Z * Z;
+            var zw = Z * W;
+
+            return new Matrix3d
+            (
+                 1.0 - 2.0 * (yy + zz), 2.0 * (xy - zw), 2.0 * (xz + yw),
+                 2.0 * (xy + zw), 1.0 - 2.0 * (xx + zz), 2.0 * (yz - xw),
+                 2.0 * (xz - yw), 2.0 * (yz + xw), 1.0 - 2.0 * (xx + yy)
+            );
+        }
+        */
 
 
         /// <summary>
