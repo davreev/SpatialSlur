@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurCore
     {
         /// <summary>
         /// Returns parameters for the closest pair of points between lines a and b.
-        /// http://geomalgorithms.com/a07-_distance.html
+        /// Returns false if the solution is not unique i.e. the given lines are parallel.
         /// </summary>
         /// <param name="startA"></param>
         /// <param name="endA"></param>
@@ -23,9 +23,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="endB"></param>
         /// <param name="ta"></param>
         /// <param name="tb"></param>
-        public static void LineLineClosestPoints(Vec3d startA, Vec3d endA, Vec3d startB, Vec3d endB, out double ta, out double tb)
+        public static bool LineLineClosestPoints(Vec3d startA, Vec3d endA, Vec3d startB, Vec3d endB, out double ta, out double tb)
         {
-            LineLineClosestPoints(endA - startA, endB - startB, startA - startB, out ta, out tb);
+            return LineLineClosestPoints(endA - startA, endB - startB, startA - startB, out ta, out tb);
         }
 
 
@@ -38,15 +38,14 @@ namespace SpatialSlur.SlurCore
         /// <param name="deltaB"></param>
         /// <param name="ta"></param>
         /// <param name="tb"></param>
-        public static void LineLineClosestPoints2(Vec3d startA, Vec3d deltaA, Vec3d startB, Vec3d deltaB, out double ta, out double tb)
+        public static bool LineLineClosestPoints2(Vec3d startA, Vec3d deltaA, Vec3d startB, Vec3d deltaB, out double ta, out double tb)
         {
-            LineLineClosestPoints(deltaA, deltaB, startA - startB, out ta, out tb);
+            return LineLineClosestPoints(deltaA, deltaB, startA - startB, out ta, out tb);
         }
 
 
         /// <summary>
         /// Returns the shortest vector from line a to line b.
-        /// http://geomalgorithms.com/a07-_distance.html
         /// </summary>
         /// <param name="startA"></param>
         /// <param name="endA"></param>
@@ -75,6 +74,7 @@ namespace SpatialSlur.SlurCore
         public static Vec3d LineLineShortestVector2(Vec3d startA, Vec3d deltaA, Vec3d startB, Vec3d deltaB)
         {
             Vec3d w = startA - startB;
+
             LineLineClosestPoints(deltaA, deltaB, w, out double tu, out double tv);
             return deltaB * tv - deltaA * tu - w;
         }
@@ -83,8 +83,11 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        private static void LineLineClosestPoints(Vec3d u, Vec3d v, Vec3d w, out double tu, out double tv)
+        private static bool LineLineClosestPoints(Vec3d u, Vec3d v, Vec3d w, out double tu, out double tv)
         {
+            // impl ref
+            /// http://geomalgorithms.com/a07-_distance.html
+
             double uu = u.SquareLength;
             double vv = v.SquareLength;
 
@@ -92,9 +95,79 @@ namespace SpatialSlur.SlurCore
             double uw = Vec3d.Dot(u, w);
             double vw = Vec3d.Dot(v, w);
 
-            double denom = 1.0 / (uu * vv - uv * uv);
-            tu = (uv * vw - vv * uw) * denom;
-            tv = (uu * vw - uv * uw) * denom;
+            var d = uu * vv - uv * uv;
+
+            if (Math.Abs(d) > 0.0)
+            {
+                d = 1.0 / d;
+                tu = (uv * vw - vv * uw) * d;
+                tv = (uu * vw - uv * uw) * d;
+                return true;
+            }
+
+            // lines are parallel, infinite solutions
+            tu = tv = 0.0;
+            return false;
+        }
+
+
+        /// <summary>
+        /// Returns paramters for the point of intersection between lines a and b.
+        /// Returns false if there is no solution i.e. lines are parallel.
+        /// </summary>
+        /// <param name="startA"></param>
+        /// <param name="endA"></param>
+        /// <param name="startB"></param>
+        /// <param name="endB"></param>
+        /// <param name="ta"></param>
+        /// <param name="tb"></param>
+        public static bool LineLineIntersection(Vec2d startA, Vec2d endA, Vec2d startB, Vec2d endB, out double ta, out double tb)
+        {
+            return LineLineIntersection(endA - startA, endB - startB, startB - startA, out ta, out tb);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="startA"></param>
+        /// <param name="deltaA"></param>
+        /// <param name="startB"></param>
+        /// <param name="deltaB"></param>
+        /// <param name="ta"></param>
+        /// <param name="tb"></param>
+        public static bool LineLineIntersection2(Vec2d startA, Vec2d deltaA, Vec2d startB, Vec2d deltaB, out double ta, out double tb)
+        {
+            return LineLineIntersection(deltaA, deltaB, startB - startA, out ta, out tb);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="u"></param>
+        /// <param name="v"></param>
+        /// <param name="w"></param>
+        /// <param name="tu"></param>
+        /// <param name="tv"></param>
+        private static bool LineLineIntersection(Vec2d u, Vec2d v, Vec2d w, out double tu, out double tv)
+        {
+            // impl ref
+            // https://www.codeproject.com/Tips/862988/Find-the-Intersection-Point-of-Two-Line-Segments
+            
+            var c = Vec2d.Cross(u, v);
+
+            if (Math.Abs(c) > 0.0)
+            {
+                c = 1.0 / c;
+                tu = Vec2d.Cross(w, v) * c;
+                tv = Vec2d.Cross(w, u) * c;
+                return true;
+            }
+
+            // lines are parallel, no solution
+            tu = tv = 0.0;
+            return false;
         }
 
 
@@ -187,6 +260,60 @@ namespace SpatialSlur.SlurCore
             }
 
             return false;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static double GetPolygonArea(IEnumerable<Vec2d> points)
+        {
+            var itr = points.GetEnumerator();
+            itr.MoveNext();
+
+            var first = itr.Current;
+
+            var p0 = first;
+            var sum = 0.0;
+            
+            while(itr.MoveNext())
+            {
+                var p1 = itr.Current;
+                sum += Vec2d.Cross(p0, p1);
+                p0 = p1;
+            }
+
+            sum += Vec2d.Cross(p0, first);
+            return sum * 0.5;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static double GetPolygonArea(IEnumerable<Vec3d> points, Vec3d unitNormal)
+        {
+            var itr = points.GetEnumerator();
+            itr.MoveNext();
+
+            var first = itr.Current;
+
+            var p0 = first;
+            var sum = Vec3d.Zero;
+
+            while (itr.MoveNext())
+            {
+                var p1 = itr.Current;
+                sum += Vec3d.Cross(p0, p1);
+                p0 = p1;
+            }
+
+            sum += Vec3d.Cross(p0, first);
+            return Vec3d.Dot(sum, unitNormal) * 0.5;
         }
 
 
@@ -396,6 +523,41 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="right"></param>
+        /// <param name="left"></param>
+        /// <returns></returns>
+        public static double GetDihedralAngle(Vec3d start, Vec3d end, Vec3d left, Vec3d right)
+        {
+            var d = end - start;
+            return GetDihedralAngle(d.Unit, Vec3d.Cross(d, left - end), Vec3d.Cross(d, start - right));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="rightNormal"></param>
+        /// <param name="leftNormal"></param>
+        /// <returns></returns>
+        public static double GetDihedralAngle(Vec3d unitAxis, Vec3d leftNormal, Vec3d rightNormal)
+        {
+            // impl ref
+            // http://brickisland.net/DDGFall2017/2017/10/12/assignment-1-coding-investigating-curvature/
+            return 
+                Math.Atan2(
+                Vec3d.Dot(unitAxis, Vec3d.Cross(leftNormal, rightNormal)), 
+                Vec3d.Dot(leftNormal, rightNormal)
+                ) + Math.PI;
+        }
+
+
+        /// <summary>
         /// Calculates planarity as the shortest distance between the 2 diagonals over the mean diagonal length.
         /// </summary>
         /// <param name="p0"></param>
@@ -413,101 +575,62 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns entries of a rotation matrix in column major order.
-        /// Assumes the given axis is unit length.
-        /// </summary>
-        /// <param name="axis"></param>
-        /// <param name="angle"></param>
-        /// <param name="result"></param>
-        [Obsolete("Use Rotate3d constructor instead")]
-        public static void GetRotationMatrix(Vec3d axis, double angle, double[] result)
-        {
-            double c = Math.Cos(angle);
-            double s = Math.Sin(angle);
-            double t = 1.0 - c;
-
-            result[0] = c + axis.X * axis.X * t; // m00
-            result[4] = c + axis.Y * axis.Y * t; // m11
-            result[8] = c + axis.Z * axis.Z * t; // m22
-
-            double p0 = axis.X * axis.Y * t;
-            double p1 = axis.Z * s;
-
-            result[1] = p0 + p1; // m01
-            result[3] = p0 - p1; // m10
-
-            p0 = axis.X * axis.Z * t;
-            p1 = axis.Y * s;
-
-            result[2] = p0 - p1; // m02
-            result[6] = p0 + p1; // m20
-
-            p0 = axis.Y * axis.Z * t; 
-            p1 = axis.X * s;
-
-            result[5] = p0 + p1; // m21
-            result[7] = p0 - p1; // m12
-        }
-
-
-        /// <summary>
         /// Returns a numerical approximation of the gradient of the given function with respect to the given vector.
         /// </summary>
-        /// <param name="func"></param>
+        /// <param name="function"></param>
         /// <param name="vector"></param>
-        /// <param name="delta"></param>
+        /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Vec2d GetGradient(Func<Vec2d, double> func, Vec2d vector, double delta)
+        public static Vec2d GetGradient(Func<Vec2d, double> function, Vec2d vector, double epsilon = SlurMath.ZeroTolerance)
         {
-            double x = vector.X;
-            double y = vector.Y;
-       
-            double gx = func(new Vec2d(x + delta, y)) - func(new Vec2d(x - delta, y));
-            double gy = func(new Vec2d(x, y + delta)) - func(new Vec2d(x, y - delta));
-            return new Vec2d(gx, gy) / (delta * 2.0);
+            (var x, var y) = vector;
+
+            double gx = function(new Vec2d(x + epsilon, y)) - function(new Vec2d(x - epsilon, y));
+            double gy = function(new Vec2d(x, y + epsilon)) - function(new Vec2d(x, y - epsilon));
+
+            return new Vec2d(gx, gy) / (2.0 * epsilon);
         }
 
 
         /// <summary>
         /// Returns a numerical approximation of the gradient of the given function with respect to the given vector.
         /// </summary>
-        /// <param name="func"></param>
+        /// <param name="function"></param>
         /// <param name="vector"></param>
-        /// <param name="delta"></param>
+        /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Vec3d GetGradient(Func<Vec3d, double> func, Vec3d vector, double delta)
+        public static Vec3d GetGradient(Func<Vec3d, double> function, Vec3d vector, double epsilon = SlurMath.ZeroTolerance)
         {
-            double x = vector.X;
-            double y = vector.Y;
-            double z = vector.Z;
+            (var x, var y, var z) = vector;
 
-            double gx = func(new Vec3d(x + delta, y, z)) - func(new Vec3d(x - delta, y, z));
-            double gy = func(new Vec3d(x, y + delta, z)) - func(new Vec3d(x, y - delta, z));
-            double gz = func(new Vec3d(x, y, z + delta)) - func(new Vec3d(x, y, z - delta));
-            return new Vec3d(gx, gy, gz) / (delta * 2.0);
+            double gx = function(new Vec3d(x + epsilon, y, z)) - function(new Vec3d(x - epsilon, y, z));
+            double gy = function(new Vec3d(x, y + epsilon, z)) - function(new Vec3d(x, y - epsilon, z));
+            double gz = function(new Vec3d(x, y, z + epsilon)) - function(new Vec3d(x, y, z - epsilon));
+
+            return new Vec3d(gx, gy, gz) / (2.0 * epsilon);
         }
 
 
         /// <summary>
         /// Returns a numerical approximation of the gradient of the given function with respect to the given vector.
         /// </summary>
-        /// <param name="func"></param>
+        /// <param name="function"></param>
         /// <param name="vector"></param>
-        /// <param name="delta"></param>
         /// <param name="result"></param>
-        public static void GetGradient(Func<double[], double> func, double[] vector, double delta, double[] result)
+        /// <param name="epsilon"></param>
+        public static void GetGradient(Func<double[], double> function, double[] vector, double[] result, double epsilon = SlurMath.ZeroTolerance)
         {
-            double d2 = 1.0 / (delta * 2.0);
+            double d2 = 1.0 / (epsilon * 2.0);
 
             for (int i = 0; i < vector.Length; i++)
             {
                 double t = vector[i];
 
-                vector[i] = t + delta;
-                double g0 = func(vector);
+                vector[i] = t + epsilon;
+                double g0 = function(vector);
 
-                vector[i] = t - delta;
-                double g1 = func(vector);
+                vector[i] = t - epsilon;
+                double g1 = function(vector);
 
                 result[i] = (g0 - g1) * d2;
                 vector[i] = t;
