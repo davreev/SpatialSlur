@@ -1,25 +1,602 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-using static SpatialSlur.SlurData.DataUtil;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurData
 {
     /// <summary>
-    /// Utility class for related constants and static methods.
+    /// 
     /// </summary>
     public static class DataUtil
     {
         /// <summary></summary>
         public const double RadiusToHashScale = 3.5;
+
+     
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="digits"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> source, Func<T, Vec2d> getPosition, HashSet<Vec2i> hash = null, int digits = 4)
+        {
+            if(hash == null)
+                hash = new HashSet<Vec2i>();
+
+            var scale = SlurMath.PowersOfTen[digits];
+
+            int i = 0;
+            foreach (var item in source)
+            {
+                var key = (Vec2i)(getPosition(item) * scale);
+
+                if(!hash.Contains(key))
+                {
+                    hash.Add(key);
+                    yield return item;
+                }
+                    
+                i++;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="digits"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> source, Func<T, Vec3d> getPosition, HashSet<Vec3i> hash = null, int digits = 4)
+        {
+            if (hash == null)
+                hash = new HashSet<Vec3i>();
+
+            var scale = SlurMath.PowersOfTen[digits];
+
+            int i = 0;
+            foreach (var item in source)
+            {
+                var key = (Vec3i)(getPosition(item) * scale);
+
+                if (!hash.Contains(key))
+                {
+                    hash.Add(key);
+                    yield return item;
+                }
+
+                i++;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vec2d> getPosition, HashGrid2d<Vec2d> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid2d<Vec2d>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // add points to result if no duplicates are found
+            int i = 0;
+            foreach (var item in items)
+            {
+                var p0 = getPosition(item);
+
+                foreach (var p1 in grid.Search(new Interval3d(p0, tolerance)))
+                {
+                    if (p0.ApproxEquals(p1, tolerance))
+                        goto EndFor;
+                }
+
+                // no coincident items found
+                grid.Insert(p0, p0);
+                yield return item;
+
+                EndFor:;
+                i++;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vec3d> getPosition, HashGrid3d<Vec3d> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid3d<Vec3d>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // add points to result if no duplicates are found
+            int i = 0;
+            foreach (var item in items)
+            {
+                var p0 = getPosition(item);
+
+                foreach (var p1 in grid.Search(new Interval3d(p0, tolerance)))
+                {
+                    if (p0.ApproxEquals(p1, tolerance))
+                        goto EndFor;
+                }
+
+                // no coincident items found
+                grid.Insert(p0, p0);
+                yield return item;
+
+                EndFor:;
+                i++;
+            }
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="indexMap"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vec2d> getPosition, out List<int> indexMap, HashGrid2d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid2d<int>();
+
+            var result = new List<T>();
+            indexMap = new List<int>();
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // add points to result if no duplicates are found
+            foreach (var item in items)
+            {
+                var p0 = getPosition(item);
+
+                // search for concident items in result
+                foreach (int j in grid.Search(new Interval2d(p0, tolerance)))
+                {
+                    if (p0.ApproxEquals(getPosition(result[j]), tolerance))
+                    {
+                        indexMap.Add(j);
+                        goto EndFor;
+                    }
+                }
+
+                // no coincident items found
+                grid.Insert(p0, result.Count);
+                indexMap.Add(result.Count);
+                result.Add(item);
+
+                EndFor:;
+            }
+
+            return result;
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="indexMap"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vec3d> getPosition, out List<int> indexMap, HashGrid3d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid3d<int>();
+
+            var result = new List<T>();
+            indexMap = new List<int>();
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // add points to result if no duplicates are found
+            foreach(var item in items)
+            {
+                var p0 = getPosition(item);
+
+                // search for concident items in result
+                foreach (int j in grid.Search(new Interval3d(p0, tolerance)))
+                {
+                    if (p0.ApproxEquals(getPosition(result[j]), tolerance))
+                    {
+                        indexMap.Add(j);
+                        goto EndFor;
+                    }
+                }
+
+                // no coincident items found
+                grid.Insert(p0, result.Count);
+                indexMap.Add(result.Count);
+                result.Add(item);
+
+                EndFor:;
+            }
+            
+            return result;
+        }
+        
+
+        /// <summary>
+        /// For each item, returns the index of the first coincident item within the same list. If no coincident item is found, -1 is returned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="grid"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetFirstCoincident<T>(IEnumerable<T> items, Func<T, Vec2d> getPosition, HashGrid2d<(Vec2d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid2d<(Vec2d, int)>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // insert
+            int i = 0;
+            foreach (var item in items)
+            {
+                var p = getPosition(item);
+                grid.Insert(p, (p, i));
+                i++;
+            }
+
+            // search
+            i = 0;
+            foreach (var item in items)
+            {
+                var p0 = getPosition(item);
+
+                foreach (var (p1, j) in grid.Search(new Interval3d(p0, tolerance)))
+                {
+                    if (i != j && p0.ApproxEquals(p1, tolerance))
+                    {
+                        yield return j;
+                        goto EndFor;
+                    }
+                }
+
+                yield return -1;
+                EndFor:;
+                i++;
+            }
+        }
+        
+
+        /// <summary>
+        /// For each item, returns the index of the first coincident item within the same list. If no coincident item is found, -1 is returned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="grid"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetFirstCoincident<T>(IEnumerable<T> items, Func<T, Vec3d> getPosition, HashGrid3d<(Vec3d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid3d<(Vec3d, int)>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // insert
+            int i = 0;
+            foreach (var item in items)
+            {
+                var p = getPosition(item);
+                grid.Insert(p, (p, i));
+                i++;
+            }
+
+            // search
+            i = 0;
+            foreach (var item in items)
+            {
+                var p0 = getPosition(item);
+                
+                foreach (var (p1, j) in grid.Search(new Interval3d(p0, tolerance)))
+                {
+                    if (i != j && p0.ApproxEquals(p1, tolerance))
+                    {
+                        yield return j;
+                        goto EndFor;
+                    }
+                }
+
+                yield return -1;
+                EndFor:;
+                i++;
+            }
+        }
+
+
+        /// <summary>
+        /// For each item in A, returns the index of the first coincident item in B. If no coincident item is found, -1 is returned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="getPositionA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPositionB"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetFirstCoincident<T>(IEnumerable<T> itemsA, IEnumerable<T> itemsB, Func<T, Vec2d> getPosition, HashGrid2d<(Vec2d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return GetFirstCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
+        }
+
+
+        /// <summary>
+        /// For each item in A, returns the index of the first coincident item in B. If no coincident item is found, -1 is returned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="getPositionA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPositionB"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetFirstCoincident<T, U>(IEnumerable<T> itemsA, Func<T, Vec2d> getPositionA, IEnumerable<U> itemsB, Func<U, Vec2d> getPositionB, HashGrid2d<(Vec2d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid2d<(Vec2d, int)>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // insert B
+            int i = 0;
+            foreach (var b in itemsB)
+            {
+                var pB = getPositionB(b);
+                grid.Insert(pB, (pB, i));
+                i++;
+            }
+
+            // search from A
+            i = 0;
+            foreach (var a in itemsA)
+            {
+                var pA = getPositionA(a);
+
+                foreach (var (pB, j) in grid.Search(new Interval3d(pA, tolerance)))
+                {
+                    if (pA.ApproxEquals(pB, tolerance))
+                    {
+                        yield return j;
+                        goto EndFor;
+                    }
+                }
+
+                yield return -1;
+                EndFor:;
+                i++;
+            }
+        }
+
+
+        /// <summary>
+        /// For each item in A, returns the index of the first coincident item in B. If no coincident item is found, -1 is returned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="getPositionA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPositionB"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetFirstCoincident<T>(IEnumerable<T> itemsA, IEnumerable<T> itemsB, Func<T, Vec3d> getPosition, HashGrid3d<(Vec3d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return GetFirstCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
+        }
+
+
+        /// <summary>
+        /// For each item in A, returns the index of the first coincident item in B. If no coincident item is found, -1 is returned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="getPositionA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPositionB"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetFirstCoincident<T, U>(IEnumerable<T> itemsA, Func<T, Vec3d> getPositionA, IEnumerable<U> itemsB, Func<U, Vec3d> getPositionB, HashGrid3d<(Vec3d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid3d<(Vec3d, int)>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // insert B
+            int i = 0;
+            foreach (var b in itemsB)
+            {
+                var pB = getPositionB(b);
+                grid.Insert(pB, (pB, i));
+                i++;
+            }
+
+            // search from A
+            i = 0;
+            foreach (var a in itemsA)
+            {
+                var pA = getPositionA(a);
+
+                foreach (var (pB, j) in grid.Search(new Interval3d(pA, tolerance)))
+                {
+                    if (pA.ApproxEquals(pB, tolerance))
+                    {
+                        yield return j;
+                        goto EndFor;
+                    }
+                }
+
+                yield return -1;
+                EndFor:;
+                i++;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IEnumerable<T> itemsA, IEnumerable<T> itemsB, Func<T, Vec2d> getPosition, HashGrid2d<(Vec2d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return GetAllCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
+        }
+
+
+        /// <summary>
+        /// For each item in A, returns the index of each coincident items in B.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="getPositionA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPositionB"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T, U>(IEnumerable<T> itemsA, Func<T, Vec2d> getPositionA, IEnumerable<U> itemsB, Func<U, Vec2d> getPositionB, HashGrid2d<(Vec2d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid2d<(Vec2d, int)>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // insert B
+            int i = 0;
+            foreach (var b in itemsB)
+            {
+                var pB = getPositionB(b);
+                grid.Insert(pB, (pB, i));
+                i++;
+            }
+
+            // search from A
+            i = 0;
+            foreach( var a in itemsA)
+            {
+                var pA = getPositionA(a);
+                yield return Filter(grid.Search(new Interval2d(pA, tolerance)));
+
+                IEnumerable<int> Filter(IEnumerable<(Vec2d, int)> source)
+                {
+                    foreach (var (pB, j) in source)
+                        if (pA.ApproxEquals(pB, tolerance)) yield return j;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPosition"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IEnumerable<T> itemsA, IEnumerable<T> itemsB, Func<T, Vec3d> getPosition, HashGrid3d<(Vec3d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return GetAllCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
+        }
+
+
+        /// <summary>
+        /// For each item in A, returns the index of each coincident items in B.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="getPositionA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPositionB"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T, U>(IEnumerable<T> itemsA, Func<T, Vec3d> getPositionA, IEnumerable<U> itemsB, Func<U, Vec3d> getPositionB, HashGrid3d<(Vec3d, int)> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid3d<(Vec3d, int)>();
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // insert B
+            int i = 0;
+            foreach (var b in itemsB)
+            {
+                var pB = getPositionB(b);
+                grid.Insert(pB, (pB, i));
+                i++;
+            }
+
+            // search from A
+            i = 0;
+            foreach (var a in itemsA)
+            {
+                var pA = getPositionA(a);
+                yield return Filter(grid.Search(new Interval3d(pA, tolerance)));
+
+                IEnumerable<int> Filter(IEnumerable<(Vec3d, int)> source)
+                {
+                    foreach (var (pB, j) in source)
+                        if (pA.ApproxEquals(pB, tolerance)) yield return j;
+                }
+            }
+        }
 
 
         /// <summary>
@@ -125,82 +702,6 @@ namespace SpatialSlur.SlurData
         /// </summary>
         /// <param name="vectors"></param>
         /// <param name="result"></param>
-        public static void GetCovarianceMatrix(IEnumerable<Vec2d> vectors, double[] result)
-        {
-            GetCovarianceMatrix(vectors, vectors.Mean(), result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        /// <param name="mean"></param>
-        /// <returns></returns>
-        public static void GetCovarianceMatrix(IEnumerable<Vec2d> vectors, Vec2d mean, double[] result)
-        {
-            Array.Clear(result, 0, 4);
-
-            // calculate covariance matrix
-            foreach (Vec2d v in vectors)
-            {
-                Vec3d d = v - mean;
-                result[0] += d.X * d.X;
-                result[1] += d.X * d.Y;
-                result[3] += d.Y * d.Y;
-            }
-
-            // set symmetric values
-            result[2] = result[1];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        public static void GetCovarianceMatrix(IEnumerable<Vec3d> vectors, double[] result)
-        {
-            GetCovarianceMatrix(vectors, vectors.Mean(), result);
-        }
-
-
-        /// <summary>
-        /// Returns the entries of the covariance matrix in column-major order.
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
-        /// <param name="mean"></param>
-        public static void GetCovarianceMatrix(IEnumerable<Vec3d> vectors, Vec3d mean, double[] result)
-        {
-            Array.Clear(result, 0, 9);
-
-            // calculate lower triangular covariance matrix
-            foreach (Vec3d v in vectors)
-            {
-                Vec3d d = v - mean;
-                result[0] += d.X * d.X;
-                result[1] += d.X * d.Y;
-                result[2] += d.X * d.Z;
-                result[4] += d.Y * d.Y;
-                result[5] += d.Y * d.Z;
-                result[8] += d.Z * d.Z;
-            }
-
-            // set symmetric values
-            result[3] = result[1];
-            result[6] = result[2];
-            result[7] = result[5];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="result"></param>
         public static void GetCovarianceMatrix(IEnumerable<double[]> vectors, double[] result)
         {
             var mean = new double[vectors.First().Length];
@@ -217,387 +718,45 @@ namespace SpatialSlur.SlurData
         /// <param name="result"></param>
         public static void GetCovarianceMatrix(IEnumerable<double[]> vectors, double[] mean, double[] result)
         {
-            int n = mean.Length;
-            Array.Clear(result, 0, n * n);
+            int dim = mean.Length;
+            int n = 0;
 
-            // calculate lower triangular covariance matrix
+            Array.Clear(result, 0, dim * dim);
+
+            // calculate lower triangular values
             foreach (double[] v in vectors)
             {
-                for (int j = 0; j < n; j++)
+                for (int i = 0; i < dim; i++)
                 {
-                    double dj = v[j] - mean[j];
-                    result[j * n + j] += dj * dj; // diagonal entry
+                    double di = v[i] - mean[i];
 
-                    for (int k = j + 1; k < n; k++)
-                        result[j * n + k] += dj * (v[k] - mean[k]);
+                    for (int j = i; j < dim; j++)
+                        result[i * dim + j] += di * (v[j] - mean[j]);
                 }
+
+                n++;
             }
 
-            // fill out upper triangular
-            for (int i = 0; i < n; i++)
+            var t = 1.0 / n;
+
+            // average lower triangular values
+            for(int i = 0; i < dim; i++)
+            {
+                for(int j = i; j < dim; j++)
+                    result[i * dim + j] *= t;
+            }
+            
+            // set symmetric values
+            for (int i = 0; i < dim; i++)
             {
                 for (int j = 0; j < i; j++)
-                    result[j * n + i] = result[i * n + j];
+                    result[j * dim + i] = result[i * dim + j];
             }
         }
 
 
-        /// <summary>
-        /// Returns a new list with no coincident items.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IReadOnlyList<T> items, Func<T, Vec2d> getPosition, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return RemoveCoincident(items, getPosition, out int[] indexMap, tolerance);
-        }
-
-
-        /// <summary>
-        /// Returns a new list with no coincident items.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="indexMap"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IReadOnlyList<T> items, Func<T, Vec2d> getPosition, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid2d<int>(items.Count);
-            return RemoveCoincident(items, getPosition, grid, out indexMap, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="grid"></param>
-        /// <param name="indexMap"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IReadOnlyList<T> items, Func<T, Vec2d> getPosition, HashGrid2d<int> grid, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var result = new List<T>();
-            var map = new int[items.Count];
-            grid.Scale = tolerance * RadiusToHashScale;
-
-            // add points to result if no duplicates are found
-            for (int i = 0; i < items.Count; i++)
-            {
-                var p0 = getPosition(items[i]);
-
-                // search for concident in result
-                foreach (int j in grid.Search(new Interval2d(p0, tolerance)))
-                {
-                    if (p0.ApproxEquals(getPosition(result[j]), tolerance))
-                    {
-                        map[i] = j;
-                        goto EndFor;
-                    }
-                }
-
-                // no coincident item found, add i to result
-                grid.Insert(p0, result.Count);
-                map[i] = result.Count;
-                result.Add(items[i]);
-
-                EndFor:;
-            }
-
-            indexMap = map;
-            return result;
-        }
-
-
-        /// <summary>
-        /// Returns a new list with no coincident items.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IReadOnlyList<T> items, Func<T, Vec3d> getPosition, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return RemoveCoincident(items, getPosition, out int[] indexMap, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="indexMap"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IReadOnlyList<T> items, Func<T, Vec3d> getPosition, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid3d<int>(items.Count);
-            return RemoveCoincident(items, getPosition, grid, out indexMap, tolerance);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="grid"></param>
-        /// <param name="indexMap"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IReadOnlyList<T> items, Func<T, Vec3d> getPosition, HashGrid3d<int> grid, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var result = new List<T>();
-            var map = new int[items.Count];
-            grid.Scale = tolerance * RadiusToHashScale;
-
-            // add points to result if no duplicates are found
-            for (int i = 0; i < items.Count; i++)
-            {
-                var p0 = getPosition(items[i]);
-
-                // search for concident in result
-                foreach (int j in grid.Search(new Interval3d(p0, tolerance)))
-                {
-                    if (p0.ApproxEquals(getPosition(result[j]), tolerance))
-                    {
-                        map[i] = j;
-                        goto EndFor;
-                    }
-                }
-
-                // no coincident item found, add i to result
-                grid.Insert(p0, result.Count);
-                map[i] = result.Count;
-                result.Add(items[i]);
-
-                EndFor:;
-            }
-
-            indexMap = map;
-            return result;
-        }
-
-
-        /// <summary>
-        /// For each item, returns the index of the first coincident item within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> items, Func<T, Vec2d> getPosition, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid2d<int>(items.Count);
-            return GetFirstCoincident(items, getPosition, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each item, returns the index of the first coincident item within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="grid"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> items, Func<T, Vec2d> getPosition, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            grid.Scale = tolerance * RadiusToHashScale;
-
-            // insert
-            for (int i = 0; i < items.Count; i++)
-                grid.Insert(getPosition(items[i]), i);
-
-            // search
-            for (int i = 0; i < items.Count; i++)
-            {
-                var p0 = getPosition(items[i]);
-
-                foreach (var j in grid.Search(new Interval2d(p0, tolerance)))
-                {
-                    if (i != j && p0.ApproxEquals(getPosition(items[j]), tolerance))
-                    {
-                        yield return j;
-                        goto EndFor;
-                    }
-                }
-
-                yield return -1;
-                EndFor:;
-            }
-        }
-
-
-        /// <summary>
-        /// For each item, returns the index of the first coincident item within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <param name="items"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> items, Func<T, Vec3d> getPosition, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid3d<int>(items.Count);
-            return GetFirstCoincident(items, getPosition, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each item, returns the index of the first coincident item within the same list. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="grid"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> items, Func<T, Vec3d> getPosition, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            grid.Scale = tolerance * RadiusToHashScale;
-
-            // insert
-            for (int i = 0; i < items.Count; i++)
-                grid.Insert(getPosition(items[i]), i);
-
-            // search
-            for (int i = 0; i < items.Count; i++)
-            {
-                var p0 = getPosition(items[i]);
-
-                foreach (var j in grid.Search(new Interval3d(p0, tolerance)))
-                {
-                    if (i != j && p0.ApproxEquals(getPosition(items[j]), tolerance))
-                    {
-                        yield return j;
-                        goto EndFor;
-                    }
-                }
-
-                yield return -1;
-                EndFor:;
-            }
-        }
-
-
-        /// <summary>
-        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec2d> getPosition, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid2d<int>(itemsB.Count);
-            return GetFirstCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="grid"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec2d> getPosition, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            return GetFirstCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
-        }
+#if OBSOLETE
         
-
-        /// <summary>
-        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="getPositionA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPositionB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec2d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec2d> getPositionB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid2d<int>(itemsB.Count);
-            return GetFirstCoincident(itemsA, getPositionA, itemsB, getPositionB, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="getPositionA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPositionB"></param>
-        /// <param name="grid"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec2d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec2d> getPositionB, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
-        {
-            grid.Scale = tolerance * RadiusToHashScale;
-
-            // insert B
-            for (int i = 0; i < itemsB.Count; i++)
-                grid.Insert(getPositionB(itemsB[i]), i);
-
-            // search from A
-            for (int i = 0; i < itemsA.Count; i++)
-            {
-                var p0 = getPositionA(itemsA[i]);
-
-                foreach (var j in grid.Search(new Interval3d(p0, tolerance)))
-                {
-                    if (p0.ApproxEquals(getPositionB(itemsB[j]), tolerance))
-                    {
-                        yield return j;
-                        goto EndFor;
-                    }
-                }
-
-                yield return -1;
-                EndFor:;
-            }
-        }
-        
-
-        /// <summary>
-        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec3d> getPosition, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid3d<int>(itemsB.Count);
-            return GetFirstCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
-        }
-
-
         /// <summary>
         /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
         /// </summary>
@@ -608,7 +767,7 @@ namespace SpatialSlur.SlurData
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec3d> getPosition, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
+        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec2d> getPosition, HashGrid2d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
         {
             return GetFirstCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
         }
@@ -623,29 +782,14 @@ namespace SpatialSlur.SlurData
         /// <param name="getPositionA"></param>
         /// <param name="itemsB"></param>
         /// <param name="getPositionB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec3d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec3d> getPositionB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid3d<int>(itemsB.Count);
-            return GetFirstCoincident(itemsA, getPositionA, itemsB, getPositionB, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="getPositionA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPositionB"></param>
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec3d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec3d> getPositionB, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
+        public static IEnumerable<int> GetFirstCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec2d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec2d> getPositionB, HashGrid2d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
         {
+            if (grid == null)
+                grid = new HashGrid2d<int>(itemsB.Count);
+
             grid.Scale = tolerance * RadiusToHashScale;
 
             // insert B
@@ -673,18 +817,61 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// For each item in A, returns the index of all coincident items in B.
+        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="itemsA"></param>
         /// <param name="itemsB"></param>
         /// <param name="getPosition"></param>
+        /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec2d> getPosition, double tolerance = SlurMath.ZeroTolerance)
+        public static IEnumerable<int> GetFirstCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec3d> getPosition, HashGrid3d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
         {
-            var grid = new HashGrid2d<int>(itemsB.Count);
-            return GetAllCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
+            return GetFirstCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
+        }
+
+
+        /// <summary>
+        /// For each item in A, returns the index of the first coincident item in B. If no coincident point is found, -1 is returned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="itemsA"></param>
+        /// <param name="getPositionA"></param>
+        /// <param name="itemsB"></param>
+        /// <param name="getPositionB"></param>
+        /// <param name="grid"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetFirstCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec3d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec3d> getPositionB, HashGrid3d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
+        {
+            if (grid == null)
+                grid = new HashGrid3d<int>(itemsB.Count);
+
+            grid.Scale = tolerance * RadiusToHashScale;
+
+            // insert B
+            for (int i = 0; i < itemsB.Count; i++)
+                grid.Insert(getPositionB(itemsB[i]), i);
+
+            // search from A
+            for (int i = 0; i < itemsA.Count; i++)
+            {
+                var p0 = getPositionA(itemsA[i]);
+
+                foreach (var j in grid.Search(new Interval3d(p0, tolerance)))
+                {
+                    if (p0.ApproxEquals(getPositionB(itemsB[j]), tolerance))
+                    {
+                        yield return j;
+                        goto EndFor;
+                    }
+                }
+
+                yield return -1;
+                EndFor:;
+            }
         }
 
 
@@ -698,27 +885,9 @@ namespace SpatialSlur.SlurData
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec2d> getPosition, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec2d> getPosition, HashGrid2d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
         {
             return GetAllCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each item in A, returns the index of all coincident items in B.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="getPositionA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPositionB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T,U>(IReadOnlyList<T> itemsA, Func<T, Vec2d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec2d> getPositionB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid2d<int>(itemsB.Count);
-            return GetAllCoincident(itemsA, getPositionA, itemsB, getPositionB, grid, tolerance);
         }
 
 
@@ -734,8 +903,11 @@ namespace SpatialSlur.SlurData
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec2d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec2d> getPositionB, HashGrid2d<int> grid, double tolerance = SlurMath.ZeroTolerance)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec2d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec2d> getPositionB, HashGrid2d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
         {
+            if(grid == null)
+                grid = new HashGrid2d<int>(itemsB.Count);
+
             grid.Scale = tolerance * RadiusToHashScale;
 
             // insert B
@@ -751,23 +923,7 @@ namespace SpatialSlur.SlurData
                     .Where(j => p0.ApproxEquals(getPositionB(itemsB[j]), tolerance));
             }
         }
-
-
-        /// <summary>
-        /// For each item in A, returns the index of all coincident items in B.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPosition"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec3d> getPosition, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid3d<int>(itemsB.Count);
-            return GetAllCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
-        }
-
+        
 
         /// <summary>
         /// For each item in A, returns the index of each coincident items in B.
@@ -779,27 +935,9 @@ namespace SpatialSlur.SlurData
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec3d> getPosition, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T>(IReadOnlyList<T> itemsA, IReadOnlyList<T> itemsB, Func<T, Vec3d> getPosition, HashGrid3d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
         {
             return GetAllCoincident(itemsA, getPosition, itemsB, getPosition, grid, tolerance);
-        }
-
-
-        /// <summary>
-        /// For each item in A, returns the index of all coincident items in B.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="itemsA"></param>
-        /// <param name="getPositionA"></param>
-        /// <param name="itemsB"></param>
-        /// <param name="getPositionB"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T,U>(IReadOnlyList<T> itemsA, Func<T, Vec3d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec3d> getPositionB, double tolerance = SlurMath.ZeroTolerance)
-        {
-            var grid = new HashGrid3d<int>(itemsB.Count);
-            return GetAllCoincident(itemsA, getPositionA, itemsB, getPositionB, grid, tolerance);
         }
 
 
@@ -815,8 +953,11 @@ namespace SpatialSlur.SlurData
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec3d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec3d> getPositionB, HashGrid3d<int> grid, double tolerance = SlurMath.ZeroTolerance)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident<T, U>(IReadOnlyList<T> itemsA, Func<T, Vec3d> getPositionA, IReadOnlyList<U> itemsB, Func<U, Vec3d> getPositionB, HashGrid3d<int> grid = null, double tolerance = SlurMath.ZeroTolerance)
         {
+            if(grid == null)
+                grid = new HashGrid3d<int>(itemsB.Count);
+
             grid.Scale = tolerance * RadiusToHashScale;
 
             // insert B
@@ -832,5 +973,7 @@ namespace SpatialSlur.SlurData
                     .Where(j => p0.ApproxEquals(getPositionB(itemsB[j]), tolerance));
             }
         }
+
+#endif
     }
 }
