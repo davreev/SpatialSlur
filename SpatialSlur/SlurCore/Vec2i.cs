@@ -10,7 +10,7 @@ namespace SpatialSlur.SlurCore
     /// 
     /// </summary>
     [Serializable]
-    public struct Vec2i
+    public struct Vec2i : IEquatable<Vec2i>
     {
         #region Static
 
@@ -46,12 +46,22 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vector"></param>
+        public static explicit operator Vec2i(Vec2d vector)
+        {
+            return new Vec2i((int)vector.X, (int)vector.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
         public static bool operator ==(Vec2i v0, Vec2i v1)
         {
-            return (v0.X == v1.X) && (v0.Y == v1.Y);
+            return v0.X == v1.X && v0.Y == v1.Y;
         }
 
 
@@ -63,7 +73,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static bool operator !=(Vec2i v0, Vec2i v1)
         {
-            return (v0.X != v1.X) || (v0.Y != v1.Y);
+            return v0.X != v1.X || v0.Y != v1.Y;
         }
 
 
@@ -352,28 +362,38 @@ namespace SpatialSlur.SlurCore
             Y = y;
         }
 
-
+       
         /// <summary>
-        /// https://msdn.microsoft.com/en-us/library/336aedhh(v=VS.71).aspx
+        /// 
         /// </summary>
+        /// <param name="other"></param>
         /// <returns></returns>
-        public override int GetHashCode()
+        public bool Equals(Vec2i other)
         {
-            int hash = 17;
-            hash = hash * 23 + X.GetHashCode();
-            hash = hash * 23 + Y.GetHashCode();
-            return hash;
+            return X == other.X && Y == other.Y;
         }
 
 
         /// <summary>
-        /// https://msdn.microsoft.com/en-us/library/336aedhh(v=VS.71).aspx
+        /// 
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            return obj is Vec2i && this == (Vec2i)obj;
+            return obj is Vec2i && Equals((Vec2i)obj);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            const int p0 = 73856093;
+            const int p1 = 19349663;
+            return X * p0 ^ Y * p1;
         }
 
 

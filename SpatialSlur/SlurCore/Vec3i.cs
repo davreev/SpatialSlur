@@ -10,7 +10,7 @@ namespace SpatialSlur.SlurCore
     /// 
     /// </summary>
     [Serializable]
-    public struct Vec3i
+    public struct Vec3i : IEquatable<Vec3i>
     {
         #region Static
 
@@ -37,11 +37,21 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="vector"></param>
         /// <returns></returns>
-        public static implicit operator Vec3i(Vec2i v)
+        public static implicit operator Vec3i(Vec2i vector)
         {
-            return new Vec3i(v.X, v.Y, 0);
+            return new Vec3i(vector.X, vector.Y, 0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static explicit operator Vec3i(Vec3d vector)
+        {
+            return new Vec3i((int)vector.X, (int)vector.Y, (int)vector.Z);
         }
 
 
@@ -53,7 +63,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static bool operator ==(Vec3i v0, Vec3i v1)
         {
-            return (v0.X == v1.X) && (v0.Y == v1.Y) && (v0.Z == v1.Z);
+            return v0.X == v1.X && v0.Y == v1.Y && v0.Z == v1.Z;
         }
 
 
@@ -65,7 +75,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static bool operator !=(Vec3i v0, Vec3i v1)
         {
-            return (v0.X != v1.X) || (v0.Y != v1.Y) || (v0.Z != v1.Z);
+            return v0.X != v1.X || v0.Y != v1.Y || v0.Z != v1.Z;
         }
 
 
@@ -363,29 +373,39 @@ namespace SpatialSlur.SlurCore
             Z = z;
         }
 
-
+      
         /// <summary>
-        /// https://msdn.microsoft.com/en-us/library/336aedhh(v=VS.71).aspx
+        /// 
         /// </summary>
+        /// <param name="other"></param>
         /// <returns></returns>
-        public override int GetHashCode()
+        public bool Equals(Vec3i other)
         {
-            int hash = 17;
-            hash = hash * 23 + X.GetHashCode();
-            hash = hash * 23 + Y.GetHashCode();
-            hash = hash * 23 + Z.GetHashCode();
-            return hash;
+            return X == other.X && Y == other.Y && Z == other.Z;
         }
-     
+
 
         /// <summary>
-        /// https://msdn.microsoft.com/en-us/library/336aedhh(v=VS.71).aspx
+        /// 
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            return obj is Vec3i && this == (Vec3i)obj;
+            return obj is Vec3i && Equals((Vec3i)obj);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            const int p0 = 73856093;
+            const int p1 = 19349663;
+            const int p2 = 83492791;
+            return X * p0 ^ Y * p1 ^ Z * p2;
         }
 
 
