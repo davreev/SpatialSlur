@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 
-using SpatialSlur.SlurCore;
-
 using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
@@ -17,7 +15,7 @@ namespace SpatialSlur.SlurData
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public struct ReadOnlySubArray<T> : IReadOnlyList<T>
+    public struct ReadOnlyArrayView<T> : IReadOnlyList<T>
     {
         private readonly T[] _source;
         private readonly int _start;
@@ -63,13 +61,10 @@ namespace SpatialSlur.SlurData
         /// <param name="source"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>
-        public ReadOnlySubArray(T[] source, int start, int count)
+        public ReadOnlyArrayView(T[] source, int start, int count)
         {
-            if (start < 0 || start >= source.Length)
-                throw new ArgumentOutOfRangeException("start");
-
-            if (count < 0 || start + count > source.Length)
-                throw new ArgumentOutOfRangeException("count");
+            if (start < 0 || count < 0 || start + count > source.Length)
+                throw new ArgumentOutOfRangeException();
 
             _source = source ?? throw new ArgumentNullException();
             _start = start;
@@ -81,7 +76,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public ReadOnlySubArray(ReadOnlySubArray<T> other)
+        public ReadOnlyArrayView(ReadOnlyArrayView<T> other)
         {
             _source = other._source;
             _start = other._start;
@@ -95,7 +90,7 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>
-        public ReadOnlySubArray(ReadOnlySubArray<T> other, int start, int count)
+        public ReadOnlyArrayView(ReadOnlyArrayView<T> other, int start, int count)
             :this(other._source, start + other._start, count)
         {
         }
@@ -120,7 +115,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator(); // return generic version
+            return GetEnumerator();
         }
 
         #endregion

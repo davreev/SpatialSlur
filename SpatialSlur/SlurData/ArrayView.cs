@@ -2,12 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-using SpatialSlur.SlurCore;
-
 using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
-Notes
+* Notes
 */
 
 namespace SpatialSlur.SlurData
@@ -17,7 +15,7 @@ namespace SpatialSlur.SlurData
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public struct SubArray<T> : IList<T>, IReadOnlyList<T>
+    public struct ArrayView<T> : IList<T>, IReadOnlyList<T>
     {
         private readonly T[] _source;
         private readonly int _start;
@@ -60,7 +58,7 @@ namespace SpatialSlur.SlurData
                 _source[index + _start] = value;
             }
         }
-
+        
 
         /// <summary>
         /// 
@@ -68,13 +66,10 @@ namespace SpatialSlur.SlurData
         /// <param name="source"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>
-        public SubArray(T[] source, int start, int count)
+        public ArrayView(T[] source, int start, int count)
         {
-            if (start < 0 || start >= source.Length)
-                throw new ArgumentOutOfRangeException("start");
-
-            if (count < 0 || start + count > source.Length)
-                throw new ArgumentOutOfRangeException("count");
+            if (start < 0 || count < 0 || start + count > source.Length)
+                throw new ArgumentOutOfRangeException();
 
             _source = source ?? throw new ArgumentNullException();
             _start = start;
@@ -86,7 +81,7 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public SubArray(SubArray<T> other)
+        public ArrayView(ArrayView<T> other)
         {
             _source = other._source;
             _start = other._start;
@@ -100,9 +95,19 @@ namespace SpatialSlur.SlurData
         /// <param name="other"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>
-        public SubArray(SubArray<T> other, int start, int count)
+        public ArrayView(ArrayView<T> other, int start, int count)
             :this(other._source, start + other._start, count)
         {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public ReadOnlyArrayView<T> AsReadOnly()
+        {
+            return new ReadOnlyArrayView<T>(_source, _start, _count);
         }
 
 
