@@ -1,0 +1,1395 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#
+// type sets
+var allTypes = new string[]{"double", "float", "Vec2d", "Vec3d"};
+var scalarTypes = new string[]{"double", "float"};
+var vectorTypes = new string[]{"Vec2d", "Vec3d"};
+#>
+<#
+// table of per-type properties
+var propertyTable = new Dictionary<string, Dictionary<string, string>>()
+{
+    {
+        "double", new Dictionary<string, string>(){
+            {"Precision", "double"}, 
+            {"Suffix", ""},             
+            {"Tolerance", "SlurMath.ZeroTolerance"},
+            {"IntervalType", "Intervald"}}
+    },
+    {
+        "float", new Dictionary<string, string>(){              
+            {"Precision", "float"}, 
+            {"Suffix", "f"},             
+            {"Tolerance", "SlurMath.ZeroTolerancef"},
+            {"IntervalType", "Intervalf"}}
+    },
+    {
+        "Vec2d", new Dictionary<string, string>(){
+            {"Precision", "double"}, 
+            {"Suffix", ""},             
+            {"Tolerance", "SlurMath.ZeroTolerance"},
+            {"IntervalType", "Interval2d"}}
+    },
+    {
+        "Vec3d", new Dictionary<string, string>(){
+            {"Precision", "double"}, 
+            {"Suffix", ""},             
+            {"Tolerance", "SlurMath.ZeroTolerance"},
+            {"IntervalType", "Interval3d"}}
+    }
+};
+#>
+using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Text;
+using System.Drawing;
+using SpatialSlur.SlurCore;
+
+
+using static System.Threading.Tasks.Parallel;
+
+/*
+* Notes
+*/
+
+namespace SpatialSlur.SlurData
+{
+	/// <summary>
+	/// 
+	/// </summary>
+	public static partial class ArrayMath
+	{
+		#region General
+
+<#
+foreach(string type in allTypes) 
+{
+    var props = propertyTable[type];
+    var precision = props["Precision"];
+    var suffix = props["Suffix"];
+    var tolerance = props["Tolerance"];
+    var interval = props["IntervalType"];
+#>
+		#region <#= type #>
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public static <#= type #> Sum(<#= type #>[] values)
+		{
+			return Sum(values, values.Length);
+		} 
+
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public static <#= type #> Sum(<#= type #>[] values, int count)
+		{
+			var sum = default(<#= type #>);
+
+			for (int i = 0; i < count; i++)
+				sum += values[i];
+
+			return sum;
+		}
+
+		
+		/// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Mean(<#= type #>[] values)
+        {
+            return Sum(values) / values.Length;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Mean(<#= type #>[] values, int count)
+        {
+            return Sum(values, count) / count;
+        }
+
+		
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> WeightedSum(<#= type #>[] values, <#= precision #>[] weights)
+        {
+            return WeightedSum(values, weights, values.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> WeightedSum(<#= type #>[] values, <#= precision #>[] weights, int count)
+        {
+            var result = default(<#= type #>);
+
+            for (int i = 0; i < count; i++)
+                result += values[i] * weights[i];
+
+            return result;
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> WeightedMean(<#= type #>[] values, <#= precision #>[] weights)
+        {
+            return WeightedMean(values, weights, values.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> WeightedMean(<#= type #>[] values, <#= precision #>[] weights, int count)
+        {
+            var sum = default(<#= type #>);
+            var wsum = default(<#= precision #>);
+
+            for (int i = 0; i < count; i++)
+            {
+                var w = weights[i];
+                sum += values[i] * w;
+                wsum += w;
+            }
+
+            return sum / wsum;
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= type #>[] v0, <#= type #> v1, <#= type #>[] result)
+        {
+            Add(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= type #>[] v0, <#= type #> v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] + v1;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Add(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] + v1[i];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Subtract(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Subtract(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Subtract(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] - v1[i];
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Scale(<#= type #>[] values, <#= precision #> t, <#= type #>[] result)
+        {
+            Scale(values, t, values.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Scale(<#= type #>[] values, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = values[i] * t;
+        }
+
+
+        /// <summary>
+        /// result = v0 + v1 * t
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= type #>[] v1, <#= precision #> t, <#= type #>[] result)
+        {
+            AddScaled(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// result = v0 + v1 * t
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= type #>[] v1, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] + v1[i] * t;
+        }
+
+
+        /// <summary>
+        /// result = v0 + v1 * t
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] t, <#= type #>[] result)
+        {
+            AddScaled(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// result = v0 + v1 * t
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] + v1[i] * t[i];
+        }
+
+
+        /// <summary>
+        /// result = v0 * t0 + v1 * t1
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= precision #> t0, <#= type #>[] v1, <#= precision #> t1, <#= type #>[] result)
+        {
+            AddScaled(v0, t0, v1, t1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// result = v0 * t0 + v1 * t1
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= precision #> t0, <#= type #>[] v1, <#= precision #> t1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] * t0 + v1[i] * t1;
+        }
+
+
+        /// <summary>
+        /// result = v0 * t0 + v1 * t1
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= precision #>[] t0, <#= type #>[] v1, <#= precision #>[] t1, <#= type #>[] result)
+        {
+            AddScaled(v0, t0, v1, t1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// result = v0 * t0 + v1 * t1
+        /// </summary>
+        public static void AddScaled(<#= type #>[] v0, <#= precision #>[] t0, <#= type #>[] v1, <#= precision #>[] t1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] * t0[i] + v1[i] * t1[i];
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= type #>[] v0, <#= type #>[] v1, <#= type #> v2, <#= precision #> t, <#= type #>[] result)
+        {
+            AddScaledDelta(v0, v1, v2, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= type #>[] v0, <#= type #>[] v1, <#= type #> v2, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] += v0[i] + (v1[i] - v2) * t;
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, <#= precision #> t, <#= type #>[] result)
+        {
+            AddScaledDelta(v0, v1, v2, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] += v0[i] + (v1[i] - v2[i]) * t;
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, <#= precision #>[] t, <#= type #>[] result)
+        {
+            AddScaledDelta(v0, v1, v2, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, <#= precision #>[] t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] += v0[i] + (v1[i] - v2[i]) * t[i];
+        }
+
+
+        /// <summary>
+        /// Component-wise multiplication
+        /// </summary>
+        public static void Multiply(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Multiply(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// Component-wise multiplication
+        /// </summary>
+        public static void Multiply(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] * v1[i];
+        }
+
+
+        /// <summary>
+        /// Component-wise division
+        /// </summary>
+        public static void Divide(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Divide(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// Component-wise division
+        /// </summary>
+        public static void Divide(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i] / v1[i];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Normalize(<#= type #>[] vector, <#= interval #> interval, <#= type #>[] result)
+        {
+            Normalize(vector, interval, vector.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Normalize(<#= type #>[] vector, <#= interval #> interval, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = interval.Normalize(vector[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Evaluate(<#= type #>[] values, <#= interval #> interval, <#= type #>[] result)
+        {
+            Evaluate(values, interval, values.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Evaluate(<#= type #>[] values, <#= interval #> interval, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = interval.Evaluate(values[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Remap(<#= type #>[] values, <#= interval #> from, <#= interval #> to, <#= type #>[] result)
+        {
+            Remap(values, from, to, values.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Remap(<#= type #>[] values, <#= interval #> from, <#= interval #> to, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= interval #>.Remap(values[i], from, to);
+        }
+
+		#endregion
+
+<#
+}
+#>
+		#endregion
+
+		#region Scalar
+
+<#
+foreach(string type in scalarTypes) 
+{
+    var props = propertyTable[type];
+    var precision = props["Precision"];
+    var suffix = props["Suffix"];
+    var tolerance = props["Tolerance"];
+    var interval = props["IntervalType"];
+#>
+		#region <#= type #>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= type #>[] v0, <#= type #>[] v1, <#= type #> tolerance = <#= tolerance #>)
+        {
+            return ApproxEquals(v0, v1, v0.Length, tolerance);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #> tolerance = <#= tolerance #>)
+        {
+            for (int i = 0; i < count; i++)
+                if (Math.Abs(v1[i] - v0[i]) >= tolerance) return false;
+
+            return true;
+        }
+
+       
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] tolerance)
+        {
+            return ApproxEquals(v0, v1, tolerance, v0.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] tolerance, int count)
+        {
+            for (int i = 0; i < count; i++)
+                if (Math.Abs(v1[i] - v0[i]) >= tolerance[i]) return false;
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Max(<#= type #>[] values)
+        {
+            return Max(values, values.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Max(<#= type #>[] values, int count)
+        {
+            var result = values[0];
+
+            for (int i = 1; i < count; i++)
+            {
+                var t = values[i];
+                if (t > result) result = t;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Max(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Max(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Max(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = Math.Max(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Min(<#= type #>[] values)
+        {
+            return Min(values, values.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Min(<#= type #>[] values, int count)
+        {
+            var result = values[0];
+
+            for (int i = 1; i < count; i++)
+            {
+                var t = values[i];
+                if (t < result) result = t;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Min(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Min(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Min(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = Math.Min(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Abs(<#= type #>[] values, <#= type #>[] result)
+        {
+            Abs(values, values.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Abs(<#= type #>[] values, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = Math.Abs(values[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Dot(<#= type #>[] v0, <#= type #>[] v1)
+        {
+            return Dot(v0, v1, v0.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> Dot(<#= type #>[] v0, <#= type #>[] v1, int count)
+        {
+            var result = default(<#= type #>);
+
+            for (int i = 0; i < count; i++)
+                result += v0[i] * v1[i];
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> AbsDot(<#= type #>[] v0, <#= type #>[] v1)
+        {
+            return AbsDot(v0, v1, v0.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> AbsDot(<#= type #>[] v0, <#= type #>[] v1, int count)
+        {
+            var result = default(<#= type #>);
+
+            for (int i = 0; i < count; i++)
+                result += Math.Abs(v0[i] * v1[i]);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Project(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Project(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Project(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            Scale(v1, Dot(v0, v1, count) / Dot(v1, v1, count), count, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reject(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Reject(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reject(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            Project(v0, v1, count, result);
+            Subtract(v0, result, count, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reflect(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Reflect(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reflect(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            Scale(v1, Dot(v0, v1, count) / Dot(v1, v1, count) * 2.0<#= suffix #>, count, result);
+            AddScaled(result, v0, -1.0<#= suffix #>, count, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            MatchProjection(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            Scale(v0, Dot(v1, v1, count) / Dot(v0, v1, count), count, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, <#= type #>[] result)
+        {
+            MatchProjection(v0, v1, v2, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, int count, <#= type #>[] result)
+        {
+            Scale(v0, Dot(v1, v2, count) / Dot(v0, v2, count), count, result);
+        }
+
+
+        /// <summary>
+        /// Returns Manhattan length
+        /// </summary>
+        public static <#= type #> NormL1(<#= type #>[] vector)
+        {
+            return NormL1(vector, vector.Length);
+        }
+
+
+        /// <summary>
+        /// Returns Manhattan length
+        /// </summary>
+        public static <#= type #> NormL1(<#= type #>[] vector, int count)
+        {
+            var result = default(<#= type #>);
+
+            for (int i = 0; i < count; i++)
+                result += Math.Abs(vector[i]);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> SquareDistanceL2(<#= type #>[] v0, <#= type #>[] v1)
+        {
+            return SquareDistanceL2(v0, v1, v0.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> SquareDistanceL2(<#= type #>[] v0, <#= type #>[] v1, int count)
+        {
+            var result = default(<#= type #>);
+
+            for (int i = 0; i < count; i++)
+            {
+                var d = v1[i] - v0[i];
+                result += d * d;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> DistanceL1(<#= type #>[] v0, <#= type #>[] v1)
+        {
+            return DistanceL1(v0, v1, v0.Length);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= type #> DistanceL1(<#= type #>[] v0, <#= type #>[] v1, int count)
+        {
+            var result = default(<#= type #>);
+
+            for (int i = 0; i < count; i++)
+                result += Math.Abs(v1[i] - v0[i]);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #> v1, <#= type #> t, <#= type #>[] result)
+        {
+            Lerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #> v1, <#= type #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = SlurMath.Lerp(v0[i], v1, t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= type #> t, <#= type #>[] result)
+        {
+            Lerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= type #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = SlurMath.Lerp(v0[i], v1[i], t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] t, <#= type #>[] result)
+        {
+            Lerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = SlurMath.Lerp(v0[i], v1[i], t[i]);
+        }
+
+		#endregion
+
+<#
+}
+#>
+		#endregion
+
+		#region Vector
+
+<#
+foreach(string type in vectorTypes) 
+{
+    var props = propertyTable[type];
+    var precision = props["Precision"];
+    var suffix = props["Suffix"];
+    var tolerance = props["Tolerance"];
+    var interval = props["IntervalType"];
+#>
+		#region <#= type #>
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= type #>[] v0, <#= type #>[] v1, <#= precision #> tolerance = <#= tolerance #>)
+        {
+            return ApproxEquals(v0, v1, v0.Length, tolerance);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= type #>[] v0, <#= type #>[] v1, int count, <#= precision #> tolerance = <#= tolerance #>)
+        {
+            for (int i = 0; i < count; i++)
+                if (!v0[i].ApproxEquals(v1[i], tolerance)) return false;
+
+            return true;
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Max(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Max(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Max(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Max(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Min(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Min(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Min(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Min(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Abs(<#= type #>[] vectors, <#= type #>[] result)
+        {
+            Abs(vectors, vectors.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Abs(<#= type #>[] vectors, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Abs(vectors[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Dot(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] result)
+        {
+            Dot(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Dot(<#= type #>[] v0, <#= type #>[] v1, int count,  <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Dot(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void AbsDot(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] result)
+        {
+            AbsDot(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void AbsDot(<#= type #>[] v0, <#= type #>[] v1, int count, <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.AbsDot(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Angle(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] result)
+        {
+            Angle(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Angle(<#= type #>[] v0, <#= type #>[] v1, int count, <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Angle(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Project(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Project(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Project(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Project(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reject(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Reject(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reject(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Reject(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reflect(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            Reflect(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reflect(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Reflect(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] result)
+        {
+            MatchProjection(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.MatchProjection(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, <#= type #>[] result)
+        {
+            MatchProjection(v0, v1, v2, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= type #>[] v0, <#= type #>[] v1, <#= type #>[] v2, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.MatchProjection(v0[i], v1[i], v2[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Unitize(<#= type #>[] vectors, <#= type #>[] result)
+        {
+            Unitize(vectors, vectors.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Unitize(<#= type #>[] vectors, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = vectors[i].Unit;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void NormL2(<#= type #>[] vectors, <#= precision #>[] result)
+        {
+            NormL2(vectors, vectors.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void NormL2(<#= type #>[] vectors, int count, <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = vectors[i].Length;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void NormL1(<#= type #>[] vectors, <#= precision #>[] result)
+        {
+            NormL1(vectors, vectors.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void NormL1(<#= type #>[] vectors, int count, <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = vectors[i].ManhattanLength;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void DistanceL2(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] result)
+        {
+            DistanceL2(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void DistanceL2(<#= type #>[] v0, <#= type #>[] v1, int count, <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i].DistanceTo(v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void SquareDistanceL2(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] result)
+        {
+            SquareDistanceL2(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void SquareDistanceL2(<#= type #>[] v0, <#= type #>[] v1, int count, <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i].SquareDistanceTo(v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void DistanceL1(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] result)
+        {
+            DistanceL1(v0, v1, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void DistanceL1(<#= type #>[] v0, <#= type #>[] v1, int count, <#= precision #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = v0[i].ManhattanDistanceTo(v1[i]);
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #> v1, <#= precision #> t, <#= type #>[] result)
+        {
+            Lerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #> v1, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Lerp(v0[i], v1, t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #> t, <#= type #>[] result)
+        {
+            Lerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < v0.Length; i++)
+                result[i] = <#= type #>.Lerp(v0[i], v1[i], t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] t, <#= type #>[] result)
+        {
+            Lerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Lerp(v0[i], v1[i], t[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Slerp(<#= type #>[] v0, <#= type #> v1, <#= precision #> t, <#= type #>[] result)
+        {
+            Slerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Slerp(<#= type #>[] v0, <#= type #> v1, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Slerp(v0[i], v1, t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Slerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #> t, <#= type #>[] result)
+        {
+            Slerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Slerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #> t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Slerp(v0[i], v1[i], t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Slerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] t, <#= type #>[] result)
+        {
+            Slerp(v0, v1, t, v0.Length, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Slerp(<#= type #>[] v0, <#= type #>[] v1, <#= precision #>[] t, int count, <#= type #>[] result)
+        {
+            for (int i = 0; i < count; i++)
+                result[i] = <#= type #>.Slerp(v0[i], v1[i], t[i]);
+        }
+
+		#endregion
+
+<# 
+} 
+#>
+		#endregion
+	}
+}
