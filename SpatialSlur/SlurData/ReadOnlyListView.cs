@@ -2,12 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-using SpatialSlur.SlurCore;
-
 using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
-Notes
+* Notes
 */
 
 namespace SpatialSlur.SlurData
@@ -17,7 +15,7 @@ namespace SpatialSlur.SlurData
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public struct ReadOnlySubList<T> : IReadOnlyList<T>
+    public struct ReadOnlyListView<T> : IReadOnlyList<T>
     {
         private readonly IReadOnlyList<T> _source;
         private readonly int _start;
@@ -58,26 +56,33 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
+        /// Returns true if the view is still valid.
+        /// Changes to the underlying list might invalidate a view.
+        /// </summary>
+        public bool IsValid
+        {
+            get { return _start > 0 && _count > 0 && _start + _count <= _source.Count; }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="source"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>
-        public ReadOnlySubList(IReadOnlyList<T> source, int start, int count)
+        public ReadOnlyListView(IReadOnlyList<T> source, int start, int count)
         {
             if (source == null)
                 throw new ArgumentNullException("source");
 
-            if (start < 0 || start >= source.Count)
-                throw new ArgumentOutOfRangeException("start");
-
-            if (count < 0 || start + count > source.Count)
-                throw new ArgumentOutOfRangeException("count");
+            if (start < 0 || count < 0 || start + count > source.Count)
+                throw new ArgumentOutOfRangeException();
 
             // avoid performance degradation from recursive referencing
-            if (source is ReadOnlySubList<T>)
+            if (source is ReadOnlyListView<T>)
             {
-                var other = (ReadOnlySubList<T>)source;
+                var other = (ReadOnlyListView<T>)source;
                 _source = other._source;
                 _start = start + other._start;
             }
