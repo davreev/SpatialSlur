@@ -1,20 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// Double precision 3x3 matrix.
-    /// 
-    /// TODO 
-    /// constructors and setters
     /// </summary>
     [Serializable]
     public struct Matrix3d
@@ -22,7 +17,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static Matrix3d Identity = new Matrix3d(1.0);
+        public static readonly Matrix3d Identity = new Matrix3d(1.0);
 
 
         /// <summary>
@@ -75,18 +70,29 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix3d operator *(Matrix3d matrix, double scalar)
         {
-            matrix.M00 *= scalar;
-            matrix.M01 *= scalar;
-            matrix.M02 *= scalar;
+            matrix.Scale(scalar);
+            return matrix;
+        }
 
-            matrix.M10 *= scalar;
-            matrix.M11 *= scalar;
-            matrix.M12 *= scalar;
 
-            matrix.M20 *= scalar;
-            matrix.M21 *= scalar;
-            matrix.M22 *= scalar;
+        /// <summary>
+        /// Matrix scalar multiplication
+        /// </summary>
+        /// <returns></returns>
+        public static Matrix3d operator *(double scalar, Matrix3d matrix)
+        {
+            matrix.Scale(scalar);
+            return matrix;
+        }
 
+
+        /// <summary>
+        /// Matrix scalar multiplication
+        /// </summary>
+        /// <returns></returns>
+        public static Matrix3d operator /(Matrix3d matrix, double scalar)
+        {
+            matrix.Scale(1.0 / scalar);
             return matrix;
         }
 
@@ -202,6 +208,119 @@ namespace SpatialSlur.SlurCore
                 Multiply(ref m0, m1.Column1),
                 Multiply(ref m0, m1.Column2)
                 );
+        }
+       
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="row0"></param>
+        /// <param name="row1"></param>
+        /// <returns></returns>
+        public static Matrix3d CreateFromRows(Vec3d row0, Vec3d row1, Vec3d row2)
+        {
+            return new Matrix3d(
+                row0.X, row0.Y, row0.Z,
+                row1.X, row1.Y, row1.Z,
+                row2.X, row2.Y, row2.Z
+                );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="row0"></param>
+        /// <param name="row1"></param>
+        /// <returns></returns>
+        public static Matrix3d CreateFromColumns(Vec3d column0, Vec3d column1, Vec3d column2)
+        {
+            return new Matrix3d(
+                column0.X, column1.X, column2.X,
+                column0.Y, column1.Y, column2.Y,
+                column0.Z, column1.Z, column2.Z
+                );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        public static Matrix3d CreateCovariance(IEnumerable<Vec3d> vectors)
+        {
+            return CreateCovariance(vectors, vectors.Mean());
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <param name="mean"></param>
+        /// <returns></returns>
+        public static Matrix3d CreateCovariance(IEnumerable<Vec3d> vectors, Vec3d mean)
+        {
+            var result = new Matrix3d();
+            int n = 0;
+
+            // calculate covariance matrix
+            foreach (var v in vectors)
+            {
+                var d = v - mean;
+                result.M00 += d.X * d.X;
+                result.M01 += d.X * d.Y;
+                result.M02 += d.X * d.Z;
+                result.M11 += d.Y * d.Y;
+                result.M12 += d.Y * d.Z;
+                result.M22 += d.Z * d.Z;
+                n++;
+            }
+
+            //average upper triangular values
+            var t = 1.0 / n;
+            result.M00 *= t;
+            result.M01 *= t;
+            result.M02 *= t;
+            result.M11 *= t;
+            result.M12 *= t;
+            result.M22 *= t;
+
+            // set symmetric values
+            result.M10 = result.M01;
+            result.M20 = result.M02;
+            result.M21 = result.M12;
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix3d CreateJacobian(Func<Vec3d, Vec3d> function, Vec3d vector, double epsilon = SlurMath.ZeroTolerance)
+        {
+            (var x, var y, var z) = vector;
+
+            var col0 = function(new Vec3d(x + epsilon, y, z)) - function(new Vec3d(x - epsilon, y, z));
+            var col1 = function(new Vec3d(x, y + epsilon, z)) - function(new Vec3d(x, y - epsilon, z));
+            var col2 = function(new Vec3d(x, y, z + epsilon)) - function(new Vec3d(x, y, z - epsilon));
+
+            return new Matrix3d(col0, col1, col2) / (2.0 * epsilon);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetDeterminant(double m00, double m01, double m10, double m11)
+        {
+            return m00 * m11 - m01 * m10;
         }
 
         #endregion
@@ -401,14 +520,13 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
+        /// Returns the indentity if this matrix cannot be inverted.
         /// </summary>
         public Matrix3d Inverse
         {
             get
             {
-                var m = this;
-                m.Invert();
+                Invert(out Matrix3d m);
                 return m;
             }
         }
@@ -439,6 +557,156 @@ namespace SpatialSlur.SlurCore
         {
             get { return M00 + M11 + M22; }
         }
+        
+
+        /// <summary>
+        /// Returns the matrix of minors.
+        /// </summary>
+        public Matrix3d Minor
+        {
+            get
+            {
+                return new Matrix3d(
+                    Minor00, Minor01, Minor02,
+                    Minor10, Minor11, Minor12,
+                    Minor20, Minor21, Minor22
+                    );
+            }
+        }
+        
+
+        /// <summary>
+        /// Returns the cofactor matrix.
+        /// </summary>
+        public Matrix3d Cofactor
+        {
+            get
+            {
+                return new Matrix3d(
+                    Minor00, -Minor01, Minor02,
+                    -Minor10, Minor11, -Minor12,
+                    Minor20, -Minor21, Minor22
+                    );
+            }
+        }
+
+        
+        /// <summary>
+        /// Returns the adjugate matrix.
+        /// This is defined as the transpose of the cofactor matrix.
+        /// </summary>
+        public Matrix3d Adjugate
+        {
+            get
+            {
+                return new Matrix3d(
+                    Minor00, -Minor10, Minor20,
+                    -Minor01, Minor11, -Minor21,
+                    Minor02, -Minor12, Minor22
+                    );
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor00
+        {
+            get { return GetDeterminant(M11, M12, M21, M22); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor01
+        {
+            get { return GetDeterminant(M10, M12, M20, M22); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor02
+        {
+            get { return GetDeterminant(M10, M11, M20, M21); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor10
+        {
+            get { return GetDeterminant(M01, M02, M21, M22);}
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor11
+        {
+            get { return GetDeterminant(M00, M02, M20, M22); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor12
+        {
+            get { return GetDeterminant(M00, M01, M20, M21); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor20
+        {
+            get { return GetDeterminant(M01, M02, M11, M12); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor21
+        {
+            get { return GetDeterminant(M00, M02, M10, M12); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor22
+        {
+            get { return GetDeterminant(M00, M01, M10, M11); }
+        }
+        
+
+        /// <summary>
+        /// Scales this matrix in place.
+        /// </summary>
+        /// <param name="factor"></param>
+        public void Scale(double factor)
+        {
+            M00 *= factor;
+            M01 *= factor;
+            M02 *= factor;
+
+            M10 *= factor;
+            M11 *= factor;
+            M12 *= factor;
+
+            M20 *= factor;
+            M21 *= factor;
+            M22 *= factor;
+        }
 
 
         /// <summary>
@@ -453,11 +721,62 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Inverts this matrix in place
+        /// Returns true on success.
         /// </summary>
-        public void Invert()
+        public bool Invert(out Matrix3d result)
         {
-            throw new NotImplementedException();
+            // inversion via cofactors
+            // https://en.wikipedia.org/wiki/Minor_(linear_algebra)
+
+            var m00 = Minor00;
+            var m10 = -Minor01;
+            var m20 = Minor02;
+            double d = M00 * m00 + M01 * m10 + M02 * m20;
+
+            if (Math.Abs(d) > 0.0)
+            {
+                d = 1.0f / d;
+
+                result.M00 = m00 * d;
+                result.M01 = -Minor10 * d;
+                result.M02 = Minor20 * d;
+
+                result.M10 = m10 * d;
+                result.M11 = Minor11 * d;
+                result.M12 = -Minor21 * d;
+
+                result.M20 = m20 * d;
+                result.M21 = -Minor12 * d;
+                result.M22 = Minor22 * d;
+
+                return true;
+            }
+
+            result = Identity;
+            return false;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(ref Matrix3d other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return
+                SlurMath.ApproxEquals(M00, other.M00, tolerance) &&
+                SlurMath.ApproxEquals(M01, other.M01, tolerance) &&
+                SlurMath.ApproxEquals(M02, other.M02, tolerance) &&
+
+                SlurMath.ApproxEquals(M10, other.M10, tolerance) &&
+                SlurMath.ApproxEquals(M11, other.M11, tolerance) &&
+                SlurMath.ApproxEquals(M12, other.M12, tolerance) &&
+
+                SlurMath.ApproxEquals(M20, other.M20, tolerance) &&
+                SlurMath.ApproxEquals(M21, other.M21, tolerance) &&
+                SlurMath.ApproxEquals(M22, other.M22, tolerance);
         }
 
 

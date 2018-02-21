@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 /*
  * Notes
@@ -10,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SpatialSlur.SlurCore
 {
-	/// <summary>
+    /// <summary>
     /// Double precision 4x4 matrix.
     /// </summary>
     [Serializable]
@@ -19,7 +16,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static Matrix4d Identity = new Matrix4d(1.0);
+        public static readonly Matrix4d Identity = new Matrix4d(1.0);
 
 
         /// <summary>
@@ -63,26 +60,29 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix4d operator *(Matrix4d matrix, double scalar)
         {
-            matrix.M00 *= scalar;
-            matrix.M01 *= scalar;
-            matrix.M02 *= scalar;
-            matrix.M03 *= scalar;
+            matrix.Scale(scalar);
+            return matrix;
+        }
 
-            matrix.M10 *= scalar;
-            matrix.M11 *= scalar;
-            matrix.M12 *= scalar;
-            matrix.M13 *= scalar;
 
-            matrix.M20 *= scalar;
-            matrix.M21 *= scalar;
-            matrix.M22 *= scalar;
-            matrix.M23 *= scalar;
+        /// <summary>
+        /// Matrix scalar multiplication
+        /// </summary>
+        /// <returns></returns>
+        public static Matrix4d operator *(double scalar, Matrix4d matrix)
+        {
+            matrix.Scale(scalar);
+            return matrix;
+        }
 
-            matrix.M30 *= scalar;
-            matrix.M31 *= scalar;
-            matrix.M32 *= scalar;
-            matrix.M33 *= scalar;
 
+        /// <summary>
+        /// Matrix scalar division
+        /// </summary>
+        /// <returns></returns>
+        public static Matrix4d operator /(Matrix4d matrix, double scalar)
+        {
+            matrix.Scale(1.0 / scalar);
             return matrix;
         }
 
@@ -224,6 +224,76 @@ namespace SpatialSlur.SlurCore
                 Multiply(ref m0, m1.Column2),
                 Multiply(ref m0, m1.Column3)
                 );
+        }
+        
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="row0"></param>
+        /// <param name="row1"></param>
+        /// <returns></returns>
+        public static Matrix4d CreateFromRows(Vec4d row0, Vec4d row1, Vec4d row2, Vec4d row3)
+        {
+            return new Matrix4d(
+                row0.X, row0.Y, row0.Z, row0.W,
+                row1.X, row1.Y, row1.Z, row1.W,
+                row2.X, row2.Y, row2.Z, row2.W,
+                row3.X, row3.Y, row3.Z, row3.W
+                );
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="row0"></param>
+        /// <param name="row1"></param>
+        /// <returns></returns>
+        public static Matrix4d CreateFromColumns(Vec4d column0, Vec4d column1, Vec4d column2, Vec4d column3)
+        {
+            return new Matrix4d(
+                column0.X, column1.X, column2.X, column3.X,
+                column0.Y, column1.Y, column2.Y, column3.Y,
+                column0.Z, column1.Z, column2.Z, column3.Z,
+                column0.W, column1.W, column2.W, column3.W
+                );
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix4d CreateJacobian(Func<Vec4d, Vec4d> function, Vec4d vector, double epsilon = SlurMath.ZeroTolerance)
+        {
+            (var x, var y, var z, var w) = vector;
+
+            var col0 = function(new Vec4d(x + epsilon, y, z, w)) - function(new Vec4d(x - epsilon, y, z, w));
+            var col1 = function(new Vec4d(x, y + epsilon, z, w)) - function(new Vec4d(x, y - epsilon, z, w));
+            var col2 = function(new Vec4d(x, y, z + epsilon, w)) - function(new Vec4d(x, y, z - epsilon, w));
+            var col3 = function(new Vec4d(x, y, z, w + epsilon)) - function(new Vec4d(x, y, z, w - epsilon));
+
+            return new Matrix4d(col0, col1, col2, col3) / (2.0 * epsilon);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double GetDeterminant(
+            double m00, double m01, double m02,
+            double m10, double m11, double m12,
+            double m20, double m21, double m22
+            )
+        {
+            return
+                   m00 * m11 * m22 + m10 * m21 * m02 +
+                   m20 * m01 * m12 - m20 * m11 * m02 -
+                   m10 * m01 * m22 - m00 * m21 * m12;
         }
 
         #endregion
@@ -508,8 +578,7 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                var m = this;
-                m.Invert();
+                Invert(out Matrix4d m);
                 return m;
             }
         }
@@ -537,7 +606,7 @@ namespace SpatialSlur.SlurCore
                 return b0 * M00 + b1 * M01 + b2 * M02 + b3 * M03;
             }
         }
-
+        
 
         /// <summary>
         /// 
@@ -545,6 +614,229 @@ namespace SpatialSlur.SlurCore
         public double Trace
         {
             get { return M00 + M11 + M22 + M33; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Matrix4d Minor
+        {
+            get
+            {
+                return new Matrix4d(
+                    Minor00, Minor01, Minor02, Minor03,
+                    Minor10, Minor11, Minor12, Minor13,
+                    Minor20, Minor21, Minor22, Minor23,
+                    Minor30, Minor31, Minor32, Minor33
+                    );
+            }
+        }
+        
+
+        /// <summary>
+        /// Returns the transpose of the cofactor matrix
+        /// </summary>
+        public Matrix4d Cofactor
+        {
+            get
+            {
+                return new Matrix4d(
+                    Minor00, -Minor01, Minor02, -Minor03,
+                    -Minor10, Minor11, -Minor12, Minor13,
+                    Minor20, -Minor21, Minor22, -Minor23,
+                    -Minor30, Minor31, -Minor32, Minor33
+                    );
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the transpose of the cofactor matrix
+        /// </summary>
+        public Matrix4d Adjugate
+        {
+            get
+            {
+                return new Matrix4d(
+                    Minor00, -Minor10, Minor20, -Minor30,
+                    -Minor01, Minor11, -Minor21, Minor31,
+                    Minor02, -Minor12, Minor22, -Minor32,
+                    -Minor03, Minor13, -Minor23, Minor33
+                    );
+            }
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor00
+        {
+            get { return GetDeterminant(M11, M12, M13, M21, M22, M23, M31, M32, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor01
+        {
+            get { return GetDeterminant(M10, M12, M13, M20, M22, M23, M30, M32, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor02
+        {
+            get { return GetDeterminant(M10, M11, M13, M20, M21, M23, M30, M31, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor03
+        {
+            get { return GetDeterminant(M10, M11, M12, M20, M21, M22, M30, M31, M32); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor10
+        {
+            get { return GetDeterminant(M01, M02, M03, M21, M22, M23, M31, M32, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor11
+        {
+            get { return GetDeterminant(M00, M02, M03, M20, M22, M23, M30, M32, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor12
+        {
+            get { return GetDeterminant(M00, M01, M03, M20, M21, M23, M30, M31, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor13
+        {
+            get { return GetDeterminant(M00, M01, M02, M20, M21, M22, M30, M31, M32); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor20
+        {
+            get { return GetDeterminant(M01, M02, M03, M11, M12, M13, M31, M32, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor21
+        {
+            get { return GetDeterminant(M00, M02, M03, M10, M12, M13, M30, M32, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor22
+        {
+            get { return GetDeterminant(M00, M01, M03, M10, M11, M13, M30, M31, M33); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor23
+        {
+            get { return GetDeterminant(M00, M01, M02, M10, M11, M12, M30, M31, M32); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor30
+        {
+            get { return GetDeterminant(M01, M02, M03, M11, M12, M13, M21, M22, M23); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor31
+        {
+            get { return GetDeterminant(M00, M02, M03, M10, M12, M13, M20, M22, M23); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor32
+        {
+            get { return GetDeterminant(M00, M01, M03, M10, M11, M13, M20, M21, M23); }
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Minor33
+        {
+            get { return GetDeterminant(M00, M01, M02, M10, M11, M12, M20, M21, M22); }
+        }
+
+
+        /// <summary>
+        /// Scales this matrix in place.
+        /// </summary>
+        /// <param name="factor"></param>
+        public void Scale(double factor)
+        {
+            M00 *= factor;
+            M01 *= factor;
+            M02 *= factor;
+            M03 *= factor;
+
+            M10 *= factor;
+            M11 *= factor;
+            M12 *= factor;
+            M13 *= factor;
+
+            M20 *= factor;
+            M21 *= factor;
+            M22 *= factor;
+            M23 *= factor;
+
+            M30 *= factor;
+            M31 *= factor;
+            M32 *= factor;
+            M33 *= factor;
         }
 
 
@@ -563,11 +855,75 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Inverts this matrix in place
+        /// Returns true on success
         /// </summary>
-        public void Invert()
+        public bool Invert(out Matrix4d result)
         {
-            throw new NotImplementedException();
+            // inversion via cofactors
+            // https://en.wikipedia.org/wiki/Minor_(linear_algebra)
+
+            var d = Determinant;
+
+            if(d > 0.0)
+            {
+                d = 1.0 / d;
+
+                result.M00 = Minor00 * d;
+                result.M01 = -Minor10 * d;
+                result.M02 = Minor20 * d;
+                result.M03 = -Minor30 * d;
+
+                result.M10 = -Minor01 * d;
+                result.M11 = Minor11 * d;
+                result.M12 = -Minor21 * d;
+                result.M13 = Minor31 * d;
+
+                result.M20 = Minor02 * d;
+                result.M21 = -Minor12 * d;
+                result.M22 = Minor22 * d;
+                result.M23 = -Minor32 * d;
+
+                result.M30 = -Minor03 * d;
+                result.M31 = Minor13 * d;
+                result.M32 = -Minor23 * d;
+                result.M33 = Minor33 * d;
+
+                return true;
+            }
+
+            result = Identity;
+            return false;
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(ref Matrix4d other, double tolerance = SlurMath.ZeroTolerance)
+        {
+            return
+                SlurMath.ApproxEquals(M00, other.M00, tolerance) &&
+                SlurMath.ApproxEquals(M01, other.M01, tolerance) &&
+                SlurMath.ApproxEquals(M02, other.M02, tolerance) &&
+                SlurMath.ApproxEquals(M03, other.M03, tolerance) &&
+
+                SlurMath.ApproxEquals(M10, other.M10, tolerance) &&
+                SlurMath.ApproxEquals(M11, other.M11, tolerance) &&
+                SlurMath.ApproxEquals(M12, other.M12, tolerance) &&
+                SlurMath.ApproxEquals(M13, other.M13, tolerance) &&
+
+                SlurMath.ApproxEquals(M20, other.M20, tolerance) &&
+                SlurMath.ApproxEquals(M21, other.M21, tolerance) &&
+                SlurMath.ApproxEquals(M22, other.M22, tolerance) &&
+                SlurMath.ApproxEquals(M23, other.M23, tolerance) &&
+
+                SlurMath.ApproxEquals(M30, other.M30, tolerance) &&
+                SlurMath.ApproxEquals(M31, other.M31, tolerance) &&
+                SlurMath.ApproxEquals(M32, other.M32, tolerance) &&
+                SlurMath.ApproxEquals(M33, other.M33, tolerance);
         }
 
 
