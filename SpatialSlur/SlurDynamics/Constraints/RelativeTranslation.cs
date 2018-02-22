@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using SpatialSlur.SlurCore;
 
 /*
@@ -8,17 +8,18 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = BodyHandle;
 
     /// <summary>
-    /// 
+    /// Constrains relative orientation between a pair of bodies.
     /// </summary>
-    [Serializable]
-    public class MinimizeArea : Constraint, IConstraint
+    public class RelativeTranslation : Constraint, IConstraint
     {
         private H _h0 = new H();
         private H _h1 = new H();
-        private H _h2 = new H();
+
+        private Vec3d _d01; // offset of the first body in the frame of the second
+        private Vec3d _d10; // offset of the second body in the frame of the first
 
 
         /// <summary>
@@ -26,15 +27,29 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         /// <param name="i0"></param>
         /// <param name="i1"></param>
-        /// <param name="i2"></param>
         /// <param name="weight"></param>
-        public MinimizeArea(int i0, int i1, int i2, double weight = 1.0)
+        public RelativeTranslation(int i0, int i1, double weight = 1.0)
         {
             _h0.Index = i0;
             _h1.Index = i1;
-            _h2.Index = i2;
-
             Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="p0"></param>
+        /// <param name="r0"></param>
+        /// <param name="p1"></param>
+        /// <param name="r1"></param>
+        /// <param name="weight"></param>
+        public RelativeTranslation(int i0, int i1, Vec3d p0, Quaterniond r0, Vec3d p1, Quaterniond r1, double weight = 1.0)
+            : this(i0, i1)
+        {
+            Set(p0, r0, p1, r1);
         }
 
 
@@ -54,15 +69,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             get { return _h1; }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public H Handle2
-        {
-            get { return _h2; }
-        }
         
 
         /// <summary>
@@ -70,29 +76,39 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         public ConstraintType Type
         {
-            get { return ConstraintType.Position; }
+            get { return ConstraintType.Rotation; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        public void Set(Vec3d p0, Quaterniond r0, Vec3d p1, Quaterniond r1)
+        {
+            _d10 = r0.Inverse.Apply(p1 = p0);
+            _d01 = r1.Inverse.Apply(p0 - p1);
         }
 
 
         /// <inheritdoc/>
         /// <summary>
+        /// 
         /// </summary>
         /// <param name="bodies"></param>
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            // implementation ref https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf (p.64)
+            var b0 = bodies[_h0];
+            var b1 = bodies[_h1];
 
-            GeometryUtil.GetTriAreaGradients(
-                bodies[_h0].Position,
-                bodies[_h1].Position,
-                bodies[_h2].Position, 
-                out Vec3d g0, out Vec3d g1, out Vec3d g2);
-
-            _h0.Delta = -g0;
-            _h1.Delta = -g1;
-            _h2.Delta = -g2;
+            var d = b1.Position - b0.Position;
+            _h0.Delta = (b1.Rotation.Apply(_d01) + d) * 0.5;
+            _h1.Delta = (b0.Rotation.Apply(_d10) - d) * 0.5;
         }
-
+        
 
         /// <inheritdoc/>
         /// <summary>
@@ -103,12 +119,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             bodies[_h0].ApplyMove(_h0.Delta, Weight);
             bodies[_h1].ApplyMove(_h1.Delta, Weight);
-            bodies[_h2].ApplyMove(_h2.Delta, Weight);
         }
 
 
         #region Explicit interface implementations
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 
@@ -119,7 +134,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
             {
                 yield return _h0;
                 yield return _h1;
-                yield return _h2;
             }
         }
 

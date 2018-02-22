@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
@@ -15,12 +14,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class OnPlane : MultiConstraint<H>, IConstraint
+    public class OnPlane : Constraint, IConstraint
     {
-        /// <summary></summary>
-        public Vec3d Origin;
-        /// <summary></summary>
-        public Vec3d Normal;
+        private H _handle = new H();
+        private Vec3d _origin;
+        private Vec3d _normal;
 
 
         /// <summary>
@@ -29,27 +27,51 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="origin"></param>
         /// <param name="normal"></param>
         /// <param name="weight"></param>
-        public OnPlane(Vec3d origin, Vec3d normal, double weight = 1.0, int capacity = DefaultCapacity)
-            :base(weight, capacity)
+        public OnPlane(int index, Vec3d origin, Vec3d normal, double weight = 1.0)
         {
-            Origin = origin;
-            Normal = normal;
+            _handle.Index = index;
+            _origin = origin;
+            _normal = normal;
+            Weight = weight;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
-        /// <param name="weight"></param>
-        public OnPlane(IEnumerable<int> indices, Vec3d origin, Vec3d normal, double weight = 1.0, int capacity = DefaultCapacity)
-            : base(weight, capacity)
+        public H Handle
         {
-            Handles.AddRange(indices.Select(i => new H(i)));
-            Origin = origin;
-            Normal = normal;
+            get { return _handle; }
+            set { _handle = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vec3d Origin
+        {
+            get { return _origin; }
+            set { _origin = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vec3d Normal
+        {
+            get { return _normal; }
+            set { _normal = value; }
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintType Type
+        {
+            get { return ConstraintType.Position; }
         }
 
 
@@ -57,11 +79,10 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            foreach (var h in Handles)
-                h.Delta = Vec3d.Project(Origin - particles[h].Position, Normal);
+            _handle.Delta = Vec3d.Project(_origin - bodies[_handle].Position, _normal);
         }
 
 
@@ -72,29 +93,18 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="bodies"></param>
         public void Apply(IReadOnlyList<IBody> bodies)
         {
-            foreach (var h in Handles)
-                bodies[h].ApplyMove(h.Delta, Weight);
+            bodies[_handle].ApplyMove(_handle.Delta, Weight);
         }
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
         IEnumerable<IHandle> IConstraint.Handles
         {
-            get { return Handles; }
+            get { yield return _handle; }
         }
 
         #endregion

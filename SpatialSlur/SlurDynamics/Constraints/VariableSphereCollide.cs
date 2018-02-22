@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = VariableSphereCollide.Handle;
+    using H = VariableSphereCollide.CustomHandle;
 
     /// <summary>
     /// 
@@ -27,12 +23,19 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         [Serializable]
-        public class Handle : ParticleHandle
+        public class CustomHandle : ParticleHandle
         {
-            /// <summary></summary>
-            internal bool Skip = false;
-
             private double _radius = 1.0;
+            private bool _skip;
+            
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public CustomHandle(int index)
+                : base(index)
+            {
+            }
 
 
             /// <summary>
@@ -54,31 +57,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
             /// <summary>
             /// 
             /// </summary>
-            public Handle(int index)
-                : base(index)
-            {
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="index"></param>
-            /// <param name="radius"></param>
-            public Handle(int index, double radius)
-                : base(index)
-            {
-                Radius = radius;
-            }
+            public bool Skip { get => _skip; set => _skip = value; }
         }
 
         #endregion
 
-
-        /// <summary>If true, collisions are calculated in parallel</summary>
-        public bool Parallel;
-
+        
         private HashGrid3d<H> _grid;
+        private bool _parallel;
 
 
         /// <summary>
@@ -100,6 +86,26 @@ namespace SpatialSlur.SlurDynamics.Constraints
         public VariableSphereCollide(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
             : base(weight, capacity)
         {
+            Handles.AddRange(indices.Select(i => new H(i)));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool Parallel
+        {
+            get { return _parallel; }
+            set { _parallel = value; }
+        }
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintType Type
+        {
+            get { return ConstraintType.Position; }
         }
 
 
@@ -107,8 +113,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
             // TODO
             throw new NotImplementedException();
@@ -128,17 +134,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 

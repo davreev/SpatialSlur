@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 using static SpatialSlur.SlurCore.GeometryUtil;
@@ -45,6 +43,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintType Type
+        {
+            get { return ConstraintType.Position; }
+        }
+
+
+        /// <summary>
         /// Need at least 4 neighbors to define projections.
         /// </summary>
         private bool IsValid
@@ -56,8 +63,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
             if (!IsValid) return;
             
@@ -72,10 +79,10 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 var h3 = Handles[3];
 
                 var d = LineLineShortestVector(
-                    particles[h0].Position,
-                    particles[h2].Position,
-                    particles[h1].Position,
-                    particles[h3].Position) * 0.5;
+                    bodies[h0].Position,
+                    bodies[h2].Position,
+                    bodies[h1].Position,
+                    bodies[h3].Position) * 0.5;
 
                 h0.Delta = h2.Delta = d;
                 h1.Delta = h3.Delta = -d;
@@ -94,10 +101,10 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 var h3 = Handles[(i + 3) % n];
 
                 var d = LineLineShortestVector(
-                    particles[h0].Position,
-                    particles[h2].Position,
-                    particles[h1].Position,
-                    particles[h3].Position) * 0.125; // 0.5 / 4 (4 deltas applied per index)
+                    bodies[h0].Position,
+                    bodies[h2].Position,
+                    bodies[h1].Position,
+                    bodies[h3].Position) * 0.125; // 0.5 / 4 (4 deltas applied per index)
 
                 h0.Delta += d;
                 h2.Delta += d;
@@ -122,16 +129,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
 
         /// <summary>
         /// 

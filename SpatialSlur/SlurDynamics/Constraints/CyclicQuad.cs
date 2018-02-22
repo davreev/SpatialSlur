@@ -27,6 +27,25 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="i2"></param>
+        /// <param name="i3"></param>
+        /// <param name="weight"></param>
+        public CyclicQuad(int i0, int i1, int i2, int i3, double weight = 1.0)
+        {
+            _h0.Index = i0;
+            _h1.Index = i1;
+            _h2.Index = i2;
+            _h3.Index = i3;
+
+            Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public H Handle0
         {
             get { return _h0; }
@@ -58,24 +77,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             get { return _h3; }
         }
-        
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i0"></param>
-        /// <param name="i1"></param>
-        /// <param name="i2"></param>
-        /// <param name="i3"></param>
-        /// <param name="weight"></param>
-        public CyclicQuad(int i0, int i1, int i2, int i3, double weight = 1.0)
+        public ConstraintType Type
         {
-            _h0.Index = i0;
-            _h1.Index = i1;
-            _h2.Index = i2;
-            _h3.Index = i3;
-
-            Weight = weight;
+            get { return ConstraintType.Position; }
         }
 
 
@@ -83,13 +92,13 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            Vec3d p0 = particles[_h0].Position;
-            Vec3d p1 = particles[_h1].Position;
-            Vec3d p2 = particles[_h2].Position;
-            Vec3d p3 = particles[_h3].Position;
+            Vec3d p0 = bodies[_h0].Position;
+            Vec3d p1 = bodies[_h1].Position;
+            Vec3d p2 = bodies[_h2].Position;
+            Vec3d p3 = bodies[_h3].Position;
 
             // get average center of each circle
             Vec3d cen = ( 
@@ -128,16 +137,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
 
         /// <inheritdoc/>
         /// <summary>

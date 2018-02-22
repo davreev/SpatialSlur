@@ -8,30 +8,30 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = BodyHandle;
 
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class OnLine : Constraint, IConstraint
+    public class OnOrientation : Constraint, IConstraint
     {
         private H _handle = new H();
-        private Vec3d _start;
-        private Vec3d _direction;
+        private Quaterniond _rotation;
+        private Vec3d _position;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="start"></param>
-        /// <param name="direction"></param>
+        /// <param name="point"></param>
+        /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public OnLine(int index, Vec3d start, Vec3d direction, double weight = 1.0)
+        public OnOrientation(int index, Vec3d position, Quaterniond rotation, double weight = 1.0)
         {
             _handle.Index = index;
-            _start = start;
-            _direction = direction;
+            _rotation = rotation;
+            _position = position;
             Weight = weight;
         }
 
@@ -49,20 +49,20 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public Vec3d Start
+        public Vec3d Position
         {
-            get { return _start; }
-            set { _start = value; }
+            get { return _position; }
+            set { _position = value; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public Vec3d Direction
+        public Quaterniond Rotation
         {
-            get { return _direction; }
-            set { _direction = value; }
+            get { return _rotation; }
+            set { _rotation = value; }
         }
 
 
@@ -71,7 +71,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         public ConstraintType Type
         {
-            get { return ConstraintType.Position; }
+            get { return ConstraintType.PositionRotation; }
         }
 
 
@@ -82,7 +82,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="bodies"></param>
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            _handle.Delta = Vec3d.Reject(_start - bodies[_handle].Position, _direction);
+            var p = bodies[_handle];
+            _handle.Delta = _position - p.Position;
+            _handle.AngleDelta = Quaterniond.CreateFromTo(p.Rotation, _rotation).ToAxisAngle();
         }
 
 
@@ -93,7 +95,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="bodies"></param>
         public void Apply(IReadOnlyList<IBody> bodies)
         {
-            bodies[_handle].ApplyMove(_handle.Delta, Weight);
+            var b = bodies[_handle];
+            b.ApplyMove(_handle.Delta, Weight);
+            b.ApplyRotate(_handle.AngleDelta, Weight);
         }
 
 

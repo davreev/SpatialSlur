@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
@@ -43,6 +41,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintType Type
+        {
+            get { return ConstraintType.Position; }
+        }
+
+
+        /// <summary>
         /// Need at least 4 handles to define projections.
         /// </summary>
         private bool IsValid
@@ -55,8 +62,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
             if (!IsValid) return;
             
@@ -68,7 +75,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 var h0 = Handles[i];
                 var h1 = Handles[i + 1];
 
-                Vec3d d = particles[h1].Position - particles[h0].Position;
+                Vec3d d = bodies[h1].Position - bodies[h0].Position;
                 var m = d.Length;
 
                 h0.Delta = d;
@@ -109,16 +116,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
 
         /// <summary>
         /// 

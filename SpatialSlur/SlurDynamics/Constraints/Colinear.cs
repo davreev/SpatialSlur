@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes
@@ -40,12 +39,21 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintType Type
+        {
+            get { return ConstraintType.Position; }
+        }
+
+
         /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
             // TODO solve best fit line
             throw new NotImplementedException();
@@ -65,16 +73,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
 
         /// <inheritdoc/>
         /// <summary>

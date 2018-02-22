@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
- * Notes 
- * 
- * Can also be used to find tangent incircles for adjacent triangles.
+ * Notes
  */
- 
+
 namespace SpatialSlur.SlurDynamics.Constraints
 {
     using H = ParticleHandle;
@@ -25,6 +20,25 @@ namespace SpatialSlur.SlurDynamics.Constraints
         private H _h1 = new H();
         private H _h2 = new H();
         private H _h3 = new H();
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="i2"></param>
+        /// <param name="i3"></param>
+        /// <param name="weight"></param>
+        public TangentialQuad(int i0, int i1, int i2, int i3, double weight = 1.0)
+        {
+            _h0.Index = i0;
+            _h1.Index = i1;
+            _h2.Index = i2;
+            _h3.Index = i3;
+
+            Weight = weight;
+        }
 
 
         /// <summary>
@@ -66,19 +80,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i0"></param>
-        /// <param name="i1"></param>
-        /// <param name="i2"></param>
-        /// <param name="i3"></param>
-        /// <param name="weight"></param>
-        public TangentialQuad(int i0, int i1, int i2, int i3, double weight = 1.0)
+        public ConstraintType Type
         {
-            _h0.Index = i0;
-            _h1.Index = i1;
-            _h2.Index = i2;
-            _h3.Index = i3;
-
-            Weight = weight;
+            get { return ConstraintType.Position; }
         }
 
 
@@ -86,14 +90,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
             // equalize sum of opposite edges
-            Vec3d p0 = particles[_h0].Position;
-            Vec3d p1 = particles[_h1].Position;
-            Vec3d p2 = particles[_h2].Position;
-            Vec3d p3 = particles[_h3].Position;
+            Vec3d p0 = bodies[_h0].Position;
+            Vec3d p1 = bodies[_h1].Position;
+            Vec3d p2 = bodies[_h2].Position;
+            Vec3d p3 = bodies[_h3].Position;
 
             Vec3d v0 = p1 - p0;
             Vec3d v1 = p2 - p1;
@@ -142,17 +146,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 

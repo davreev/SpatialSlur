@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using SpatialSlur.SlurCore;
 
 /*
@@ -8,17 +8,17 @@ using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = ParticleHandle;
+    using H = BodyHandle;
 
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    public class MinimizeArea : Constraint, IConstraint
+    public class RelativeRotation : Constraint, IConstraint
     {
         private H _h0 = new H();
         private H _h1 = new H();
-        private H _h2 = new H();
+        
+        private Quaterniond _r10 = Quaterniond.Identity; // rotation of second in frame of first
 
 
         /// <summary>
@@ -26,15 +26,29 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         /// <param name="i0"></param>
         /// <param name="i1"></param>
-        /// <param name="i2"></param>
         /// <param name="weight"></param>
-        public MinimizeArea(int i0, int i1, int i2, double weight = 1.0)
+        public RelativeRotation(int i0, int i1, double weight = 1.0)
         {
             _h0.Index = i0;
             _h1.Index = i1;
-            _h2.Index = i2;
-
             Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="p0"></param>
+        /// <param name="r0"></param>
+        /// <param name="p1"></param>
+        /// <param name="r1"></param>
+        /// <param name="weight"></param>
+        public RelativeRotation(int i0, int i1, Quaterniond r0, Quaterniond r1, double weight = 1.0)
+            : this(i0, i1)
+        {
+            Set(r0, r1);
         }
 
 
@@ -54,15 +68,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             get { return _h1; }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public H Handle2
-        {
-            get { return _h2; }
-        }
         
 
         /// <summary>
@@ -70,29 +75,39 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// </summary>
         public ConstraintType Type
         {
-            get { return ConstraintType.Position; }
+            get { return ConstraintType.Rotation; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="r0"></param>
+        /// <param name="r1"></param>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        public void Set(Quaterniond r0, Quaterniond r1)
+        {
+            _r10 = r0.Inverse.Apply(r1); // set target of the second body in the frame of the first
         }
 
 
         /// <inheritdoc/>
         /// <summary>
+        /// 
         /// </summary>
         /// <param name="bodies"></param>
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            // implementation ref https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf (p.64)
+            var r0 = bodies[_h0].Rotation;
+            var r1 = bodies[_h1].Rotation;
 
-            GeometryUtil.GetTriAreaGradients(
-                bodies[_h0].Position,
-                bodies[_h1].Position,
-                bodies[_h2].Position, 
-                out Vec3d g0, out Vec3d g1, out Vec3d g2);
-
-            _h0.Delta = -g0;
-            _h1.Delta = -g1;
-            _h2.Delta = -g2;
+            // apply rotation deltas
+            var dr = Quaterniond.CreateFromTo(r1, r0.Apply(_r10)).ToAxisAngle() * 0.5;
+            _h0.AngleDelta = -dr;
+            _h1.AngleDelta = dr;
         }
-
+        
 
         /// <inheritdoc/>
         /// <summary>
@@ -101,14 +116,13 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="bodies"></param>
         public void Apply(IReadOnlyList<IBody> bodies)
         {
-            bodies[_h0].ApplyMove(_h0.Delta, Weight);
-            bodies[_h1].ApplyMove(_h1.Delta, Weight);
-            bodies[_h2].ApplyMove(_h2.Delta, Weight);
+            bodies[_h0].ApplyRotate(_h0.AngleDelta, Weight);
+            bodies[_h1].ApplyRotate(_h1.AngleDelta, Weight);
         }
 
 
         #region Explicit interface implementations
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 
@@ -119,7 +133,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
             {
                 yield return _h0;
                 yield return _h1;
-                yield return _h2;
             }
         }
 

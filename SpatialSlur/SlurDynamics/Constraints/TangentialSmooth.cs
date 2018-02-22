@@ -12,7 +12,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     using H = ParticleHandle;
 
     /// <summary>
-    /// The first handle represents the central vertex, remaining handles represent neighbours.
+    /// 
     /// </summary>
     [Serializable]
     public class TangentialSmooth : Constraint, IConstraint
@@ -25,34 +25,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         private List<H> _neighbors;
-        private H _center = new H();
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public H Handle
-        {
-            get { return _center; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<H> Neighbors
-        {
-            get { return _neighbors; }
-        }
-
-
-        /// <summary>
-        /// Need at least 3 neighbors to define projections.
-        /// </summary>
-        private bool IsValid
-        {
-            get { return Neighbors.Count > 2; }
-        }
+        private H _handle = new H();
 
 
         /// <summary>
@@ -71,34 +44,70 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="neighbors"></param>
+        /// <param name="neighborIndices"></param>
         /// <param name="weight"></param>
-        public TangentialSmooth(int index, IEnumerable<int> neighbors, double weight = 1.0, int capacity = DefaultCapacity)
-            :this(weight, capacity)
+        public TangentialSmooth(int index, IEnumerable<int> neighborIndices, double weight = 1.0, int capacity = DefaultCapacity)
+            : this(weight, capacity)
         {
-            _center.Index = index;
-            _neighbors.AddRange(neighbors.Select(i => new H(i)));
+            _handle.Index = index;
+            _neighbors.AddRange(neighborIndices.Select(i => new H(i)));
         }
-        
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        public H Handle
+        {
+            get { return _handle; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<H> Neighbors
+        {
+            get { return _neighbors; }
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintType Type
+        {
+            get { return ConstraintType.Position; }
+        }
+
+
+        /// <summary>
+        /// Need at least 3 neighbors to define projections.
+        /// </summary>
+        private bool IsValid
+        {
+            get { return Neighbors.Count > 2; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
             if (!IsValid) return;
 
             Vec3d sum = new Vec3d();
 
             foreach(var h in _neighbors)
-                sum += particles[h].Position;
+                sum += bodies[h].Position;
             
             double nInv = 1.0 / (_neighbors.Count - 1);
-            var d = Vec3d.Reject((sum * nInv - particles[_center].Position) * 0.5, ComputeNormal(particles));
+            var d = Vec3d.Reject((sum * nInv - bodies[_handle].Position) * 0.5, ComputeNormal(bodies));
 
             // apply to central particle
-            _center.Delta = d;
+            _handle.Delta = d;
             d *= -nInv;
 
             // distribute reverse among neighbours
@@ -111,9 +120,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// Calculates the normal as the sum of triangle area gradients
         /// </summary>
         /// <returns></returns>
-        private Vec3d ComputeNormal(IReadOnlyList<IBody> particles)
+        private Vec3d ComputeNormal(IReadOnlyList<IBody> bodies)
         {
-            var p = particles[_center].Position;
+            var p = bodies[_handle].Position;
 
             var sum = new Vec3d();
             var n = _neighbors.Count;
@@ -121,8 +130,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
             for (int i = 0; i < n; i++)
             {
                 int j = (i + 1) % n;
-                var p0 = particles[_neighbors[i]].Position;
-                var p1 = particles[_neighbors[j]].Position;
+                var p0 = bodies[_neighbors[i]].Position;
+                var p1 = bodies[_neighbors[j]].Position;
                 sum += GeometryUtil.GetTriAreaGradient(p, p0, p1);
             }
 
@@ -145,17 +154,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 
@@ -164,8 +163,10 @@ namespace SpatialSlur.SlurDynamics.Constraints
         {
             get
             {
-                yield return _center;
-                foreach (var h in _neighbors) yield return h;
+                yield return _handle;
+
+                foreach (var h in _neighbors)
+                    yield return h;
             }
         }
 

@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
 
 /*
@@ -13,7 +9,7 @@ using SpatialSlur.SlurData;
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = LineCollide.Handle;
+    using H = LineCollide.CustomHandle;
 
     /// <summary>
     /// 
@@ -27,18 +23,24 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         [Serializable]
-        public class Handle : ParticleHandle
+        public class CustomHandle : ParticleHandle
         {
-            internal bool Skip = false;
+            private bool _skip;
+
+            
+            /// <summary>
+            /// 
+            /// </summary>
+            public CustomHandle(int index)
+                : base(index)
+            {
+            }
 
 
             /// <summary>
             /// 
             /// </summary>
-            public Handle(int index)
-                : base(index)
-            {
-            }
+            public bool Skip { get => _skip; set => _skip = value; }
         }
 
         #endregion
@@ -46,22 +48,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
         private HashGrid3d<H> _grid;
         private double _radius;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Radius
-        {
-            get { return _radius; }
-            set
-            {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value can not be negative");
-
-                _radius = value;
-            }
-        }
+        private bool _parallel;
 
 
         /// <summary>
@@ -87,12 +74,47 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Radius
+        {
+            get { return _radius; }
+            set
+            {
+                if (value < 0.0)
+                    throw new ArgumentOutOfRangeException("The value can not be negative");
+
+                _radius = value;
+            }
+        }
+
+
+        /// <summary>
+        /// If true, collisions are calculated in parallel
+        /// </summary>
+        public bool Parallel
+        {
+            get { return _parallel; }
+            set { _parallel = value; }
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintType Type
+        {
+            get { return ConstraintType.Position; }
+        }
+
+
         /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
             // TODO
             throw new NotImplementedException();
@@ -112,17 +134,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 

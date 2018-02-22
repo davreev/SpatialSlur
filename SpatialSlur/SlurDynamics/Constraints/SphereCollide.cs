@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
@@ -12,13 +11,11 @@ using static System.Threading.Tasks.Parallel;
 
 /*
  * Notes
- * 
- * TODO check grid resizing
  */
 
 namespace SpatialSlur.SlurDynamics.Constraints
 {
-    using H = SphereCollide.Handle;
+    using H = SphereCollide.CustomHandle;
 
     /// <summary>
     /// 
@@ -32,29 +29,62 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// 
         /// </summary>
         [Serializable]
-        public class Handle : ParticleHandle
+        public class CustomHandle : ParticleHandle
         {
-            /// <summary></summary>
-            internal bool Skip = false;
+            private bool _skip;
 
 
             /// <summary>
             /// 
             /// </summary>
-            public Handle(int index)
+            public CustomHandle(int index)
                 : base(index)
             {
             }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public bool Skip { get => _skip; set => _skip = value; }
         }
 
         #endregion
 
-
-        /// <summary>If true, collisions are calculated in parallel</summary>
-        public bool Parallel;
-
+        
         private HashGrid3d<H> _grid;
         private double _radius = 1.0;
+        private bool _parallel;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="radius"></param>
+        /// <param name="parallel"></param>
+        /// <param name="weight"></param>
+        public SphereCollide(double radius, bool parallel, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
+        {
+            Radius = radius;
+            _parallel = parallel;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <param name="radius"></param>
+        /// <param name="parallel"></param>
+        /// <param name="weight"></param>
+        public SphereCollide(IEnumerable<int> indices, double radius, bool parallel, double weight = 1.0, int capacity = DefaultCapacity)
+            : base(weight, capacity)
+        {
+            Handles.AddRange(indices.Select(i => new H(i)));
+            Radius = radius;
+            _parallel = parallel;
+        }
 
 
         /// <summary>
@@ -74,47 +104,36 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         /// <summary>
+        /// If true, collisions are calculated in parallel
+        /// </summary>
+        public bool Parallel
+        {
+            get { return _parallel; }
+            set { _parallel = value; }
+        }
+        
+
+        /// <summary>
         /// 
         /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="parallel"></param>
-        /// <param name="weight"></param>
-        public SphereCollide(double radius, bool parallel, double weight = 1.0, int capacity = DefaultCapacity)
-            : base(weight, capacity)
+        public ConstraintType Type
         {
-            Radius = radius;
-            Parallel = parallel;
+            get { return ConstraintType.Position; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="radius"></param>
-        /// <param name="parallel"></param>
-        /// <param name="weight"></param>
-        public SphereCollide(IEnumerable<int> indices, double radius, bool parallel, double weight = 1.0, int capacity = DefaultCapacity)
-            : base(weight, capacity)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            Handles.AddRange(indices.Select(i => new H(i)));
-            Radius = radius;
-            Parallel = parallel;
-        }
+            UpdateGrid(bodies);
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
-        {
-            UpdateGrid(particles);
-
-            if (Parallel)
-                CalculateImplParallel(particles);
+            if (_parallel)
+                CalculateImplParallel(bodies);
             else
-                CalculateImpl(particles);
+                CalculateImpl(bodies);
 
             _grid.Clear();
         }
@@ -123,15 +142,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        private void CalculateImplParallel(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        private void CalculateImplParallel(IReadOnlyList<IBody> bodies)
         {
             var diam = _radius * 2.0;
             var diamSqr = diam * diam;
 
             // insert all particles
             foreach (var h in Handles)
-                _grid.Insert(particles[h].Position, h);
+                _grid.Insert(bodies[h].Position, h);
 
             // search for collisions from each particle
             ForEach(Partitioner.Create(0, Handles.Count), range =>
@@ -139,14 +158,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
                     var h0 = Handles[i];
-                    var p0 = particles[h0].Position;
+                    var p0 = bodies[h0].Position;
 
                     var deltaSum = new Vec3d();
                     int count = 0;
 
                     foreach(var h1 in _grid.Search(new Interval3d(p0, diam)))
                     {
-                        var d = particles[h1].Position - p0;
+                        var d = bodies[h1].Position - p0;
                         var m = d.SquareLength;
 
                         if (m < diamSqr && m > 0.0)
@@ -173,8 +192,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        private void CalculateImpl(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        private void CalculateImpl(IReadOnlyList<IBody> bodies)
         {
             var diam = _radius * 2.0;
             var diamSqr = diam * diam;
@@ -189,12 +208,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
             // calculate collisions
             foreach(var h0 in Handles)
             {
-                var p0 = particles[h0].Position;
+                var p0 = bodies[h0].Position;
 
                 // search from h0
                 foreach (var h1 in _grid.Search(new Interval3d(p0, diam)))
                 {
-                    var d = particles[h1].Position - p0;
+                    var d = bodies[h1].Position - p0;
                     var m = d.SquareLength;
 
                     if (m < diamSqr && m > 0.0)
@@ -215,8 +234,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        private void UpdateGrid(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        private void UpdateGrid(IReadOnlyList<IBody> bodies)
         {
             if (_grid == null)
                 _grid = new HashGrid3d<H>(Radius * RadiusToHashScale, Handles.Count);
@@ -238,17 +257,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 
