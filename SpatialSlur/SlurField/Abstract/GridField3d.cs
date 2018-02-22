@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-
-using static SpatialSlur.SlurField.GridUtil;
 
 /*
  * Notes
@@ -20,86 +13,52 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    public static class GridField3d
+    {
+        /// <summary></summary>
+        public static readonly GridField3dFactory<double> Double = new GridField3dDouble.Factory();
+
+        /// <summary></summary>
+        public static readonly GridField3dFactory<Vec3d> Vec3d = new GridField3dVec3d.Factory();
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public abstract class GridField3d<T> : Grid3d, IField2d<T>, IField3d<T>, IDiscreteField3d<T>
         where T : struct
     {
+        #region Static
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        public static implicit operator T[] (GridField3d<T> field)
+        {
+            return field.Values;
+        }
+
+        #endregion
+
+
         private readonly T[] _values;
-        private SampleMode _sampleMode;
+        private SampleMode _sampleMode = SampleMode.Linear;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="scale"></param>
         /// <param name="countX"></param>
         /// <param name="countY"></param>
         /// <param name="countZ"></param>
-        /// <param name="wrapMode"></param>
-        /// <param name="sampleMode"></param>
-        public GridField3d(Vec3d origin, Vec3d scale, int countX, int countY, int countZ, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
-            : base(origin, scale, countX, countY, countZ, wrapMode)
+        public GridField3d(int countX, int countY, int countZ)
+          : base(countX, countY, countZ)
         {
             _values = new T[Count];
-            SampleMode = sampleMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="scale"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        /// <param name="wrapModeX"></param>
-        /// <param name="wrapModeY"></param>
-        /// <param name="wrapModeZ"></param>
-        /// <param name="sampleMode"></param>
-        public GridField3d(Vec3d origin, Vec3d scale, int countX, int countY, int countZ, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
-            : base(origin, scale, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ)
-        {
-            _values = new T[Count];
-            SampleMode = sampleMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="interval"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        /// <param name="wrapMode"></param>
-        /// <param name="sampleMode"></param>
-        public GridField3d(Interval3d interval, int countX, int countY, int countZ, WrapMode wrapMode = WrapMode.Clamp, SampleMode sampleMode = SampleMode.Linear)
-            : base(interval, countX, countY, countZ, wrapMode)
-        {
-            _values = new T[Count];
-            SampleMode = sampleMode;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="interval"></param>
-        /// <param name="countX"></param>
-        /// <param name="countY"></param>
-        /// <param name="countZ"></param>
-        /// <param name="wrapModeX"></param>
-        /// <param name="wrapModeY"></param>
-        /// <param name="wrapModeZ"></param>
-        /// <param name="sampleMode"></param>
-        public GridField3d(Interval3d interval, int countX, int countY, int countZ, WrapMode wrapModeX, WrapMode wrapModeY, WrapMode wrapModeZ, SampleMode sampleMode = SampleMode.Linear)
-            : base(interval, countX, countY, countZ, wrapModeX, wrapModeY, wrapModeZ)
-        {
-            _values = new T[Count];
-            SampleMode = sampleMode;
         }
 
 
@@ -107,12 +66,10 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="grid"></param>
-        /// <param name="sampleMode"></param>
-        public GridField3d(Grid3d grid, SampleMode sampleMode = SampleMode.Linear)
+        public GridField3d(Grid3d grid)
             :base(grid)
         {
             _values = new T[Count];
-            SampleMode = sampleMode;
         }
 
 
@@ -160,14 +117,34 @@ namespace SpatialSlur.SlurField
             {
                 CoreUtil.BoundsCheck(i, CountX);
                 CoreUtil.BoundsCheck(j, CountY);
-                return _values[IndexAtUnchecked(i, j, k)];
+                return _values[IndexAtUnsafe(i, j, k)];
             }
             set
             {
                 CoreUtil.BoundsCheck(i, CountX);
                 CoreUtil.BoundsCheck(j, CountY);
-                _values[IndexAtUnchecked(i, j, k)] = value;
+                _values[IndexAtUnsafe(i, j, k)] = value;
             }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"GridField3d<{typeof(T).Name}> ({CountX}, {CountY}, {CountZ})";
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public GridField3d<T> Duplicate()
+        {
+            return Duplicate(true);
         }
 
 
@@ -175,7 +152,7 @@ namespace SpatialSlur.SlurField
         /// Returns a deep copy of this field.
         /// </summary>
         /// <returns></returns>
-        protected abstract GridField3d<T> DuplicateBase(bool copyValues);
+        public abstract GridField3d<T> Duplicate(bool setValues);
 
 
         /// <summary>
@@ -199,18 +176,14 @@ namespace SpatialSlur.SlurField
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public T ValueAtUnchecked(int i, int j, int k)
+        public T ValueAtUnsafe(int i, int j, int k)
         {
-            return _values[IndexAtUnchecked(i, j, k)];
+            return _values[IndexAtUnsafe(i, j, k)];
         }
 
 
+        /*
         /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
         public T ValueAt(Vec3d point)
         {
             switch (SampleMode)
@@ -223,6 +196,38 @@ namespace SpatialSlur.SlurField
 
             throw new NotSupportedException();
         }
+        */
+
+
+        /// <inheritdoc/>
+        public T ValueAt(Vec3d point)
+        {
+            // conditional is used instead of switch for inline optimization
+            return SampleMode == SampleMode.Nearest ?
+                ValueAtNearest(point) : ValueAtLinear(point);
+        }
+
+
+        /*
+        /// <summary>
+        /// Returns the value at the given point.
+        /// Assumes the point is within the bounds of the grid.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public T ValueAtUnsafe(Vec3d point)
+        {
+            switch (SampleMode)
+            {
+                case SampleMode.Nearest:
+                    return ValueAtNearestUnsafe(point);
+                case SampleMode.Linear:
+                    return ValueAtLinearUnsafe(point);
+            }
+
+            throw new NotSupportedException();
+        }
+        */
 
 
         /// <summary>
@@ -231,17 +236,11 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public T ValueAtUnchecked(Vec3d point)
+        public T ValueAtUnsafe(Vec3d point)
         {
-            switch (SampleMode)
-            {
-                case SampleMode.Nearest:
-                    return ValueAtNearestUnchecked(point);
-                case SampleMode.Linear:
-                    return ValueAtLinearUnchecked(point);
-            }
-
-            throw new NotSupportedException();
+            // conditional is used instead of switch for inline optimization
+            return SampleMode == SampleMode.Nearest ?
+                ValueAtNearestUnsafe(point) : ValueAtLinearUnsafe(point);
         }
 
 
@@ -261,9 +260,9 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private T ValueAtNearestUnchecked(Vec3d point)
+        private T ValueAtNearestUnsafe(Vec3d point)
         {
-            return _values[IndexAtUnchecked(point)];
+            return _values[IndexAtUnsafe(point)];
         }
 
 
@@ -278,7 +277,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="point"></param>
-        protected abstract T ValueAtLinearUnchecked(Vec3d point);
+        protected abstract T ValueAtLinearUnsafe(Vec3d point);
 
 
         /// <summary>
@@ -445,19 +444,6 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         /// <param name="normalize"></param>
         /// <param name="parallel"></param>
-        public void SpatialFunction(Func<Vec3d, T> func, IDiscreteField<T> result, bool normalize = false, bool parallel = false)
-        {
-            SpatialFunction(func, result.Values, normalize, parallel);
-        }
-
-
-        /// <summary>
-        /// Sets the given field to some function of this field's coordinates.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="result"></param>
-        /// <param name="normalize"></param>
-        /// <param name="parallel"></param>
         public void SpatialFunction(Func<Vec3d, T> func, T[] result, bool normalize = false, bool parallel = false)
         {
             if (normalize)
@@ -537,18 +523,6 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// Sets the given field to some function of this field's coordinates in grid space.
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public void SpatialFunction(Func<int, int, int, T> func, IDiscreteField<T> result, bool parallel = false)
-        {
-            SpatialFunction(func, result.Values, parallel);
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="func"></param>
@@ -584,7 +558,7 @@ namespace SpatialSlur.SlurField
         {
             if (ResolutionEquals(other))
             {
-                _values.Set(other._values);
+                this.Set(other);
                 return;
             }
 
@@ -604,7 +578,7 @@ namespace SpatialSlur.SlurField
         {
             if (ResolutionEquals(other))
             {
-                other._values.Convert(converter, _values);
+                other.Convert(converter, this, parallel);
                 return;
             }
 
@@ -629,9 +603,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        IDiscreteField<T> IDiscreteField<T>.Duplicate(bool copyValues)
+        IDiscreteField<T> IDiscreteField<T>.Duplicate(bool setValues)
         {
-            return DuplicateBase(copyValues);
+            return Duplicate(setValues);
         }
 
 
@@ -639,9 +613,9 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <returns></returns>
-        IDiscreteField3d<T> IDiscreteField3d<T>.Duplicate(bool copyValues)
+        IDiscreteField3d<T> IDiscreteField3d<T>.Duplicate(bool setValues)
         {
-            return DuplicateBase(copyValues);
+            return Duplicate(setValues);
         }
 
         #endregion
