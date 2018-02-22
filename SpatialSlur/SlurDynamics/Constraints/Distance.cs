@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes 
@@ -17,12 +13,27 @@ namespace SpatialSlur.SlurDynamics.Constraints
     ///
     /// </summary>
     [Serializable]
-    public class LengthConstraint : Constraint, IConstraint
+    public class Distance : Constraint, IConstraint
     {
         private H _h0 = new H();
         private H _h1 = new H();
+        private double _target;
 
-        private double _length;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="target"></param>
+        /// <param name="weight"></param>
+        public Distance(int i0, int i1, double target, double weight = 1.0)
+        {
+            _h0.Index = i0;
+            _h1.Index = i1;
+            Weight = weight;
+            Target = target;
+        }
 
 
         /// <summary>
@@ -46,15 +57,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public double Length
+        public double Target
         {
-            get { return _length; }
+            get { return _target; }
             set
             {
                 if (value < 0.0)
                     throw new ArgumentOutOfRangeException("The value cannot be negative.");
 
-                _length = value;
+                _target = value;
             }
         }
 
@@ -62,29 +73,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i0"></param>
-        /// <param name="i1"></param>
-        /// <param name="length"></param>
-        /// <param name="weight"></param>
-        public LengthConstraint(int i0, int i1, double weight = 1.0)
+        public ConstraintType Type
         {
-            _h0.Index = i0;
-            _h1.Index = i1;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="i0"></param>
-        /// <param name="i1"></param>
-        /// <param name="length"></param>
-        /// <param name="weight"></param>
-        public LengthConstraint(int i0, int i1, double length, double weight = 1.0)
-            :this(i0, i1, weight)
-        {
-            Length = length;
+            get { return ConstraintType.Position; }
         }
 
 
@@ -92,12 +83,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            var d = particles[_h1].Position - particles[_h0].Position;
-            d *= (1.0 - _length / d.Length) * 0.5;
-
+            var d = bodies[_h1].Position - bodies[_h0].Position;
+            d *= (1.0 - _target / d.Length) * 0.5;
             _h0.Delta = d;
             _h1.Delta = -d;
         }
@@ -116,16 +106,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
 
         /// <inheritdoc/>
         /// <summary>

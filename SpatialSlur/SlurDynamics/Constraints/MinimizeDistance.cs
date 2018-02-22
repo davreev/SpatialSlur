@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SpatialSlur.SlurCore;
 
 /*
  * Notes 
@@ -17,19 +13,31 @@ namespace SpatialSlur.SlurDynamics.Constraints
     ///
     /// </summary>
     [Serializable]
-    public class DirectionConstraint : Constraint, IConstraint
+    public class MinimizeDistance : Constraint, IConstraint
     {
         private H _h0 = new H();
         private H _h1 = new H();
-
-        /// <summary></summary>
-        public Vec3d Direction;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public H Start
+        /// <param name="i0"></param>
+        /// <param name="i1"></param>
+        /// <param name="weight"></param>
+        public MinimizeDistance(int i0, int i1, double weight = 1.0)
+        {
+            _h0.Index = i0;
+            _h1.Index = i1;
+
+            Weight = weight;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public H Handle0
         {
             get { return _h0; }
         }
@@ -38,43 +46,34 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <summary>
         /// 
         /// </summary>
-        public H End
+        public H Handle1
         {
             get { return _h1; }
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <param name="direction"></param>
-        /// <param name="weight"></param>
-        public DirectionConstraint(int start, int end, Vec3d direction, double weight = 1.0)
+        public ConstraintType Type
         {
-            _h0.Index = start;
-            _h1.Index = end;
-
-            Direction = direction;
-            Weight = weight;
+            get { return ConstraintType.Position; }
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Calculate(IReadOnlyList<IBody> particles)
+        /// <param name="bodies"></param>
+        public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            var d = Vec3d.Reject(particles[_h1].Position - particles[_h0].Position, Direction) * 0.5;
+            var d = (bodies[_h1].Position - bodies[_h0].Position) * 0.5;
 
             _h0.Delta = d;
             _h1.Delta = -d;
         }
 
-
+        
         /// <inheritdoc/>
         /// <summary>
         /// 
@@ -88,16 +87,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IConstraint.AppliesRotation
-        {
-            get { return false; }
-        }
-
 
         /// <inheritdoc/>
         /// <summary>
