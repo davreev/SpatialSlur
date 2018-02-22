@@ -14,7 +14,7 @@ namespace SpatialSlur.SlurDynamics.Forces
     /// <summary>
     /// 
     /// </summary>
-    public class OutsideSphere: Force, IConstraint
+    public class OutsideSphere: Constraint, IConstraint
     {
         private H _handle = new H();
         private Vec3d _origin;
@@ -28,12 +28,12 @@ namespace SpatialSlur.SlurDynamics.Forces
         /// <param name="origin"></param>
         /// <param name="radius"></param>
         /// <param name="strength"></param>
-        public OutsideSphere(int index, Vec3d origin, double radius, double strength = 1.0)
+        public OutsideSphere(int index, Vec3d origin, double radius, double weight = 1.0)
         {
             _handle.Index = index;
             _origin = origin;
             Radius = radius;
-            Strength = strength;
+            Weight = weight;
         }
 
 
@@ -92,7 +92,7 @@ namespace SpatialSlur.SlurDynamics.Forces
             var m = d.SquareLength;
 
             if (m < _radius * _radius)
-                _handle.Delta = d * ((1.0 - _radius / Math.Sqrt(m)) * Strength);
+                _handle.Delta = d * (1.0 - _radius / Math.Sqrt(m));
             else
                 _handle.Delta = Vec3d.Zero;
         }
@@ -105,7 +105,7 @@ namespace SpatialSlur.SlurDynamics.Forces
         /// <param name="bodies"></param>
         public void Apply(IReadOnlyList<IBody> bodies)
         {
-            bodies[_handle].ApplyForce(_handle.Delta);
+            bodies[_handle].ApplyMove(_handle.Delta, Weight);
         }
 
 
