@@ -1,23 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 using SpatialSlur.SlurCore;
 
 /*
  * Notes 
  */
- 
+
 namespace SpatialSlur.SlurField
 {
     /// <summary>
     /// 
     /// </summary>
     public class PerlinNoiseField : 
-        IField2d<double>, IField2d<Vec2d>, IDifferentiableField2d<Vec2d>,
-        IField3d<double>, IField3d<Vec3d>, IDifferentiableField3d<Vec3d>
+        IField2d<double>, IGradient2d<double>, IField2d<Vec2d>,
+        IField3d<double>, IGradient3d<double>, IField3d<Vec3d> 
     {
         public double OffsetX = 0.0;
         public double OffsetY = 0.0;
@@ -259,6 +254,31 @@ namespace SpatialSlur.SlurField
         Vec3d IField3d<Vec3d>.ValueAt(Vec3d point)
         {
             return VectorAt(point);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="gx"></param>
+        /// <param name="gy"></param>
+        void IGradient2d<double>.GradientAt(Vec2d point, out double gx, out double gy)
+        {
+            (gx, gy) = GradientAt(point);
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="gx"></param>
+        /// <param name="gy"></param>
+        /// <param name="gz"></param>
+        void IGradient3d<double>.GradientAt(Vec3d point, out double gx, out double gy, out double gz)
+        {
+            (gx, gy, gz) = GradientAt(point);
         }
 
         #endregion
