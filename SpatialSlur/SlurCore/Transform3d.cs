@@ -176,17 +176,6 @@ namespace SpatialSlur.SlurCore
         {
             return Rotation.Apply(point * Scale) + Translation;
         }
-
-
-        /// <summary>
-        /// Applies the inverse of this transformation to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public Vec3d ApplyInverse(Vec3d point)
-        {
-            return Rotation.ApplyInverse(point - Translation) / Scale;
-        }
         
 
         /// <summary>
@@ -213,12 +202,23 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Applies the inverse of this transformation to the given point.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vec3d ApplyInverse(Vec3d point)
+        {
+            return Rotation.ApplyInverse(point - Translation) / Scale;
+        }
+
+
+        /// <summary>
         /// Applies the inverse of this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
         public Transform3d ApplyInverse(Transform3d other)
         {
-            Apply(ref other);
+            ApplyInverse(ref other);
             return other;
         }
 
