@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SpatialSlur.SlurCore;
+using System.Runtime.CompilerServices;
 
 /*
  * Notes
@@ -20,11 +15,11 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="wrapMode"></param>
+        /// <param name="mode"></param>
         /// <returns></returns>
-        public static Func<int, int, int> SelectWrapFunction(WrapMode wrapMode)
+        public static Func<int, int, int> SelectWrapFunction(WrapMode mode)
         {
-            switch (wrapMode)
+            switch (mode)
             {
                 case WrapMode.Clamp:
                     return Clamp;
@@ -38,26 +33,44 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="i"></param>
-        /// <param name="n"></param>
+        /// <param name="index"></param>
+        /// <param name="range"></param>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public static int Wrap(int i, int n, WrapMode mode)
+        public static int Wrap(int index, int range, WrapMode mode)
         {
             switch (mode)
             {
-                case (WrapMode.Clamp):
-                    return Clamp(i, n);
-                case (WrapMode.Repeat):
-                    return Repeat(i, n);
-                case (WrapMode.Mirror):
-                    return Mirror(i, n);
+                case WrapMode.Clamp:
+                    return Clamp(index, range);
+                case WrapMode.Repeat:
+                    return Repeat(index, range);
+                case WrapMode.Mirror:
+                    return Mirror(index, range);
             }
 
             throw new NotSupportedException();
+        }
+        */
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="range"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static int Wrap(int index, int range, WrapMode mode)
+        {
+            // conditional is used instead of switch for inline optimization
+            return mode == WrapMode.Repeat ?
+                Repeat(index, range) : mode == WrapMode.Mirror ?
+                Mirror(index, range) : Clamp(index, range);
         }
 
 
@@ -67,7 +80,7 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        internal static int Clamp(int i, int n)
+        private static int Clamp(int i, int n)
         {
             return (i < 0) ? 0 : (i < n) ? i : n - 1;
         }
@@ -79,7 +92,7 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        internal static int Repeat(int i, int n)
+        private static int Repeat(int i, int n)
         {
             i %= n;
             return (i < 0) ? i + n : i;
@@ -92,10 +105,12 @@ namespace SpatialSlur.SlurField
         /// <param name="i"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        internal static int Mirror(int i, int n)
+        private static int Mirror(int i, int n)
         {
-            i = Repeat(i, n + n);
-            return (i < n) ? i : n + n - i - 1;
+            var n2 = n + n;
+            i %= n2;
+            if (i < 0) i += n2;
+            return (i < n) ? i : n2 - i - 1;
         }
 
 
