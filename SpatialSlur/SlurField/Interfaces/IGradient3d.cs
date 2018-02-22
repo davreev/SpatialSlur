@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 using SpatialSlur.SlurCore;
 
 /*
@@ -15,14 +10,14 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="TDerivative"></typeparam>
-    public interface IDifferentiableField2d<TDerivative>
+    /// <typeparam name="T"></typeparam>
+    public interface IGradient3d<T>
     {
         /// <summary>
         /// Returns the the gradient at the given point.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        TDerivative GradientAt(Vec2d point);
+        void GradientAt(Vec3d point, out T gx, out T gy, out T gz);
     }
 }
