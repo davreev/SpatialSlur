@@ -19,6 +19,7 @@ namespace SpatialSlur.SlurDynamics.Forces
         private H _handle = new H();
         private Vec3d _origin;
         private double _radius;
+        private bool _apply;
 
 
         /// <summary>
@@ -91,10 +92,14 @@ namespace SpatialSlur.SlurDynamics.Forces
             var d = _origin - bodies[_handle].Position;
             var m = d.SquareLength;
 
-            if (m < _radius * _radius)
-                _handle.Delta = d * (1.0 - _radius / Math.Sqrt(m));
-            else
-                _handle.Delta = Vec3d.Zero;
+            if (m >= _radius * _radius)
+            {
+                _apply = false;
+                return;
+            }
+
+            _handle.Delta = d * (1.0 - _radius / Math.Sqrt(m));
+            _apply = true;
         }
 
 
@@ -105,7 +110,8 @@ namespace SpatialSlur.SlurDynamics.Forces
         /// <param name="bodies"></param>
         public void Apply(IReadOnlyList<IBody> bodies)
         {
-            bodies[_handle].ApplyMove(_handle.Delta, Weight);
+            if (_apply)
+                bodies[_handle].ApplyMove(_handle.Delta, Weight);
         }
 
 

@@ -19,7 +19,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         private H _handle = new H();
         private Vec3d _origin;
         private Vec3d _normal;
-        private bool _skip;
+        private bool _apply;
 
 
         /// <summary>
@@ -87,12 +87,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
             if (d <= 0.0)
             {
-                _skip = true;
+                _apply = false;
                 return;
             }
 
             _handle.Delta = (d / _normal.SquareLength * _normal);
-            _skip = false;
+            _apply = true;
         }
 
 
@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="bodies"></param>
         public void Apply(IReadOnlyList<IBody> bodies)
         {
-            if (!_skip)
+            if (_apply)
                 bodies[_handle].ApplyMove(_handle.Delta, Weight);
         }
 

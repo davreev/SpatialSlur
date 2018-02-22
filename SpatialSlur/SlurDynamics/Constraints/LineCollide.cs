@@ -25,7 +25,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         [Serializable]
         public class CustomHandle : ParticleHandle
         {
-            private bool _skip;
+            private bool _apply;
 
             
             /// <summary>
@@ -40,7 +40,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
             /// <summary>
             /// 
             /// </summary>
-            public bool Skip { get => _skip; set => _skip = value; }
+            internal bool Apply { get => _apply; set => _apply = value; }
         }
 
         #endregion
@@ -129,7 +129,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
-                if (!h.Skip) bodies[h].ApplyMove(h.Delta, Weight);
+                if (h.Apply) bodies[h].ApplyMove(h.Delta, Weight);
         }
 
 

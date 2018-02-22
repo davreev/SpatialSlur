@@ -31,7 +31,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         [Serializable]
         public class CustomHandle : ParticleHandle
         {
-            private bool _skip;
+            private bool _apply;
 
 
             /// <summary>
@@ -46,7 +46,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
             /// <summary>
             /// 
             /// </summary>
-            public bool Skip { get => _skip; set => _skip = value; }
+            internal bool Apply { get => _apply; set => _apply = value; }
         }
 
         #endregion
@@ -178,12 +178,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
                     // no projections applied
                     if (count == 0)
                     {
-                        h0.Skip = true;
+                        h0.Apply = false;
                         continue;
                     }
 
                     h0.Delta = deltaSum * 0.5;
-                    h0.Skip = false;
+                    h0.Apply = true;
                 }
             });
         }
@@ -202,7 +202,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
             foreach(var h in Handles)
             {
                 h.Delta = Vec3d.Zero;
-                h.Skip = true;
+                h.Apply = false;
             }
 
             // calculate collisions
@@ -221,7 +221,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
                         d *= (1.0 - diam / Math.Sqrt(m)) * 0.5;
                         h0.Delta += d;
                         h1.Delta -= d;
-                        h0.Skip = h1.Skip = false;
+                        h0.Apply = h1.Apply = true;
                     }
                 }
 
@@ -252,7 +252,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
-                if (!h.Skip) bodies[h].ApplyMove(h.Delta, Weight);
+                if (h.Apply) bodies[h].ApplyMove(h.Delta, Weight);
         }
 
 

@@ -18,7 +18,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     {
         private H _handle = new H();
         private Interval3d _bounds;
-        private bool _skip;
+        private bool _apply;
 
 
         /// <summary>
@@ -73,12 +73,12 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
             if (_bounds.Contains(p))
             {
-                _skip = true;
+                _apply = false;
                 return;
             }
 
             _handle.Delta = _bounds.Clamp(p) - p;
-            _skip = false;
+            _apply = true;
         }
 
 
@@ -89,7 +89,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="bodies"></param>
         public void Apply(IReadOnlyList<IBody> bodies)
         {
-            if (!_skip)
+            if (_apply)
                 bodies[_handle].ApplyMove(_handle.Delta, Weight);
         }
 
