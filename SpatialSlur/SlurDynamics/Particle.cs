@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SpatialSlur.SlurCore;
 
 /*
@@ -12,21 +8,21 @@ using SpatialSlur.SlurCore;
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// Interface for a dynamic position-only body (no rotation)
+    /// 
     /// </summary>
     [Serializable]
     public class Particle : IBody
     {
         #region Static
 
-        private const string _rotationMessage = "This implementation of IBody does not support rotation.";
+        private const string _rotationErrorMessage = "This implementation of IBody does not support rotation.";
 
         #endregion
 
-
+        
         private Vec3d _position;
         private Vec3d _velocity;
-
+        public Vec3d _forceSum;
         private Vec3d _moveSum;
         private double _moveWeightSum;
         private double _mass = 1.0;
@@ -96,8 +92,18 @@ namespace SpatialSlur.SlurDynamics
                 _mass = value;
             }
         }
-
         
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        public void ApplyForce(Vec3d delta)
+        {
+            _forceSum += delta;
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -118,14 +124,15 @@ namespace SpatialSlur.SlurDynamics
         /// <returns></returns>
         public double UpdatePosition(double timeStep, double damping)
         {
-            _velocity *= damping;
+            _velocity *= (1.0 - damping);
+            _velocity += _forceSum * (timeStep / _mass);
 
             if (_moveWeightSum > 0.0)
-                _velocity += _moveSum * (timeStep / (_moveWeightSum * _mass));
+                _velocity += _moveSum * (timeStep / _moveWeightSum);
 
-            _position += _velocity * timeStep;
+            Position += _velocity * timeStep;
 
-            _moveSum.Set(0.0);
+            _forceSum = _moveSum = Vec3d.Zero;
             _moveWeightSum = 0.0;
 
             return _velocity.SquareLength;
@@ -133,23 +140,14 @@ namespace SpatialSlur.SlurDynamics
 
 
         #region Explicit interface implementations
-
-        /// <summary>
-        /// 
-        /// </summary>
-        bool IBody.HasRotation
-        {
-            get { return false; }
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
         Quaterniond IBody.Rotation
         {
             get { return Quaterniond.Identity; }
-            set { throw new NotSupportedException(_rotationMessage); }
+            set { throw new NotSupportedException(_rotationErrorMessage); }
         }
 
 
@@ -159,7 +157,18 @@ namespace SpatialSlur.SlurDynamics
         Vec3d IBody.AngularVelocity
         {
             get { return Vec3d.Zero; }
-            set { throw new NotSupportedException(_rotationMessage); }
+            set { throw new NotSupportedException(_rotationErrorMessage); }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        /// <param name="weight"></param>
+        void IBody.ApplyTorque(Vec3d delta)
+        {
+            throw new NotSupportedException(_rotationErrorMessage);
         }
 
 
@@ -170,7 +179,7 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="weight"></param>
         void IBody.ApplyRotate(Vec3d delta, double weight)
         {
-            throw new NotSupportedException(_rotationMessage);
+            throw new NotSupportedException(_rotationErrorMessage);
         }
 
 
@@ -183,6 +192,15 @@ namespace SpatialSlur.SlurDynamics
         double IBody.UpdateRotation(double timeStep, double damping)
         {
             return 0.0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool IBody.HasRotation
+        {
+            get { return false; }
         }
 
 

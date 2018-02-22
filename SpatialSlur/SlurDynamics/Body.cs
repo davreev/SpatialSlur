@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- * 
- * TODO
- * Revise rotation representation as per
- * http://www.cg.informatik.uni-mainz.de/files/2016/06/Position-and-Orientation-Based-Cosserat-Rods.pdf
  */
 
 namespace SpatialSlur.SlurDynamics
@@ -23,34 +15,11 @@ namespace SpatialSlur.SlurDynamics
     public class Body : Particle, IBody
     {
         private Quaterniond _rotation = Quaterniond.Identity;
-        private Vec3d _angleVelocity;
+        private Vec3d _angleVeloctiy;
+        private Vec3d _torqueSum;
         private Vec3d _rotateSum;
         private double _rotateWeightSum;
-
-        // TODO consider inertia tensor?
-        // http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf
-        // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch29.html
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Quaterniond Rotation
-        {
-            get { return _rotation; }
-            set { _rotation = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vec3d AngularVelocity
-        {
-            get { return _angleVelocity; }
-            set { _angleVelocity = value; }
-        }
-
+  
 
         /// <summary>
         /// 
@@ -90,7 +59,37 @@ namespace SpatialSlur.SlurDynamics
             :base(other)
         {
             _rotation = other._rotation;
-            _angleVelocity = other._angleVelocity;
+            _angleVeloctiy = other._angleVeloctiy;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Quaterniond Rotation
+        {
+            get { return _rotation; }
+            set { _rotation = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vec3d AngularVelocity
+        {
+            get { return _angleVeloctiy; }
+            set { _angleVeloctiy = value; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        public void ApplyTorque(Vec3d delta)
+        {
+            _torqueSum += delta;
         }
 
 
@@ -113,22 +112,52 @@ namespace SpatialSlur.SlurDynamics
         /// <param name="damping"></param>
         public double UpdateRotation(double timeStep, double damping)
         {
-            _angleVelocity *= damping;
+            _angleVeloctiy *= (1.0 - damping);
+            _angleVeloctiy += _torqueSum * (timeStep / Mass);
 
             if (_rotateWeightSum > 0.0)
-                _angleVelocity += _rotateSum * (timeStep / (_rotateWeightSum * Mass)); // TODO assumes uniform inertia tensor
+                _angleVeloctiy += _rotateSum * (timeStep / _rotateWeightSum);
 
-            _rotation = new Quaterniond(_angleVelocity * timeStep) * _rotation;
+            _rotation = new Quaterniond(_angleVeloctiy * timeStep) * _rotation;
 
-            _rotateSum.Set(0.0);
+            _torqueSum = _rotateSum = Vec3d.Zero;
             _rotateWeightSum = 0.0;
 
-            return _angleVelocity.SquareLength;
+            return _angleVeloctiy.SquareLength;
         }
 
 
+        /*
+        // TODO consider inertia tensor?
+        // http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf
+        // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch29.html
+
+        private Vec3d _invInertia = new Vec3d(1.0, 1.0, 1.0); 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="timeStep"></param>
+        /// <param name="damping"></param>
+        private double UpdateRotation2(double timeStep, double damping)
+        {
+            _angleVeloctiy *= (1.0 - damping);
+            _angleVeloctiy += _rotation.Apply(_rotation.Inverse.Apply(_torqueSum * (timeStep * InverseMass)) * _inertiaInv);
+ 
+            if (_rotateWeightSum > 0.0)
+                _angleVeloctiy += _rotateSum * (timeStep / _rotateWeightSum);
+
+            _rotation = new Quaterniond(_angleVeloctiy * timeStep) * _rotation;
+
+            _rotateSum = _torqueSum = Vec3d.Zero;
+            _rotateWeightSum = 0.0;
+
+            return _angleVeloctiy.SquareLength;
+        }
+        */
+
         #region Explicit interface implementations
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -136,50 +165,7 @@ namespace SpatialSlur.SlurDynamics
         {
             get { return true; }
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        Quaterniond IBody.Rotation
-        {
-            get { return _rotation; }
-            set { _rotation = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        Vec3d IBody.AngularVelocity
-        {
-            get { return _angleVelocity; }
-            set { _angleVelocity = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="delta"></param>
-        /// <param name="weight"></param>
-        void IBody.ApplyRotate(Vec3d delta, double weight)
-        {
-            ApplyRotate(delta, weight);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeStep"></param>
-        /// <param name="damping"></param>
-        /// <returns></returns>
-        double IBody.UpdateRotation(double timeStep, double damping)
-        {
-            return UpdateRotation(timeStep, damping);
-        }
-
+        
 
         /// <summary>
         /// 

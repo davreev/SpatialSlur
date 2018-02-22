@@ -7,7 +7,7 @@
 namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
-    /// Interface for a dynamic body with position and orientation.
+    /// Interface for a 6dof dynamic body.
     /// </summary>
     public interface IBody
     {
@@ -52,6 +52,14 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
+        void ApplyForce(Vec3d delta);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        /// <param name="weight"></param>
         void ApplyMove(Vec3d delta, double weight);
 
 
@@ -60,8 +68,16 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="delta"></param>
         /// <param name="weight"></param>
-        void ApplyRotate(Vec3d delta, double weight);
+        void ApplyTorque(Vec3d delta);
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta"></param>
+        /// <param name="weight"></param>
+        void ApplyRotate(Vec3d delta, double weight);
+        
 
         /// <summary>
         /// Updates position and returns speed.

@@ -5,12 +5,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurDynamics;
-
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurDynamics
 {
@@ -25,6 +22,23 @@ namespace SpatialSlur.SlurDynamics
         private double _maxDelta = double.MaxValue;
         private double _maxAngleDelta = double.MaxValue;
         private int _stepCount = 0;
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintSolver()
+        {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConstraintSolver(ConstraintSolverSettings settings)
+        {
+            Settings = settings;
+        }
 
 
         /// <summary>
@@ -51,24 +65,7 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         public bool IsConverged
         {
-            get { return _maxDelta < _settings.ToleranceSquared && _maxAngleDelta < _settings.AngularToleranceSquared; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ConstraintSolver()
-        {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ConstraintSolver(ConstraintSolverSettings settings)
-        {
-            Settings = settings;
+            get { return _maxDelta < _settings.ToleranceSquared && _maxAngleDelta < _settings.AngleToleranceSquared; }
         }
 
 
@@ -83,7 +80,7 @@ namespace SpatialSlur.SlurDynamics
 
             return (
                 allHandles.Max(h => h.Delta.SquareLength) < _settings.ToleranceSquared &&
-                allHandles.Max(h => h.AngleDelta.SquareLength) < _settings.AngularToleranceSquared
+                allHandles.Max(h => h.AngleDelta.SquareLength) < _settings.AngleToleranceSquared
             );
         }
 
@@ -97,14 +94,12 @@ namespace SpatialSlur.SlurDynamics
         {
             if (parallel)
             {
-                LocalStepParallel(bodies, constraints);
-                GlobalStep(bodies, constraints);
+                ApplyConstraintsParallel(bodies, constraints);
                 UpdateBodiesParallel(bodies);
             }
             else
             {
-                LocalStep(bodies, constraints);
-                GlobalStep(bodies, constraints);
+                ApplyConstraints(bodies, constraints);
                 UpdateBodies(bodies);
             }
 
@@ -117,10 +112,15 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        private void LocalStep(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
+        private void ApplyConstraints(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
         {
+            // local step
             for (int i = 0; i < constraints.Count; i++)
                 constraints[i].Calculate(bodies);
+
+            // global step
+            for (int i = 0; i < constraints.Count; i++)
+                constraints[i].Apply(bodies);
         }
 
 
@@ -129,23 +129,16 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="bodies"></param>
         /// <param name="constraints"></param>
-        private void LocalStepParallel(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
+        private void ApplyConstraintsParallel(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
         {
+            // local step
             Parallel.ForEach(Partitioner.Create(0, constraints.Count), range =>
             {
                 for (int i = range.Item1; i < range.Item2; i++)
                     constraints[i].Calculate(bodies);
             });
-        }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
-        /// <param name="constraints"></param>
-        private void GlobalStep(IReadOnlyList<IBody> bodies, IReadOnlyList<IConstraint> constraints)
-        {
+            // global step
             for (int i = 0; i < constraints.Count; i++)
                 constraints[i].Apply(bodies);
         }
@@ -156,12 +149,11 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         private void UpdateBodies(IReadOnlyList<IBody> bodies)
         {
-            _maxDelta = 0.0;
-            _maxAngleDelta = 0.0;
+            _maxDelta = _maxAngleDelta = 0.0;
 
             var timeStep = _settings.TimeStep;
             var damp = _settings.Damping;
-            var dampAng = _settings.AngularDamping;
+            var dampAng = _settings.AngleDamping;
 
             for (int i = 0; i < bodies.Count; i++)
             {
@@ -177,17 +169,16 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         private void UpdateBodiesParallel(IReadOnlyList<IBody> bodies)
         {
-            _maxDelta = 0.0;
-            _maxAngleDelta = 0.0;
-            
-            var timeStep = _settings.TimeStep;
-            var damp = _settings.Damping;
-            var dampAng = _settings.AngularDamping;
+            _maxDelta = _maxAngleDelta = 0.0;
 
             Parallel.ForEach(Partitioner.Create(0, bodies.Count), range =>
             {
-                double dpMax = 0.0;
-                double daMax = 0.0;
+                var timeStep = _settings.TimeStep;
+                var damp = _settings.Damping;
+                var dampAng = _settings.AngleDamping;
+
+                var dpMax = 0.0;
+                var daMax = 0.0;
 
                 for (int i = range.Item1; i < range.Item2; i++)
                 {
