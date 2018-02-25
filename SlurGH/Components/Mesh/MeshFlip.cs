@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
@@ -15,6 +15,11 @@ namespace SpatialSlur.SlurGH.Components
     /// </summary>
     public class MeshFlip : GH_Component
     {
+        private bool _vertNorms = true;
+        private bool _faceNorms = true;
+        private bool _faceOrient = true;
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -32,11 +37,6 @@ namespace SpatialSlur.SlurGH.Components
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddMeshParameter("mesh", "mesh", "Mesh to flip.", GH_ParamAccess.item);
-
-            // TODO make menu items
-            pManager.AddBooleanParameter("vertexNormals", "vertexNorms", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceNormals", "faceNorms", "", GH_ParamAccess.item, true);
-            pManager.AddBooleanParameter("faceOrientation", "faceOrient", "", GH_ParamAccess.item, true);
         }
 
 
@@ -57,18 +57,60 @@ namespace SpatialSlur.SlurGH.Components
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Mesh mesh = null;
-            bool vertNorm = false;
-            bool faceNorm = false;
-            bool faceOrient = false;
-
             if (!DA.GetData(0, ref mesh)) return;
-            if (!DA.GetData(1, ref vertNorm)) return;
-            if (!DA.GetData(2, ref faceNorm)) return;
-            if (!DA.GetData(3, ref faceOrient)) return;
 
-            mesh.Flip(vertNorm, faceNorm, faceOrient);
+            mesh.Flip(_vertNorms, _faceNorms, _faceOrient);
 
             DA.SetData(0, new GH_Mesh(mesh));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="menu"></param>
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        {
+            base.AppendAdditionalComponentMenuItems(menu);
+            Menu_AppendItem(menu, "Vertex Normals", VertexNormalsClicked, true, _vertNorms);
+            Menu_AppendItem(menu, "Face Normals", FaceNormalsClicked, true, _faceNorms);
+            Menu_AppendItem(menu, "Face Orientation", FaceOrientClicked, true, _faceOrient);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void VertexNormalsClicked(object sender, EventArgs e)
+        {
+            _vertNorms = !_vertNorms;
+            ExpireSolution(true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FaceNormalsClicked(object sender, EventArgs e)
+        {
+            _faceNorms = !_faceNorms;
+            ExpireSolution(true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FaceOrientClicked(object sender, EventArgs e)
+        {
+            _faceOrient = !_faceOrient;
+            ExpireSolution(true);
         }
 
 
