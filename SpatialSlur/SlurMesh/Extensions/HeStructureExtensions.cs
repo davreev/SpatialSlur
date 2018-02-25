@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Linq;
-using System.Text;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
@@ -30,10 +29,13 @@ namespace SpatialSlur.SlurMesh
         /// <param name="transform"></param>
         /// <param name="parallel"></param>
         public static void Transform<V, E>(this HeStructure<V, E> graph, Transform3d transform, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>, IVertex3d
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>, IPosition3d, INormal3d
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
+
+            var rotate = transform.Rotation;
+            var invScale = 1.0 / transform.Scale;
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, verts.Count), range => Body(range.Item1, range.Item2));
@@ -46,20 +48,18 @@ namespace SpatialSlur.SlurMesh
                 {
                     var v = verts[i];
                     v.Position = transform.Apply(v.Position);
-                    v.Normal = transform.Rotation.Apply(v.Normal);
+                    v.Normal = rotate.Apply(v.Normal * invScale);
                 }
             }
         }
 
 
-        #region Topological Search
-
         /// <summary>
         /// Returns the number of connected components in the graph.
         /// </summary>
         public static int CountConnectedComponents<V, E>(this HeStructure<V, E> graph)
-          where V : HeElement<V, E>, IHeVertex<V, E>
-          where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             throw new NotImplementedException();
         }
@@ -70,8 +70,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<E> GetConnectedComponents<V, E>(this HeStructure<V, E> graph)
-        where V : HeElement<V, E>, IHeVertex<V, E>
-        where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var hedges = graph.Halfedges;
 
@@ -93,7 +93,7 @@ namespace SpatialSlur.SlurMesh
                     var he0 = stack.Pop();
 
                     // add unvisited neighbours to the stack
-                    foreach (var he1 in he0.ConnectedPairs)
+                    foreach (var he1 in he0.ConnectedEdges)
                     {
                         if (he1.Tag == currTag) continue;
                         he1.Tag = he1.Twin.Tag = currTag; // tag halfedge pair as visited
@@ -116,8 +116,8 @@ namespace SpatialSlur.SlurMesh
         /// <param name="exclude"></param>
         /// <returns></returns>
         public static IEnumerable<E> GetEdgesBreadthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<E> sources, IEnumerable<E> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var hedges = graph.Halfedges;
 
@@ -128,7 +128,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var he in sources)
             {
                 if (he.IsUnused) continue;
-                hedges.ContainsCheck(he);
+                hedges.OwnsCheck(he);
 
                 he.Tag = he.Twin.Tag = currTag;
                 queue.Enqueue(he);
@@ -147,7 +147,7 @@ namespace SpatialSlur.SlurMesh
                 var he0 = queue.Dequeue();
                 yield return he0;
 
-                foreach (var he1 in he0.ConnectedPairs)
+                foreach (var he1 in he0.ConnectedEdges)
                 {
                     if (he1.Tag != currTag)
                     {
@@ -169,8 +169,8 @@ namespace SpatialSlur.SlurMesh
         /// <param name="exclude"></param>
         /// <returns></returns>
         public static IEnumerable<E> GetEdgesDepthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<E> sources, IEnumerable<E> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var hedges = graph.Halfedges;
 
@@ -181,7 +181,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var he in sources)
             {
                 if (he.IsUnused) continue;
-                hedges.ContainsCheck(he);
+                hedges.OwnsCheck(he);
 
                 he.Tag = he.Twin.Tag = currTag;
                 stack.Push(he);
@@ -200,7 +200,7 @@ namespace SpatialSlur.SlurMesh
                 var he0 = stack.Pop();
                 yield return he0;
 
-                foreach (var he1 in he0.ConnectedPairs)
+                foreach (var he1 in he0.ConnectedEdges)
                 {
                     if (he1.Tag != currTag)
                     {
@@ -224,8 +224,8 @@ namespace SpatialSlur.SlurMesh
         /// <param name="exclude"></param>
         /// <returns></returns>
         public static IEnumerable<E> GetEdgesBestFirst<V, E, K>(this HeStructure<V, E> graph, IEnumerable<E> sources, Func<E, K> getKey, IEnumerable<E> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
             where K : IComparable<K>
         {
             var hedges = graph.Halfedges;
@@ -237,7 +237,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var he in sources)
             {
                 if (he.IsUnused) continue;
-                hedges.ContainsCheck(he);
+                hedges.OwnsCheck(he);
 
                 he.Tag = he.Twin.Tag = currTag;
                 pq.Insert(getKey(he), he);
@@ -256,7 +256,7 @@ namespace SpatialSlur.SlurMesh
                 var he0 = pq.RemoveMin().Value;
                 yield return he0;
 
-                foreach (var he1 in he0.ConnectedPairs)
+                foreach (var he1 in he0.ConnectedEdges)
                 {
                     if (he1.Tag != currTag)
                     {
@@ -266,7 +266,24 @@ namespace SpatialSlur.SlurMesh
                 }
             }
         }
+
         
+        /// <summary>
+        /// Returns vertices in breadth-first order via the traversed halfedge.
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="sources"></param>
+        /// <param name="exclude"></param>
+        /// <returns></returns>
+        public static IEnumerable<V> GetVerticesBreadthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude = null)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
+        {
+            return GetVerticesBreadthFirst2(graph, sources, exclude).Select(he => he.Start);
+        }
+
 
         /// <summary>
         /// Returns vertices in breadth-first order via the traversed halfedge.
@@ -277,9 +294,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<E> GetVerticesBreadthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+        public static IEnumerable<E> GetVerticesBreadthFirst2<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude = null)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -290,7 +307,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var v in sources)
             {
                 if (v.IsUnused) continue;
-                verts.ContainsCheck(v);
+                verts.OwnsCheck(v);
 
                 v.Tag = currTag;
                 queue.Enqueue(v.First);
@@ -324,9 +341,8 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
         /// <summary>
-        /// 
+        /// Returns vertices in depth-first order.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -334,49 +350,12 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<V> GetVerticesBreadthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+        public static IEnumerable<V> GetVerticesDepthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude = null)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
-            var verts = graph.Vertices;
-
-            var queue = new Queue<V>();
-            int currTag = verts.NextTag;
-
-            // set sources
-            foreach (var v in sources)
-            {
-                if (v.IsUnused) continue;
-                verts.OwnsCheck(v);
-
-                v.Tag = currTag;
-                queue.Enqueue(v);
-            }
-
-            // exclude
-            if(exclude != null)
-            {
-            foreach (var v in exclude)
-                v.Tag = currTag;
-            }
-
-            // search
-            while (queue.Count > 0)
-            {
-                var v0 = queue.Dequeue();
-                yield return v0;
-
-                foreach (var v1 in v0.ConnectedVertices)
-                {
-                    if (v1.Tag != currTag)
-                    {
-                        v1.Tag = currTag;
-                        queue.Enqueue(v1);
-                    }
-                }
-            }
+            return GetVerticesDepthFirst2(graph, sources, exclude).Select(he => he.Start);
         }
-        */
 
 
         /// <summary>
@@ -388,9 +367,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<E> GetVerticesDepthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+        public static IEnumerable<E> GetVerticesDepthFirst2<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude = null)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -401,7 +380,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var v in sources)
             {
                 if (v.IsUnused) continue;
-                verts.ContainsCheck(v);
+                verts.OwnsCheck(v);
 
                 v.Tag = currTag;
                 stack.Push(v.First);
@@ -435,72 +414,24 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
         /// <summary>
-        /// 
+        /// Returns vertices in best-first order.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
+        /// <typeparam name="K"></typeparam>
         /// <param name="graph"></param>
         /// <param name="sources"></param>
-        /// <returns></returns>
-        public static IEnumerable<V> GetVerticesDepthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
-        {
-            return graph.GetVerticesDepthFirst(sources, Enumerable.Empty<V>());
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="V"></typeparam>
-        /// <typeparam name="E"></typeparam>
-        /// <param name="graph"></param>
-        /// <param name="sources"></param>
+        /// <param name="getKey"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<V> GetVerticesDepthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, IEnumerable<V> exclude)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+        public static IEnumerable<V> GetVerticesBestFirst<V, E, K>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<V, K> getKey, IEnumerable<V> exclude = null)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
+            where K : IComparable<K>
         {
-            var verts = graph.Vertices;
-
-            var stack = new Stack<V>();
-            int currTag = verts.NextTag;
-
-            // set sources
-            foreach (var v in sources)
-            {
-                if (v.IsUnused) continue;
-                verts.OwnsCheck(v);
-
-                v.Tag = currTag;
-                stack.Push(v);
-            }
-
-            // exclude
-            foreach (var v in exclude)
-                v.Tag = currTag;
-
-            // search
-            while (stack.Count > 0)
-            {
-                var v0 = stack.Pop();
-                yield return v0;
-
-                foreach (var v1 in v0.ConnectedVertices)
-                {
-                    if (v1.Tag != currTag)
-                    {
-                        v1.Tag = currTag;
-                        stack.Push(v1);
-                    }
-                }
-            }
+            return GetVerticesBestFirst2(graph, sources, he => getKey(he.Start), exclude).Select(he => he.Start);
         }
-        */
 
 
         /// <summary>
@@ -514,9 +445,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getKey"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<E> GetVerticesBestFirst<V, E, K>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<V, K> getKey, IEnumerable<V> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+        public static IEnumerable<E> GetVerticesBestFirst2<V, E, K>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<E, K> getKey, IEnumerable<V> exclude = null)
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
             where K : IComparable<K>
         {
             var verts = graph.Vertices;
@@ -528,14 +459,15 @@ namespace SpatialSlur.SlurMesh
             foreach (var v in sources)
             {
                 if (v.IsUnused) continue;
-                verts.ContainsCheck(v);
+                verts.OwnsCheck(v);
 
                 v.Tag = currTag;
-                pq.Insert(getKey(v), v.First);
+                var he = v.First;
+                pq.Insert(getKey(he), he);
             }
 
             // exclude
-            if(exclude != null)
+            if (exclude != null)
             {
                 foreach (var v in exclude)
                     v.Tag = currTag;
@@ -555,70 +487,23 @@ namespace SpatialSlur.SlurMesh
                     if (v1.Tag != currTag)
                     {
                         v1.Tag = currTag;
-                        pq.Insert(getKey(v1), he1);
+                        pq.Insert(getKey(he1), he1);
                     }
                 }
             }
         }
 
-        #endregion
-
-
-        #region Element Attributes
-
-        #region Halfedge Attributes
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void GetHalfedgeAngles<V, E>(this HeStructure<V, E> graph, Action<E, double> setAngle, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>, IVertex3d
-            where E : Halfedge<V, E>, IHalfedge<V, E>
-        {
-            GetHalfedgeAngles(graph, IVertex3dStatic<V>.GetPosition, setAngle, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void GetHalfedgeAngles<V, E>(this HeStructure<V, E> graph, Func<V, Vec3d> getPosition, Action<E, double> setAngle, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
-        {
-            var hedges = graph.Halfedges;
-
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, hedges.Count), range => Body(range.Item1, range.Item2));
-            else
-                Body(0, hedges.Count);
-
-            void Body(int from, int to)
-            {
-                for (int i = from; i < to; i++)
-                {
-                    var he = hedges[i];
-                    if (he.IsUnused) continue;
-                    setAngle(he, he.GetAngle(getPosition));
-                }
-            }
-        }
-
-        #endregion
-
 
         #region Edge Attributes
-
-
+        
         /// <summary>
         /// 
         /// </summary>
         public static void GetEdgeLengths<V, E>(this HeStructure<V, E> graph, Action<E, double> setLength, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>, IVertex3d
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>, IPosition3d
+            where E : Halfedge<V, E>
         {
-            GetEdgeLengths(graph, IVertex3dStatic<V>.GetPosition, setLength, parallel);
+            GetEdgeLengths(graph, IPosition3d<V>.Get, setLength, parallel);
         }
 
 
@@ -626,8 +511,8 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetEdgeLengths<V, E>(this HeStructure<V, E> graph, Func<V, Vec3d> getPosition, Action<E, double> setLength, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var edges = graph.Edges;
 
@@ -652,10 +537,10 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetEdgeTangents<V, E>(this HeStructure<V, E> graph, Action<E, Vec3d> setTangent, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>, IVertex3d
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>, IPosition3d
+            where E : Halfedge<V, E>
         {
-            GetEdgeTangents(graph, IVertex3dStatic<V>.GetPosition, setTangent, parallel);
+            GetEdgeTangents(graph, IPosition3d<V>.Get, setTangent, parallel);
         }
 
 
@@ -663,8 +548,8 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetEdgeTangents<V, E>(this HeStructure<V, E> graph, Func<V, Vec3d> getPosition, Action<E, Vec3d> setTangent, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var edges = graph.Edges;
 
@@ -679,7 +564,9 @@ namespace SpatialSlur.SlurMesh
                 {
                     var he = edges[i];
                     if (he.IsUnused) continue;
-                    setTangent(he, he.GetDelta(getPosition).Direction);
+
+                    var d = getPosition(he.End) - getPosition(he.Start);
+                    setTangent(he, d.Unit);
                 }
             }
         }
@@ -694,10 +581,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getPosition"></param>
         /// <returns></returns>
         public static double GetEdgeLengthSum<V, E>(this HeStructure<V, E> graph)
-            where V : HeElement<V, E>, IHeVertex<V, E>, IVertex3d
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>, IPosition3d
+            where E : Halfedge<V, E>
         {
-            return GetEdgeLengthSum(graph, IVertex3dStatic<V>.GetPosition);
+            return GetEdgeLengthSum(graph, IPosition3d<V>.Get);
         }
 
 
@@ -710,8 +597,8 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getPosition"></param>
         /// <returns></returns>
         public static double GetEdgeLengthSum<V, E>(this HeStructure<V, E> graph, Func<V, Vec3d> getPosition)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var hedges = graph.Halfedges;
             var sum = 0.0;
@@ -733,8 +620,8 @@ namespace SpatialSlur.SlurMesh
         /// Also returns the number of connected components.
         /// </summary>
         public static int GetEdgeComponentIndices<V, E>(this HeStructure<V, E> graph, Action<E, int> setIndex)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var hedges = graph.Halfedges;
 
@@ -767,7 +654,7 @@ namespace SpatialSlur.SlurMesh
                     setIndex(he0, currComp);
 
                     // add unvisited neighbours to the stack
-                    foreach (var he1 in he0.ConnectedPairs)
+                    foreach (var he1 in he0.ConnectedEdges)
                     {
                         if (he1.Tag == currTag) continue;
                         he1.Tag = he1.Twin.Tag = currTag; // tag halfedge pair as visited
@@ -787,8 +674,8 @@ namespace SpatialSlur.SlurMesh
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
         public static void GetEdgeDepths<V, E>(this HeStructure<V, E> graph, IEnumerable<E> sources, Property<E, int> depth, IEnumerable<E> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var edges = graph.Edges;
             var queue = new Queue<E>();
@@ -800,7 +687,7 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to 0
             foreach (var he in sources)
             {
-                edges.ContainsCheck(he);
+                edges.OwnsCheck(he);
                 if (he.IsUnused) continue;
 
                 depth.Set(he, 0);
@@ -820,7 +707,7 @@ namespace SpatialSlur.SlurMesh
                 var he0 = queue.Dequeue();
                 int t0 = depth.Get(he0) + 1;
 
-                foreach (var he1 in he0.ConnectedPairs)
+                foreach (var he1 in he0.ConnectedEdges)
                 {
                     if (t0 < depth.Get(he1))
                     {
@@ -841,8 +728,8 @@ namespace SpatialSlur.SlurMesh
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         public static void GetVertexLaplacian<V, E>(this HeStructure<V, E> graph, Func<V, double> getValue, Action<V, double> setLaplace, bool parallel = false)
-           where V : HeElement<V, E>, IHeVertex<V, E>
-           where E : Halfedge<V, E>, IHalfedge<V, E>
+           where V : HeVertex<V, E>
+           where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -879,8 +766,8 @@ namespace SpatialSlur.SlurMesh
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         public static void GetVertexLaplacian<V, E>(this HeStructure<V, E> graph, Func<V, Vec2d> getValue, Action<V, Vec2d> setLaplace, bool parallel = false)
-           where V : HeElement<V, E>, IHeVertex<V, E>
-           where E : Halfedge<V, E>, IHalfedge<V, E>
+           where V : HeVertex<V, E>
+           where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -917,8 +804,8 @@ namespace SpatialSlur.SlurMesh
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         public static void GetVertexLaplacian<V, E>(this HeStructure<V, E> graph, Func<V, Vec3d> getValue, Action<V, Vec3d> setLaplace, bool parallel = false)
-           where V : HeElement<V, E>, IHeVertex<V, E>
-           where E : Halfedge<V, E>, IHalfedge<V, E>
+           where V : HeVertex<V, E>
+           where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -955,8 +842,8 @@ namespace SpatialSlur.SlurMesh
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         public static void GetVertexLaplacian<V, E>(this HeStructure<V, E> graph, Func<V, double> getValue, Func<E, double> getWeight, Action<V, double> setLaplace, bool parallel = false)
-           where V : HeElement<V, E>, IHeVertex<V, E>
-           where E : Halfedge<V, E>, IHalfedge<V, E>
+           where V : HeVertex<V, E>
+           where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -989,8 +876,8 @@ namespace SpatialSlur.SlurMesh
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         public static void GetVertexLaplacian<V, E>(this HeStructure<V, E> graph, Func<V, Vec2d> getValue, Func<E, double> getWeight, Action<V, Vec2d> setLaplace, bool parallel = false)
-           where V : HeElement<V, E>, IHeVertex<V, E>
-           where E : Halfedge<V, E>, IHalfedge<V, E>
+           where V : HeVertex<V, E>
+           where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -1023,8 +910,8 @@ namespace SpatialSlur.SlurMesh
         /// https://www.informatik.hu-berlin.de/forschung/gebiete/viscom/thesis/final/Diplomarbeit_Herholz_201301.pdf
         /// </summary>
         public static void GetVertexLaplacian<V, E>(this HeStructure<V, E> graph, Func<V, Vec3d> getValue, Func<E, double> getWeight, Action<V, Vec3d> setLaplace, bool parallel = false)
-           where V : HeElement<V, E>, IHeVertex<V, E>
-           where E : Halfedge<V, E>, IHalfedge<V, E>
+           where V : HeVertex<V, E>
+           where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -1057,8 +944,8 @@ namespace SpatialSlur.SlurMesh
         /// Note that this breaks weight symmetry between halfedge pairs.
         /// </summary>
         public static void NormalizeAtVertices<V, E>(this HeStructure<V, E> graph, Property<E, double> value, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -1084,8 +971,8 @@ namespace SpatialSlur.SlurMesh
         /// Assumes halfedges are radially sorted around the given vertices.
         /// </summary>
         public static void GetVertexMorseSmaleLabels<V, E>(this HeStructure<V, E> graph, Func<V, double> getValue, Action<V, int> setLabel, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -1152,8 +1039,8 @@ namespace SpatialSlur.SlurMesh
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
         public static void GetVertexDepths<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, Property<V, int> depth, IEnumerable<V> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
             var queue = new Queue<V>();
@@ -1165,8 +1052,8 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var v in sources)
             {
-                verts.ContainsCheck(v);
                 v.UnusedCheck();
+                verts.OwnsCheck(v);
 
                 depth.Set(v, 0);
                 queue.Enqueue(v);
@@ -1195,64 +1082,15 @@ namespace SpatialSlur.SlurMesh
                 }
             }
         }
-
-
-        /*
-        /// <summary>
-        /// Calculates the minimum topological distance to each vertex from a collection of sources.
-        /// Note that corresponding get/set delegates must read/write to the same location.
-        /// </summary>
-        [Obsolete]
-        public static void GetVertexDistances<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<E, double> getLength, Property<V, double> distance)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
-        {
-            var verts = graph.Vertices;
-            var queue = new Queue<V>();
-
-            // set to max distance
-            foreach (var v in verts)
-                distance.Set(v, double.PositiveInfinity);
-
-            // enqueue sources and set to zero
-            foreach (var v in sources)
-            {
-                verts.ContainsCheck(v);
-                v.UnusedCheck();
-
-                distance.Set(v, 0.0);
-                queue.Enqueue(v);
-            }
-
-            // TODO compare to priority queue implementation
-            while (queue.Count > 0)
-            {
-                var v0 = queue.Dequeue();
-                double t0 = distance.Get(v0);
-
-                foreach (var he in v0.IncomingHalfedges)
-                {
-                    var v1 = he.Start;
-                    double t1 = t0 + getLength(he);
-
-                    if (t1 < distance.Get(v1))
-                    {
-                        distance.Set(v1, t1);
-                        queue.Enqueue(v1);
-                    }
-                }
-            }
-        }
-        */
-
+        
         
         /// <summary>
         /// Calculates the minimum topological distance to each vertex from a collection of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
         public static void GetVertexDistances<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<E, double> getLength, Property<V, double> distance, bool bestFirst = false)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             if (bestFirst)
                 GetVertexDistancesBestFirst(graph, sources, getLength, distance);
@@ -1265,8 +1103,8 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void GetVertexDistancesBreadthFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<E, double> getLength, Property<V, double> distance)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
             var queue = new Queue<V>();
@@ -1278,8 +1116,8 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var v in sources)
             {
-                verts.ContainsCheck(v);
                 v.UnusedCheck();
+                verts.OwnsCheck(v);
 
                 distance.Set(v, 0.0);
                 queue.Enqueue(v);
@@ -1310,8 +1148,8 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void GetVertexDistancesBestFirst<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<E, double> getLength, Property<V, double> distance)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
             var pq = new PriorityQueue<double, V>();
@@ -1323,8 +1161,8 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var v in sources)
             {
-                verts.ContainsCheck(v);
                 v.UnusedCheck();
+                verts.OwnsCheck(v);
 
                 distance.Set(v, 0.0);
                 pq.Insert(0.0, v);
@@ -1334,8 +1172,8 @@ namespace SpatialSlur.SlurMesh
             while (pq.Count > 0)
             {
                 (var d0, var v0) = pq.RemoveMin();
-                if (d0 > distance.Get(v0)) continue; // skip if already processed (TODO check if necessary)
-                
+                if (d0 > distance.Get(v0)) continue; // skip if lower value was already assigned
+
                 foreach (var he in v0.IncomingHalfedges)
                 {
                     var v1 = he.Start;
@@ -1356,8 +1194,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static void GetVertexIncidenceMatrix<V, E>(this HeStructure<V, E> graph, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var hedges = graph.Halfedges;
 
@@ -1381,8 +1219,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static void GetVertexAdjacencyMatrix<V, E>(this HeStructure<V, E> graph, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -1404,8 +1242,8 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the Laplacian matrix in column-major order.
         /// </summary>
         public static void GetVertexLaplacianMatrix<V, E>(this HeStructure<V, E> graph, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -1434,8 +1272,8 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the Laplacian matrix in column-major order.
         /// </summary>
         public static void GetVertexLaplacianMatrix<V, E>(this HeStructure<V, E> graph, Func<E, double> getWeight, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             var verts = graph.Vertices;
 
@@ -1472,10 +1310,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setLaplace"></param>
         /// <param name="parallel"></param>
         public static void UnifyVertexNormals<V, E>(this HeStructure<V, E> graph, Property<V, Vec3d> normal, V start)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
-            foreach (var he in graph.GetVerticesBreadthFirst(start.Yield()))
+            foreach (var he in graph.GetVerticesBreadthFirst2(start.Yield()))
             {
                 var v = he.Start;
                 var n = normal.Get(v);
@@ -1489,12 +1327,27 @@ namespace SpatialSlur.SlurMesh
 
         #endregion
 
-        #endregion
-
 
         #region HeStructure<V, E, F>
 
-        #region Topological Search
+        /// <summary>
+        /// Returns faces in breadth-first order.
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="sources"></param>
+        /// <param name="exclude"></param>
+        /// <returns></returns>
+        public static IEnumerable<F> GetFacesBreadthFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, IEnumerable<F> exclude = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            return GetFacesBreadthFirst2(mesh, sources, exclude).Select(he => he.Face);
+        }
+
 
         /// <summary>
         /// Returns faces in breadth-first order via the traversed halfedge.
@@ -1506,10 +1359,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<E> GetFacesBreadthFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, IEnumerable<F> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+        public static IEnumerable<E> GetFacesBreadthFirst2<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, IEnumerable<F> exclude = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -1520,7 +1373,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var f in sources)
             {
                 if (f.IsUnused) continue;
-                faces.ContainsCheck(f);
+                faces.OwnsCheck(f);
 
                 f.Tag = currTag;
                 queue.Enqueue(f.First);
@@ -1539,7 +1392,7 @@ namespace SpatialSlur.SlurMesh
                 var he = queue.Dequeue();
                 yield return he;
 
-                foreach (var he0 in he.CirculateFace)
+                foreach (var he0 in he.Circulate)
                 {
                     var he1 = he0.Twin;
                     var f1 = he1.Face;
@@ -1554,51 +1407,23 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /*
         /// <summary>
-        /// 
+        /// Returns faces in depth-first order.
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         /// <param name="mesh"></param>
         /// <param name="sources"></param>
+        /// <param name="exclude"></param>
         /// <returns></returns>
-        internal static IEnumerable<F> GetFacesBreadthFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+        public static IEnumerable<F> GetFacesDepthFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, IEnumerable<F> exclude = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            var faces = mesh.Faces;
-
-            var queue = new Queue<F>();
-            int currTag = faces.NextTag;
-
-            foreach (var f in sources)
-            {
-                if (f.IsUnused) continue;
-                faces.OwnsCheck(f);
-
-                f.Tag = currTag;
-                queue.Enqueue(f);
-            }
-
-            while (queue.Count > 0)
-            {
-                var f0 = queue.Dequeue();
-                yield return f0;
-
-                foreach (var f1 in f0.AdjacentFaces)
-                {
-                    if (f1.Tag != currTag)
-                    {
-                        f1.Tag = currTag;
-                        queue.Enqueue(f1);
-                    }
-                }
-            }
+            return GetFacesDepthFirst2(mesh, sources, exclude).Select(he => he.Face);
         }
-        */
 
 
         /// <summary>
@@ -1611,10 +1436,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="sources"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<E> GetFacesDepthFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, IEnumerable<F> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+        public static IEnumerable<E> GetFacesDepthFirst2<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, IEnumerable<F> exclude = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -1625,7 +1450,7 @@ namespace SpatialSlur.SlurMesh
             foreach (var f in sources)
             {
                 if (f.IsUnused) continue;
-                faces.ContainsCheck(f);
+                faces.OwnsCheck(f);
 
                 f.Tag = currTag;
                 stack.Push(f.First);
@@ -1644,7 +1469,7 @@ namespace SpatialSlur.SlurMesh
                 var he = stack.Pop();
                 yield return he;
 
-                foreach (var he0 in he.CirculateFace)
+                foreach (var he0 in he.Circulate)
                 {
                     var he1 = he0.Twin;
                     var f1 = he1.Face;
@@ -1657,53 +1482,28 @@ namespace SpatialSlur.SlurMesh
                 }
             }
         }
+        
 
-
-        /*
-       /// <summary>
-       /// 
-       /// </summary>
-       /// <typeparam name="E"></typeparam>
-       /// <typeparam name="V"></typeparam>
-       /// <typeparam name="F"></typeparam>
-       /// <param name="mesh"></param>
-       /// <param name="sources"></param>
-       /// <returns></returns>
-       internal static IEnumerable<F> GetFacesDepthFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources)
-       where V : HeElement<V, E>, IHeVertex<V, E, F>
-       where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-       where F : HeElement<F, E>, IHeFace<V, E, F>
-       {
-           var faces = mesh.Faces;
-
-           var stack = new Stack<F>();
-           int currTag = faces.NextTag;
-
-           foreach (var f in sources)
-           {
-               if (f.IsUnused) continue;
-               faces.OwnsCheck(f);
-
-               f.Tag = currTag;
-               stack.Push(f);
-           }
-
-           while (stack.Count > 0)
-           {
-               var f0 = stack.Pop();
-               yield return f0;
-
-               foreach (var f1 in f0.AdjacentFaces)
-               {
-                   if (f1.Tag != currTag)
-                   {
-                       f1.Tag = currTag;
-                       stack.Push(f1);
-                   }
-               }
-           }
-       }
-       */
+        /// <summary>
+        /// Returns faces in best-first order via the traversed halfedge.
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="sources"></param>
+        /// <param name="getKey"></param>
+        /// <param name="exclude"></param>
+        /// <returns></returns>
+        public static IEnumerable<F> GetFacesBestFirst<V, E, F, K>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<F, K> getKey, IEnumerable<F> exclude = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+            where K : IComparable<K>
+        {
+            return GetFacesBestFirst2(mesh, sources, he => getKey(he.Face), exclude).Select(he => he.Face);
+        }
 
 
         /// <summary>
@@ -1718,10 +1518,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getKey"></param>
         /// <param name="exclude"></param>
         /// <returns></returns>
-        public static IEnumerable<E> GetFacesBestFirst<V, E, F, K>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<F, K> getKey, IEnumerable<F> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+        public static IEnumerable<E> GetFacesBestFirst2<V, E, F, K>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, K> getKey, IEnumerable<F> exclude = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
             where K : IComparable<K>
         {
             var faces = mesh.Faces;
@@ -1733,10 +1533,11 @@ namespace SpatialSlur.SlurMesh
             foreach (var f in sources)
             {
                 if (f.IsUnused) continue;
-                faces.ContainsCheck(f);
-                
+                faces.OwnsCheck(f);
+
                 f.Tag = currTag;
-                pq.Insert(getKey(f), f.First);
+                var he = f.First;
+                pq.Insert(getKey(he), he);
             }
 
             // exclude
@@ -1752,7 +1553,7 @@ namespace SpatialSlur.SlurMesh
                 var he = pq.RemoveMin().Value;
                 yield return he;
 
-                foreach (var he0 in he.CirculateFace)
+                foreach (var he0 in he.Circulate)
                 {
                     var he1 = he0.Twin;
                     var f1 = he1.Face;
@@ -1760,40 +1561,70 @@ namespace SpatialSlur.SlurMesh
                     if (f1 != null && f1.Tag != currTag)
                     {
                         f1.Tag = currTag;
-                        pq.Insert(getKey(f1), he1);
+                        pq.Insert(getKey(he1), he1);
                     }
                 }
             }
         }
 
-        #endregion
 
+        /// <summary>
+        /// Returns all halfedges whose angle to its previous exceeds the given tolerance.
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <returns></returns>
+        public static IEnumerable<E> GetCornerHalfedges<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, double angleTolerance = SlurMath.ZeroTolerance)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            var ct = Math.Cos(angleTolerance);
 
-        #region Element Attributes
+            foreach (var he in mesh.Halfedges)
+            {
+                if (he.IsUnused) continue;
+
+                var p = getPosition(he.Start);
+
+                var d0 = p - getPosition(he.Previous.Start);
+                var d1 = getPosition(he.Next.Start) - p;
+
+                var m = d0.SquareLength * d1.SquareLength;
+
+                if (m > 0.0)
+                {
+                    if (Vec3d.Dot(d0, d1) / Math.Sqrt(m) < ct)
+                        yield return he;
+                }
+            }
+        }
+
 
         #region Halfedge Attributes
 
         /// <summary>
         /// Calculates the area associated with each halfedge.
-        /// This is calculated as W in http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf.
+        /// This is calculated as V in http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf.
         /// </summary>
         public static void GetHalfedgeAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<F, Vec3d> getCenter, Action<E, double> setAreas, bool parallel = false)
-          where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-          where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-          where F : HeElement<F, E>, IHeFace<V, E, F>
+          where V : HeVertex<V, E, F>, IPosition3d
+          where E : Halfedge<V, E, F>
+          where F : HeFace<V, E, F>
         {
-            GetHalfedgeAreas(mesh, IVertex3dStatic<V>.GetPosition, getCenter, setAreas, parallel);
+            GetHalfedgeAreas(mesh, IPosition3d<V>.Get, getCenter, setAreas, parallel);
         }
 
 
         /// <summary>
         /// Calculates the area associated with each halfedge.
-        /// This is calculated as W in http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf.
+        /// This is calculated as V in http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf.
         /// </summary>
         public static void GetHalfedgeAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<F, Vec3d> getCenter, Action<E, double> setAreas, bool parallel = false)
-          where V : HeElement<V, E>, IHeVertex<V, E, F>
-          where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-          where F : HeElement<F, E>, IHeFace<V, E, F>
+          where V : HeVertex<V, E, F>
+          where E : Halfedge<V, E, F>
+          where F : HeFace<V, E, F>
         {
             var hedges = mesh.Halfedges;
 
@@ -1819,11 +1650,11 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetHalfedgeNormals<V, E, F>(this HeStructure<V, E, F> mesh, Action<E, Vec3d> setNormal, bool unitize = false, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetHalfedgeNormals(mesh, IVertex3dStatic<V>.GetPosition, setNormal, unitize, parallel);
+            GetHalfedgeNormals(mesh, IPosition3d<V>.Get, setNormal, unitize, parallel);
         }
 
 
@@ -1831,9 +1662,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetHalfedgeNormals<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<E, Vec3d> setNormal, bool unitize = false, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var hedges = mesh.Halfedges;
 
@@ -1850,7 +1681,7 @@ namespace SpatialSlur.SlurMesh
                     if (he.IsUnused) continue;
 
                     var n = he.GetNormal(getPosition);
-                    setNormal(he, unitize ? n.Direction : n);
+                    setNormal(he, unitize ? n.Unit : n);
                 }
             }
         }
@@ -1862,11 +1693,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes the given face normals are unitized.
         /// </summary>
         public static void GetDihedralAngles<V, E, F>(this HeStructure<V, E, F> mesh, Func<F, Vec3d> getNormal, Action<E, double> setAngle, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetDihedralAngles(mesh, IVertex3dStatic<V>.GetPosition, getNormal, setAngle, parallel);
+            GetDihedralAngles(mesh, IPosition3d<V>.Get, getNormal, setAngle, parallel);
         }
 
 
@@ -1876,9 +1707,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes the given face normals are unitized.
         /// </summary>
         public static void GetDihedralAngles<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<F, Vec3d> getNormal, Action<E, double> setAngle, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var edges = mesh.Edges;
             
@@ -1905,11 +1736,11 @@ namespace SpatialSlur.SlurMesh
         /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
         /// </summary>
         public static void GetHalfedgeCotangents<V, E, F>(this HeStructure<V, E, F> mesh, Action<E, double> setCotangent, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetHalfedgeCotangents(mesh, IVertex3dStatic<V>.GetPosition, setCotangent, parallel);
+            GetHalfedgeCotangents(mesh, IPosition3d<V>.Get, setCotangent, parallel);
         }
 
 
@@ -1919,9 +1750,9 @@ namespace SpatialSlur.SlurMesh
         /// http://www.cs.columbia.edu/~keenan/Projects/Other/TriangleAreasCheatSheet.pdf
         /// </summary>
         public static void GetHalfedgeCotangents<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<E, double> setCotangent, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var hedges = mesh.Halfedges;
 
@@ -1948,11 +1779,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetHalfedgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, double> getArea, Action<E, double> setWeight, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetHalfedgeCotanWeights(mesh, IVertex3dStatic<V>.GetPosition, getArea, setWeight, parallel);
+            GetHalfedgeCotanWeights(mesh, IPosition3d<V>.Get, getArea, setWeight, parallel);
         }
 
 
@@ -1962,9 +1793,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetHalfedgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<V, double> getArea, Action<E, double> setWeight, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var edges = mesh.Edges;
 
@@ -2001,11 +1832,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetHalfedgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Property<V, double> area, Property<E, double> weight)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetHalfedgeCotanWeights(mesh, IVertex3dStatic<V>.GetPosition, area, weight);
+            GetHalfedgeCotanWeights(mesh, IPosition3d<V>.Get, area, weight);
         }
 
 
@@ -2016,9 +1847,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetHalfedgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Property<V, double> area, Property<E, double> weight)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var hedges = mesh.Halfedges;
 
@@ -2044,7 +1875,7 @@ namespace SpatialSlur.SlurMesh
                 double GetWeight(E hedge)
                 {
                     const double t = 0.5 / 3.0;
-                    var v = hedge.PreviousInFace.Start;
+                    var v = hedge.Previous.Start;
 
                     var p = getPosition(v);
                     var d0 = getPosition(v0) - p;
@@ -2083,11 +1914,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetEdgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Action<E, double> setWeight, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetEdgeCotanWeights(mesh, IVertex3dStatic<V>.GetPosition, setWeight, parallel);
+            GetEdgeCotanWeights(mesh, IPosition3d<V>.Get, setWeight, parallel);
         }
 
 
@@ -2097,9 +1928,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetEdgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<E, double> setWeight, bool parallel = false)
-        where V : HeElement<V, E>, IHeVertex<V, E, F>
-        where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-        where F : HeElement<F, E>, IHeFace<V, E, F>
+        where V : HeVertex<V, E, F>
+        where E : Halfedge<V, E, F>
+        where F : HeFace<V, E, F>
         {
             var edges = mesh.Edges;
 
@@ -2133,11 +1964,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetEdgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, double> getArea, Action<E, double> setWeight, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetEdgeCotanWeights(mesh, IVertex3dStatic<V>.GetPosition, getArea, setWeight, parallel);
+            GetEdgeCotanWeights(mesh, IPosition3d<V>.Get, getArea, setWeight, parallel);
         }
 
 
@@ -2147,9 +1978,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetEdgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<V, double> getArea, Action<E, double> setWeight, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var edges = mesh.Edges;
 
@@ -2185,11 +2016,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetEdgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Property<V, double> area, Property<E, double> weight)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetEdgeCotanWeights(mesh, IVertex3dStatic<V>.GetPosition, area, weight);
+            GetEdgeCotanWeights(mesh, IPosition3d<V>.Get, area, weight);
         }
 
 
@@ -2200,9 +2031,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetEdgeCotanWeights<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Property<V, double> area, Property<E, double> weight)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var hedges = mesh.Halfedges;
 
@@ -2228,7 +2059,7 @@ namespace SpatialSlur.SlurMesh
                 double GetWeight(E hedge)
                 {
                     const double t = 0.5 / 3.0;
-                    var v = hedge.PreviousInFace.Start;
+                    var v = hedge.Previous.Start;
 
                     var p = getPosition(v);
                     var d0 = getPosition(v0) - p;
@@ -2260,11 +2091,11 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         public static void GetEdgeNormals<V, E, F>(this HeStructure<V, E, F> mesh, Action<E, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetEdgeNormals(mesh, IVertex3dStatic<V>.GetPosition, setNormal, parallel);
+            GetEdgeNormals(mesh, IPosition3d<V>.Get, setNormal, parallel);
         }
 
 
@@ -2275,9 +2106,9 @@ namespace SpatialSlur.SlurMesh
         /// <typeparam name="E"></typeparam>
         /// <typeparam name="F"></typeparam>
         public static void GetEdgeNormals<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<E, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var edges = mesh.Edges;
 
@@ -2297,6 +2128,69 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
+
+        /// <summary>
+        /// Calculates the minimum topological depth of each edge from a collection of sources.
+        /// Note that corresponding get/set delegates must read/write to the same location.
+        /// </summary>
+        public static void GetEdgeDepths<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<E> sources, Property<E, int> depth, IEnumerable<E> exclude = null)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            var edges = mesh.Edges;
+            var queue = new Queue<E>();
+
+            // set depths to max
+            foreach (var he in edges)
+                depth.Set(he, int.MaxValue);
+
+            // enqueue sources and set to 0
+            foreach (var he in sources)
+            {
+                edges.OwnsCheck(he);
+                if (he.IsUnused) continue;
+
+                depth.Set(he, 0);
+                queue.Enqueue(he.IsHole ? he.Twin : he);
+            }
+
+            // exclude
+            if (exclude != null)
+            {
+                foreach (var he in exclude)
+                    depth.Set(he, 0);
+            }
+
+            // bfs
+            while (queue.Count > 0)
+            {
+                var he0 = queue.Dequeue();
+                int t0 = depth.Get(he0) + 1;
+
+                foreach (var he1 in ConnectedEdges(he0))
+                {
+                    if (t0 < depth.Get(he1))
+                    {
+                        depth.Set(he1, t0);
+                        queue.Enqueue(he1);
+                    }
+                }
+            }
+            
+            IEnumerable<E> ConnectedEdges(E hedge)
+            {
+                yield return hedge.Previous;
+                yield return hedge.Next;
+
+                hedge = hedge.Twin;
+                if (hedge.IsHole) yield break; // don't allow traversal along hole boundaries
+
+                yield return hedge.Previous;
+                yield return hedge.Next;
+            }
+        }
+
         #endregion
 
 
@@ -2306,11 +2200,11 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetVertexAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<F, Vec3d> getCenter, Action<V, double> setArea, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetVertexAreas(mesh, IVertex3dStatic<V>.GetPosition, getCenter, setArea, parallel);
+            GetVertexAreas(mesh, IPosition3d<V>.Get, getCenter, setArea, parallel);
         }
 
 
@@ -2318,9 +2212,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetVertexAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<F, Vec3d> getCenter, Action<V, double> setArea, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2356,9 +2250,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         public static void GetVertexAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<E, double> getArea, Action<V, double> setArea, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2385,11 +2279,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetVertexAreasBarycentric<V, E, F>(this HeStructure<V, E, F> mesh, Property<V, double> area)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetVertexAreasBarycentric(mesh, IVertex3dStatic<V>.GetPosition, area);
+            GetVertexAreasBarycentric(mesh, IPosition3d<V>.Get, area);
         }
 
 
@@ -2399,9 +2293,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetVertexAreasBarycentric<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Property<V, double> area)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             const double t = 1.0 / 6.0; // (1.0 / 3.0) * 0.5
 
@@ -2432,11 +2326,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetVertexAreasCircumcentric<V, E, F>(this HeStructure<V, E, F> mesh, Property<V, double> area)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetVertexAreasCircumcentric(mesh, IVertex3dStatic<V>.GetPosition, area);
+            GetVertexAreasCircumcentric(mesh, IPosition3d<V>.Get, area);
         }
 
 
@@ -2446,9 +2340,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetVertexAreasCircumcentric<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Property<V, double> area)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             // TODO
             throw new NotImplementedException();
@@ -2461,11 +2355,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetVertexAreasMixed<V, E, F>(this HeStructure<V, E, F> mesh, Property<V, double> area)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetVertexAreasMixed(mesh, IVertex3dStatic<V>.GetPosition, area);
+            GetVertexAreasMixed(mesh, IPosition3d<V>.Get, area);
         }
 
 
@@ -2475,9 +2369,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetVertexAreasMixed<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Property<V, double> area)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             // TODO
             throw new NotImplementedException();
@@ -2489,9 +2383,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes the mesh is a circle packing mesh http://www.geometrie.tuwien.ac.at/hoebinger/mhoebinger_files/circlepackings.pdf
         /// </summary>
         public static void GetVertexCirclePackingRadii<V, E, F>(this HeStructure<V, E, F> mesh, Func<E, double> getLength, Action<V, double> setRadius, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2513,7 +2407,7 @@ namespace SpatialSlur.SlurMesh
                     foreach (var he in v.OutgoingHalfedges)
                     {
                         if (he.Face == null) continue; // skip boundary edges
-                        sum += (getLength(he) + getLength(he.PreviousInFace) - getLength(he.NextInFace)) * 0.5;
+                        sum += (getLength(he) + getLength(he.Previous) - getLength(he.Next)) * 0.5;
                         n++;
                     }
 
@@ -2528,9 +2422,9 @@ namespace SpatialSlur.SlurMesh
         /// http://www.hao-li.com/cs599-ss2015/slides/Lecture04.1.pdf (p 47)
         /// </summary>
         public static void GetVertexMeanCurvature<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getLaplace, Action<V, double> setCurvature, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2560,9 +2454,9 @@ namespace SpatialSlur.SlurMesh
         /// http://www.hao-li.com/cs599-ss2015/slides/Lecture04.1.pdf (p 47)
         /// </summary>
         public static void GetVertexMeanCurvatureSigned<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getLaplace, Func<V, Vec3d> getNormal, Action<V, double> setCurvature, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2596,11 +2490,11 @@ namespace SpatialSlur.SlurMesh
         /// Calculated as the angle defect around each vertex divided by the vertex area.
         /// </summary>
         public static void GetVertexGaussianCurvature<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, double> getArea, Action<V, double> setCurvature, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetVertexGaussianCurvature(mesh, IVertex3dStatic<V>.GetPosition, getArea, setCurvature, parallel);
+            GetVertexGaussianCurvature(mesh, IPosition3d<V>.Get, getArea, setCurvature, parallel);
         }
 
 
@@ -2608,9 +2502,9 @@ namespace SpatialSlur.SlurMesh
         /// Calculated as the angle defect around each vertex divided by the vertex area.
         /// </summary>
         public static void GetVertexGaussianCurvature<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<V, double> getArea, Action<V, double> setCurvature, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2647,9 +2541,9 @@ namespace SpatialSlur.SlurMesh
         /// Calculated as the angle defect around each vertex.
         /// </summary>
         public static void GetVertexGaussianCurvature<V, E, F>(this HeStructure<V, E, F> mesh, Func<E, double> getAngle, Func<V, double> getArea, Action<V, double> setCurvature, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2687,12 +2581,26 @@ namespace SpatialSlur.SlurMesh
         /// Vertex normals are unitized by default.
         /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
-        public static void GetVertexNormals<V, E, F>(this HeStructure<V, E, F> mesh, Action<V, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+        public static void UpdateVertexNormals<V, E, F>(this HeStructure<V, E, F> mesh, bool parallel = false)
+            where V : HeVertex<V, E, F>, IPosition3d, INormal3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetVertexNormals(mesh, IVertex3dStatic<V>.GetPosition, setNormal, parallel);
+            GetVertexNormals(mesh, IPosition3d<V>.Get, INormal3d<V>.Set, parallel);
+        }
+
+
+        /// <summary>
+        /// Calculates vertex normals as the area-weighted sum of halfedge normals around each vertex.
+        /// Vertex normals are unitized by default.
+        /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
+        /// </summary>
+        public static void GetVertexNormals<V, E, F>(this HeStructure<V, E, F> mesh, Action<V, Vec3d> setNormal, bool parallel = false)
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
+        {
+            GetVertexNormals(mesh, IPosition3d<V>.Get, setNormal, parallel);
         }
 
 
@@ -2702,9 +2610,9 @@ namespace SpatialSlur.SlurMesh
         /// http://libigl.github.io/libigl/tutorial/tutorial.html#normals
         /// </summary>
         public static void GetVertexNormals<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<V, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var verts = mesh.Vertices;
 
@@ -2734,9 +2642,9 @@ namespace SpatialSlur.SlurMesh
         /// Note that this breaks weight symmetry between halfedge pairs.
         /// </summary>
         public static void NormalizeInFaces<V, E, F>(this HeStructure<V, E, F> mesh, Property<E, double> values, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -2761,11 +2669,11 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the barycenter of each face.
         /// </summary>
         public static void GetFaceBarycenters<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, Vec3d> setCenter, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFaceBarycenters(mesh, IVertex3dStatic<V>.GetPosition, setCenter, parallel);
+            GetFaceBarycenters(mesh, IPosition3d<V>.Get, setCenter, parallel);
         }
 
 
@@ -2773,9 +2681,9 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the barycenter of each face.
         /// </summary>
         public static void GetFaceBarycenters<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, Vec3d> setCenter, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -2801,11 +2709,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceCircumcenters<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, Vec3d> setCenter, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFaceCircumcenters(mesh, IVertex3dStatic<V>.GetPosition, setCenter, parallel);
+            GetFaceCircumcenters(mesh, IPosition3d<V>.Get, setCenter, parallel);
         }
 
 
@@ -2814,9 +2722,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceCircumcenters<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, Vec3d> setCenter, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -2842,11 +2750,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceIncenters<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, Vec3d> setCenter, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFaceIncenters(mesh, IVertex3dStatic<V>.GetPosition, setCenter, parallel);
+            GetFaceIncenters(mesh, IPosition3d<V>.Get, setCenter, parallel);
         }
 
 
@@ -2855,9 +2763,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceIncenters<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, Vec3d> setCenter, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -2884,11 +2792,11 @@ namespace SpatialSlur.SlurMesh
         /// Face normals are unitized by default.
         /// </summary>
         public static void GetFaceNormals<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFaceNormals(mesh, IVertex3dStatic<V>.GetPosition, setNormal, parallel);
+            GetFaceNormals(mesh, IPosition3d<V>.Get, setNormal, parallel);
         }
 
 
@@ -2897,9 +2805,9 @@ namespace SpatialSlur.SlurMesh
         /// Face normals are unitized by default.
         /// </summary>
         public static void GetFaceNormals<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -2925,9 +2833,9 @@ namespace SpatialSlur.SlurMesh
         /// Face normals are unitized by default.
         /// </summary>
         public static void GetFaceNormals<V, E, F>(this HeStructure<V, E, F> mesh, Func<E, Vec3d> getNormal, Action<F, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -2954,11 +2862,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceNormalsTri<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFaceNormalsTri(mesh, IVertex3dStatic<V>.GetPosition, setNormal, parallel);
+            GetFaceNormalsTri(mesh, IPosition3d<V>.Get, setNormal, parallel);
         }
 
 
@@ -2968,9 +2876,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceNormalsTri<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, Vec3d> setNormal, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -2985,31 +2893,32 @@ namespace SpatialSlur.SlurMesh
                 {
                     var f = faces[i];
                     if (f.IsUnused) continue;
-                    setNormal(f, f.First.GetNormal(getPosition).Direction);
+                    setNormal(f, f.First.GetNormal(getPosition).Unit);
                 }
             }
         }
 
 
         /// <summary>
-        /// 
+        /// Calculates the area for each face in the mesh.
+        /// Note that this assumes planar faces.
         /// </summary>
-        public static void GetFaceAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<F, Vec3d> getCenter, Action<F, double> setArea, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+        public static void GetFaceAreas<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, double> setArea, bool parallel = false)
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFaceAreas(mesh, IVertex3dStatic<V>.GetPosition, getCenter, setArea, parallel);
+            GetFaceAreas(mesh, IPosition3d<V>.Get, setArea, parallel);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void GetFaceAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Func<F, Vec3d> getCenter, Action<F, double> setArea, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+        public static void GetFaceAreas<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, double> setArea, bool parallel = false)
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -3026,22 +2935,15 @@ namespace SpatialSlur.SlurMesh
                     if (f.IsUnused) continue;
                     var he0 = f.First;
 
-                    if (he0 == he0.NextInFace.NextInFace.NextInFace)
+                    if (he0 == he0.Next.Next.Next)
                     {
-                        // simplified tri case
                         Vec3d n = he0.GetNormal(getPosition);
                         setArea(f, n.Length * 0.5);
                     }
                     else
                     {
-                        // general ngon case
-                        Vec3d cen = getCenter(f);
-                        double sum = 0.0;
-
-                        foreach (var he in f.Halfedges)
-                            sum += he.GetArea(getPosition, cen);
-
-                        setArea(f, sum);
+                        Vec3d n = f.Halfedges.Sum(he => he.GetNormal(getPosition));
+                        setArea(f, n.Length * 0.5);
                     }
                 }
             }
@@ -3053,11 +2955,11 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceAreasTri<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, double> setArea, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFaceAreasTri(mesh, IVertex3dStatic<V>.GetPosition, setArea, parallel);
+            GetFaceAreasTri(mesh, IPosition3d<V>.Get, setArea, parallel);
         }
 
 
@@ -3066,9 +2968,9 @@ namespace SpatialSlur.SlurMesh
         /// Assumes triangular faces.
         /// </summary>
         public static void GetFaceAreasTri<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, double> setArea, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -3093,11 +2995,11 @@ namespace SpatialSlur.SlurMesh
         /// Returns the planar deviation for each face.
         /// </summary>
         public static void GetFacePlanarity<V, E, F>(this HeStructure<V, E, F> mesh, Action<F, double> setPlanarity, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>, IVertex3d
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>, IPosition3d
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            GetFacePlanarity(mesh, IVertex3dStatic<V>.GetPosition, setPlanarity, parallel);
+            GetFacePlanarity(mesh, IPosition3d<V>.Get, setPlanarity, parallel);
         }
 
 
@@ -3105,9 +3007,9 @@ namespace SpatialSlur.SlurMesh
         /// Returns the planar deviation for each face.
         /// </summary>
         public static void GetFacePlanarity<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vec3d> getPosition, Action<F, double> setPlanarity, bool parallel = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -3133,9 +3035,9 @@ namespace SpatialSlur.SlurMesh
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
         public static void GetFaceDepths<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Property<F, int> depth, IEnumerable<F> exclude = null)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
             var queue = new Queue<F>();
@@ -3147,8 +3049,8 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var f in sources)
             {
-                faces.ContainsCheck(f);
                 f.UnusedCheck();
+                faces.OwnsCheck(f);
 
                 depth.Set(f, 0);
                 queue.Enqueue(f);
@@ -3191,9 +3093,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="distance"></param>
         /// <param name="bestFirst"></param>
         private static void GetFaceDistances<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, double> getLength, Property<F, double> distance, bool bestFirst = false)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             if (bestFirst)
                 GetFaceDistancesBestFirst(mesh, sources, getLength, distance);
@@ -3206,9 +3108,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void GetFaceDistancesBreadthFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, double> getLength, Property<F, double> distance)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
             var queue = new Queue<F>();
@@ -3220,8 +3122,8 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var f in sources)
             {
-                faces.ContainsCheck(f);
                 f.UnusedCheck();
+                faces.OwnsCheck(f);
 
                 distance.Set(f, 0.0);
                 queue.Enqueue(f);
@@ -3254,9 +3156,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         private static void GetFaceDistancesBestFirst<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, double> getLength, Property<F, double> distance)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
             var pq = new PriorityQueue<double, F>();
@@ -3268,8 +3170,8 @@ namespace SpatialSlur.SlurMesh
             // enqueue sources and set to zero
             foreach (var f in sources)
             {
-                faces.ContainsCheck(f);
                 f.UnusedCheck();
+                faces.OwnsCheck(f);
 
                 distance.Set(f, 0.0);
                 pq.Insert(0.0, f);
@@ -3279,7 +3181,7 @@ namespace SpatialSlur.SlurMesh
             while (pq.Count > 0)
             {
                 (var d0, var f0) = pq.RemoveMin();
-                if (d0 > distance.Get(f0)) continue; // skip if already processed (TODO check if necessary)
+                if (d0 > distance.Get(f0)) continue; // skip if lower value was already assigned
 
                 foreach (var he in f0.Halfedges)
                 {
@@ -3303,9 +3205,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static void GetFaceIncidenceMatrix<V, E, F>(this HeStructure<V, E, F> mesh, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var hedges = mesh.Halfedges;
 
@@ -3329,9 +3231,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <returns></returns>
         public static void GetFaceAdjacencyMatrix<V, E, F>(this HeStructure<V, E, F> mesh, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -3353,9 +3255,9 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the Laplacian matrix in column-major order.
         /// </summary>
         public static void GetFaceLaplacianMatrix<V, E, F>(this HeStructure<V, E, F> mesh, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -3384,9 +3286,9 @@ namespace SpatialSlur.SlurMesh
         /// Calculates the Laplacian matrix in column-major order.
         /// </summary>
         public static void GetFaceLaplacianMatrix<V, E, F>(this HeStructure<V, E, F> mesh, Func<E, double> getWeight, double[] result)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
             var faces = mesh.Faces;
 
@@ -3423,11 +3325,11 @@ namespace SpatialSlur.SlurMesh
         /// <param name="setLaplace"></param>
         /// <param name="parallel"></param>
         public static void UnifyVertexNormals<V, E, F>(this HeStructure<V, E, F> mesh, Property<V, Vec3d> normal, V start)
-            where V : HeElement<V, E>, IHeVertex<V, E, F>
-            where E : Halfedge<V, E, F>, IHalfedge<V, E, F>
-            where F : HeElement<F, E>, IHeFace<V, E, F>
+            where V : HeVertex<V, E, F>
+            where E : Halfedge<V, E, F>
+            where F : HeFace<V, E, F>
         {
-            foreach (var he in mesh.GetVerticesBreadthFirst(start.Yield()))
+            foreach (var he in mesh.GetVerticesBreadthFirst2(start.Yield()))
             {
                 var v = he.Start;
                 var n = normal.Get(v);
@@ -3436,8 +3338,6 @@ namespace SpatialSlur.SlurMesh
                     normal.Set(v, -n);
             }
         }
-
-        #endregion
 
         #endregion
 
