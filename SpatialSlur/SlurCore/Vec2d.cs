@@ -263,7 +263,6 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Returns the angle between two vectors.
-        /// If either vector is zero length, Double.NaN is returned.
         /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
@@ -271,11 +270,7 @@ namespace SpatialSlur.SlurCore
         public static double Angle(Vec2d v0, Vec2d v1)
         {
             var d = v0.SquareLength * v1.SquareLength;
-
-            if (d > 0.0)
-                return Math.Acos(SlurMath.Clamp(Dot(v0, v1) / Math.Sqrt(d), -1.0, 1.0)); // clamp dot product to remove noise
-
-            return double.NaN;
+            return d > 0.0 ? SlurMath.AcosSafe(Dot(v0, v1) / Math.Sqrt(d)) : 0.0;
         }
 
 

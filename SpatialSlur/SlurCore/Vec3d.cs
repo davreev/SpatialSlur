@@ -284,11 +284,7 @@ namespace SpatialSlur.SlurCore
         public static double Angle(Vec3d v0, Vec3d v1)
         {
             var d = v0.SquareLength * v1.SquareLength;
-
-            if (d > 0.0)
-                return Math.Acos(SlurMath.Clamp(Dot(v0, v1) / Math.Sqrt(d), -1.0, 1.0)); // clamp dot product to remove noise
-
-            return double.NaN;
+            return d > 0.0 ? SlurMath.AcosSafe(Dot(v0, v1) / Math.Sqrt(d)) : 0.0;
         }
 
 
@@ -614,7 +610,7 @@ namespace SpatialSlur.SlurCore
         public Vec3d ToSpherical()
         {
             double r = Length;
-            return new Vec3d(r, Math.Atan(Y / X), Math.Acos(Z / r));
+            return new Vec3d(r, Math.Atan(Y / X), SlurMath.AcosSafe(Z / r));
         }
 
 

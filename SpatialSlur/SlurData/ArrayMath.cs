@@ -351,12 +351,8 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public static double Angle(double[] v0, double[] v1, int count)
         {
-            var d = NormL2(v0, count) * NormL2(v1, count);
-
-            if (d > 0.0)
-                return Math.Acos(SlurMath.Clamp(Dot(v0, v1, count) / d, -1.0, 1.0)); // clamp dot product to remove noise
-
-            return double.NaN;
+            var d = Dot(v0, v0, count) * Dot(v1, v1, count);
+            return d > 0.0 ? SlurMath.AcosSafe(Dot(v0, v1) / Math.Sqrt(d)) : 0.0;
         }
 
         

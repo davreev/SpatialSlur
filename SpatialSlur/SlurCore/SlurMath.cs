@@ -750,6 +750,17 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Clamps the input to a valid range (-1 to 1).
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static double AcosSafe(double x)
+        {
+            return Acos(Clamp(x, -1.0, 1.0));
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="t"></param>
