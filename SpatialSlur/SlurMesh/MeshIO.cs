@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurMesh
 {
@@ -50,9 +48,9 @@ namespace SpatialSlur.SlurMesh
             /// Writes the given graph to this buffer.
             /// </summary>
             /// <param name="graph"></param>
-            public void WriteFrom<TV, TE>(HeGraphBase<TV, TE> graph, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null)
-                where TV : HeGraphBase<TV, TE>.Vertex
-                where TE : HeGraphBase<TV, TE>.Halfedge
+            public void WriteFrom<TV, TE>(HeGraph<TV, TE> graph, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null)
+                where TV : HeGraph<TV, TE>.Vertex
+                where TE : HeGraph<TV, TE>.Halfedge
             {
                 var verts = graph.Vertices;
                 var hedges = graph.Halfedges;
@@ -104,10 +102,10 @@ namespace SpatialSlur.SlurMesh
             /// Writes the given mesh to this buffer.
             /// </summary>
             /// <param name="graph"></param>
-            public void WriteFrom<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null, Func<TF, IEnumerable<object>> getFaceAttributes = null)
-                where TV : HeMeshBase<TV, TE, TF>.Vertex
-                where TE : HeMeshBase<TV, TE, TF>.Halfedge
-                where TF : HeMeshBase<TV, TE, TF>.Face
+            public void WriteFrom<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null, Func<TF, IEnumerable<object>> getFaceAttributes = null)
+                where TV : HeMesh<TV, TE, TF>.Vertex
+                where TE : HeMesh<TV, TE, TF>.Halfedge
+                where TF : HeMesh<TV, TE, TF>.Face
             {
                 var verts = mesh.Vertices;
                 var hedges = mesh.Halfedges;
@@ -178,9 +176,9 @@ namespace SpatialSlur.SlurMesh
             /// Reads this buffer to the given graph.
             /// </summary>
             /// <param name="graph"></param>
-            public void ReadTo<TV, TE>(HeGraphBase<TV, TE> graph, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null)
-                where TV : HeGraphBase<TV, TE>.Vertex
-                where TE : HeGraphBase<TV, TE>.Halfedge
+            public void ReadTo<TV, TE>(HeGraph<TV, TE> graph, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null)
+                where TV : HeGraph<TV, TE>.Vertex
+                where TE : HeGraph<TV, TE>.Halfedge
             {
                 var verts = graph.Vertices;
                 var hedges = graph.Halfedges;
@@ -211,14 +209,15 @@ namespace SpatialSlur.SlurMesh
                     var he = hedges[i + nhe];
                     var refs = _hedgeRefs[i];
 
-                    he.PreviousAtStart = hedges[refs[0] + nhe];
-                    he.NextAtStart = hedges[refs[1] + nhe];
+                    he.Previous = hedges[refs[0] + nhe];
+                    he.Next = hedges[refs[1] + nhe];
 
                     var start = refs[2];
                     if (start > -1) he.Start = verts[start + nhe];
                 }
 
-                // TODO validate topology?
+                // TODO 
+                // validate topology?
 
                 // set vertex attributes
                 if (setVertexAttributes != null)
@@ -240,10 +239,10 @@ namespace SpatialSlur.SlurMesh
             /// Reads this buffer to the given graph.
             /// </summary>
             /// <param name="mesh"></param>
-            public void ReadTo<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null, Action<TF, object[]> setFaceAttributes = null)
-                where TV : HeMeshBase<TV, TE, TF>.Vertex
-                where TE : HeMeshBase<TV, TE, TF>.Halfedge
-                where TF : HeMeshBase<TV, TE, TF>.Face
+            public void ReadTo<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null, Action<TF, object[]> setFaceAttributes = null)
+                where TV : HeMesh<TV, TE, TF>.Vertex
+                where TE : HeMesh<TV, TE, TF>.Halfedge
+                where TF : HeMesh<TV, TE, TF>.Face
             {
                 var verts = mesh.Vertices;
                 var hedges = mesh.Halfedges;
@@ -280,8 +279,8 @@ namespace SpatialSlur.SlurMesh
                     var he = hedges[i + nhe];
                     var refs = _hedgeRefs[i];
 
-                    he.PreviousInFace = hedges[refs[0] + nhe];
-                    he.NextInFace = hedges[refs[1] + nhe];
+                    he.Previous = hedges[refs[0] + nhe];
+                    he.Next = hedges[refs[1] + nhe];
 
                     var start = refs[2];
                     if (start > -1) he.Start = verts[start + nhe];
@@ -299,7 +298,8 @@ namespace SpatialSlur.SlurMesh
                     if (first > -1) f.First = hedges[first + nhe];
                 }
 
-                // TODO validate topology?
+                // TODO 
+                // validate topology?
 
                 // set vertex attributes
                 if (setVertexAttributes != null)
@@ -324,22 +324,20 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
+        #endregion
 
-        /*
+
         /// <summary>
         /// 
         /// </summary>
-        private class ObjBuffer
+        /// <param name="path"></param>
+        public static void WriteToOBJ<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, string path, Func<TV, Vec2d> getTexture = null)
+            where TV : HeMesh<TV, TE, TF>.Vertex, IPosition3d, INormal3d
+            where TE : HeMesh<TV, TE, TF>.Halfedge
+            where TF : HeMesh<TV, TE, TF>.Face
         {
-            private Vec3d[] _positions;
-            private Vec3d[] _colors;
-            private Vec3d[] _normals;
-            private Vec3d[] _textures;
-            private int[][] _faces;
+            WriteToObj(mesh, path, IPosition3d<TV>.Get, INormal3d<TV>.Get, getTexture);
         }
-        */
-
-        #endregion
 
 
         /// <summary>
@@ -353,16 +351,16 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getPosition"></param>
         /// <param name="getNormal"></param>
         /// <param name="getTexture"></param>
-        public static void WriteToObj<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, string path, Func<TV, Vec3d> getPosition, Func<TV, Vec3d> getNormal = null, Func<TV, Vec2d> getTexture = null)
-            where TV : HeMeshBase<TV, TE, TF>.Vertex
-            where TE : HeMeshBase<TV, TE, TF>.Halfedge
-            where TF : HeMeshBase<TV, TE, TF>.Face
+        public static void WriteToObj<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, string path, Func<TV, Vec3d> getPosition, Func<TV, Vec3d> getNormal = null, Func<TV, Vec2d> getTexture = null)
+            where TV : HeMesh<TV, TE, TF>.Vertex
+            where TE : HeMesh<TV, TE, TF>.Halfedge
+            where TF : HeMesh<TV, TE, TF>.Face
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
             int formatIndex = 0;
 
-            using (var writer = new StreamWriter(path, false, Encoding.ASCII))
+            using (var writer = new StreamWriter(path, false))
             {
                 writer.WriteLine(ObjUtil.Header);
                 writer.WriteLine();
@@ -425,16 +423,16 @@ namespace SpatialSlur.SlurMesh
         /// <param name="path"></param>
         /// <param name="mesh"></param>
         /// <param name="setPosition"></param>
-        public static void ReadFromObj<TV, TE, TF>(string path, HeMeshBase<TV, TE, TF> mesh, Action<TV, Vec3d> setPosition)
-            where TV : HeMeshBase<TV, TE, TF>.Vertex
-            where TE : HeMeshBase<TV, TE, TF>.Halfedge
-            where TF : HeMeshBase<TV, TE, TF>.Face
+        public static void ReadFromObj<TV, TE, TF>(string path, HeMesh<TV, TE, TF> mesh, Action<TV, Vec3d> setPosition)
+            where TV : HeMesh<TV, TE, TF>.Vertex
+            where TE : HeMesh<TV, TE, TF>.Halfedge
+            where TF : HeMesh<TV, TE, TF>.Face
         {
             var verts = mesh.Vertices;
             var faces = mesh.Faces;
             var face = new List<int>();
 
-            using (var reader = new StreamReader(path, Encoding.ASCII))
+            using (var reader = new StreamReader(path))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
@@ -549,9 +547,9 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <typeparam name="TV"></typeparam>
         /// <typeparam name="TE"></typeparam>
-        public static void WriteToJson<TV, TE>(HeGraphBase<TV, TE> graph, string path, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null)
-            where TV : HeGraphBase<TV, TE>.Vertex
-            where TE : HeGraphBase<TV, TE>.Halfedge
+        public static void WriteToJson<TV, TE>(HeGraph<TV, TE> graph, string path, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null)
+            where TV : HeGraph<TV, TE>.Vertex
+            where TE : HeGraph<TV, TE>.Halfedge
         {
             var buffer = new HeJsonBuffer();
             buffer.WriteFrom(graph, getVertexAttributes, getHedgeAttributes);
@@ -566,9 +564,9 @@ namespace SpatialSlur.SlurMesh
         /// <param name="graph"></param>
         /// <param name="setVertexAttributes"></param>
         /// <param name="setHedgeAttributes"></param>
-        public static void ReadFromJson<TV, TE>(string path, HeGraphBase<TV, TE> graph, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null)
-            where TV : HeGraphBase<TV, TE>.Vertex
-            where TE : HeGraphBase<TV, TE>.Halfedge
+        public static void ReadFromJson<TV, TE>(string path, HeGraph<TV, TE> graph, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null)
+            where TV : HeGraph<TV, TE>.Vertex
+            where TE : HeGraph<TV, TE>.Halfedge
         {
             var buffer = CoreIO.DeserializeJson<HeJsonBuffer>(path);
             buffer.ReadTo(graph, setVertexAttributes, setHedgeAttributes);
@@ -595,10 +593,6 @@ namespace SpatialSlur.SlurMesh
                 yield return n.X;
                 yield return n.Y;
                 yield return n.Z;
-
-                var t = vertex.Texture;
-                yield return t.X;
-                yield return t.Y;
             }
         }
 
@@ -622,42 +616,13 @@ namespace SpatialSlur.SlurMesh
                     Convert.ToDouble(attributes[2])
                     );
 
-                // parse optional attributes
-                switch (attributes.Length)
-                {
-                    case 5:
-                        {
-                            ParseTexture(3);
-                            break;
-                        }
-                    case 6:
-                        {
-                            ParseNormal(3);
-                            break;
-                        }
-                    case 8:
-                        {
-                            ParseNormal(3);
-                            ParseTexture(6);
-                            break;
-                        }
-                }
-
-                void ParseNormal(int offset)
+                if(attributes.Length == 6)
                 {
                     vertex.Normal = new Vec3d(
-                        Convert.ToDouble(attributes[offset]),
-                        Convert.ToDouble(attributes[offset + 1]),
-                        Convert.ToDouble(attributes[offset + 2])
-                        );
-                }
-
-                void ParseTexture(int offset)
-                {
-                    vertex.Texture = new Vec2d(
-                     Convert.ToDouble(attributes[offset]),
-                     Convert.ToDouble(attributes[offset + 1])
-                     );
+                       Convert.ToDouble(attributes[3]),
+                       Convert.ToDouble(attributes[4]),
+                       Convert.ToDouble(attributes[5])
+                       );
                 }
             }
         }
@@ -668,10 +633,10 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <typeparam name="TV"></typeparam>
         /// <typeparam name="TE"></typeparam>
-        public static void WriteToJson<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, string path, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null, Func<TF, IEnumerable<object>> getFaceAttributes = null)
-            where TV : HeMeshBase<TV, TE, TF>.Vertex
-            where TE : HeMeshBase<TV, TE, TF>.Halfedge
-            where TF : HeMeshBase<TV, TE, TF>.Face
+        public static void WriteToJson<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, string path, Func<TV, IEnumerable<object>> getVertexAttributes = null, Func<TE, IEnumerable<object>> getHedgeAttributes = null, Func<TF, IEnumerable<object>> getFaceAttributes = null)
+            where TV : HeMesh<TV, TE, TF>.Vertex
+            where TE : HeMesh<TV, TE, TF>.Halfedge
+            where TF : HeMesh<TV, TE, TF>.Face
         {
             var buffer = new HeJsonBuffer();
             buffer.WriteFrom(mesh, getVertexAttributes, getHedgeAttributes, getFaceAttributes);
@@ -686,10 +651,10 @@ namespace SpatialSlur.SlurMesh
         /// <param name="graph"></param>
         /// <param name="setVertexAttributes"></param>
         /// <param name="setHedgeAttributes"></param>
-        public static void ReadFromJson<TV, TE, TF>(string path, HeMeshBase<TV, TE, TF> mesh, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null, Action<TF, object[]> setFaceAttributes = null)
-            where TV : HeMeshBase<TV, TE, TF>.Vertex
-            where TE : HeMeshBase<TV, TE, TF>.Halfedge
-            where TF : HeMeshBase<TV, TE, TF>.Face
+        public static void ReadFromJson<TV, TE, TF>(string path, HeMesh<TV, TE, TF> mesh, Action<TV, object[]> setVertexAttributes = null, Action<TE, object[]> setHedgeAttributes = null, Action<TF, object[]> setFaceAttributes = null)
+            where TV : HeMesh<TV, TE, TF>.Vertex
+            where TE : HeMesh<TV, TE, TF>.Halfedge
+            where TF : HeMesh<TV, TE, TF>.Face
         {
             //var buffer = CoreIO.DeserializeJson<HeMeshJsonBuffer>(path);
             var buffer = CoreIO.DeserializeJson<HeJsonBuffer>(path);

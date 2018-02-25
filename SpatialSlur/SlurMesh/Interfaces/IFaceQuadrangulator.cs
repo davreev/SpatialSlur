@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurMesh
 {
@@ -17,9 +13,9 @@ namespace SpatialSlur.SlurMesh
     /// <typeparam name="E"></typeparam>
     /// <typeparam name="F"></typeparam>
     public interface IFaceQuadrangulator<V, E, F>
-        where V : IHeVertex<V, E, F>
-        where E : IHalfedge<V, E, F>
-        where F : IHeFace<V, E, F>
+        where V : HeVertex<V, E, F>
+        where E : Halfedge<V, E, F>
+        where F : HeFace<V, E, F>
     {
         /// <summary>
         /// Iterates through the vertices of each quad without modifying the topology of the mesh.
