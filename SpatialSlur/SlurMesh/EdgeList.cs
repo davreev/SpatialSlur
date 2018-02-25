@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurData;
-
 /*
  * Notes
  */
@@ -15,10 +12,10 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// Provides an alternate view of the halfedge list which only considers the first halfedge in each pair.
     /// </summary>
-    /// <typeparam name="E"></typeparam>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class HeEdgeList<E> : IHeElementList<E>
-        where E : Halfedge<E>, IHalfedge<E>
+    public class EdgeList<E> : IReadOnlyList<E>
+        where E : Halfedge<E>
     {
         private HalfedgeList<E> _hedges;
 
@@ -27,13 +24,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="halfedges"></param>
-        internal HeEdgeList(HalfedgeList<E> halfedges)
+        internal EdgeList(HalfedgeList<E> halfedges)
         {
             _hedges = halfedges;
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -52,7 +48,6 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// Returns the first halfedge of the edge at the given index.
         /// </summary>
@@ -75,23 +70,16 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         public int CountUnused()
         {
-            int result = 0;
-
-            for (int i = 0; i < _hedges.Count; i += 2)
-                if (_hedges[i].IsUnused) result++;
-
-            return result;
+            return _hedges.CountUnused() >> 1;
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -104,7 +92,6 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -114,25 +101,24 @@ namespace SpatialSlur.SlurMesh
         {
             int marker = 0;
 
-            for (int i = 0; i < Count; i += 2)
+            for (int i = 0; i < Count; i++)
             {
-                if (_hedges[i].IsUnused) continue; // skip unused elements
-                attributes[marker++] = attributes[i >> 1];
+                if (this[i].IsUnused) continue; // skip unused elements
+                attributes[marker++] = attributes[i];
             }
 
             return marker;
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
-        /// 
+        /// Returns true if the given edge belongs to this mesh.
         /// </summary>
         /// <param name="hedge"></param>
         /// <returns></returns>
-        public bool Contains(E hedge)
+        public bool Owns(E hedge)
         {
-            return _hedges.Contains(hedge);
+            return _hedges.Owns(hedge);
         }
 
 
@@ -140,13 +126,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="hedge"></param>
-        internal void ContainsCheck(E hedge)
+        internal void OwnsCheck(E hedge)
         {
-            _hedges.ContainsCheck(hedge);
+            _hedges.OwnsCheck(hedge);
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -154,10 +139,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public IEnumerable<E> GetDistinct(IEnumerable<E> hedges)
         {
-            foreach (var he in hedges)
-                _hedges.ContainsCheck(he);
-
-            return GetDistinctImpl(hedges);
+            return _hedges.GetDistinct(hedges.Select(he => he.Edge));
         }
 
 
@@ -168,18 +150,10 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal IEnumerable<E> GetDistinctImpl(IEnumerable<E> hedges)
         {
-            int currTag = _hedges.NextTag;
-
-            foreach (var he in hedges.Select(he => he.Edge))
-            {
-                if (he.Tag == currTag) continue;
-                he.Tag = currTag;
-                yield return he;
-            }
+            return _hedges.GetDistinctImpl(hedges.Select(he => he.Edge));
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -188,11 +162,13 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public IEnumerable<E> GetUnion(IEnumerable<E> hedgesA, IEnumerable<E> hedgesB)
         {
-            return GetDistinct(hedgesA.Concat(hedgesB));
+            return _hedges.GetUnion(
+                hedgesA.Select(he => he.Edge), 
+                hedgesB.Select(he => he.Edge)
+                );
         }
 
-
-        /// <inheritdoc/>
+ 
         /// <summary>
         /// 
         /// </summary>
@@ -201,10 +177,10 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public IEnumerable<E> GetDifference(IEnumerable<E> hedgesA, IEnumerable<E> hedgesB)
         {
-            foreach (var he in hedgesA.Concat(hedgesB))
-                _hedges.ContainsCheck(he);
-
-            return GetDifferenceImpl(hedgesA, hedgesB);
+            return _hedges.GetDifference(
+                hedgesA.Select(he => he.Edge),
+                hedgesB.Select(he => he.Edge)
+                );
         }
 
 
@@ -216,19 +192,13 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal IEnumerable<E> GetDifferenceImpl(IEnumerable<E> hedgesA, IEnumerable<E> hedgesB)
         {
-            int currTag = _hedges.NextTag;
-
-            // tag elements in A
-            foreach (var heB in hedgesB.Select(he => he.Edge))
-                heB.Tag = currTag;
-
-            // return untagged elements in B
-            foreach (var heA in hedgesA.Select(he => he.Edge))
-                if (heA.Tag != currTag) yield return heA;
+            return _hedges.GetDifferenceImpl(
+                hedgesA.Select(he => he.Edge),
+                hedgesB.Select(he => he.Edge)
+                );
         }
 
 
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
@@ -237,10 +207,10 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public IEnumerable<E> GetIntersection(IEnumerable<E> hedgesA, IEnumerable<E> hedgesB)
         {
-            foreach (var he in hedgesA.Concat(hedgesB))
-                _hedges.ContainsCheck(he);
-
-            return GetIntersectionImpl(hedgesA, hedgesB);
+            return _hedges.GetIntersection(
+                hedgesA.Select(he => he.Edge),
+                hedgesB.Select(he => he.Edge)
+                );
         }
 
 
@@ -252,15 +222,33 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         internal IEnumerable<E> GetIntersectionImpl(IEnumerable<E> hedgesA, IEnumerable<E> hedgesB)
         {
-            int currTag = _hedges.NextTag;
+            return _hedges.GetIntersectionImpl(
+                hedgesA.Select(he => he.Edge),
+                hedgesB.Select(he => he.Edge)
+                );
+        }
 
-            // tag elements in A
-            foreach (var heA in hedgesA.Select(he => he.Edge))
-                heA.Tag = currTag;
 
-            // return tagged elements in B
-            foreach (var heB in hedgesB.Select(he => he.Edge))
-                if (heB.Tag == currTag) yield return heB;
+        /// <summary>
+        /// Performs an in-place stable sort of edges.
+        /// </summary>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="getKey"></param>
+        public void Sort<K>(Func<E, K> getKey)
+            where K : IComparable<K>
+        {
+            int index = 0;
+
+            // sort in pairs
+            foreach (var he0 in this.OrderBy(getKey))
+            {
+                _hedges[index++] = he0;
+                _hedges[index++] = he0.Twin;
+            }
+
+            // re-index after since indices may be used to fetch keys
+            for (int i = 0; i < Count; i++)
+                _hedges[i].Index = i;
         }
 
 

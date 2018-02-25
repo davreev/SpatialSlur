@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurData;
-
 /*
  * Notes
  */
@@ -17,10 +14,15 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class HeElementList<T> : IHeElementList<T>
-        where T : HeElement, IHeElement
+    public abstract class HeElementList<T> : IReadOnlyList<T>
+        where T : HeElement
     {
+        #region Static
+
         private const int _minCapacity = 4;
+
+        #endregion
+
 
         private T[] _items;
         private int _count;
@@ -53,6 +55,15 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        protected T[] Items
+        {
+            get { return _items; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int Count
         {
             get { return _count; }
@@ -77,17 +88,13 @@ namespace SpatialSlur.SlurMesh
         {
             get
             {
-                if (index >= _count)
-                    throw new IndexOutOfRangeException();
-
-                return _items[index];
+                if (index < _count) return _items[index];
+                throw new IndexOutOfRangeException();
             }
             internal set
             {
-                if (index >= _count)
-                    throw new IndexOutOfRangeException();
-
-                _items[index] = value;
+                if (index < _count) _items[index] = value;
+                throw new IndexOutOfRangeException();
             }
         }
 
@@ -113,7 +120,7 @@ namespace SpatialSlur.SlurMesh
             for (int i = 0; i < _count; i++)
                 yield return _items[i];
         }
-        
+
 
         /// <summary>
         /// Adds an element to the list.
@@ -132,79 +139,9 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public int CountUnused()
-        {
-            int result = 0;
-
-            for (int i = 0; i < _count; i++)
-                if (_items[i].IsUnused) result++;
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Removes all unused elements in the list and re-indexes the remaining.
-        /// Does not change the capacity of the list.
-        /// If the list has any associated attributes, be sure to compact those first.
-        /// </summary>
-        public void Compact()
-        {
-            int marker = 0;
-
-            for (int i = 0; i < _count; i++)
-            {
-                T element = _items[i];
-                if (element.IsUnused) continue; // skip unused elements
-
-                element.Index = marker;
-                _items[marker++] = element;
-            }
-            
-            Array.Clear(_items, marker, _count - marker);
-            _count = marker;
-        }
-
-
-        /// <summary>
-        /// Removes all attributes corresponding with unused elements.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="attributes"></param>
-        public void CompactAttributes<U>(List<U> attributes)
-        {
-            int marker = SwimAttributes(attributes);
-            attributes.RemoveRange(marker, attributes.Count - marker);
-        }
-
-
-        /// <summary>
-        /// Moves attributes corresponding with used elements to the front of the given list.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="attributes"></param>
-        public int SwimAttributes<U>(IList<U> attributes)
-        {
-            int marker = 0;
-
-            for (int i = 0; i < _count; i++)
-            {
-                if (_items[i].IsUnused) continue; // skip unused elements
-                attributes[marker++] = attributes[i];
-            }
-
-            return marker;
-        }
-
-
         /// <summary>
         /// Reduces the capacity to twice the count.
-        /// If the capacity is already less than twice the count, this does nothing.
+        /// If the capacity is already less than twice the count, then this function does nothing.
         /// </summary>
         public void TrimExcess()
         {
@@ -214,58 +151,50 @@ namespace SpatialSlur.SlurMesh
                 Array.Resize(ref _items, max);
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="K"></typeparam>
-        /// <param name="getKey"></param>
-        public void Sort<K>(Func<T, K> getKey)
+        /// <param name="marker"></param>
+        protected void AfterCompact(int marker)
         {
-            Sort(getKey, Comparer<K>.Default);
+            Array.Clear(_items, marker, _count - marker);
+            _count = marker;
         }
 
 
         /// <summary>
-        /// Performs an in-place stable sort of elements.
-        /// </summary>
-        /// <typeparam name="K"></typeparam>
-        /// <param name="getKey"></param>
-        /// <param name="keyComparer"></param>
-        public virtual void Sort<K>(Func<T, K> getKey, IComparer<K> keyComparer)
-        {
-            int index = 0;
-
-            // sort
-            foreach (var t in this.OrderBy(getKey, keyComparer))
-                this[index++] = t;
-
-            // re-index
-            for (int i = 0; i < _count; i++)
-                _items[i].Index = i;
-        }
-
-
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
+        /// Returns true if the given element belongs to this list.
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public bool Contains(T element)
+        public bool Owns(T element)
         {
             return element == _items[element.Index];
         }
 
-
+        
         /// <summary>
         /// Throws an exception for elements that don't belong to this list.
         /// </summary>
         /// <param name="element"></param>
-        internal void ContainsCheck(T element)
+        internal void OwnsCheck(T element)
         {
-            if (!Contains(element))
-                throw new ArgumentException("The given element must belong to this mesh.");
+            const string errorMessage = "The given element must belong to this mesh.";
+
+            if (!Owns(element))
+                throw new ArgumentException(errorMessage);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hedges"></param>
+        private void OwnsCheck(IEnumerable<T> elements)
+        {
+            foreach (var e in elements)
+                OwnsCheck(e);
         }
 
 
@@ -276,9 +205,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public IEnumerable<T> GetDistinct(IEnumerable<T> elements)
         {
-            foreach (var e in elements)
-                ContainsCheck(e);
-
+            OwnsCheck(elements);
             return GetDistinctImpl(elements);
         }
 
@@ -323,9 +250,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public IEnumerable<T> GetDifference(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
         {
-            foreach (var e in elementsA.Concat(elementsB))
-                ContainsCheck(e);
-
+            OwnsCheck(elementsA);
+            OwnsCheck(elementsB);
             return GetDifferenceImpl(elementsA, elementsB);
         }
 
@@ -360,9 +286,8 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public IEnumerable<T> GetIntersection(IEnumerable<T> elementsA, IEnumerable<T> elementsB)
         {
-            foreach (var e in elementsA.Concat(elementsB))
-                ContainsCheck(e);
-
+            OwnsCheck(elementsA);
+            OwnsCheck(elementsB);
             return GetIntersectionImpl(elementsA, elementsB);
         }
 

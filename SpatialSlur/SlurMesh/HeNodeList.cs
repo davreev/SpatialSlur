@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 /*
  * Notes
@@ -10,17 +11,18 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="V"></typeparam>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class HalfedgeList<E> : HeElementList<E>
+    public class HeNodeList<T, E> : HeElementList<T>
+        where T : HeNode<T, E>
         where E : Halfedge<E>
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="capacity"></param>
-        public HalfedgeList(int capacity)
-            : base(capacity)
+        public HeNodeList(int capacity)
+            :base(capacity)
         {
         }
 
@@ -33,8 +35,8 @@ namespace SpatialSlur.SlurMesh
         {
             int result = 0;
 
-            for (int i = 0; i < Count; i += 2)
-                if (Items[i].IsUnused) result += 2;
+            for (int i = 0; i < Count; i++)
+                if (Items[i].IsUnused) result++;
 
             return result;
         }
@@ -49,18 +51,13 @@ namespace SpatialSlur.SlurMesh
         {
             int marker = 0;
 
-            for (int i = 0; i < Count; i += 2)
+            for (int i = 0; i < Count; i++)
             {
-                var he = Items[i];
-                if (he.IsUnused) continue; // skip unused halfedge pairs
+                T element = Items[i];
+                if (element.IsUnused) continue; // skip unused elements
 
-                he.Index = marker;
-                Items[marker++] = he;
-
-                he = he.Twin;
-
-                he.Index = marker;
-                Items[marker++] = he;
+                element.Index = marker;
+                Items[marker++] = element;
             }
 
             AfterCompact(marker);
@@ -88,14 +85,33 @@ namespace SpatialSlur.SlurMesh
         {
             int marker = 0;
 
-            for (int i = 0; i < Count; i += 2)
+            for (int i = 0; i < Count; i++)
             {
-                if (Items[i].IsUnused) continue; // skip unused halfedge pairs
+                if (Items[i].IsUnused) continue; // skip unused elements
                 attributes[marker++] = attributes[i];
-                attributes[marker++] = attributes[i + 1];
             }
 
             return marker;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="getKey"></param>
+        public void Sort<K>(Func<T, K> getKey)
+            where K : IComparable<K>
+        {
+            int index = 0;
+
+            // sort first
+            foreach (var t in this.OrderBy(getKey))
+                Items[index++] = t;
+            
+            // re-index after since indices may be used to fetch keys
+            for (int i = 0; i < Count; i++)
+                Items[i].Index = i;
         }
     }
 }
