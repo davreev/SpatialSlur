@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurData;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurField
 {
@@ -175,19 +172,6 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="timeStep"></param>
-        /// <param name="parallel"></param>
-        public static void Update(IDiscreteField<double> field, IDiscreteField<double> delta, double timeStep, bool parallel = false)
-        {
-            Update(field, delta.Values, timeStep, parallel);
-        }
-
-
-        /// <summary>
         ///
         /// </summary>
         /// <param name="field"></param>
@@ -205,19 +189,6 @@ namespace SpatialSlur.SlurField
                 ArrayMath.AddScaled(vals, deltas, timeStep, n, vals);
 
             Array.Clear(deltas, 0, n);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="timeStep"></param>
-        /// <param name="parallel"></param>
-        public static void Update(IDiscreteField<Vec2d> field, IDiscreteField<Vec2d> delta, double timeStep, bool parallel = false)
-        {
-            Update(field, delta.Values, timeStep, parallel);
         }
 
 
@@ -243,19 +214,6 @@ namespace SpatialSlur.SlurField
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="timeStep"></param>
-        /// <param name="parallel"></param>
-        public static void Update(IDiscreteField<Vec3d> field, IDiscreteField<Vec3d> delta, double timeStep, bool parallel = false)
-        {
-            Update(field, delta.Values, timeStep, parallel);
-        }
-
-
-        /// <summary>
         ///
         /// </summary>
         /// <param name="field"></param>
@@ -273,20 +231,6 @@ namespace SpatialSlur.SlurField
                 ArrayMath.AddScaled(vals, deltas, timeStep, n, vals);
 
             Array.Clear(deltas, 0, n);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="thresh"></param>
-        /// <param name="rate"></param>
-        /// <param name="parallel"></param>
-        public static void Bifurcate(IDiscreteField<double> field, IDiscreteField<double> delta, double thresh, double rate, bool parallel = false)
-        {
-            Bifurcate(field, delta.Values, thresh, rate, parallel);
         }
 
 
@@ -317,20 +261,6 @@ namespace SpatialSlur.SlurField
                         deltas[i] -= rate;
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Adds the Laplacian of the field to the delta field.
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="rate"></param>
-        /// <param name="parallel"></param>
-        public static void Diffuse(GridField2d<double> field, IDiscreteField<double> delta, double rate, bool parallel = false)
-        {
-            Diffuse(field, delta.Values, rate, parallel);
         }
 
         
@@ -376,20 +306,6 @@ namespace SpatialSlur.SlurField
                     deltas[index] += ((tx0 + tx1 - t) * dx + (ty0 + ty1 - t) * dy) * rate;
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Adds the Laplacian of the field to the delta field.
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="rate"></param>
-        /// <param name="parallel"></param>
-        public static void Diffuse(GridField3d<double> field, IDiscreteField<double> delta, double rate, bool parallel = false)
-        {
-            Diffuse(field, delta.Values, rate, parallel);
         }
 
 
@@ -447,20 +363,6 @@ namespace SpatialSlur.SlurField
 
         /*
         /// <summary>
-        /// Adds the Laplacian of the field to the delta field.
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="rate"></param>
-        /// <param name="parallel"></param>
-        public static void Diffuse(HeVertexScalarField field, HeVertexScalarField delta, double rate, bool parallel = false)
-        {
-            Diffuse(field, delta.Values, rate, parallel);
-        }
-
-
-        /// <summary>
         /// Adds the Laplacian of the field to the deltas array.
         /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
         /// </summary>
@@ -494,21 +396,6 @@ namespace SpatialSlur.SlurField
                 Parallel.ForEach(Partitioner.Create(0, field.Count), func);
             else
                 func(Tuple.Create(0, field.Count));
-        }
-
-
-        /// <summary>
-        /// Adds the Laplacian of the field to the delta field.
-        /// http://en.wikipedia.org/wiki/Discrete_Laplace_operator
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="rate"></param>
-        /// <param name="hedgeWeights"></param>
-        /// <param name="parallel"></param>
-        public static void Diffuse(HeVertexScalarField field, HeVertexScalarField delta, double rate, IReadOnlyList<double> hedgeWeights, bool parallel = false)
-        {
-            Diffuse(field, delta.Values, rate, hedgeWeights, parallel);
         }
 
 
@@ -548,20 +435,6 @@ namespace SpatialSlur.SlurField
                 func(Tuple.Create(0, field.Count));
         }
         */
-
-
-        /// <summary>
-        /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="slope"></param>
-        /// <param name="rate"></param>
-        /// <param name="parallel"></param>
-        public static void ErodeThermal(GridField2d<double> field, IDiscreteField<double> delta, double slope, double rate, bool parallel = false)
-        {
-            ErodeThermal(field, delta.Values, slope, rate, parallel);
-        }
 
 
         /// <summary>
@@ -627,20 +500,6 @@ namespace SpatialSlur.SlurField
                     deltas[index] += sum * rate;
                 }
             }
-        }
-
-
-        /// <summary>
-        /// http://micsymposium.org/mics_2011_proceedings/mics2011_submission_30.pdf
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="delta"></param>
-        /// <param name="slope"></param>
-        /// <param name="rate"></param>
-        /// <param name="parallel"></param>
-        public static void ErodeThermal(GridField3d<double> field, IDiscreteField<double> delta, double slope, double rate, bool parallel = false)
-        {
-            ErodeThermal(field, delta.Values, slope, rate, parallel);
         }
 
 
@@ -716,289 +575,6 @@ namespace SpatialSlur.SlurField
 
                     deltas[index] += sum * rate;
                 }
-            }
-        }
-
-
-        /// <summary>
-        /// Calculates L1 (Manhattan) geodesic distance via Dijksta's algorithm as detailed in 
-        /// http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <param name="sources"></param>
-        /// <param name="result"></param>
-        public static void GeodesicDistanceL1(GridField2d<double> cost, IEnumerable<int> sources, IDiscreteField<double> result)
-        {
-            GeodesicDistanceL1(cost, sources, result.Values);
-        }
-
-
-        /// <summary>
-        /// Calculates L1 (Manhattan) geodesic distance via Dijksta's algorithm as detailed in 
-        /// http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <param name="sources"></param>
-        /// <param name="result"></param>
-        public static void GeodesicDistanceL1(GridField2d<double> cost, IEnumerable<int> sources, double[] result)
-        {
-            // TODO 
-            // handle additonal wrap modes
-            // add simplified bfs based version with obstacle threshold
-
-            var costVals = cost.Values;
-            int nx = cost.CountX;
-            int ny = cost.CountY;
-
-            (double dx, double dy) = Vec2d.Abs(cost.Scale);
-            
-            var pq = new PriorityQueue<double, int>();
-            result.SetRange(double.PositiveInfinity, 0, cost.Count);
-
-            // enqueue sources
-            foreach (int index in sources)
-            {
-                result[index] = 0.0;
-                pq.Insert(0.0, index);
-            }
-
-            // breadth first search from sources
-            while (pq.Count > 0)
-            {
-                (double dist0, int index0) = pq.RemoveMin();
-                if (dist0 > result[index0]) continue; // skip if node has already been processed (TODO check if necessary)
-
-                (int i0, int j0) = cost.IndicesAt(index0);
-
-                // x neighbours
-                for (int i = -1; i < 2; i += 2)
-                {
-                    if (!SlurMath.Contains(i0 + i, nx)) continue;
-
-                    int index1 = index0 + i;
-                    double dist1 = dist0 + costVals[index1] * dx;
-
-                    if (dist1 < result[index1])
-                    {
-                        result[index1] = dist1;
-                        pq.Insert(dist1, index1);
-                    }
-                }
-
-                // y neigbours
-                for (int j = -1; j < 2; j += 2)
-                {
-                    if (!SlurMath.Contains(j0 + j, ny)) continue;
-
-                    int index1 = index0 + j * nx;
-                    double dist1 = dist0 + costVals[index1] * dy;
-
-                    if (dist1 < result[index1])
-                    {
-                        result[index1] = dist1;
-                        pq.Insert(dist1, index1);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Calculates L2 (Euclidean) geodesic distance via the Fast marching algorithm as detailed in 
-        /// http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <param name="sources"></param>
-        /// <param name="result"></param>
-        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, IDiscreteField<double> result)
-        {
-            var states = new bool[cost.Count];
-            GeodesicDistanceL2Impl(cost, sources, states, result.Values);
-        }
-
-
-        /// <summary>
-        /// Calculates L2 (Euclidean) geodesic distance via the Fast marching algorithm as detailed in 
-        /// http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <param name="sources"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, double[] result)
-        {
-            var tags = new bool[cost.Count];
-            GeodesicDistanceL2Impl(cost, sources, tags, result);
-        }
-
-
-        /// <summary>
-        /// Calculates L2 (Euclidean) geodesic distance via the Fast marching algorithm as detailed in 
-        /// http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <param name="sources"></param>
-        /// <param name="tags"></param>
-        /// <param name="result"></param>
-        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, IDiscreteField<double> result)
-        {
-            tags.Clear();
-            GeodesicDistanceL2Impl(cost, sources, tags, result.Values);
-        }
-
-
-        /// <summary>
-        /// Calculates L2 (Euclidean) geodesic distance via the Fast marching algorithm as detailed in 
-        /// http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <param name="sources"></param>
-        /// <param name="tags"></param>
-        /// <param name="result"></param>
-        public static void GeodesicDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, double[] result)
-        {
-            tags.Clear();
-            GeodesicDistanceL2Impl(cost, sources, tags, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <param name="sources"></param>
-        /// <param name="tags"></param>
-        /// <param name="result"></param>
-        private static void GeodesicDistanceL2Impl(GridField2d<double> cost, IEnumerable<int> sources, bool[] tags, double[] result)
-        {
-            // TODO 
-            // handle additonal wrap modes
-            // add simplified bfs based version with obstacle threshold
-
-            var costVals = cost.Values;
-            var nx = cost.CountX;
-            var ny = cost.CountY;
-            
-            (var dx, var dy) = Vec2d.Abs(cost.Scale);
-
-            var pq = new PriorityQueue<double, int>();
-            var eikonal = new Eikonal2d(dx, dy);
-
-            result.SetRange(double.PositiveInfinity, 0, cost.Count);
-
-            // enqueue sources
-            foreach (int index in sources)
-            {
-                result[index] = 0.0;
-                pq.Insert(0.0, index);
-            }
-
-            // breadth first search from sources
-            while (pq.Count > 0)
-            {
-                (double dist0, int index0) = pq.RemoveMin();
-                if (tags[index0]) continue; // skip if already accepted
-
-                (int i0, int j0) = cost.IndicesAt(index0);
-                tags[index0] = true;
-
-                // x neigbours
-                for (int i = -1; i < 2; i += 2)
-                {
-                    if (!SlurMath.Contains(i0 + i, nx)) continue; // skip if out of bounds
-                    int index1 = index0 + i;
-
-                    if (!tags[index1])
-                    {
-                        double minAdj = 
-                            (j0 == 0) ? result[index1 + nx] : 
-                            (j0 == ny - 1) ? result[index1 - nx] : 
-                            Math.Min(result[index1 - nx], result[index1 + nx]);
-
-                        double dist1 = 
-                            (minAdj > double.MaxValue) ? dist0 + dx * costVals[index1] : 
-                            eikonal.Evaluate(dist0, minAdj, costVals[index1]);
-
-                        if (dist1 < result[index1])
-                        {
-                            result[index1] = dist1;
-                            pq.Insert(dist1, index1);
-                        }
-                    }
-                }
-
-                // y neigbours
-                for (int j = -1; j < 2; j += 2)
-                {
-                    if (!SlurMath.Contains(j0 + j, ny)) continue; // skip if out of bounds
-                    int index1 = index0 + j * nx;
-
-                    if (!tags[index1])
-                    {
-                        double minAdj = 
-                            (i0 == 0) ? result[index1 + 1] : 
-                            (i0 == nx - 1) ? result[index1 - 1] : 
-                            Math.Min(result[index1 - 1], result[index1 + 1]);
-
-                        double dist1 = 
-                            (minAdj > double.MaxValue) ? dist0 + dy * costVals[index1] : 
-                            eikonal.Evaluate(minAdj, dist0, costVals[index1]);
-
-                        if (dist1 < result[index1])
-                        {
-                            result[index1] = dist1;
-                            pq.Insert(dist1, index1);
-                        }
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private struct Eikonal2d
-        {
-            private double _dx, _dy; // constants used during evaluation
-            private double _tx, _ty;
-            private double _a, _a2Inv;
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="dx"></param>
-            /// <param name="dy"></param>
-            public Eikonal2d(double dx, double dy)
-            {
-                _dx = dx;
-                _dy = dy;
-
-                _tx = 1.0 / (_dx * _dx);
-                _ty = 1.0 / (_dy * _dy);
-                _a = _tx + _ty;
-                _a2Inv = 0.5 / _a;
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="x"></param>
-            /// <param name="y"></param>
-            /// <param name="w"></param>
-            /// <returns></returns>
-            public double Evaluate(double x, double y, double w)
-            {
-                double b = -2.0 * (x * _tx + y * _ty);
-                double c = x * x * _tx + y * y * _ty - w * w;
-                double d = b * b - 4.0 * _a * c;
-
-                if (d < 0.0)
-                    return Math.Min(x + _dx * w, y + _dy * w);
-
-                return (Math.Sqrt(d) - b) * _a2Inv;
             }
         }
     }
