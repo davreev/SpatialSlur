@@ -1,10 +1,7 @@
-﻿#if USING_RHINO
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
@@ -50,13 +47,13 @@ namespace SpatialSlur.SlurTools
             /// <param name="features"></param>
             /// <param name="tolerance"></param>
             /// <returns></returns>
-            public static Solver Create<TV, TE, TF>(HeMeshBase<TV, TE, TF> mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
-                where TV : HeMeshBase<TV, TE, TF>.Vertex, IVertex3d
-                where TE : HeMeshBase<TV, TE, TF>.Halfedge
-                where TF : HeMeshBase<TV, TE, TF>.Face
+            public static Solver Create<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, ISurfaceFeature target, IEnumerable<IFeature> features = null, Settings settings = null)
+                where TV : HeMesh<TV, TE, TF>.Vertex, IPosition3d
+                where TE : HeMesh<TV, TE, TF>.Halfedge
+                where TF : HeMesh<TV, TE, TF>.Face
             {
                 var copy = HeMesh.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
-                return new Solver(copy, target, features, tolerance);
+                return new Solver(copy, target, features, settings);
             }
 
             #endregion
@@ -75,7 +72,7 @@ namespace SpatialSlur.SlurTools
             // constraint objects
             //
 
-            private MeshFeature _target;
+            private ISurfaceFeature _target;
             private List<IFeature> _features;
             private IField3d<double> _growthField;
             private IField3d<Vec3d> _directionField;
@@ -96,18 +93,21 @@ namespace SpatialSlur.SlurTools
             /// <param name="target"></param>
             /// <param name="features"></param>
             /// <param name="tolerance"></param>
-            public Solver(HeMesh mesh, MeshFeature target, IEnumerable<IFeature> features, double tolerance = 1.0e-4)
+            public Solver(HeMesh mesh, ISurfaceFeature target, IEnumerable<IFeature> features = null, Settings settings = null)
             {
-                mesh.Compact();
+                if (features == null)
+                    features = Enumerable.Empty<IFeature>();
 
                 _mesh = mesh;
+                _mesh.Compact();
+
                 _verts = _mesh.Vertices;
                 _hedges = _mesh.Halfedges;
-                _settings = new Settings();
+                _settings = settings ?? new Settings();
                 _stepCount = 0;
 
-                Target = target;
-                InitFeatures(features, tolerance);
+                _target = target;
+                InitFeatures(features);
 
                 // start on features
                 ProjectToFeatures();
@@ -117,10 +117,10 @@ namespace SpatialSlur.SlurTools
             /// <summary>
             /// 
             /// </summary>
-            private void InitFeatures(IEnumerable<IFeature> features, double tolerance)
+            private void InitFeatures(IEnumerable<IFeature> features)
             {
                 _features = new List<IFeature>();
-                var tolSqr = tolerance * tolerance;
+                var tolSqr = Square(_settings.FeatureTolerance);
 
                 // create features
                 foreach (var f in features)
@@ -138,6 +138,11 @@ namespace SpatialSlur.SlurTools
                             v.FeatureIndex = index;
                     }
                 }
+
+                double Square(double x)
+                {
+                    return x * x;
+                }
             }
 
 
@@ -153,7 +158,7 @@ namespace SpatialSlur.SlurTools
             /// <summary>
             /// 
             /// </summary>
-            public MeshFeature Target
+            public ISurfaceFeature Target
             {
                 get { return _target; }
                 set { _target = value; }
@@ -215,16 +220,13 @@ namespace SpatialSlur.SlurTools
             /// <returns></returns>
             public void Step()
             {
-                for (int i = 0; i < _settings.SubSteps; i++)
-                {
-                    if (++_stepCount % _settings.RefineFrequency == 0)
-                        Refine();
+                if (++_stepCount % _settings.RefineFrequency == 0)
+                    Refine();
 
-                    CalculateForces();
-                    UpdateVertices();
+                CalculateForces();
+                UpdateVertices();
 
-                    ProjectToFeatures();
-                }
+                ProjectToFeatures();
             }
 
 
@@ -304,7 +306,7 @@ namespace SpatialSlur.SlurTools
                         var he = v0.FirstOut;
 
                         var v1 = he.PrevInFace.Start;
-                        var v2 = he.NextInFace.Start;
+                        var v2 = he.Next.Start;
                         var move = (v1.Position + v2.Position) * 0.5 - v0.Position;
 
                         // apply to central vertex
@@ -429,7 +431,7 @@ namespace SpatialSlur.SlurTools
                     for (int i = range.Item1; i < range.Item2; i++)
                     {
                         var v = _verts[i];
-                        v.Velocity *= damping;
+                        v.Velocity *= (1.0 - damping);
 
                         double w = v.WeightSum;
                         if (w > 0.0) v.Velocity += v.MoveSum * (v.GrowthRate * timeStep / w);
@@ -679,8 +681,9 @@ namespace SpatialSlur.SlurTools
             private double _smoothWeight = 1.0;
             private double _collideRad = 1.0;
             private double _alignment = 0.5;
-            private double _timeStep = 1.0;
+            private double _featureTolerance = 1.0e-4;
             private double _damping = 0.5;
+            private double _timeStep = 1.0;
 
             private int _collideFreq = 3;
             private int _refineFreq = 5;
@@ -715,15 +718,15 @@ namespace SpatialSlur.SlurTools
                 get { return _alignment; }
                 set { _alignment = SlurMath.Saturate(value); }
             }
-
+            
 
             /// <summary>
             /// 
             /// </summary>
-            public double TimeStep
+            public double FeatureTolerance
             {
-                get { return _timeStep; }
-                set { _timeStep = Math.Max(value, 0.0); }
+                get { return _featureTolerance; }
+                set { _featureTolerance = Math.Max(value, 0.0); }
             }
 
 
@@ -734,6 +737,16 @@ namespace SpatialSlur.SlurTools
             {
                 get { return _damping; }
                 set { _damping = SlurMath.Saturate(value); }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public double TimeStep
+            {
+                get { return _timeStep; }
+                set { _timeStep = Math.Max(value, 0.0); }
             }
 
 
@@ -755,16 +768,6 @@ namespace SpatialSlur.SlurTools
                 get { return _refineFreq; }
                 set { _refineFreq = Math.Max(value, 1); }
             }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public int SubSteps
-            {
-                get { return _subSteps; }
-                set { _subSteps = Math.Max(value, 0); }
-            }
         }
 
 
@@ -772,7 +775,7 @@ namespace SpatialSlur.SlurTools
         /// Contains HeMesh element classes used in dynamic remeshing
         /// </summary>
         [Serializable]
-        public class HeMesh : HeMeshBase<V, E, F>
+        public class HeMesh : HeMesh<V, E, F>
         {
             #region Nested types
             
@@ -780,7 +783,7 @@ namespace SpatialSlur.SlurTools
             /// 
             /// </summary>
             [Serializable]
-            public new class Vertex : HeMeshBase<V, E, F>.Vertex, IVertex3d
+            public new class Vertex : HeMesh<V, E, F>.Vertex, IPosition3d
             {
                 /// <summary></summary>
                 public Vec3d Position;
@@ -808,24 +811,10 @@ namespace SpatialSlur.SlurTools
 
                 #region Explicit interface implementations
 
-                Vec3d IVertex3d.Position
+                Vec3d IPosition3d.Position
                 {
                     get { return Position; }
                     set { Position = value; }
-                }
-
-
-                Vec3d IVertex3d.Normal
-                {
-                    get { return new Vec3d(); }
-                    set { throw new NotSupportedException(); }
-                }
-
-
-                Vec2d IVertex3d.Texture
-                {
-                    get { return new Vec2d(); }
-                    set { throw new NotSupportedException(); }
                 }
 
                 #endregion
@@ -836,7 +825,7 @@ namespace SpatialSlur.SlurTools
             /// 
             /// </summary>
             [Serializable]
-            public new class Halfedge : HeMeshBase<V, E, F>.Halfedge
+            public new class Halfedge : HeMesh<V, E, F>.Halfedge
             {
             }
 
@@ -845,7 +834,7 @@ namespace SpatialSlur.SlurTools
             ///
             /// </summary>
             [Serializable]
-            public new class Face : HeMeshBase<V, E, F>.Face
+            public new class Face : HeMesh<V, E, F>.Face
             {
             }
 
@@ -884,6 +873,16 @@ namespace SpatialSlur.SlurTools
             /// <summary>
             /// 
             /// </summary>
+            /// <param name="other"></param>
+            public HeMesh(HeMesh other)
+            {
+                Append(other);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
             /// <returns></returns>
             protected sealed override V NewVertex()
             {
@@ -916,7 +915,7 @@ namespace SpatialSlur.SlurTools
         /// 
         /// </summary>
         [Serializable]
-        public class HeMeshFactory : HeMeshBaseFactory<HeMesh, V, E, F>
+        public class HeMeshFactory : HeMeshFactory<HeMesh, V, E, F>
         {
             /// <summary>
             /// 
@@ -929,5 +928,3 @@ namespace SpatialSlur.SlurTools
         }
     }
 }
-
-#endif
