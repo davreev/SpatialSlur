@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Text;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurTools
 {
@@ -133,15 +131,12 @@ namespace SpatialSlur.SlurTools
             /// </summary>
             public void Step()
             {
-                for (int i = 0; i < _settings.SubSteps; i++)
-                {
-                    if (++_stepCount % _settings.RefineFrequency == 0)
-                        Refine();
+                if (++_stepCount % _settings.RefineFrequency == 0)
+                    Refine();
 
-                    ApplyConstantTension();
-                    UpdateVertices();
-                    UpdateAttributes();
-                }
+                ApplyConstantTension();
+                UpdateVertices();
+                UpdateAttributes();
             }
 
 
@@ -188,7 +183,7 @@ namespace SpatialSlur.SlurTools
             private void UpdateVertices()
             {
                 var verts = _graph.Vertices;
-                var damp = _settings.Damping;
+                var damping = _settings.Damping;
                 var timeStep = _settings.TimeStep;
 
                 _maxDelta = 0.0;
@@ -200,7 +195,7 @@ namespace SpatialSlur.SlurTools
                      for (int i = range.Item1; i < range.Item2; i++)
                      {
                          var v = verts[i];
-                         v.Velocity *= damp;
+                         v.Velocity *= (1.0 - damping);
 
                          v.Velocity += v.ForceSum * timeStep;
                          v.Position += v.Velocity * timeStep;
@@ -336,10 +331,10 @@ namespace SpatialSlur.SlurTools
             /// <param name="he0"></param>
             /// <param name="he1"></param>
             /// <returns></returns>
-            private bool FindZipPair(HeGraph.Vertex vertex, out HeGraph.Halfedge he0, out HeGraph.Halfedge he1)
+            private bool FindZipPair(V vertex, out E he0, out E he1)
             {
-                // TODO currently brute force
-                // test HashGrid when vertex degree > some threshold value
+                // TODO
+                // test HashGrid performance for closest pair at high valence vertices
 
                 var first = vertex.First;
                 var p0 = vertex.Position;
@@ -407,10 +402,9 @@ namespace SpatialSlur.SlurTools
         public class Settings
         {
             private double _minLength = 1.0e-4;
+            private double _damping = 0.5;
             private double _timeStep = 1.0;
-            private double _damping = 0.1;
             private double _tolerance = 1.0e-4;
-            private int _subSteps = 10;
             private int _refineFreq = 10;
 
 
@@ -466,16 +460,6 @@ namespace SpatialSlur.SlurTools
             /// <summary>
             /// 
             /// </summary>
-            public int SubSteps
-            {
-                get { return _subSteps; }
-                set { _subSteps = Math.Max(value, 0); }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int RefineFrequency
             {
                 get { return _refineFreq; }
@@ -487,7 +471,7 @@ namespace SpatialSlur.SlurTools
         /// <summary>
         /// 
         /// </summary>
-        public class HeGraph : HeGraphBase<V, E>
+        public class HeGraph : HeGraph<V, E>
         {
             #region Nested types
 
@@ -495,7 +479,7 @@ namespace SpatialSlur.SlurTools
             /// 
             /// </summary>
             [Serializable]
-            public new class Vertex : HeGraphBase<V, E>.Vertex, IVertex3d
+            public new class Vertex : HeGraph<V, E>.Vertex, IPosition3d, INormal3d
             {
                 /// <summary></summary>
                 public Vec3d Position;
@@ -509,23 +493,16 @@ namespace SpatialSlur.SlurTools
 
                 #region Explicit interface implementations
 
-                Vec3d IVertex3d.Position
+                Vec3d IPosition3d.Position
                 {
                     get { return Position; }
                     set { Position = value; }
                 }
 
 
-                Vec3d IVertex3d.Normal
+                Vec3d INormal3d.Normal
                 {
                     get { return new Vec3d(); }
-                    set { throw new NotImplementedException(); }
-                }
-
-
-                Vec2d IVertex3d.Texture
-                {
-                    get { return new Vec2d(); }
                     set { throw new NotImplementedException(); }
                 }
 
@@ -537,7 +514,7 @@ namespace SpatialSlur.SlurTools
             /// 
             /// </summary>
             [Serializable]
-            public new class Halfedge : HeGraphBase<V, E>.Halfedge
+            public new class Halfedge : HeGraph<V, E>.Halfedge
             {
                 private Vec3d _tangent;
                 private double _length;
@@ -604,6 +581,16 @@ namespace SpatialSlur.SlurTools
             /// <summary>
             /// 
             /// </summary>
+            /// <param name="other"></param>
+            public HeGraph(HeGraph other)
+            {
+                Append(other);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
             /// <returns></returns>
             protected sealed override V NewVertex()
             {
@@ -626,7 +613,7 @@ namespace SpatialSlur.SlurTools
         /// 
         /// </summary>
         [Serializable]
-        public class HeGraphFactory : HeGraphBaseFactory<HeGraph, V, E>
+        public class HeGraphFactory : HeGraphFactory<HeGraph, V, E>
         {
             /// <summary>
             /// 
