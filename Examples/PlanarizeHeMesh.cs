@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
@@ -56,12 +53,11 @@ namespace SpatialSlur.Examples
             Console.WriteLine("\nSolver converged! Press return to exit.");
 
             // update mesh vertices
-            mesh.Vertices.Action(v => v.Position = particles[v.Index].Position);
-            // mesh.Vertices.Action(v => v.Position = particles[v].Position); // mesh elements (vertices, halfedges, faces) are converted to their indices implicitly so this also works
+            mesh.Vertices.Action(v => v.Position = particles[v].Position); // mesh elements (vertices, halfedges, faces) are implicitly converted to their index
 
             // compute vertex normals & write to file
-            mesh.GetVertexNormals(v => v.Position, (v, n) => v.Normal = n, true);
-            mesh.WriteToOBJ(Paths.Resources + _fileOut);
+            mesh.UpdateVertexNormals(true);
+            MeshIO.WriteToOBJ(mesh, Paths.Resources + _fileOut);
             Console.ReadLine();
         }
     }

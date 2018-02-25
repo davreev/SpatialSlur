@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
@@ -10,7 +6,7 @@ using SpatialSlur.SlurMesh;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.Examples
 {
@@ -30,24 +26,24 @@ namespace SpatialSlur.Examples
         public static void Start()
         {
             var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + _fileIn);
+            var verts = mesh.Vertices;
 
+            var texCoords = new Vec2d[verts.Count];
             double scale = 0.5;
             double offset = scale * Math.PI * 0.25;
 
-            // apply texture coordinates from an implicit function
-            foreach (var v in mesh.Vertices)
+            // create texture coordinates from implicit function
+            for (int i = 0; i < verts.Count; i++)
             {
-                var p = v.Position * scale;
-
-                v.Texture = new Vec2d(
-                    ImplicitSurfaces.Gyroid(p.X, p.Y, p.Z),
-                    ImplicitSurfaces.Gyroid(p.X + offset, p.Y + offset, p.Z + offset)
-                    );
+                var p = verts[i].Position * scale;
+                var u = ImplicitSurfaces.Gyroid(p.X, p.Y, p.Z);
+                var v = ImplicitSurfaces.Gyroid(p.X + offset, p.Y + offset, p.Z + offset);
+                texCoords[i] = new Vec2d(u, v);
             }
-            
+
             // compute vertex normals & write to file
-            mesh.GetVertexNormals(v => v.Position, (v, n) => v.Normal = n);
-            mesh.WriteToOBJ(Paths.Resources + _fileOut);
+            mesh.UpdateVertexNormals();
+            MeshIO.WriteToOBJ(mesh, Paths.Resources + _fileOut, v => texCoords[v]);
 
             Console.WriteLine("File written successfully. Press return to exit.");
             Console.ReadLine();
