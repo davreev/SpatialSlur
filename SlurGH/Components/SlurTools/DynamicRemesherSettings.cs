@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurTools;
-using SpatialSlur.SlurGH.Types;
-using SpatialSlur.SlurGH.Params;
 
 /*
  * Notes
@@ -39,10 +34,12 @@ namespace SpatialSlur.SlurGH.Components
         {
             pManager.AddIntervalParameter("lengthRange", "lengthRange", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("lengthTolerance", "lengthTolerance", "", GH_ParamAccess.item, 0.1);
-            pManager.AddNumberParameter("featureWeight", "featureWeight", "", GH_ParamAccess.item, 100.0);
 
-            pManager.AddNumberParameter("timeStep", "timeStep", "", GH_ParamAccess.item, 1.0);
+            pManager.AddNumberParameter("featureWeight", "featureWeight", "", GH_ParamAccess.item, 100.0);
+            pManager.AddNumberParameter("featureTolerance", "featureTolerance", "", GH_ParamAccess.item, 0.01);
+
             pManager.AddNumberParameter("damping", "damping", "", GH_ParamAccess.item, 0.5);
+            pManager.AddNumberParameter("timeStep", "timeStep", "", GH_ParamAccess.item, 1.0);
 
             pManager.AddIntegerParameter("refineFrequency", "refineFreq", "", GH_ParamAccess.item, 5);
         }
@@ -70,25 +67,30 @@ namespace SpatialSlur.SlurGH.Components
             double lengthTol = 0.0;
             if (!DA.GetData(1, ref lengthTol)) return;
 
-            double feature = 0.0;
-            if (!DA.GetData(2, ref feature)) return;
+            double featureWt = 0.0;
+            if (!DA.GetData(2, ref featureWt)) return;
 
-            double timeStep = 0.0;
-            if (!DA.GetData(3, ref timeStep)) return;
+            double featureTol = 0.0;
+            if (!DA.GetData(3, ref featureTol)) return;
 
             double damping = 0.0;
             if (!DA.GetData(4, ref damping)) return;
 
-            int refineFreq = 0;
-            if (!DA.GetData(5, ref refineFreq)) return;
+            double timeStep = 0.0;
+            if (!DA.GetData(5, ref timeStep)) return;
 
-            var settings = new DynamicRemesher.Settings();
-            settings.LengthRange = lengthRng;
-            settings.LengthTolerance = lengthTol;
-            settings.FeatureWeight = feature;
-            settings.TimeStep = timeStep;
-            settings.Damping = damping;
-            settings.RefineFrequency = refineFreq;
+            int refineFreq = 0;
+            if (!DA.GetData(6, ref refineFreq)) return;
+
+            var settings = new DynamicRemesher.Settings()
+            {
+                LengthRange = lengthRng,
+                LengthTolerance = lengthTol,
+                FeatureWeight = featureWt,
+                Damping = damping,
+                TimeStep = timeStep,
+                RefineFrequency = refineFreq
+            };
 
             DA.SetData(0, settings);
         }
