@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
@@ -21,7 +18,7 @@ namespace SpatialSlur.SlurMesh
     /// Implementation with double precision vertex attributes commonly used in 3d applications.
     /// </summary>
     [Serializable]
-    public class HeGraph3d : HeGraphBase<V, E>
+    public class HeGraph3d : HeGraph<V, E>
     {
         #region Nested types
 
@@ -29,14 +26,21 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         [Serializable]
-        public new class Vertex : HeGraphBase<V, E>.Vertex, IVertex3d
+        public new class Vertex : HeGraph<V, E>.Vertex, IVertex3d
         {
             #region Static
 
-            /// <summary></summary>
-            public static readonly Func<V, Vec3d> GetPosition = v => v.Position;
-            /// <summary></summary>
-            public static readonly Func<V, Vec3d> GetNormal = v => v.Normal;
+            /// <summary>
+            /// 
+            /// </summary>
+            public static class Accessors
+            {
+                /// <summary></summary>
+                public static readonly Property<V, Vec3d> Position = Property.Create<V, Vec3d>(v => v.Position, (v, p) => v.Position = p);
+
+                /// <summary></summary>
+                public static readonly Property<V, Vec3d> Normal = Property.Create<V, Vec3d>(v => v.Normal, (v, n) => v.Normal = n);
+            }
 
             #endregion
 
@@ -46,20 +50,6 @@ namespace SpatialSlur.SlurMesh
 
             /// <summary></summary>
             public Vec3d Normal { get; set; }
-
-
-            #region Explicit interface implementations
-
-            /// <summary>
-            /// 
-            /// </summary>
-            Vec2d IVertex3d.Texture
-            {
-                get { return new Vec2d(); }
-                set { throw new NotImplementedException(); }
-            }
-
-            #endregion
         }
 
 
@@ -67,7 +57,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         [Serializable]
-        public new class Halfedge : HeGraphBase<V, E>.Halfedge
+        public new class Halfedge : HeGraph<V, E>.Halfedge
         {
         }
 
@@ -78,6 +68,36 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary></summary>
         public static readonly HeGraph3dFactory Factory = new HeGraph3dFactory();
+
+
+        /// <summary> 
+        /// 
+        /// </summary>
+        private static void Set(V v0, V v1)
+        {
+            v0.Position = v1.Position;
+            v0.Normal = v1.Normal;
+        }
+
+
+        /// <summary> 
+        /// 
+        /// </summary>
+        private static void Set(V v0, HeMesh3d.Vertex v1)
+        {
+            v0.Position = v1.Position;
+            v0.Normal = v1.Normal;
+        }
+
+
+        /// <summary> 
+        /// 
+        /// </summary>
+        private static void Set(V vertex, HeMesh3d.Face face)
+        {
+            if (!face.IsUnused)
+                vertex.Position = face.GetBarycenter(HeMesh3d.Vertex.Accessors.Position);
+        }
 
         #endregion
 
@@ -91,6 +111,17 @@ namespace SpatialSlur.SlurMesh
         public HeGraph3d (int vertexCapacity = DefaultCapacity, int hedgeCapacity = DefaultCapacity)
             :base(vertexCapacity, hedgeCapacity)
         {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public HeGraph3d(G other)
+            : base(other.Vertices.Capacity, other.Halfedges.Capacity)
+        {
+            Append(other);
         }
 
 
@@ -120,17 +151,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("HeGraph3d (V:{0} E:{1})", Vertices.Count, Halfedges.Count >> 1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public G Duplicate()
-        {
-            return Factory.CreateCopy(this, Set);
+            return String.Format("HeGraph3d (V:{0} E:{1})", Vertices.Count, Edges.Count);
         }
 
 
@@ -182,7 +203,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        public void AppendVertexTopology(HeMeshBase<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
+        public void AppendVertexTopology(HeMesh<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
         {
             AppendVertexTopology(mesh, Set);
         }
@@ -192,36 +213,9 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="mesh"></param>
-        public void AppendFaceTopology(HeMeshBase<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
+        public void AppendFaceTopology(HeMesh<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
         {
            AppendFaceTopology(mesh, Set);
-        }
-
-
-        /// <summary> </summary>
-        private static void Set(V v0, V v1)
-        {
-            v0.Position = v1.Position;
-            v0.Normal = v1.Normal;
-        }
-
-
-        /// <summary> </summary>
-        private static void Set(V v0, HeMesh3d.Vertex v1)
-        {
-            v0.Position = v1.Position;
-            v0.Normal = v1.Normal;
-        }
-
-
-        /// <summary> </summary>
-        private static void Set(V v, HeMesh3d.Face f)
-        {
-            if (!f.IsUnused)
-            {
-                v.Position = f.Vertices.Mean(HeMesh3d.Vertex.GetPosition);
-                v.Normal = f.GetNormal(HeMesh3d.Vertex.GetPosition);
-            }
         }
     }
 
@@ -230,7 +224,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeGraph3dFactory : HeGraphBaseFactory<G, V, E>
+    public class HeGraph3dFactory : HeGraphFactory<G, V, E>
     {
         /// <summary>
         /// 
@@ -261,7 +255,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public G CreateFromVertexTopology(HeMeshBase<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
+        public G CreateFromVertexTopology(HeMesh<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
         {
             var graph = Create(mesh.Vertices.Count, mesh.Halfedges.Count);
             graph.AppendVertexTopology(mesh);
@@ -274,7 +268,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
-        public G CreateFromFaceTopology(HeMeshBase<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
+        public G CreateFromFaceTopology(HeMesh<HeMesh3d.Vertex, HeMesh3d.Halfedge, HeMesh3d.Face> mesh)
         {
             var graph = Create(mesh.Faces.Count, mesh.Halfedges.Count);
             graph.AppendFaceTopology(mesh);

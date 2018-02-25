@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Linq;
 
 using SpatialSlur.SlurCore;
 
@@ -20,7 +16,7 @@ namespace SpatialSlur.SlurMesh
     /// Empty topology-only implementation
     /// </summary>
     [Serializable]
-    public class HeGraph : HeGraphBase<V, E>
+    public class HeGraph : HeGraph<V, E>
     {
         #region Nested types
 
@@ -28,7 +24,7 @@ namespace SpatialSlur.SlurMesh
         /// Default empty vertex
         /// </summary>
         [Serializable]
-        public new class Vertex : HeGraphBase<V, E>.Vertex
+        public new class Vertex : HeGraph<V, E>.Vertex
         {
         }
 
@@ -37,7 +33,7 @@ namespace SpatialSlur.SlurMesh
         /// Default empty halfedge
         /// </summary>
         [Serializable]
-        public new class Halfedge : HeGraphBase<V, E>.Halfedge
+        public new class Halfedge : HeGraph<V, E>.Halfedge
         {
         }
 
@@ -60,6 +56,17 @@ namespace SpatialSlur.SlurMesh
         public HeGraph(int vertexCapacity = DefaultCapacity, int halfedgeCapacity = DefaultCapacity)
             : base(vertexCapacity, halfedgeCapacity)
         {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public HeGraph(G other)
+            : base(other.Vertices.Capacity, other.Halfedges.Capacity)
+        {
+            Append(other);
         }
 
 
@@ -89,17 +96,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("HeGraph (V:{0} E:{1})", Vertices.Count, Halfedges.Count >> 1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public G Duplicate()
-        {
-            return Factory.CreateCopy(this, delegate { }, delegate { });
+            return String.Format("HeGraph (V:{0} E:{1})", Vertices.Count, Edges.Count);
         }
 
 
@@ -152,7 +149,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeGraphFactory : HeGraphBaseFactory<G, V, E>
+    public class HeGraphFactory : HeGraphFactory<G, V, E>
     {
         /// <summary>
         /// 

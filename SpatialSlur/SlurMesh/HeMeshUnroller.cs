@@ -78,18 +78,7 @@ namespace SpatialSlur.SlurMesh
         {
             Impl<V, E, F>.Unroll(mesh, start, getPosition, setUnrolledPosition, getUnrollFactor);
         }
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        private static void Set(HeMesh3d.Vertex v0, HeMesh3d.Vertex v1)
-        {
-            v0.Position = v1.Position;
-        }
-
+   
 
         /// <summary>
         /// 
@@ -100,8 +89,14 @@ namespace SpatialSlur.SlurMesh
         {
             Set(he0.Start, he1.Start);
             Set(he0.End, he1.End);
-        }
 
+            void Set(HeMesh3d.Vertex v0, HeMesh3d.Vertex v1)
+            {
+                v0.Position = v1.Position;
+                v0.Normal = v1.Normal;
+            }
+        }
+   
 
         #region Nested types
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Linq;
 
 using SpatialSlur.SlurCore;
 
@@ -21,7 +17,7 @@ namespace SpatialSlur.SlurMesh
     /// Empty topology-only implementation
     /// </summary>
     [Serializable]
-    public class HeMesh : HeMeshBase<V, E, F>
+    public class HeMesh : HeMesh<V, E, F>
     {
         #region Nested types
 
@@ -29,7 +25,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         [Serializable]
-        public new class Vertex : HeMeshBase<V, E, F>.Vertex
+        public new class Vertex : HeMesh<V, E, F>.Vertex
         {
         }
 
@@ -38,7 +34,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         [Serializable]
-        public new class Halfedge : HeMeshBase<V, E, F>.Halfedge
+        public new class Halfedge : HeMesh<V, E, F>.Halfedge
         {
         }
 
@@ -47,7 +43,7 @@ namespace SpatialSlur.SlurMesh
         ///
         /// </summary>
         [Serializable]
-        public new class Face : HeMeshBase<V, E, F>.Face
+        public new class Face : HeMesh<V, E, F>.Face
         {
         }
 
@@ -80,6 +76,17 @@ namespace SpatialSlur.SlurMesh
         public HeMesh(int vertexCapacity, int hedgeCapacity, int faceCapacity)
             : base(vertexCapacity, hedgeCapacity, faceCapacity)
         {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public HeMesh(M other)
+            : base(other.Vertices.Capacity, other.Halfedges.Capacity, other.Faces.Capacity)
+        {
+            Append(other);
         }
 
 
@@ -119,17 +126,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("HeMesh (V:{0} E:{1} F:{2})", Vertices.Count, Halfedges.Count >> 1, Faces.Count);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public M Duplicate()
-        {
-            return Factory.CreateCopy(this, delegate { }, delegate { }, delegate { });
+            return String.Format("HeMesh (V:{0} E:{1} F:{2})", Vertices.Count, Edges.Count, Faces.Count);
         }
 
 
@@ -202,7 +199,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeMeshFactory : HeMeshBaseFactory<M, V, E, F>
+    public class HeMeshFactory : HeMeshFactory<M, V, E, F>
     {
         /// <summary>
         /// 

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurMesh
 {
@@ -21,7 +20,7 @@ namespace SpatialSlur.SlurMesh
     /// Implementation with double precision vertex attributes commonly used in 3d applications.
     /// </summary>
     [Serializable]
-    public class HeMesh3d : HeMeshBase<V, E, F>
+    public class HeMesh3d : HeMesh<V, E, F>
     {
         #region Nested types
 
@@ -29,26 +28,41 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         [Serializable]
-        public new class Vertex : HeMeshBase<V, E, F>.Vertex, IVertex3d
+        public new class Vertex : HeMesh<V, E, F>.Vertex, IVertex3d
         {
             #region Static
 
-            /// <summary></summary>
-            public static readonly Func<V, Vec3d> GetPosition = v => v.Position;
-            /// <summary></summary>
-            public static readonly Func<V, Vec3d> GetNormal = v => v.Normal;
-            /// <summary></summary>
-            public static readonly Func<V, Vec2d> GetTexture = v => v.Texture;
+            /// <summary>
+            /// 
+            /// </summary>
+            public static class Accessors
+            {
+                /// <summary></summary>
+                public static readonly Property<V, Vec3d> Position = Property.Create<V, Vec3d>(v => v.Position, (v, p) => v.Position = p);
+
+                /// <summary></summary>
+                public static readonly Property<V, Vec3d> Normal = Property.Create<V, Vec3d>(v => v.Normal, (v, n) => v.Normal = n);
+            }
 
             #endregion
 
-
+            
             /// <summary></summary>
             public Vec3d Position { get; set; }
+
             /// <summary></summary>
             public Vec3d Normal { get; set; }
-            /// <summary></summary>
-            public Vec2d Texture { get; set; }
+            
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="other"></param>
+            public void Set(V other)
+            {
+                Position = other.Position;
+                Normal = other.Normal;
+            }
         }
 
 
@@ -56,7 +70,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         [Serializable]
-        public new class Halfedge : HeMeshBase<V, E, F>.Halfedge
+        public new class Halfedge : HeMesh<V, E, F>.Halfedge
         {
         }
 
@@ -65,7 +79,7 @@ namespace SpatialSlur.SlurMesh
         ///
         /// </summary>
         [Serializable]
-        public new class Face : HeMeshBase<V, E, F>.Face
+        public new class Face : HeMesh<V, E, F>.Face
         {
         }
 
@@ -76,6 +90,26 @@ namespace SpatialSlur.SlurMesh
 
         /// <summary></summary>
         public static readonly HeMesh3dFactory Factory = new HeMesh3dFactory();
+
+
+        /// <summary> 
+        /// 
+        /// </summary>
+        private static void Set(V v0, V v1)
+        {
+            v0.Position = v1.Position;
+            v0.Normal = v1.Normal;
+        }
+
+
+        /// <summary> 
+        /// 
+        /// </summary>
+        private static void Set(V vertex, F face)
+        {
+            if (!face.IsUnused)
+                vertex.Position = face.GetBarycenter(V.Accessors.Position);
+        }
 
         #endregion
 
@@ -98,6 +132,17 @@ namespace SpatialSlur.SlurMesh
         public HeMesh3d(int vertexCapacity, int hedgeCapacity, int faceCapacity)
             : base(vertexCapacity, hedgeCapacity, faceCapacity)
         {
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public HeMesh3d(M other)
+            : base(other.Vertices.Capacity, other.Halfedges.Capacity, other.Faces.Capacity)
+        {
+            Append(other);
         }
 
 
@@ -137,19 +182,9 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("HeMesh3d (V:{0} E:{1} F:{2})", Vertices.Count, Halfedges.Count >> 1, Faces.Count);
+            return String.Format("HeMesh3d (V:{0} E:{1} F:{2})", Vertices.Count, Edges.Count, Faces.Count);
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public M Duplicate()
-        {
-            return Factory.CreateCopy(this, Set);
-        }
-
+        
 
         /// <summary>
         /// 
@@ -214,40 +249,26 @@ namespace SpatialSlur.SlurMesh
             return Factory.CreateConnectedComponents(this, componentIndex, edgeIndex, Set);
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="path"></param>
-        public void WriteToOBJ(string path)
+        /// <param name="skipValid"></param>
+        public void CalculateNormals(bool skipValid = false, bool parallel = false)
         {
-            MeshIO.WriteToObj(this, path, V.GetPosition, V.GetNormal, V.GetTexture);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        private static void Set(V v0, V v1)
-        {
-            v0.Position = v1.Position;
-            v0.Normal = v1.Normal;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v"></param>
-        /// <param name="f"></param>
-        private static void Set(V v, F f)
-        {
-            if (!f.IsUnused)
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Vertices.Count), range => Body(range.Item1, range.Item2));
+            else
+                Body(0, Vertices.Count);
+         
+            void Body(int from, int to)
             {
-                v.Position = f.Vertices.Mean(V.GetPosition);
-                v.Normal = f.GetNormal(V.GetPosition);
+                for(int i = from; i < to; i++)
+                {
+                    var v = Vertices[i];
+                    if (v.IsUnused || (skipValid && v.Normal.IsUnit())) continue;
+                    v.Normal = v.GetNormal();
+                }
             }
         }
     }
@@ -257,7 +278,7 @@ namespace SpatialSlur.SlurMesh
     /// 
     /// </summary>
     [Serializable]
-    public class HeMesh3dFactory : HeMeshBaseFactory<M, V, E, F>
+    public class HeMesh3dFactory : HeMeshFactory<M, V, E, F>
     {
         /// <summary>
         /// 
