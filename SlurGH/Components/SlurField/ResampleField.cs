@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
-using SpatialSlur.SlurRhino;
 
 /*
  * Notes
@@ -21,7 +15,7 @@ namespace SpatialSlur.SlurGH.Components
     /// <summary>
     /// 
     /// </summary>
-    public class SampleField : GH_Component
+    public class ResampleField : GH_Component
     {
         private bool _parallel = true;
 
@@ -29,9 +23,9 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// 
         /// </summary>
-        public SampleField()
-          : base("Sample Field", "Sample",
-              "Samples a field at the coordinates of another field.",
+        public ResampleField()
+          : base("Resample Field", "Resample",
+              "Resamples a field with the coordinates of another field.",
               "SpatialSlur", "Field")
         {
         }
@@ -42,8 +36,8 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("source", "source", "Field to sample", GH_ParamAccess.item);
-            pManager.AddGenericParameter("sampler", "sampler", "Field to sample with", GH_ParamAccess.item);
+            pManager.AddGenericParameter("source", "source", "Field to resample from", GH_ParamAccess.item);
+            pManager.AddGenericParameter("target", "target", "Field to resample with", GH_ParamAccess.item);
         }
 
 
@@ -98,7 +92,7 @@ namespace SpatialSlur.SlurGH.Components
                 }
             }
 
-            throw new ArgumentException("The given fields could not be cast to an appropriate type.");
+            throw new ArgumentException("The given fields are incompatible for sampling.");
         }
 
 

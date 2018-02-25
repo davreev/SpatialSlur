@@ -1,24 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
 
+using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
 
 /*
  * Notes
  */
 
-namespace SlurSketchGH.Grasshopper.Components
+namespace SpatialSlur.SlurGH.Components
 {
     /// <summary>
     /// 
     /// </summary>
     public class GeodesicDistance : GH_Component
     {
+        private DistanceMetric _metric = DistanceMetric.Euclidean;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public DistanceMetric Metric
+        {
+            get { return _metric; }
+            set
+            {
+                _metric = value;
+                Message = _metric.ToString();
+            }
+        }
+
+
         /// <summary>
         /// Initializes a new instance of the FastMarching2dTest class.
         /// </summary>
@@ -27,6 +44,7 @@ namespace SlurSketchGH.Grasshopper.Components
                 "Computes the geodesic distance field for a set of sources.",
                 "SpatialSlur", "Field")
         {
+            Metric = DistanceMetric.Euclidean;
         }
 
 
@@ -37,7 +55,6 @@ namespace SlurSketchGH.Grasshopper.Components
         {
             pManager.AddGenericParameter("travelCost", "cost", "", GH_ParamAccess.item);
             pManager.AddIntegerParameter("sources", "sources", "", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("distanceMetric", "metric", "0 = Manhattan (L1), 1 = Euclidean (L2)", GH_ParamAccess.item, 1);
         }
 
 
@@ -62,25 +79,66 @@ namespace SlurSketchGH.Grasshopper.Components
             List<GH_Integer> sources = new List<GH_Integer>();
             if (!DA.GetDataList(1, sources)) return;
 
-            int metric = -1;
-            if (!DA.GetData(2, ref metric)) return;
+            var cost = (GridField2d<double>)costGoo.Value;
+            var result = GridField2d.Double.Create(cost);
 
-            var cost = (GridScalarField2d)costGoo.Value;
-            var dist = new GridScalarField2d(cost);
-
-            switch(metric)
+            switch(_metric)
             {
-                case 0:
-                    SimulationUtil.GeodesicDistanceL1(cost, sources.Select(x => x.Value), dist.Values);
-                    break;
-                case 1:
-                    SimulationUtil.GeodesicDistanceL2(cost, sources.Select(x => x.Value), dist.Values);
-                    break;
+                case DistanceMetric.Manhattan:
+                    {
+                        ProcessingUtil.GeodesicDistanceL1(result, cost, sources.Select(x => x.Value));
+                        break;
+                    }
+                case DistanceMetric.Euclidean:
+                    {
+                        ProcessingUtil.GeodesicDistanceL2(result, cost, sources.Select(x => x.Value));
+                        break;
+                    }
                 default:
-                    throw new NotSupportedException("The specified distance metric is not supported.");
+                    {
+                        throw new NotSupportedException("The specified distance metric is not supported.");
+                    }
             }
             
-            DA.SetData(0, new GH_ObjectWrapper(dist));
+            DA.SetData(0, new GH_ObjectWrapper(result));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="menu"></param>
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        {
+            base.AppendAdditionalComponentMenuItems(menu);
+
+            var sub = Menu_AppendItem(menu, "Distance Metric");
+            Menu_AppendItem(sub.DropDown, "Manhattan", MahattanClicked, true, _metric == DistanceMetric.Manhattan);
+            Menu_AppendItem(sub.DropDown, "Euclidean", EuclideanClicked, true, _metric == DistanceMetric.Euclidean);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MahattanClicked(object sender, EventArgs e)
+        {
+            Metric = DistanceMetric.Manhattan;
+            ExpireSolution(true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void EuclideanClicked(object sender, EventArgs e)
+        {
+            Metric = DistanceMetric.Euclidean;
+            ExpireSolution(true);
         }
 
 

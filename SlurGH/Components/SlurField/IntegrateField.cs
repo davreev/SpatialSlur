@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 using Grasshopper.Kernel;
@@ -10,7 +9,7 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
-using SpatialSlur.SlurRhino;
+using System.Windows.Forms;
 
 /*
  * Notes
@@ -23,6 +22,23 @@ namespace SpatialSlur.SlurGH.Components
     /// </summary>
     public class IntegrateField : GH_Component
     {
+        private IntegrationMode _mode = IntegrationMode.Euler;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IntegrationMode IntegrationMode
+        {
+            get { return _mode; }
+            set
+            {
+                _mode = value;
+                Message = _mode.ToString();
+            }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -31,6 +47,7 @@ namespace SpatialSlur.SlurGH.Components
               "Integrates a vector field from a given point",
               "SpatialSlur", "Field")
         {
+            IntegrationMode = IntegrationMode.Euler;
         }
 
 
@@ -39,11 +56,10 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("vectorField", "vecField", "Field to integrate", GH_ParamAccess.item);
+            pManager.AddGenericParameter("vectorField", "vecField", "Vector field to integrate", GH_ParamAccess.item);
             pManager.AddPointParameter("points", "points", "Start point", GH_ParamAccess.list);
             pManager.AddNumberParameter("stepSize", "stepSize", "", GH_ParamAccess.item, 1.0);
             pManager.AddIntegerParameter("stepCount", "stepCount", "", GH_ParamAccess.item, 100);
-            pManager.AddIntegerParameter("integrationMode", "mode", "0 = Euler, 1 = RK2, 2 = RK4", GH_ParamAccess.item, 2);
         }
 
 
@@ -63,8 +79,8 @@ namespace SpatialSlur.SlurGH.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_ObjectWrapper goo = null;
-            if (!DA.GetData(0, ref goo)) return;
+            GH_ObjectWrapper fieldGoo = null;
+            if (!DA.GetData(0, ref fieldGoo)) return;
 
             var points = new List<Point3d>();
             if (!DA.GetDataList(1, points)) return;
@@ -75,23 +91,27 @@ namespace SpatialSlur.SlurGH.Components
             int stepCount = 0;
             DA.GetData(3, ref stepCount);
 
-            int mode = 0;
-            DA.GetData(4, ref mode);
+            PolylineCurve[] paths = null;
 
-            var value = goo.Value;
+            switch(fieldGoo.Value)
+            {
+                case IField3d<Vec3d> f:
+                    {
+                        paths = SolveInstanceImpl(f, points, stepSize, stepCount);
+                        break;
+                    }
+                case IField2d<Vec2d> f:
+                    {
+                        paths = SolveInstanceImpl(f, points, stepSize, stepCount);
+                        break;
+                    }
+                default:
+                    {
+                        throw new ArgumentException("The given vector field is not recognized.");
+                    }
+            }
 
-            if (value is IField3d<Vec3d>)
-            {
-                var field = (IField3d<Vec3d>)value;
-                var polys = SolveInstanceImpl(field, points, stepSize, stepCount, (IntegrationMode)mode);
-                DA.SetDataList(0, polys);
-            }
-            else if (value is IField2d<Vec2d>)
-            {
-                var field = (IField2d<Vec2d>)value;
-                var polys = SolveInstanceImpl(field, points, stepSize, stepCount, (IntegrationMode)mode);
-                DA.SetDataList(0, polys);
-            }
+            DA.SetDataList(0, paths);
         }
         
 
@@ -103,13 +123,13 @@ namespace SpatialSlur.SlurGH.Components
         /// <param name="stepSize"></param>
         /// <param name="stepCount"></param>
         /// <param name="mode"></param>
-        private PolylineCurve[] SolveInstanceImpl(IField3d<Vec3d> field, List<Point3d> points, double stepSize, int stepCount, IntegrationMode mode)
+        private PolylineCurve[] SolveInstanceImpl(IField3d<Vec3d> field, List<Point3d> points, double stepSize, int stepCount)
         {
             var result = new PolylineCurve[points.Count];
 
             Parallel.For(0, points.Count, i =>
             {
-                var pts = field.IntegrateFrom(points[i], stepSize, mode).Take(stepCount).Select(p => (Point3d)p);
+                var pts = field.IntegrateFrom(points[i], stepSize, _mode).Take(stepCount).Select(p => (Point3d)p);
                 result[i] = new PolylineCurve(pts);
             });
 
@@ -125,7 +145,7 @@ namespace SpatialSlur.SlurGH.Components
         /// <param name="stepSize"></param>
         /// <param name="stepCount"></param>
         /// <param name="mode"></param>
-        private PolylineCurve[] SolveInstanceImpl(IField2d<Vec2d> field, List<Point3d> points, double stepSize, int stepCount, IntegrationMode mode)
+        private PolylineCurve[] SolveInstanceImpl(IField2d<Vec2d> field, List<Point3d> points, double stepSize, int stepCount)
         {
             var result = new PolylineCurve[points.Count];
 
@@ -134,11 +154,62 @@ namespace SpatialSlur.SlurGH.Components
                 Vec3d p0 = points[i];
                 var z = p0.Z;
 
-                var pts = field.IntegrateFrom(p0, stepSize, mode).Take(stepCount).Select(p => new Point3d(p.X, p.Y, z));
+                var pts = field.IntegrateFrom(p0, stepSize, _mode).Take(stepCount).Select(p => new Point3d(p.X, p.Y, z));
                 result[i] = new PolylineCurve(pts);
             });
 
             return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="menu"></param>
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        {
+            base.AppendAdditionalComponentMenuItems(menu);
+
+            var sub = Menu_AppendItem(menu, "Integration mode");
+            Menu_AppendItem(sub.DropDown, "Euler", EulerClicked, true, _mode == IntegrationMode.Euler);
+            Menu_AppendItem(sub.DropDown, "RK2", RK2Clicked, true, _mode == IntegrationMode.RK2);
+            Menu_AppendItem(sub.DropDown, "RK4", RK4Clicked, true, _mode == IntegrationMode.RK4);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void EulerClicked(object sender, EventArgs e)
+        {
+            IntegrationMode = IntegrationMode.Euler;
+            ExpireSolution(true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RK2Clicked(object sender, EventArgs e)
+        {
+            IntegrationMode = IntegrationMode.RK2;
+            ExpireSolution(true);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RK4Clicked(object sender, EventArgs e)
+        {
+            IntegrationMode = IntegrationMode.RK4;
+            ExpireSolution(true);
         }
 
 
