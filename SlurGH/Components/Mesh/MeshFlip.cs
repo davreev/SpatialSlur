@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurRhino;
 
 /*
  * Notes
@@ -38,7 +32,9 @@ namespace SpatialSlur.SlurGH.Components
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddMeshParameter("mesh", "mesh", "Mesh to flip.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("vertexNormalss", "vertexNorms", "", GH_ParamAccess.item, true);
+
+            // TODO make menu items
+            pManager.AddBooleanParameter("vertexNormals", "vertexNorms", "", GH_ParamAccess.item, true);
             pManager.AddBooleanParameter("faceNormals", "faceNorms", "", GH_ParamAccess.item, true);
             pManager.AddBooleanParameter("faceOrientation", "faceOrient", "", GH_ParamAccess.item, true);
         }

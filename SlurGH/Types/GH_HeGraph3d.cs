@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Grasshopper.Kernel;
+﻿using System.Linq;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
@@ -23,6 +17,20 @@ namespace SpatialSlur.SlurGH.Types
     /// </summary>
     public class GH_HeGraph3d : GH_GeometricGoo<HeGraph3d>
     {
+        #region Static
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graph"></param>
+        public static implicit operator HeGraph3d(GH_HeGraph3d graph)
+        {
+            return graph.Value;
+        }
+
+        #endregion
+
+
         private BoundingBox _bbox = BoundingBox.Unset;
 
 
@@ -112,7 +120,7 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override IGH_GeometricGoo DuplicateGeometry()
         {
-            return new GH_HeGraph3d(Value.Duplicate());
+            return new GH_HeGraph3d(new HeGraph3d(Value));
         }
 
 
@@ -223,9 +231,8 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override IGH_GeometricGoo Transform(Transform xform)
         {
-            var copy = Value.Duplicate(); // TODO check if need to copy before transform?
-            copy.Transform(xform);
-            return new GH_HeGraph3d(copy);
+            Value.Transform(xform);
+            return this;
         }
 
 
@@ -236,9 +243,8 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override IGH_GeometricGoo Morph(SpaceMorph xmorph)
         {
-            var copy = Value.Duplicate(); // TODO check if need to copy before transform?
-            copy.SpaceMorph(xmorph);
-            return new GH_HeGraph3d(copy);
+            Value.SpaceMorph(xmorph);
+            return this;
         }
     }
 }

@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-
-using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
 
@@ -43,6 +39,8 @@ namespace SpatialSlur.SlurGH.Components
         {
             pManager.AddLineParameter("lines", "lines", "", GH_ParamAccess.list);
             pManager.AddNumberParameter("tolerance", "tol", "", GH_ParamAccess.item, 1.0e-4);
+
+            // TODO make menu items
             pManager.AddBooleanParameter("allowMulti", "multi", "", GH_ParamAccess.item, false);
             pManager.AddBooleanParameter("allowLoops", "loops", "", GH_ParamAccess.item, false);
         }

@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Grasshopper.Kernel;
-using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
-
-using SpatialSlur.SlurRhino;
 
 using SpatialSlur.SlurGH.Types;
 using SpatialSlur.SlurGH.Params;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurGH.Components
 {
@@ -53,7 +49,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddMeshParameter("result", "result", "Unrolled mesh", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "result", "result", "Unrolled mesh", GH_ParamAccess.item);
         }
 
 
@@ -72,16 +68,24 @@ namespace SpatialSlur.SlurGH.Components
             List<double> factors = new List<double>();
             DA.GetDataList(2, factors);
 
-            var mesh = hemGoo.Value.Duplicate();
+            var mesh = new HeMesh3d(hemGoo.Value);
             var f = mesh.Faces[start];
 
-            // unroll
-            var last = factors.Count - 1;
-            HeMeshUnroller.Unroll(mesh, mesh.Faces[start], he => factors[Math.Min(he >> 1, last)]);
+            // ensures mesh is unrollable
+            HeMeshUnroller.DetachFaceCycles(mesh, f);
 
-            // set normals
+            // perform unroll
+            var unrolled = new Vec3d[mesh.Vertices.Count];
+            var last = factors.Count - 1;
+            HeMeshUnroller.Unroll(mesh, f, (v, p) => unrolled[v] = p, he => factors[Math.Min(he >> 1, last)]);
+
+            // set vertex attributes
             var fn = f.GetNormal(v => v.Position);
-            mesh.Vertices.Action(v => v.Normal = fn);
+            mesh.Vertices.Action(v =>
+            {
+                v.Position = unrolled[v];
+                v.Normal = fn;
+            });
 
             DA.SetData(0, new GH_HeMesh3d(mesh));
         }

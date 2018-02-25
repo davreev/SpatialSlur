@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 using Grasshopper.Kernel;
@@ -108,8 +107,8 @@ namespace SpatialSlur.SlurGH.Components
         /// <param name="getPosition"></param>
         /// <returns></returns>
         IEnumerable<GH_Line> GetEdgeLines<V, E>(HeStructure<V, E> graph, Func<V, Vec3d> getPosition)
-            where V : HeElement<V, E>, IHeVertex<V, E>
-            where E : Halfedge<V, E>, IHalfedge<V, E>
+            where V : HeVertex<V, E>
+            where E : Halfedge<V, E>
         {
             return graph.Edges.Select(he => (he.IsUnused) ? new GH_Line(Line.Unset) : new GH_Line(he.ToLine(getPosition)));
         }

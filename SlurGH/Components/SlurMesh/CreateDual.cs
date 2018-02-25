@@ -1,14 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 using Grasshopper.Kernel;
-using Rhino.Geometry;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
-
-using SpatialSlur.SlurRhino;
 
 using SpatialSlur.SlurGH.Types;
 using SpatialSlur.SlurGH.Params;
@@ -82,7 +74,7 @@ namespace SpatialSlur.SlurGH.Components
                 int n = 0;
 
                 // add verts
-                foreach (var he1 in he0.CirculateFace)
+                foreach (var he1 in he0.Circulate)
                 {
                     var p = he1.Start.Position;
                     mesh.AddVertex().Position = p;
@@ -96,7 +88,7 @@ namespace SpatialSlur.SlurGH.Components
 
                     for (int i = 0; i < n; i += 2)
                     {
-                        var he2 = he1.NextInFace;
+                        var he2 = he1.Next;
                         int j = (i + 2) % n;
 
                         mesh.AddFace(he1.Start, i + 1 + nv, i + nv);

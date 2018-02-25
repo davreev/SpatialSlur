@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurRhino;
-using SpatialSlur.SlurMesh;
 
 using SpatialSlur.SlurGH.Types;
 using SpatialSlur.SlurGH.Params;
@@ -66,7 +60,7 @@ namespace SlurGH.Components
 
             var result = mesh.Value.GetHoles().Select(he0 =>
             {
-                var poly = new Polyline(he0.CirculateFace.Select(he => (Point3d)he.Start.Position));
+                var poly = new Polyline(he0.Circulate.Select(he => (Point3d)he.Start.Position));
                 poly.Add(poly[0]);
 
                 return new GH_Curve(poly.ToNurbsCurve());

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 using Grasshopper.Kernel;
@@ -9,7 +7,6 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
-using SpatialSlur.SlurRhino;
 
 /*
  * Notes
