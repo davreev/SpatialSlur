@@ -416,7 +416,7 @@ namespace SpatialSlur.SlurField
         /// <param name="j"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public int IndexAtUnchecked(int i, int j, int k)
+        public int IndexAtUnsafe(int i, int j, int k)
         {
             return GridUtil.FlattenIndices(i, j, k, _nx, _nxy);
         }
@@ -440,7 +440,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public int IndexAtUnchecked(Vec3d point)
+        public int IndexAtUnsafe(Vec3d point)
         {
             (int i, int j, int k) = IndicesAt(point);
             return GridUtil.FlattenIndices(i, j, k, _nx, _nxy);
@@ -526,10 +526,10 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public GridPoint3d GridPointAtUnchecked(Vec3d point)
+        public GridPoint3d GridPointAtUnsafe(Vec3d point)
         {
             GridPoint3d result = new GridPoint3d();
-            GridPointAtUnchecked(point, result);
+            GridPointAtUnsafe(point, result);
             return result;
         }
 
@@ -540,7 +540,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <param name="point"></param>
         /// <param name="result"></param>
-        public void GridPointAtUnchecked(Vec3d point, GridPoint3d result)
+        public void GridPointAtUnsafe(Vec3d point, GridPoint3d result)
         {
             point = ToGridSpace(point);
 
