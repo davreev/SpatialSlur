@@ -28,7 +28,7 @@ namespace SpatialSlur.SlurDynamics
             set
             {
                 if (value < 0.0 || value > 1.0)
-                    throw new ArgumentOutOfRangeException("Damping must be between 0.0 and 1.0.");
+                    throw new ArgumentOutOfRangeException("The value must be between 0.0 and 1.0.");
 
                 _damping = value;
             }
@@ -92,7 +92,7 @@ namespace SpatialSlur.SlurDynamics
             set
             {
                 if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("Time step cannot be negative.");
+                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
 
                 _timeStep = value;
             }

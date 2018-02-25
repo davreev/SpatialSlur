@@ -132,7 +132,7 @@ namespace SpatialSlur.SlurDynamics
         // http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf
         // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch29.html
 
-        private Vec3d _invInertia = new Vec3d(1.0, 1.0, 1.0); 
+        private Vec3d _invInertia = new Vec3d(1.0, 1.0, 1.0);
 
         /// <summary>
         /// 

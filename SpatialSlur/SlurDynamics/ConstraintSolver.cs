@@ -70,7 +70,7 @@ namespace SpatialSlur.SlurDynamics
 
 
         /// <summary>
-        /// Returns true if the projection magnitude for all given constraints is less than the current tolerance.
+        /// Returns true if all deltas applied by given constraints are less than the current tolerance.
         /// </summary>
         /// <param name="constraints"></param>
         /// <returns></returns>
