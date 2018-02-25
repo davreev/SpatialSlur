@@ -232,7 +232,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies this transformation to the given transformation.
+        /// Applies this transformation to the given transformation in place.
         /// </summary>
         /// <param name="other"></param>
         public void Apply(ref Orient3d other)
@@ -254,7 +254,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this transformation to the given transformation.
+        /// Applies the inverse of this transformation to the given transformation in place.
         /// </summary>
         /// <param name="other"></param>
         public void ApplyInverse(ref Orient3d other)

@@ -134,7 +134,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec2d operator *(Matrix2d matrix, Vec2d vector)
         {
-            return Multiply(ref matrix, vector);
+            return matrix.Apply(vector);
         }
 
 
@@ -144,7 +144,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix2d operator *(Matrix2d m0, Matrix2d m1)
         {
-            return Multiply(ref m0, ref m1);
+            return m0.Apply(m1);
         }
 
 
@@ -196,16 +196,14 @@ namespace SpatialSlur.SlurCore
         }
 
 
+        /*
         /// <summary>
         /// Matrix vector multiplication
         /// </summary>
         /// <returns></returns>
-        public static Vec2d Multiply(ref Matrix2d matrix, Vec2d vector)
+        public static Vec2d Multiply(Matrix2d matrix, Vec2d vector)
         {
-            return new Vec2d(
-                Vec2d.Dot(vector, matrix.Row0),
-                Vec2d.Dot(vector, matrix.Row1)
-                );
+            return matrix.Apply(vector);
         }
 
 
@@ -213,13 +211,11 @@ namespace SpatialSlur.SlurCore
         /// Matrix multiplication
         /// </summary>
         /// <returns></returns>
-        public static Matrix2d Multiply(ref Matrix2d m0, ref Matrix2d m1)
+        public static Matrix2d Multiply(Matrix2d m0, Matrix2d m1)
         {
-            return new Matrix2d(
-                Multiply(ref m0, m1.Column0),
-                Multiply(ref m0, m1.Column1)
-                );
+            return m0.Apply(m1);
         }
+        */
 
 
         /// <summary>
@@ -578,6 +574,34 @@ namespace SpatialSlur.SlurCore
             return false;
         }
 
+
+        /// <summary>
+        /// Applies this transformation to the given vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Vec2d Apply(Vec2d vector)
+        {
+            return new Vec2d(
+               Vec2d.Dot(Row0, vector),
+               Vec2d.Dot(Row1, vector)
+               );
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Matrix2d Apply(Matrix2d other)
+        {
+            return new Matrix2d(
+                Apply(other.Column0),
+                Apply(other.Column1)
+                );
+        }
+        
 
         /// <summary>
         /// 

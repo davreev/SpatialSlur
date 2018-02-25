@@ -430,17 +430,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this rotation to the given vector.
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public Vec3d ApplyInverse(Vec3d vector)
-        {
-            return new Vec3d(Vec3d.Dot(vector, _x), Vec3d.Dot(vector, _y), Vec3d.Dot(vector, _z));
-        }
-
-
-        /// <summary>
         /// Applies this rotation to the given rotation.
         /// </summary>
         /// <param name="other"></param>
@@ -453,7 +442,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies this rotation to the given rotation.
+        /// Applies this rotation to the given rotation in place.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -463,6 +452,17 @@ namespace SpatialSlur.SlurCore
                 Apply(other._x), 
                 Apply(other._y)
                 );
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this rotation to the given vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Vec3d ApplyInverse(Vec3d vector)
+        {
+            return new Vec3d(Vec3d.Dot(vector, _x), Vec3d.Dot(vector, _y), Vec3d.Dot(vector, _z));
         }
 
 
@@ -479,7 +479,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this rotation to the given rotation.
+        /// Applies the inverse of this rotation to the given rotation in place.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>

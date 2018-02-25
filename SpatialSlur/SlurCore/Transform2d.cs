@@ -55,7 +55,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Transform2d operator *(Transform2d t0, Transform2d t1)
         {
-            return t0.Apply(t1);
+            t0.Apply(ref t1);
+            return t1;
         }
 
 
@@ -154,17 +155,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this transformation to the given point.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public Vec2d ApplyInverse(Vec2d point)
-        {
-            return Rotation.ApplyInverse(point - Translation) / Scale;
-        }
-
-
-        /// <summary>
         /// Applies this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
@@ -176,7 +166,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies this transformation to the given transformation.
+        /// Applies this transformation to the given transformation in place.
         /// </summary>
         /// <param name="other"></param>
         public void Apply(ref Transform2d other)
@@ -184,6 +174,17 @@ namespace SpatialSlur.SlurCore
             other.Rotation = Rotation.Apply(other.Rotation);
             other.Translation = Apply(other.Translation);
             other.Scale *= Scale;
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this transformation to the given point.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vec2d ApplyInverse(Vec2d point)
+        {
+            return Rotation.ApplyInverse(point - Translation) / Scale;
         }
 
 
@@ -199,7 +200,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this transformation to the given transformation.
+        /// Applies the inverse of this transformation to the given transformation in place.
         /// </summary>
         /// <param name="other"></param>
         public void ApplyInverse(ref Transform2d other)

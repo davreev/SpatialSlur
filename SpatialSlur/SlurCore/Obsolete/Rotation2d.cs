@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// Orthogonal matrix representation of a 2 dimensional rotation.
     /// </summary>
-    [Obsolete("Renamed to Ortho2d")]
+    [Obsolete("Renamed to OrthoBasis2d")]
     [Serializable]
     public struct Rotation2d
     {
@@ -72,7 +66,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="x"></param>
         public Rotation2d(Vec2d x)
         {
-            _x = x.Direction;
+            _x = x.Unit;
         }
 
 
@@ -104,7 +98,7 @@ namespace SpatialSlur.SlurCore
         public Vec2d X
         {
             get { return _x; }
-            set { _x = value.Direction; }
+            set { _x = value.Unit; }
         }
 
 

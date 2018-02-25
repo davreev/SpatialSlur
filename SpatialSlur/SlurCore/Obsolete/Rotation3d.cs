@@ -1,18 +1,17 @@
 ﻿using System;
-using SpatialSlur.SlurCore;
 
 using static SpatialSlur.SlurCore.CoreUtil;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// Orthogonal matrix representation of a 3 dimensional rotation.
     /// </summary>
-    [Obsolete("Renamed to Ortho3d")]
+    [Obsolete("Renamed to OrthoBasis3d")]
     [Serializable]
     public struct Rotation3d
     {

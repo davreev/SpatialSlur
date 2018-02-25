@@ -298,7 +298,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns a unit length copy or versor of this quaternion.
+        /// Returns a unit length copy of this quaternion.
         /// </summary>
         public Quaterniond Unit
         {
@@ -563,7 +563,7 @@ namespace SpatialSlur.SlurCore
         {
             var ca = Dot(this, other);
    
-            // TODO handle aligned cases
+            // TODO handle "aligned but opposite" case
             if (Math.Abs(ca) > 1.0 - SlurMath.ZeroTolerance)
                 return this;
 
@@ -726,13 +726,15 @@ namespace SpatialSlur.SlurCore
 
         /*
         /// <summary>
-        /// This implementation assumes the given quaternion is unit length
+        ///
         /// </summary>
         /// <returns></returns>
         public Matrix3d ToMatrix()
         {
             // impl ref 
             // http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+
+            // assumes the quaternion is unit length
 
             var xx = X * X;
             var xy = X * Y;

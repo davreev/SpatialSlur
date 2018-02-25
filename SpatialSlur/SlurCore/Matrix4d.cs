@@ -93,7 +93,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec4d operator *(Matrix4d matrix, Vec4d vector)
         {
-            return Multiply(ref matrix, vector);
+            return matrix.Apply(vector);
         }
 
 
@@ -103,7 +103,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix4d operator *(Matrix4d m0, Matrix4d m1)
         {
-            return Multiply(ref m0, ref m1);
+            m0.Apply(ref m1);
+            return m1;
         }
 
 
@@ -197,18 +198,14 @@ namespace SpatialSlur.SlurCore
         }
 
 
+        /*
         /// <summary>
         /// Matrix vector multiplication
         /// </summary>
         /// <returns></returns>
         public static Vec4d Multiply(ref Matrix4d matrix, Vec4d vector)
         {
-            return new Vec4d(
-                Vec4d.Dot(vector, matrix.Row0),
-                Vec4d.Dot(vector, matrix.Row1),
-                Vec4d.Dot(vector, matrix.Row2),
-                Vec4d.Dot(vector, matrix.Row3)
-                );
+            return matrix.Apply(vector);
         }
 
 
@@ -218,13 +215,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix4d Multiply(ref Matrix4d m0, ref Matrix4d m1)
         {
-            return new Matrix4d(
-                Multiply(ref m0, m1.Column0),
-                Multiply(ref m0, m1.Column1),
-                Multiply(ref m0, m1.Column2),
-                Multiply(ref m0, m1.Column3)
-                );
+            return m0.Apply(m1);
         }
+        */
         
         
         /// <summary>
@@ -894,8 +887,50 @@ namespace SpatialSlur.SlurCore
             result = Identity;
             return false;
         }
-
         
+
+        /// <summary>
+        /// Applies this transformation to the given vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Vec4d Apply(Vec4d vector)
+        {
+            return new Vec4d(
+               Vec4d.Dot(Row0, vector),
+               Vec4d.Dot(Row1, vector),
+               Vec4d.Dot(Row2, vector),
+               Vec4d.Dot(Row3, vector)
+               );
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Matrix4d Apply(Matrix4d other)
+        {
+            Apply(ref other);
+            return other;
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation in place.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public void Apply(ref Matrix4d other)
+        {
+            other.Column0 = Apply(other.Column0);
+            other.Column1 = Apply(other.Column1);
+            other.Column2 = Apply(other.Column2);
+            other.Column3 = Apply(other.Column3);
+        }
+
+
         /// <summary>
         /// 
         /// </summary>

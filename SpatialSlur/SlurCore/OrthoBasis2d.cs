@@ -159,17 +159,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Applies the inverse of this rotation to the given vector.
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public Vec2d ApplyInverse(Vec2d vector)
-        {
-            return new Vec2d(Vec2d.Dot(vector, X), Vec2d.Dot(vector, Y));
-        }
-
-
-        /// <summary>
         /// Applies this rotation to the given rotation.
         /// </summary>
         /// <param name="other"></param>
@@ -177,6 +166,17 @@ namespace SpatialSlur.SlurCore
         {
             other._x = Apply(other._x);
             return other;
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this rotation to the given vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Vec2d ApplyInverse(Vec2d vector)
+        {
+            return new Vec2d(Vec2d.Dot(vector, X), Vec2d.Dot(vector, Y));
         }
 
 

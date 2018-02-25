@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 /*
  * Notes
- */ 
+ */
 
 namespace SpatialSlur.SlurCore
 {
@@ -201,7 +198,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        internal double CosAngle
+        public double CosAngle
         {
             get { return _cosAngle; }
         }
@@ -210,7 +207,7 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        internal double SinAngle
+        public double SinAngle
         {
             get { return _sinAngle; }
         }
@@ -274,15 +271,14 @@ namespace SpatialSlur.SlurCore
             if (s2 > 0.0)
             {
                 s2 = Math.Sqrt(s2);
-
                 var s2Inv = 1.0 / s2;
+
                 _axis.X = rotation.X * s2Inv;
                 _axis.Y = rotation.Y * s2Inv;
                 _axis.Z = rotation.Z * s2Inv;
-                
                 _angle = 2.0 * Math.Acos(c2);
 
-                // half-angle identities
+                // double-angle identities
                 _cosAngle = 2.0 * c2 * c2 - 1.0;
                 _sinAngle = 2.0 * c2 * s2;
 
@@ -290,16 +286,6 @@ namespace SpatialSlur.SlurCore
             }
 
             SetIdentity();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rotation"></param>
-        public void Set(OrthoBasis3d rotation)
-        {
-            Set(ref rotation);
         }
 
 
@@ -350,7 +336,7 @@ namespace SpatialSlur.SlurCore
         /// Applies the given rotation to the axis of this rotation.
         /// </summary>
         /// <param name="rotation"></param>
-        public void RotateAxis(AxisAngle3d rotation)
+        public void RotateAxis(ref AxisAngle3d rotation)
         {
             _axis = rotation.Apply(_axis);
         }
@@ -370,19 +356,23 @@ namespace SpatialSlur.SlurCore
         /// Applies the given rotation to the axis of this rotation.
         /// </summary>
         /// <param name="rotation"></param>
-        public void RotateAxis(OrthoBasis3d rotation)
+        public void RotateAxis(ref OrthoBasis3d rotation)
         {
-            RotateAxis(ref rotation);
+            _axis = rotation.Apply(_axis);
         }
 
 
         /// <summary>
-        /// Applies the given rotation to the axis of this rotation.
+        /// 
         /// </summary>
-        /// <param name="rotation"></param>
-        public void RotateAxis(ref OrthoBasis3d rotation)
+        /// <param name="other"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool ApproxEquals(ref AxisAngle3d other, double tolerance = SlurMath.ZeroTolerance)
         {
-            _axis = rotation.Apply(_axis);
+            return
+                SlurMath.ApproxEquals(_angle, other._angle, tolerance) &&
+                _axis.ApproxEquals(other._axis, tolerance);
         }
 
 
@@ -421,6 +411,21 @@ namespace SpatialSlur.SlurCore
         {
             axis = _axis;
             angle = _angle;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void Deconstruct(out Vec3d axis, out double angle, out double cosAngle, out double sinAngle)
+        {
+            axis = _axis;
+            angle = _angle;
+            cosAngle = _cosAngle;
+            sinAngle = _sinAngle;
         }
     }
 }

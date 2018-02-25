@@ -103,7 +103,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d operator *(Matrix3d matrix, Vec3d vector)
         {
-            return Multiply(ref matrix, vector);
+            return matrix.Apply(vector);
         }
 
 
@@ -113,7 +113,8 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix3d operator *(Matrix3d m0, Matrix3d m1)
         {
-            return Multiply(ref m0, ref m1);
+            m0.Apply(ref m1);
+            return m1;
         }
 
 
@@ -183,17 +184,14 @@ namespace SpatialSlur.SlurCore
         }
 
 
+        /*
         /// <summary>
         /// Matrix vector multiplication
         /// </summary>
         /// <returns></returns>
         public static Vec3d Multiply(ref Matrix3d matrix, Vec3d vector)
         {
-            return new Vec3d(
-                Vec3d.Dot(vector, matrix.Row0),
-                Vec3d.Dot(vector, matrix.Row1),
-                Vec3d.Dot(vector, matrix.Row2)
-                );
+            return matrix.Apply(vector);
         }
 
 
@@ -203,12 +201,9 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix3d Multiply(ref Matrix3d m0, ref Matrix3d m1)
         {
-            return new Matrix3d(
-                Multiply(ref m0, m1.Column0),
-                Multiply(ref m0, m1.Column1),
-                Multiply(ref m0, m1.Column2)
-                );
+            return m0.Apply(m1);
         }
+        */
        
 
         /// <summary>
@@ -754,6 +749,46 @@ namespace SpatialSlur.SlurCore
 
             result = Identity;
             return false;
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Vec3d Apply(Vec3d vector)
+        {
+            return new Vec3d(
+               Vec3d.Dot(Row0, vector),
+               Vec3d.Dot(Row1, vector),
+               Vec3d.Dot(Row2, vector)
+               );
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public Matrix3d Apply(Matrix3d other)
+        {
+            Apply(ref other);
+            return other;
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation in place.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public void Apply(ref Matrix3d other)
+        {
+            other.Column0 = Apply(other.Column0);
+            other.Column1 = Apply(other.Column1);
+            other.Column2 = Apply(other.Column2);
         }
 
 
