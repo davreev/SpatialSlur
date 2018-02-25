@@ -95,6 +95,17 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
+        /// For compatibility with environments that don't support value tuples yet.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void GetMin(out K key, out V value)
+        {
+            (key, value) = Min;
+        }
+
+
+        /// <summary>
         /// Removes the minimum element from the queue and returns it.
         /// </summary>
         /// <returns></returns>
@@ -107,6 +118,17 @@ namespace SpatialSlur.SlurData
             Sink(0); // sink to maintain heap invariant
 
             return min;
+        }
+
+
+        /// <summary>
+        /// For compatibility with environments that don't support value tuples yet.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void RemoveMin(out K key, out V value)
+        {
+            (key, value) = RemoveMin();
         }
 
 
@@ -221,20 +243,18 @@ namespace SpatialSlur.SlurData
         }
 
 
-        /*
         /// <summary>
-        /// 
+        /// Removes all items from the queue.
         /// </summary>
-        /// <returns></returns>
-        public V[] ToArrayDebug()
+        public void Clear()
         {
-            return _items.ConvertRange(0, _count, item => item.Value);
+            Array.Clear(_items, 0, _count);
+            _count = 0;
         }
-        */
-
+        
 
         /// <summary>
-        /// Trims the array if capacity is greater than twice the count.
+        /// Reduces the size of the internal array.
         /// </summary>
         public void TrimExcess()
         {
