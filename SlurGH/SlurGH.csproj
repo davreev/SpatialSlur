@@ -37,7 +37,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugRhino|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\..\..\AppData\Roaming\Grasshopper\Libraries\SpatialSlur\</OutputPath>
+    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\SpatialSlur\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -46,7 +46,7 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseRhino|AnyCPU'">
-    <OutputPath>..\..\..\..\..\AppData\Roaming\Grasshopper\Libraries\SpatialSlur\</OutputPath>
+    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\SpatialSlur\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -94,19 +94,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\Display\DisplayFaceColors.cs" />
-    <Compile Include="Components\Display\DisplayFacePlanarity.cs" />
+    <Compile Include="Components\Enums\DistanceMetrics.cs" />
+    <Compile Include="Components\Enums\SimState.cs" />
     <Compile Include="Components\Mesh\AlignVertices.cs" />
     <Compile Include="Components\Mesh\MeshExtrude.cs" />
+    <Compile Include="Components\Mesh\MeshClosedPolyline.cs" />
     <Compile Include="Components\Mesh\MeshLoft.cs" />
     <Compile Include="Components\Mesh\MeshLoftPair.cs" />
     <Compile Include="Components\Mesh\MeshFlip.cs" />
     <Compile Include="Components\Mesh\MeshSeparate.cs" />
     <Compile Include="Components\Display\NormalShader.cs" />
-    <Compile Include="Components\SlurField\CreateGridVectorField.cs" />
-    <Compile Include="Components\SlurField\CreateGridScalarField.cs" />
+    <Compile Include="Components\SlurField\CreateNoiseField.cs" />
+    <Compile Include="Components\SlurField\CreateGridField.cs" />
+    <Compile Include="Components\Enums\FieldType.cs" />
     <Compile Include="Components\SlurField\GeodesicDistance.cs" />
     <Compile Include="Components\SlurField\IntegrateField.cs" />
-    <Compile Include="Components\SlurField\SampleField.cs" />
+    <Compile Include="Components\Enums\NoiseType.cs" />
+    <Compile Include="Components\SlurField\ResampleField.cs" />
     <Compile Include="Components\SlurMesh\CreateDual.cs" />
     <Compile Include="Components\SlurMesh\FacePlanarity.cs" />
     <Compile Include="Components\SlurMesh\HeGraphFromLines.cs" />
@@ -116,6 +120,7 @@
     <Compile Include="Components\SlurMesh\FacePolylines.cs" />
     <Compile Include="Components\SlurMesh\HeMeshUnroll.cs" />
     <Compile Include="Components\SlurMesh\VertexPositions.cs" />
+    <Compile Include="Components\SlurTools\CreateFeature.cs" />
     <Compile Include="Types\GH_HeGraph3d.cs" />
     <Compile Include="Types\GH_HeMesh3d.cs" />
     <Compile Include="Params\HeGraph3dParam.cs" />
