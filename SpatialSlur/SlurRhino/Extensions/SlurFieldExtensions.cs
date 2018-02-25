@@ -182,7 +182,7 @@ namespace SpatialSlur.SlurRhino
             {
                 for (int i = 0; i < nx - 1; i++)
                 {
-                    index = field.IndexAtUnchecked(i, j);
+                    index = field.IndexAtUnsafe(i, j);
                     faces.AddFace(index, index + 1, index + 1 + nx, index + nx);
                 }
             }
