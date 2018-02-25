@@ -17,12 +17,8 @@ namespace SpatialSlur.SlurUnity
     /// <summary>
     /// 
     /// </summary>
-    public static class SlurMathf
+    public static partial class SlurMath
     {
-        /// <summary></summary>
-        public const float ZeroTolerance = 1.0e-6f;
-
-
         /// <summary>
         /// 
         /// </summary>
