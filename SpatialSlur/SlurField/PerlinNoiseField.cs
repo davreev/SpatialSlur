@@ -14,9 +14,9 @@ namespace SpatialSlur.SlurField
         IField2d<double>, IGradient2d<double>, IField2d<Vec2d>,
         IField3d<double>, IGradient3d<double>, IField3d<Vec3d> 
     {
-        public double OffsetX = 0.0;
-        public double OffsetY = 0.0;
-        public double OffsetZ = 0.0;
+        private double _dx = 0.0;
+        private double _dy = 0.0;
+        private double _dz = 0.0;
 
         private double _tx = 1.0;
         private double _ty = 1.0;
@@ -38,9 +38,28 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public double Offset
+        public PerlinNoiseField(Vec2d scale, Vec2d offset)
         {
-            set { OffsetX = OffsetY = OffsetZ = value; }
+            ScaleX = scale.X;
+            ScaleY = scale.Y;
+
+            _dx = offset.X;
+            _dy = offset.Y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PerlinNoiseField(Vec3d scale, Vec3d offset)
+        {
+            ScaleX = scale.X;
+            ScaleY = scale.Y;
+            ScaleZ = scale.Z;
+
+            _dx = offset.X;
+            _dy = offset.Y;
+            _dz = offset.Z;
         }
 
 
@@ -93,6 +112,24 @@ namespace SpatialSlur.SlurField
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public double OffsetX { get => _dx; set => _dx = value; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double OffsetY { get => _dy; set => _dy = value; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double OffsetZ { get => _dz; set => _dz = value; }
+
+
         #region 2d operators
 
         /// <summary>
@@ -101,8 +138,8 @@ namespace SpatialSlur.SlurField
         /// <param name="point"></param>
         private void ToNoiseSpace(ref Vec2d point)
         {
-            point.X = (point.X + OffsetX) * _txInv;
-            point.Y = (point.Y + OffsetY) * _tyInv;
+            point.X = (point.X + _dx) * _txInv;
+            point.Y = (point.Y + _dy) * _tyInv;
         }
 
 
@@ -169,9 +206,9 @@ namespace SpatialSlur.SlurField
         /// <param name="point"></param>
         private void ToNoiseSpace(ref Vec3d point)
         {
-            point.X = (point.X + OffsetX) * _txInv;
-            point.Y = (point.Y + OffsetY) * _tyInv;
-            point.Z = (point.Z + OffsetZ) * _tzInv;
+            point.X = (point.X + _dx) * _txInv;
+            point.Y = (point.Y + _dy) * _tyInv;
+            point.Z = (point.Z + _dz) * _tzInv;
         }
 
 
