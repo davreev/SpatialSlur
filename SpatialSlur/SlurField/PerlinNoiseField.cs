@@ -115,19 +115,31 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public double OffsetX { get => _dx; set => _dx = value; }
+        public double OffsetX
+        {
+            get => _dx;
+            set => _dx = value;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public double OffsetY { get => _dy; set => _dy = value; }
+        public double OffsetY
+        {
+            get => _dy;
+            set => _dy = value;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public double OffsetZ { get => _dz; set => _dz = value; }
+        public double OffsetZ
+        {
+            get => _dz;
+            set => _dz = value;
+        }
 
 
         #region 2d operators

@@ -23,19 +23,31 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public Vec3d Point { get => _point; set => _point = value; }
+        public Vec3d Point
+        {
+            get => _point;
+            set => _point = value;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public T Value { get => _value; set => this._value = value; }
+        public T Value
+        {
+            get => _value;
+            set => _value = value;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public double Influence { get => _influence; set => _influence = value; }
+        public double Influence
+        {
+            get => _influence;
+            set => _influence = value;
+        }
     }
 
 

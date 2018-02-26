@@ -38,6 +38,10 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public Vec3d AngleDelta { get => _angleDelta; set => _angleDelta = value; }
+        public Vec3d AngleDelta
+        {
+            get => _angleDelta;
+            set => _angleDelta = value;
+        }
     }
 }

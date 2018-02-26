@@ -53,13 +53,21 @@ namespace SpatialSlur.SlurDynamics
         /// <summary>
         /// 
         /// </summary>
-        public Vec3d Delta { get => _delta; set => _delta = value; }
+        public Vec3d Delta
+        {
+            get => _delta;
+            set => _delta = value;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public int Index { get => _index; set => _index = value; }
+        public int Index
+        {
+            get => _index;
+            set => _index = value;
+        }
 
 
         #region Explicit interface implementations

@@ -40,7 +40,11 @@ namespace SpatialSlur.SlurDynamics.Constraints
             /// <summary>
             /// 
             /// </summary>
-            internal bool Apply { get => _apply; set => _apply = value; }
+            internal bool Apply
+            {
+                get => _apply;
+                set => _apply = value;
+            }
         }
 
         #endregion

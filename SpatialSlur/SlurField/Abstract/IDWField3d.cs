@@ -58,19 +58,31 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public T DefaultValue { get => _defaultValue; set => _defaultValue = value; }
+        public T DefaultValue
+        {
+            get => _defaultValue;
+            set => _defaultValue = value;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public double DefaultWeight { get => _defaultWeight; set => _defaultWeight = value; }
+        public double DefaultWeight
+        {
+            get => _defaultWeight;
+            set => _defaultWeight = value;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public double Power { get => _power; set => _power = value; }
+        public double Power
+        {
+            get => _power;
+            set => _power = value;
+        }
 
 
         /// <summary>
