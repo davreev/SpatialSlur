@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 /*
  * Notes
@@ -11,7 +12,8 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="V"></typeparam>
     /// <typeparam name="E"></typeparam>
-    public class HeVertex<V, E> : HeNode<V, E>
+    [Serializable]
+    public abstract class HeVertex<V, E> : HeNode<V, E>
         where V : HeVertex<V, E>
         where E : Halfedge<V, E>
     {
@@ -51,7 +53,7 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
-        
+
         /// <summary>
         /// Returns the number of edges at this vertex.
         /// </summary>
@@ -60,7 +62,7 @@ namespace SpatialSlur.SlurMesh
             get { return First.CountAtStart(); }
         }
 
-        
+
         /// <summary>
         /// Returns true if this vertex has 1 outgoing halfedge.
         /// </summary>
@@ -86,7 +88,7 @@ namespace SpatialSlur.SlurMesh
         {
             get { return First.IsAtDegree3; }
         }
-        
+
 
         /// <summary>
         /// Returns true if the number of edges at this vertex is equal to the given value.
@@ -136,7 +138,8 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="V"></typeparam>
     /// <typeparam name="E"></typeparam>
-    public class HeVertex<V, E, F> : HeVertex<V, E>
+    [Serializable]
+    public abstract class HeVertex<V, E, F> : HeVertex<V, E>
         where V : HeVertex<V, E, F>
         where E : Halfedge<V, E, F>
         where F : HeFace<V, E, F>
@@ -227,6 +230,34 @@ namespace SpatialSlur.SlurMesh
             } while (he1 != he0);
 
             return false;
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="V"></typeparam>
+    /// <typeparam name="E"></typeparam>
+    /// <typeparam name="F"></typeparam>
+    /// <typeparam name="G"></typeparam>
+    [Serializable]
+    public abstract class HeVertex<V, E, F, G> : HeVertex<V, E, F>
+       where V : HeVertex<V, E, F, G>
+       where E : Halfedge<V, E, F, G>
+       where F : HeFace<V, E, F, G>
+       where G : HeNode<G, E>
+    {
+        private G _cluster;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public G Cluster
+        {
+            get => _cluster;
+            internal set => _cluster = value;
         }
     }
 }

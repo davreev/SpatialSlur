@@ -65,7 +65,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         [Serializable]
-        public abstract class Face : HeFace<TV, TE, TF>//, IHeFace<TV, TE, TF>
+        public abstract class Face : HeFace<TV, TE, TF>
         {
         }
 

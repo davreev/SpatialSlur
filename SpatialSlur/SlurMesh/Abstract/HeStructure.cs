@@ -251,24 +251,24 @@ namespace SpatialSlur.SlurMesh
         }
     }
 
-
-#if false
+    
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="V"></typeparam>
     /// <typeparam name="E"></typeparam>
     /// <typeparam name="F"></typeparam>
+    /// <typeparam name="G"></typeparam>
     [Serializable]
-    public abstract class HeStructure<V, E, F, B, C> : HeStructure<V, E, F>
-        where V : HeNode<V, E>
-        where E : Halfedge<V, E, F, B, C>
-        where F : HeNode<F, E>
-        where B : HeNode<B, E>
-        where C : HeNode<C, E>
+    public abstract class HeStructure<V, E, F, G> : HeStructure<V, E, F>
+        where V : HeVertex<V, E, F, G>
+        where E : Halfedge<V, E, F, G>
+        where F : HeFace<V, E, F, G>
+        where G : HeNode<G, E>
     {
-        private HeNodeList<B, E> _bundles;
-        private HeNodeList<C, E> _cells;
+        private HeNodeList<G, E> _clusters;
+        private HeNodeList<G, E> _bundles;
+        private HeNodeList<G, E> _cells;
 
 
         /// <summary>
@@ -276,18 +276,19 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="vertexCapacity"></param>
         /// <param name="hedgeCapacity"></param>
-        public HeStructure(int vertexCapacity = DefaultCapacity, int hedgeCapacity = DefaultCapacity, int faceCapacity = DefaultCapacity, int cellCapacity = DefaultCapacity)
+        public HeStructure(int vertexCapacity = DefaultCapacity, int hedgeCapacity = DefaultCapacity, int faceCapacity = DefaultCapacity)
             : base(vertexCapacity, hedgeCapacity, faceCapacity)
         {
-            _bundles = new HeNodeList<B, E>(hedgeCapacity >> 2);
-            _cells = new HeNodeList<C, E>(cellCapacity);
+            _clusters = new HeNodeList<G, E>(vertexCapacity >> 2); // assumes 4 verts per cluster
+            _bundles = new HeNodeList<G, E>(hedgeCapacity >> 3); // assumes 4 edges per bundle
+            _cells = new HeNodeList<G, E>(faceCapacity >> 2); // assumes 4 faces per cell
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public HeNodeList<B, E> Bundles
+        public HeNodeList<G, E> Clusters
         {
             get { return _bundles; }
         }
@@ -296,7 +297,16 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeNodeList<C, E> Cells
+        public HeNodeList<G, E> Bundles
+        {
+            get { return _bundles; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HeNodeList<G, E> Cells
         {
             get { return _cells; }
         }
@@ -306,35 +316,18 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        protected abstract B NewBundle();
+        protected abstract G NewGroup();
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        protected abstract C NewCell();
-
-
-        /// <summary>
-        /// Returns true if the given cell belongs to this mesh.
-        /// </summary>
-        /// <param name="vertex"></param>
-        /// <returns></returns>
-        public bool Owns(B bundle)
+        internal G AddCluster()
         {
-            return _bundles.Owns(bundle);
-        }
-
-
-        /// <summary>
-        /// Returns true if the given cell belongs to this mesh.
-        /// </summary>
-        /// <param name="vertex"></param>
-        /// <returns></returns>
-        public bool Owns(C cell)
-        {
-            return _cells.Owns(cell);
+            var g = NewGroup();
+            _bundles.Add(g);
+            return g;
         }
 
 
@@ -342,11 +335,11 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        internal B AddBundle()
+        internal G AddBundle()
         {
-            var b = NewBundle();
-            _bundles.Add(b);
-            return b;
+            var g = NewGroup();
+            _bundles.Add(g);
+            return g;
         }
 
 
@@ -354,12 +347,11 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        internal C AddCell()
+        internal G AddCell()
         {
-            var c = NewCell();
-            _cells.Add(c);
-            return c;
+            var g = NewGroup();
+            _cells.Add(g);
+            return g;
         }
     }
-#endif
 }

@@ -11,8 +11,7 @@ namespace SpatialSlur.SlurMesh
     /// <summary>
     /// Base halfedge class containing common implementations used by all halfedge structures.
     /// </summary>
-    /// <typeparam name="TV"></typeparam>
-    /// <typeparam name="TE"></typeparam>
+    /// <typeparam name="E"></typeparam>
     [Serializable]
     public abstract class Halfedge<E> : HeElement<E>
         where E : Halfedge<E>
@@ -683,24 +682,22 @@ namespace SpatialSlur.SlurMesh
     }
 
 
-#if false
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="V"></typeparam>
     /// <typeparam name="E"></typeparam>
     /// <typeparam name="F"></typeparam>
+    /// <typeparam name="G"></typeparam>
     [Serializable]
-    public abstract class Halfedge<V, E, F, VV, EE, FF> : Halfedge<V, E, F>
-        where V : HeNode<V, E>
-        where E : Halfedge<V, E, F, B, C>
-        where F : HeNode<F, E>
-        where B : HeNode<B, E>
-        where C : HeNode<C, E>
+    public abstract class Halfedge<V, E, F, G> : Halfedge<V, E, F>
+        where V : HeVertex<V, E, F, G>
+        where E : Halfedge<V, E, F, G>
+        where F : HeFace<V, E, F, G>
+        where G : HeNode<G, E>
     {
         private E _adjacent;
-        private B _bundle;
-        private C _cell;
+        private G _bundle;
 
 
         /// <summary>
@@ -708,49 +705,63 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public E Adjacent
         {
-            get { return _adjacent; }
-            internal set { _adjacent = value; }
+            get => _adjacent;
+            internal set => _adjacent = value;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public B Bundle
+        public G Bundle
         {
-            get { return _bundle; }
-            internal set { _bundle = value; }
+            get => _bundle;
+            internal set => _bundle = value;
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public C Cell
-        {
-            get { return _cell; }
-            internal set { _cell = value; }
-        }
-
-
-        /// <inheritdoc/>
         /// <summary>
         /// 
         /// </summary>
         public bool IsFirstInBundle
         {
-            get { return this == Bundle.First; }
+            get => this == _bundle.First;
         }
 
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsFirstInCluster
+        {
+            get => this == Start.Cluster.First;
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
         public bool IsFirstInCell
         {
-            get { return this == Cell.First; }
+            get => this == Face.Cell.First;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IEnumerable<E> CirculateBundle
+        {
+            get
+            {
+                var he = Self;
+
+                do
+                {
+                    yield return he;
+                    he = he.Twin._adjacent;
+                } while (he != this);
+            }
         }
     }
-#endif
 }

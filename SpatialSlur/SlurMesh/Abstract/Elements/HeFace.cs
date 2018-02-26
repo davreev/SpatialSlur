@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 /*
  * Notes
@@ -11,7 +12,8 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="F"></typeparam>
     /// <typeparam name="E"></typeparam>
-    public class HeFace<V, E, F> : HeNode<F, E>
+    [Serializable]
+    public abstract class HeFace<V, E, F> : HeNode<F, E>
         where V : HeVertex<V, E, F>
         where E : Halfedge<V, E, F>
         where F : HeFace<V, E, F>
@@ -23,8 +25,8 @@ namespace SpatialSlur.SlurMesh
         {
             get { return First.Circulate; }
         }
-        
-        
+
+
         /// <summary>
         /// Circulates through all vertices in this face.
         /// </summary>
@@ -43,7 +45,7 @@ namespace SpatialSlur.SlurMesh
             }
         }
 
-        
+
         /// <summary>
         /// Circulates through all faces adjacent to this face.
         /// Note that if multiple edges are shared with an adjacent face, then that face will be returned multiple times.
@@ -72,7 +74,7 @@ namespace SpatialSlur.SlurMesh
         {
             get { return First.Count(); }
         }
-        
+
 
         /// <summary>
         /// Returns true if this face has 1 edge.
@@ -100,7 +102,7 @@ namespace SpatialSlur.SlurMesh
             get { return First.IsInDegree3; }
         }
 
-        
+
         /// <summary>
         /// Returns true if the face has one or more boundary edges.
         /// </summary>
@@ -120,7 +122,7 @@ namespace SpatialSlur.SlurMesh
                 return false;
             }
         }
-        
+
 
         /// <summary>
         /// Returns true if the number of edges in this face it equal to the given value.
@@ -157,7 +159,7 @@ namespace SpatialSlur.SlurMesh
             return false;
         }
 
-        
+
         /// <summary>
         /// Returns the first halfedge between this face and another or null if none exists.
         /// </summary>
@@ -197,7 +199,7 @@ namespace SpatialSlur.SlurMesh
             return count;
         }
 
-        
+
         /// <summary>
         /// Returns the number of boundary vertices in this face.
         /// </summary>
@@ -215,6 +217,43 @@ namespace SpatialSlur.SlurMesh
             } while (he1 != he0);
 
             return count;
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="V"></typeparam>
+    /// <typeparam name="E"></typeparam>
+    /// <typeparam name="F"></typeparam>
+    /// <typeparam name="G"></typeparam>
+    [Serializable]
+    public abstract class HeFace<V, E, F, G> : HeFace<V, E, F>
+       where V : HeVertex<V, E, F, G>
+       where E : Halfedge<V, E, F, G>
+       where F : HeFace<V, E, F, G>
+       where G : HeNode<G, E>
+    {
+        private G _cell;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public G Cell
+        {
+            get => _cell;
+            internal set => _cell = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public F Twin
+        {
+            get => First.Adjacent.Face;
         }
     }
 }
