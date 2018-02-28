@@ -8,6 +8,8 @@ using SpatialSlur.SlurData;
 
 /*
  * Notes
+ * 
+ * IReadonlyList extension methods are redirected to equivalent array extension methods where possible for better performance.
  */
 
 namespace SpatialSlur.SlurCore
@@ -24,8 +26,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static T[] GetRange<T>(this IReadOnlyList<T> list, int index, int count)
         {
-            if (list is T[])
-                return ArrayExtensions.GetRange((T[])list, index, count);
+            if (list is T[] arr)
+                return ArrayExtensions.GetRange(arr, index, count);
 
             T[] result = new T[count];
             GetRangeImpl(list, index, count, result);
@@ -38,8 +40,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void GetRange<T>(this IReadOnlyList<T> list, int index, int count, IList<T> result)
         {
-            if (list is T[] && result is T[])
-                ArrayExtensions.GetRange((T[])list, index, count, (T[])result);
+            if (list is T[] arr0 && result is T[] arr1)
+                ArrayExtensions.GetRange(arr0, index, count, arr1);
             else
                 GetRangeImpl(list, index, count, result);
         }
@@ -60,8 +62,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static T[] GetSelection<T>(this IReadOnlyList<T> list, IReadOnlyList<int> indices)
         {
-            if (list is T[] && indices is int[])
-                return ArrayExtensions.GetSelection((T[])list, (int[])indices);
+            if (list is T[] arr0 && indices is int[] arr1)
+                return ArrayExtensions.GetSelection(arr0, arr1);
 
             T[] result = new T[indices.Count];
             GetSelectionImpl(list, indices, result);
@@ -74,8 +76,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void GetSelection<T>(this IReadOnlyList<T> list, IReadOnlyList<int> indices, IList<T> result)
         {
-            if (list is T[] && indices is int[] && result is T[])
-                ArrayExtensions.GetSelection((T[])list, (int[])indices, (T[])result);
+            if (list is T[] arr0 && indices is int[] arr1 && result is T[] arr2)
+                ArrayExtensions.GetSelection(arr0, arr1, arr2);
             else
                 GetSelectionImpl(list, indices, result);
         }
@@ -161,9 +163,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="action"></param>
         public static void ActionRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T> action, bool parallel = false)
         {
-            if (source is T[])
+            if (source is T[] arr)
             {
-                ArrayExtensions.ActionRange((T[])source, index, count, action, parallel);
+                ArrayExtensions.ActionRange(arr, index, count, action, parallel);
                 return;
             }
 
@@ -193,9 +195,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="action"></param>
         public static void ActionRange<T>(this IReadOnlyList<T> source, int index, int count, Action<T, int> action, bool parallel = false)
         {
-            if (source is T[])
+            if (source is T[] arr)
             {
-                ArrayExtensions.ActionRange((T[])source, index, count, action, parallel);
+                ArrayExtensions.ActionRange(arr, index, count, action, parallel);
                 return;
             }
 
@@ -226,8 +228,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static U[] ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter, bool parallel = false)
         {
-            if (source is T[])
-                return ArrayExtensions.ConvertRange((T[])source, index, count, converter, parallel);
+            if (source is T[] arr)
+                return ArrayExtensions.ConvertRange(arr, index, count, converter, parallel);
 
             U[] result = new U[count];
             ConvertRangeImpl(source, index, count, converter, result, parallel);
@@ -240,8 +242,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, U> converter, IList<U> result, bool parallel = false)
         {
-            if (source is T[] && result is U[])
-                ArrayExtensions.ConvertRange((T[])source, index, count, converter, (U[])result, parallel);
+            if (source is T[] arr0 && result is U[] arr1)
+                ArrayExtensions.ConvertRange(arr0, index, count, converter, arr1, parallel);
             else
                 ConvertRangeImpl(source, index, count, converter, result, parallel);
         }
@@ -273,8 +275,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static U[] ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, bool parallel = false)
         {
-            if (source is T[])
-                return ArrayExtensions.ConvertRange((T[])source, index, count, converter, parallel);
+            if (source is T[] arr)
+                return ArrayExtensions.ConvertRange(arr, index, count, converter, parallel);
 
             U[] result = new U[count];
             ConvertRangeImpl(source, index, count, converter, result, parallel);
@@ -287,8 +289,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void ConvertRange<T, U>(this IReadOnlyList<T> source, int index, int count, Func<T, int, U> converter, IList<U> result, bool parallel = false)
         {
-            if (source is T[] && result is U[])
-                ArrayExtensions.ConvertRange((T[])source, index, count, converter, (U[])result, parallel);
+            if (source is T[] arr0 && result is U[] arr1)
+                ArrayExtensions.ConvertRange(arr0, index, count, converter, arr1, parallel);
             else
                 ConvertRangeImpl(source, index, count, converter, result, parallel);
         }
@@ -326,9 +328,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void ActionSelection<T>(IReadOnlyList<T> source, IReadOnlyList<int> indices, Action<T> action, bool parallel = false)
         {
-            if (source is T[] && indices is int[])
+            if (source is T[] arr0 && indices is int[] arr1)
             {
-                ArrayExtensions.ActionSelection<T>((T[])source, (int[])indices, action, parallel);
+                ArrayExtensions.ActionSelection<T>(arr0, arr1, action, parallel);
                 return;
             }
 
@@ -353,8 +355,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static U[] ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, bool parallel = false)
         {
-            if (source is T[] && indices is int[])
-                return ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, parallel);
+            if (source is T[] arr0 && indices is int[] arr1)
+                return ArrayExtensions.ConvertSelection(arr0, arr1, converter, parallel);
 
             U[] result = new U[indices.Count];
             ConvertSelectionImpl(source, indices, converter, result, parallel);
@@ -367,8 +369,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, U> converter, IList<U> result, bool parallel = false)
         {
-            if (source is T[] && indices is int[] && result is U[])
-                ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, (U[])result, parallel);
+            if (source is T[] arr0 && indices is int[] arr1 && result is U[] arr2)
+                ArrayExtensions.ConvertSelection(arr0, arr1, converter, arr2, parallel);
             else
                 ConvertSelectionImpl(source, indices, converter, result, parallel);
         }
@@ -400,8 +402,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static U[] ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, bool parallel = false)
         {
-            if (source is T[] && indices is int[])
-                return ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, parallel);
+            if (source is T[] arr0 && indices is int[] arr1)
+                return ArrayExtensions.ConvertSelection(arr0, arr1, converter, parallel);
 
             U[] result = new U[indices.Count];
             ConvertSelectionImpl(source, indices, converter, result, parallel);
@@ -414,8 +416,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void ConvertSelection<T, U>(this IReadOnlyList<T> source, IReadOnlyList<int> indices, Func<T, int, U> converter, IList<U> result, bool parallel = false)
         {
-            if (source is T[] && indices is int[] && result is U[])
-                ArrayExtensions.ConvertSelection((T[])source, (int[])indices, converter, (U[])result, parallel);
+            if (source is T[] arr0 && indices is int[] arr1 && result is U[] arr2)
+                ArrayExtensions.ConvertSelection(arr0, arr1, converter, arr2, parallel);
             else
                 ConvertSelectionImpl(source, indices, converter, result, parallel);
         }

@@ -474,8 +474,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static double Sum(this IEnumerable<double> vector)
         {
-            if (vector is double[])
-                return ArrayMath.Sum((double[])vector);
+            if (vector is double[] arr)
+                return ArrayMath.Sum(arr);
 
             double sum = 0.0;
             foreach (double t in vector) sum += t;
@@ -488,8 +488,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static double Mean(this IEnumerable<double> vector)
         {
-            if (vector is double[])
-                return ArrayMath.Mean((double[])vector);
+            if (vector is double[] arr)
+                return ArrayMath.Mean(arr);
 
             double sum = 0.0;
             int count = 0;
@@ -513,8 +513,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static Vec2d Sum(this IEnumerable<Vec2d> vectors)
         {
-            if (vectors is Vec2d[])
-                return ArrayMath.Sum((Vec2d[])vectors);
+            if (vectors is Vec2d[] arr)
+                return ArrayMath.Sum(arr);
 
             Vec2d sum = new Vec2d();
             foreach (Vec2d v in vectors) sum += v;
@@ -527,8 +527,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static Vec2d Mean(this IEnumerable<Vec2d> vectors)
         {
-            if (vectors is Vec2d[])
-                return ArrayMath.Mean((Vec2d[])vectors);
+            if (vectors is Vec2d[] arr)
+                return ArrayMath.Mean(arr);
 
             Vec2d sum = new Vec2d();
             int count = 0;
@@ -576,8 +576,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static Vec3d Sum(this IEnumerable<Vec3d> vectors)
         {
-            if (vectors is Vec3d[])
-                return ArrayMath.Sum((Vec3d[])vectors);
+            if (vectors is Vec3d[] arr)
+                return ArrayMath.Sum(arr);
 
             var sum = new Vec3d();
             foreach (Vec3d v in vectors) sum += v;
@@ -590,8 +590,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static Vec3d Mean(this IEnumerable<Vec3d> vectors)
         {
-            if (vectors is Vec3d[])
-                return ArrayMath.Mean((Vec3d[])vectors);
+            if (vectors is Vec3d[] arr)
+                return ArrayMath.Mean(arr);
 
             Vec3d sum = new Vec3d();
             int count = 0;
@@ -641,9 +641,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="result"></param>
         public static void Sum(this IEnumerable<double[]> vectors, double[] result)
         {
-            if (vectors is double[][])
+            if (vectors is double[][] arr)
             {
-                ArrayMath.Sum((double[][])vectors, result);
+                ArrayMath.Sum(arr, result);
                 return;
             }
 
@@ -661,9 +661,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="result"></param>
         public static void Mean(this IEnumerable<double[]> vectors, double[] result)
         {
-            if (vectors is double[][])
+            if (vectors is double[][] arr)
             {
-                ArrayMath.Mean((double[][])vectors, result);
+                ArrayMath.Mean(arr, result);
                 return;
             }
 

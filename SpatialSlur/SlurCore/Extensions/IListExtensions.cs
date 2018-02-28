@@ -39,9 +39,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Set<T>(this IList<T> list, IEnumerable<T> sequence)
         {
-            if (list is T[])
+            if (list is T[] arr)
             {
-                ArrayExtensions.Set((T[])list, sequence);
+                ArrayExtensions.Set(arr, sequence);
                 return;
             }
 
@@ -60,9 +60,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void SetRange<T>(this IList<T> list, T value, int index, int count)
         {
-            if (list is T[])
+            if (list is T[] arr)
             {
-                ArrayExtensions.SetRange((T[])list, value, index, count);
+                ArrayExtensions.SetRange(arr, value, index, count);
                 return;
             }
 
@@ -85,9 +85,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void SetRange<T>(this IList<T> list, IReadOnlyList<T> other, int thisIndex, int otherIndex, int count)
         {
-            if (list is T[] && other is T[])
+            if (list is T[] arr0 && other is T[] arr1)
             {
-                ArrayExtensions.SetRange((T[])list, (T[])other, thisIndex, otherIndex, count);
+                ArrayExtensions.SetRange(arr0, arr1, thisIndex, otherIndex, count);
                 return;
             }
 
@@ -101,9 +101,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void SetRange<T>(this IList<T> list, IEnumerable<T> sequence, int index, int count)
         {
-            if(list is T[])
+            if(list is T[] arr)
             {
-                ArrayExtensions.SetRange((T[])list, sequence, index, count);
+                ArrayExtensions.SetRange(arr, sequence, index, count);
                 return;
             }
 
@@ -122,8 +122,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void SetSelection<T>(this IList<T> list, T value, IEnumerable<int> indices)
         {
-            if (list is T[])
-                ArrayExtensions.SetSelection((T[])list, value, indices);
+            if (list is T[] arr)
+            {
+                ArrayExtensions.SetSelection(arr, value, indices);
+                return;
+            }
 
             foreach (int i in indices)
                 list[i] = value;
@@ -135,8 +138,11 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void SetSelection<T>(this IList<T> list, IList<T> other, IList<int> indices)
         {
-            if (list is T[] && other is T[] && indices is int[])
-                ArrayExtensions.SetSelection((T[])list, (T[])other, (int[])indices);
+            if (list is T[] arr0 && other is T[] arr1 && indices is int[] arr2)
+            {
+                ArrayExtensions.SetSelection(arr0, arr1, arr2);
+                return;
+            }
 
             for (int i = 0; i < indices.Count; i++)
                 list[indices[i]] = other[i];
@@ -177,9 +183,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Shuffle<T>(this IList<T> list, Random random)
         {
-            if (list is T[])
+            if (list is T[] arr)
             {
-                ArrayExtensions.Shuffle((T[])list, random);
+                ArrayExtensions.Shuffle(arr, random);
                 return;
             }
 
@@ -214,9 +220,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Shuffle<T>(this IList<T> list, Random random, int index, int count)
         {
-            if (list is T[])
+            if (list is T[] arr)
             {
-                ArrayExtensions.Shuffle((T[])list, random, index, count);
+                ArrayExtensions.Shuffle(arr, random, index, count);
                 return;
             }
 
@@ -242,9 +248,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Shift<T>(this IList<T> list, int offset, int from, int to)
         {
-            if (list is T[])
+            if (list is T[] arr)
             {
-                ArrayExtensions.Shift((T[])list, offset, from, to);
+                ArrayExtensions.Shift(arr, offset, from, to);
                 return;
             }
 
@@ -269,9 +275,9 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Reverse<T>(this IList<T> list, int from, int to)
         {
-            if (list is T[])
+            if (list is T[] arr)
             {
-                Array.Reverse((T[])list, from, to);
+                Array.Reverse(arr, from, to);
                 return;
             }
 
@@ -294,8 +300,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static int FindIndex<T>(this IList<T> list, int index, int length, Predicate<T> match)
         {
-            if (list is T[])
-                return Array.FindIndex((T[])list, index, length, match);
+            if (list is T[] arr)
+                return Array.FindIndex(arr, index, length, match);
 
             for (int i = index; i < index + length; i++)
             {
@@ -313,8 +319,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static int Swim<T>(this IList<T> list, Predicate<T> match)
         {
-            if (list is T[])
-                return ArrayExtensions.Swim((T[])list, match);
+            if (list is T[] arr)
+                return ArrayExtensions.Swim(arr, match);
 
             int marker = 0;
 
@@ -347,8 +353,8 @@ namespace SpatialSlur.SlurCore
         public static T QuickSelect<T>(this IList<T> list, int n, int from, int to)
             where T : IComparable<T>
         {
-            if (list is T[])
-                return ArrayExtensions.QuickSelect((T[])list, n, from, to);
+            if (list is T[] arr)
+                return ArrayExtensions.QuickSelect(arr, n, from, to);
 
             if (n < from || n > to)
                 throw new IndexOutOfRangeException();
@@ -425,8 +431,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static T QuickSelect<T>(this IList<T> list, int n, int from, int to, Comparison<T> compare)
         {
-            if (list is T[])
-                return ArrayExtensions.QuickSelect((T[])list, n, from, to, compare);
+            if (list is T[] arr)
+                return ArrayExtensions.QuickSelect(arr, n, from, to, compare);
 
             if (n < from || n > to)
                 throw new IndexOutOfRangeException();
@@ -487,8 +493,8 @@ namespace SpatialSlur.SlurCore
         public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n, int from, int to)
             where K : IComparable<K>
         {
-            if (keys is K[] && values is V[])
-                return ArrayExtensions.QuickSelect((K[])keys, (V[])values, n, from, to);
+            if (keys is K[] arr0 && values is V[] arr1)
+                return ArrayExtensions.QuickSelect(arr0, arr1, n, from, to);
 
             if (n < from || n > to)
                 throw new IndexOutOfRangeException();
