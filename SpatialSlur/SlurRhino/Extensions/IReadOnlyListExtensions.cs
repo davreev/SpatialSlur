@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 using SpatialSlur.SlurCore;
 using Rhino.Geometry;
+using System;
 
 /*
  * Notes
@@ -25,6 +26,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
+        [Obsolete("Use DataUtil.RemoveCoincident instead")]
         public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, double tolerance = SlurMath.ZeroTolerance)
         {
             return RemoveDuplicatePoints(points, out int[] indexMap, out RTree tree, tolerance);
@@ -38,6 +40,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
+        [Obsolete("Use DataUtil.RemoveCoincident instead")]
         public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, out int[] indexMap, double tolerance = SlurMath.ZeroTolerance)
         {
             return RemoveDuplicatePoints(points, out indexMap, out RTree tree, tolerance);
@@ -52,6 +55,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="tree"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
+        [Obsolete("Use DataUtil.RemoveCoincident instead")]
         public static List<Point3d> RemoveDuplicatePoints(this IReadOnlyList<Point3d> points, out int[] indexMap, out RTree tree, double tolerance = SlurMath.ZeroTolerance)
         {
             indexMap = new int[points.Count];
