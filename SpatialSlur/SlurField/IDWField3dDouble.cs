@@ -63,10 +63,10 @@ namespace SpatialSlur.SlurField
             double sum = DefaultValue * DefaultWeight;
             double wsum = DefaultWeight;
 
-            foreach (var dp in Points)
+            foreach (var obj in Objects)
             {
-                double w = dp.Influence / Math.Pow(point.DistanceTo(dp.Point) + Epsilon, Power);
-                sum += dp.Value * w;
+                double w = obj.Influence / Math.Pow(obj.DistanceTo(point) + Epsilon, Power);
+                sum += obj.Value * w;
                 wsum += w;
             }
 

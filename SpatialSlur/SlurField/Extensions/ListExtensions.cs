@@ -1,35 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SpatialSlur.SlurCore;
-
+﻿
 /*
  * Notes
- */ 
+ */
 
-namespace SpatialSlur.SlurField.Extensions
+using SpatialSlur.SlurCore;
+using System.Collections.Generic;
+
+namespace SpatialSlur.SlurField
 {
     /// <summary>
     /// 
     /// </summary>
     public static class ListExtensions
     {
-        #region List<IDWPoint3d<T>>
+        #region List<IDWObject3d<T>>
 
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="points"></param>
+        /// <param name="objects"></param>
         /// <param name="point"></param>
         /// <param name="value"></param>
         /// <param name="influence"></param>
-        public static void Add<T>(this List<IDWPoint3d<T>> points, Vec3d point, T value, double influence = 1.0)
+        public static void Add<T>(this List<IDWObject3d<T>> objects, Vec3d point, T value, double influence = 1.0)
         {
-            points.Add(IDWPoint3d.Create(point, value, influence));
+            objects.Add(IDWPoint3d.Create(point, value, influence));
         }
 
         #endregion

@@ -29,7 +29,8 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public abstract class IDWField3d<T> : IField2d<T>, IField3d<T>, IGradient2d<T>, IGradient3d<T>
     {
-        private List<IDWPoint3d<T>> _valuePoints = new List<IDWPoint3d<T>>();
+        private List<IDWObject3d<T>> _objects = new List<IDWObject3d<T>>();
+        
         private T _defaultValue;
         private double _defaultWeight;
         private double _power;
@@ -49,9 +50,9 @@ namespace SpatialSlur.SlurField
         /// <summary>
         /// 
         /// </summary>
-        public List<IDWPoint3d<T>> Points
+        public List<IDWObject3d<T>> Objects
         {
-            get { return _valuePoints; }
+            get { return _objects; }
         }
 
 

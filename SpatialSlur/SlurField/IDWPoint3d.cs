@@ -11,49 +11,6 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    [Serializable]
-    public class IDWPoint3d<T>
-    {
-        private Vec3d _point;
-        private T _value;
-        private double _influence = 1.0;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vec3d Point
-        {
-            get => _point;
-            set => _point = value;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public T Value
-        {
-            get => _value;
-            set => _value = value;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Influence
-        {
-            get => _influence;
-            set => _influence = value;
-        }
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
     public static class IDWPoint3d
     {
         /// <summary>
@@ -66,7 +23,8 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static IDWPoint3d<T> Create<T>(Vec3d point, T data, double influence = 1.0)
         {
-            return new IDWPoint3d<T>() {
+            return new IDWPoint3d<T>()
+            {
                 Point = point,
                 Value = data,
                 Influence = influence
@@ -82,7 +40,8 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public static IDWPoint3d<T> Create<T>(IDWPoint3d<T> other)
         {
-            return new IDWPoint3d<T>() {
+            return new IDWPoint3d<T>()
+            {
                 Point = other.Point,
                 Value = other.Value,
                 Influence = other.Influence
@@ -104,6 +63,60 @@ namespace SpatialSlur.SlurField
                 Value = converter(other.Value),
                 Influence = other.Influence
             };
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [Serializable]
+    public class IDWPoint3d<T> : IDWObject3d<T>
+    {
+        private Vec3d _point;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vec3d Point
+        {
+            get => _point;
+            set => _point = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public override double DistanceTo(Vec3d point)
+        {
+            return _point.DistanceTo(point);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override IDWObject3d<T> Duplicate()
+        {
+            return IDWPoint3d.Create(this);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public override IDWObject3d<U> Convert<U>(Func<T, U> converter)
+        {
+            return IDWPoint3d.Create(this, converter);
         }
     }
 }
