@@ -140,6 +140,7 @@
     <Compile Include="SlurDynamics\Constraints\RelativeOrientation.cs" />
     <Compile Include="SlurDynamics\Enums\ConstraintType.cs" />
     <Compile Include="SlurField\Abstract\IDWFieldFactory.cs" />
+    <Compile Include="SlurField\Abstract\IDWObject3d.cs" />
     <Compile Include="SlurField\Abstract\MeshField3d.cs" />
     <Compile Include="SlurField\Abstract\MeshField3dFactory.cs" />
     <Compile Include="SlurField\Extensions\GridField2dExtensions.cs" />
@@ -151,6 +152,7 @@
     <Compile Include="SlurField\GridField3dVec3d.cs" />
     <Compile Include="SlurField\Abstract\GridField3d.cs" />
     <Compile Include="SlurField\GridField2dVec2d.cs" />
+    <Compile Include="SlurField\IDWMesh3d.cs" />
     <Compile Include="SlurField\Isosurface.cs" />
     <Compile Include="SlurField\MeshField3dDouble.cs" />
     <Compile Include="SlurField\MeshField3dVec3d.cs" />
@@ -168,6 +170,7 @@
     <Compile Include="SlurMesh\Abstract\Elements\HeNode.cs" />
     <Compile Include="SlurMesh\Abstract\HeStructure.cs" />
     <Compile Include="SlurMesh\Abstract\Elements\HeVertex.cs" />
+    <Compile Include="SlurMesh\Abstract\HeVolume.cs" />
     <Compile Include="SlurMesh\EdgeList.cs" />
     <Compile Include="SlurMesh\Enums\SmoothBoundaryType.cs" />
     <Compile Include="SlurMesh\Extensions\HeStructureExtensions.cs" />
@@ -195,6 +198,7 @@
     <Compile Include="SlurMesh\Abstract\HeMesh.cs" />
     <Compile Include="SlurRhino\Conversions.cs" />
     <Compile Include="SlurField\Extensions\MeshFieldExtensions.cs" />
+    <Compile Include="SlurRhino\Extensions\ListExtensions.cs" />
     <Compile Include="SlurRhino\RhinoUtil.cs" />
     <Compile Include="SlurDynamics\Constraints\OnCurve.cs" />
     <Compile Include="SlurDynamics\Constraints\OnExtendedMesh.cs" />
