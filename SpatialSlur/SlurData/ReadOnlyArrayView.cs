@@ -41,7 +41,7 @@ namespace SpatialSlur.SlurData
 
 
         /// <summary>
-        /// Note that this does not perform an additional bounds check.
+        /// 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
