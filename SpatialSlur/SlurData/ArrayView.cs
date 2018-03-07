@@ -17,6 +17,88 @@ namespace SpatialSlur.SlurData
     [Serializable]
     public struct ArrayView<T> : IList<T>, IReadOnlyList<T>
     {
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public struct Enumerator : IEnumerator<T>, IEnumerator
+        {
+            private T[] _source;
+            private int _index;
+            private int _end;
+            private T _current;
+            
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="source"></param>
+            /// <param name="start"></param>
+            /// <param name="count"></param>
+            public Enumerator(T[] source, int start, int count)
+            {
+                _source = source;
+                _index = start;
+                _end = start + count;
+                _current = default(T);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public T Current
+            {
+                get => _current;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            object IEnumerator.Current
+            {
+                get => _current;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public bool MoveNext()
+            {
+                if (_index < _end)
+                {
+                    _current = _source[_index++];
+                    return true;
+                }
+
+                return false;
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void Reset()
+            {
+                throw new NotImplementedException();
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void Dispose()
+            {
+            }
+        }
+
+        #endregion
+
+
         private readonly T[] _source;
         private readonly int _start;
         private readonly int _count;
@@ -71,7 +153,7 @@ namespace SpatialSlur.SlurData
             if (start < 0 || count < 0 || start + count > source.Length)
                 throw new ArgumentOutOfRangeException();
 
-            _source = source ?? throw new ArgumentNullException();
+            _source = source;
             _start = start;
             _count = count;
         }
@@ -81,22 +163,8 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public ArrayView(ArrayView<T> other)
-        {
-            _source = other._source;
-            _start = other._start;
-            _count = other._count;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="start"></param>
-        /// <param name="count"></param>
         public ArrayView(ArrayView<T> other, int start, int count)
-            :this(other._source, start + other._start, count)
+            : this(other._source, other._start + start, count)
         {
         }
 
@@ -115,10 +183,9 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<T> GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            for (int i = 0; i < _count; i++)
-                yield return _source[i + _start];
+            return new Enumerator(_source, _start, _count);
         }
 
 
@@ -217,6 +284,16 @@ namespace SpatialSlur.SlurData
         {
             for (int i = 0; i < _count; i++)
                 destination[i + destinationIndex] = _source[i + _start];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
 

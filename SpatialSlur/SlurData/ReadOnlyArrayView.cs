@@ -66,21 +66,9 @@ namespace SpatialSlur.SlurData
             if (start < 0 || count < 0 || start + count > source.Length)
                 throw new ArgumentOutOfRangeException();
 
-            _source = source ?? throw new ArgumentNullException();
+            _source = source;
             _start = start;
             _count = count;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        public ReadOnlyArrayView(ReadOnlyArrayView<T> other)
-        {
-            _source = other._source;
-            _start = other._start;
-            _count = other._count;
         }
 
 
@@ -91,7 +79,7 @@ namespace SpatialSlur.SlurData
         /// <param name="start"></param>
         /// <param name="count"></param>
         public ReadOnlyArrayView(ReadOnlyArrayView<T> other, int start, int count)
-            :this(other._source, start + other._start, count)
+            :this(other._source, other._start + start, count)
         {
         }
 
@@ -100,14 +88,23 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<T> GetEnumerator()
+        public ArrayView<T>.Enumerator GetEnumerator()
         {
-            for (int i = 0; i < _count; i++)
-                yield return _source[i + _start];
+            return new ArrayView<T>.Enumerator(_source, _start, _count);
         }
 
 
         #region Explicit interface implementations
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
 
         /// <summary>
         /// 

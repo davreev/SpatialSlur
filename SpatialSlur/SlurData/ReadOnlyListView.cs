@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurData
     [Serializable]
     public struct ReadOnlyListView<T> : IReadOnlyList<T>
     {
-        private readonly IReadOnlyList<T> _source;
+        private readonly List<T> _source;
         private readonly int _start;
         private readonly int _count;
 
@@ -61,7 +61,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public bool IsValid
         {
-            get { return _start > 0 && _count > 0 && _start + _count <= _source.Count; }
+            get { return _start + _count <= _source.Count; }
         }
 
 
@@ -71,27 +71,13 @@ namespace SpatialSlur.SlurData
         /// <param name="source"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>
-        public ReadOnlyListView(IReadOnlyList<T> source, int start, int count)
+        public ReadOnlyListView(List<T> source, int start, int count)
         {
-            if (source == null)
-                throw new ArgumentNullException("source");
-
             if (start < 0 || count < 0 || start + count > source.Count)
                 throw new ArgumentOutOfRangeException();
 
-            // avoid performance degradation from recursive referencing
-            if (source is ReadOnlyListView<T>)
-            {
-                var other = (ReadOnlyListView<T>)source;
-                _source = other._source;
-                _start = start + other._start;
-            }
-            else
-            {
-                _source = source;
-                _start = start;
-            }
-
+            _source = source;
+            _start = start;
             _count = count;
         }
 
@@ -99,15 +85,36 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public IEnumerator<T> GetEnumerator()
+        /// <param name="source"></param>
+        /// <param name="start"></param>
+        /// <param name="count"></param>
+        public ReadOnlyListView(ReadOnlyListView<T> other, int start, int count)
+            : this(other._source, other._start + start, count)
         {
-            for (int i = 0; i < _count; i++)
-                yield return _source[i + _start];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public ListView<T>.Enumerator GetEnumerator()
+        {
+            return new ListView<T>.Enumerator(_source, _start, _count);
         }
 
 
         #region Explicit interface implementations
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
 
         /// <summary>
         /// 

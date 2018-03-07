@@ -488,20 +488,6 @@ namespace SpatialSlur.SlurCore
                 yield return source[i + index];
         }
 
-
-        /// <summary>
-        /// Allows enumeration over segments of the given list.
-        /// </summary>
-        public static IEnumerable<ReadOnlyListView<T>> Batch<T>(this IReadOnlyList<T> source, IEnumerable<int> sizes)
-        {
-            int marker = 0;
-            foreach (int n in sizes)
-            {
-                yield return new ReadOnlyListView<T>(source, marker, n);
-                marker += n;
-            }
-        }
-
         #endregion
 
 

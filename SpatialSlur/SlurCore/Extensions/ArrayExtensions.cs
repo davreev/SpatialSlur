@@ -154,10 +154,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public static void SetSelection<T>(this T[] array, T[] other, int[] indices)
+        public static void SetSelection<T>(this T[] array, T[] values, int[] indices)
         {
             for (int i = 0; i < indices.Length; i++)
-                array[indices[i]] = other[i];
+                array[indices[i]] = values[i];
         }
         
 
