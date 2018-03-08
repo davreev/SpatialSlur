@@ -177,33 +177,33 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override bool CastFrom(object source)
         {
-            if (source is HeGraph3d)
+            if (source is HeGraph3d g)
             {
-                Value = (HeGraph3d)source;
+                Value = g;
                 return true;
             }
 
-            if (source is HeMesh3d)
+            if (source is HeMesh3d hem)
             {
-                Value = HeGraph3d.Factory.CreateFromVertexTopology((HeMesh3d)source);
+                Value = HeGraph3d.Factory.CreateFromVertexTopology(hem);
                 return true;
             }
 
-            if (source is Mesh)
+            if (source is Mesh m)
             {
-                Value = ((Mesh)source).ToHeGraph();
+                Value = m.ToHeGraph();
                 return true;
             }
 
-            if (source is GH_HeMesh3d)
+            if (source is GH_HeMesh3d ghem)
             {
-                Value = HeGraph3d.Factory.CreateFromVertexTopology(((GH_HeMesh3d)source).Value);
+                Value = HeGraph3d.Factory.CreateFromVertexTopology(ghem.Value);
                 return true;
             }
 
-            if (source is GH_Mesh)
+            if (source is GH_Mesh gm)
             {
-                Value = ((GH_Mesh)source).Value.ToHeGraph();
+                Value = gm.Value.ToHeGraph();
                 return true;
             }
             

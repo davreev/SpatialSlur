@@ -25,7 +25,7 @@ namespace SpatialSlur.SlurGH.Components
         /// 
         /// </summary>
         public HeGraphFromLines()
-          : base("Create From Lines", "FromLns",
+          : base("HeGraph From Lines", "FromLns",
               "Creates a halfedge graph from a list of line segments",
               "SpatialSlur", "Mesh")
         {

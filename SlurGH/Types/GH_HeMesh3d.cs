@@ -191,21 +191,21 @@ namespace SpatialSlur.SlurGH.Types
         /// <returns></returns>
         public override bool CastFrom(object source)
         {
-            if (source is HeMesh3d)
+            if (source is HeMesh3d hem)
             {
-                Value = (HeMesh3d)source;
+                Value = hem;
                 return true;
             }
 
-            if (source is Mesh)
+            if (source is Mesh m)
             {
-                Value = ((Mesh)source).ToHeMesh();
+                Value = m.ToHeMesh();
                 return true;
             }
 
-            if (source is GH_Mesh)
+            if (source is GH_Mesh gm)
             {
-                Value = ((GH_Mesh)source).Value.ToHeMesh();
+                Value = gm.Value.ToHeMesh();
                 return true;
             }
          

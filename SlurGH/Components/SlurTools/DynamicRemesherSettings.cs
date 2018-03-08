@@ -33,11 +33,11 @@ namespace SpatialSlur.SlurGH.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddIntervalParameter("lengthRange", "lengthRange", "", GH_ParamAccess.item);
-            pManager.AddNumberParameter("lengthTolerance", "lengthTolerance", "", GH_ParamAccess.item, 0.1);
+            pManager.AddNumberParameter("lengthTolerance", "lengthTol", "", GH_ParamAccess.item, 0.1);
 
             pManager.AddNumberParameter("featureWeight", "featureWeight", "", GH_ParamAccess.item, 100.0);
-            pManager.AddNumberParameter("featureTolerance", "featureTolerance", "", GH_ParamAccess.item, 0.01);
-
+            pManager.AddNumberParameter("featureTolerance", "featureTol", "", GH_ParamAccess.item, 0.01);
+            
             pManager.AddNumberParameter("damping", "damping", "", GH_ParamAccess.item, 0.5);
             pManager.AddNumberParameter("timeStep", "timeStep", "", GH_ParamAccess.item, 1.0);
 
