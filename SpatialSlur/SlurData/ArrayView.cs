@@ -1,12 +1,11 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
-
-using static SpatialSlur.SlurCore.CoreUtil;
-
-/*
-* Notes
-*/
 
 namespace SpatialSlur.SlurData
 {
@@ -109,7 +108,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int Start
         {
-            get { return _start; }
+            get => _start;
         }
 
 
@@ -118,27 +117,20 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int Count
         {
-            get { return _count; }
+            get => _count;
         }
 
 
         /// <summary>
-        /// 
+        /// Gets or sets the element at the given index with respect to this view.
+        /// Note that this does not perform an additional bounds check.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public T this[int index]
         {
-            get
-            {
-                BoundsCheck(index, _count);
-                return _source[index + _start];
-            }
-            set
-            {
-                BoundsCheck(index, _count);
-                _source[index + _start] = value;
-            }
+            get => _source[index + _start];
+            set => _source[index + _start] = value;
         }
         
 
@@ -162,10 +154,12 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="other"></param>
-        public ArrayView(ArrayView<T> other, int start, int count)
-            : this(other._source, other._start + start, count)
+        /// <param name="start"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public ArrayView<T> GetSubView(int start, int count)
         {
+            return new ArrayView<T>(_source, _start + start, count);
         }
 
 

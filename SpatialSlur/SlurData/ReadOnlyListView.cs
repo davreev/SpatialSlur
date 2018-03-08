@@ -1,12 +1,11 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
-
-using static SpatialSlur.SlurCore.CoreUtil;
-
-/*
-* Notes
-*/
 
 namespace SpatialSlur.SlurData
 {
@@ -27,7 +26,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int Start
         {
-            get { return _start; }
+            get => _start;
         }
 
 
@@ -36,22 +35,19 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public int Count
         {
-            get { return _count; }
+            get => _count;
         }
 
 
         /// <summary>
-        /// 
+        /// Gets the element at the given index with respect to this view.
+        /// Note that this does not perform an additional bounds check.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public T this[int index]
         {
-            get
-            {
-                BoundsCheck(index, _count);
-                return _source[index + _start];
-            }
+            get => _source[index + _start];
         }
 
 
@@ -61,7 +57,7 @@ namespace SpatialSlur.SlurData
         /// </summary>
         public bool IsValid
         {
-            get { return _start + _count <= _source.Count; }
+            get => _start + _count <= _source.Count;
         }
 
 
@@ -85,12 +81,12 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>
-        public ReadOnlyListView(ReadOnlyListView<T> other, int start, int count)
-            : this(other._source, other._start + start, count)
+        /// <returns></returns>
+        public ReadOnlyListView<T> GetSubView(int start, int count)
         {
+            return new ReadOnlyListView<T>(_source, _start + start, count);
         }
 
 
