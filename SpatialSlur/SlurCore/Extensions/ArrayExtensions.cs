@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Drawing;
-using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -14,7 +13,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
-    public static class ArrayExtensions
+    public static partial class ArrayExtensions
     {
         #region T[]
 
@@ -86,7 +85,7 @@ namespace SpatialSlur.SlurCore
         {
             Array.Clear(array, index, count);
         }
-        
+
 
         /// <summary>
         /// 
@@ -146,7 +145,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void SetSelection<T>(this T[] array, T value, IEnumerable<int> indices)
         {
-            foreach(int i in indices)
+            foreach (int i in indices)
                 array[i] = value;
         }
 
@@ -158,20 +157,6 @@ namespace SpatialSlur.SlurCore
         {
             for (int i = 0; i < indices.Length; i++)
                 array[indices[i]] = values[i];
-        }
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="array"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public static ArrayView<T> GetView<T>(this T[] array, int index, int count)
-        {
-            return new ArrayView<T>(array, index, count);
         }
 
 
@@ -274,7 +259,7 @@ namespace SpatialSlur.SlurCore
         {
             ConvertRange(source, 0, source.Length, converter, result, parallel);
         }
-       
+
 
         /// <summary>
         /// 
@@ -473,7 +458,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void ConvertSelection<T, U>(this T[] source, int[] indices, Func<T, int, U> converter, U[] result, bool parallel = false)
         {
-            if(parallel)
+            if (parallel)
             {
                 Parallel.ForEach(Partitioner.Create(0, indices.Length), range =>
                 {
@@ -493,7 +478,7 @@ namespace SpatialSlur.SlurCore
                 }
             }
         }
-        
+
 
         /// <summary>
         /// 
@@ -531,20 +516,6 @@ namespace SpatialSlur.SlurCore
         {
             for (int i = 0; i < count; i += n)
                 yield return source[i + index];
-        }
-
-
-        /// <summary>
-        /// Allows enumeration over segments of the given list.
-        /// </summary>
-        public static IEnumerable<ReadOnlyArrayView<T>> Batch<T>(this T[] source, IEnumerable<int> sizes)
-        {
-            int marker = 0;
-            foreach (int n in sizes)
-            {
-                yield return new ReadOnlyArrayView<T>(source, marker, n);
-                marker += n;
-            }
         }
 
 
@@ -981,219 +952,6 @@ namespace SpatialSlur.SlurCore
                 return vectors[last];
 
             return vectors[i].LerpTo(vectors[i + 1], t);
-        }
-
-        #endregion
-
-
-        #region double[][]
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this double[][] vectors, double t, double[] result, bool parallel = false)
-        {
-            Lerp(vectors, t, vectors[0].Length, result, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this double[][] vectors, double t, int size, double[] result, bool parallel = false)
-        {
-            int last = vectors.Length - 1;
-            t = SlurMath.Fract(t * last, out int i);
-
-            if (i < 0)
-                result.Set(vectors[0]);
-            else if (i >= last)
-                result.Set(vectors[last]);
-         
-            if(parallel)
-                ArrayMath.Parallel.Lerp(vectors[i], vectors[i + 1], t, size, result);
-            else
-                ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this double[][] vectors, double[] t, double[] result, bool parallel = false)
-        {
-            Lerp(vectors, t, vectors[0].Length, result, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this double[][] vectors, double[] t, int size, double[] result, bool parallel = false)
-        {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, size), range => Body(range.Item1, range.Item2));
-            else
-                Body(0, size);
-
-            void Body(int from, int to)
-            {
-                int last = vectors.Length - 1;
-                
-                for (int j = from; j < to; j++)
-                {
-                    double tj = SlurMath.Fract(t[j] * last, out int i);
-
-                    if (i < 0)
-                        result[j] = vectors[0][j];
-                    else if (i >= last)
-                        result[j] = vectors[last][j];
-                    
-                    result[j] = SlurMath.Lerp(vectors[i][j], vectors[i + 1][j], tj);
-                }
-            }
-        }
-
-        #endregion
-
-
-        #region Vec2d[][]
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double t, Vec2d[] result, bool parallel = false)
-        {
-            Lerp(vectors, t, vectors[0].Length, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double t, int size, Vec2d[] result, bool parallel = false)
-        {
-            int last = vectors.Length - 1;
-            t = SlurMath.Fract(t * last, out int i);
-
-            if (i < 0)
-                result.Set(vectors[0]);
-            else if (i >= last)
-                result.Set(vectors[last]);
-
-            if(parallel)
-                ArrayMath.Parallel.Lerp(vectors[i], vectors[i + 1], t, size, result);
-            else
-                ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double[] t, Vec2d[] result, bool parallel = false)
-        {
-            Lerp(vectors, t, vectors[0].Length, result, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec2d[][] vectors, double[] t, int size, Vec2d[] result, bool parallel = false)
-        {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, size), range => Body(range.Item1, range.Item2));
-            else
-                Body(0, size);
-
-            void Body(int from, int to)
-            {
-                int last = vectors.Length - 1;
-
-                for (int j = from; j < to; j++)
-                {
-                    double tj = SlurMath.Fract(t[j] * last, out int i);
-
-                    if (i < 0)
-                        result[j] = vectors[0][j];
-                    else if (i >= last)
-                        result[j] = vectors[last][j];
-                    else
-                        result[j] = Vec2d.Lerp(vectors[i][j], vectors[i + 1][j], tj);
-                }
-            }
-        }
-
-        #endregion
-
-
-        #region Vec3d[][]
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double t, Vec3d[] result, bool parallel = false)
-        {
-            Lerp(vectors, t, vectors[0].Length, result, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double t, int size, Vec3d[] result, bool parallel = false)
-        {
-            int last = vectors.Length - 1;
-            t = SlurMath.Fract(t * last, out int i);
-
-            if (i < 0)
-                result.Set(vectors[0]);
-            else if (i >= last)
-                result.Set(vectors[last]);
-
-            if(parallel)
-                ArrayMath.Parallel.Lerp(vectors[i], vectors[i + 1], t, size, result);
-            else
-                ArrayMath.Lerp(vectors[i], vectors[i + 1], t, size, result);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double[] t, Vec3d[] result, bool parallel = false)
-        {
-            Lerp(vectors, t, vectors[0].Length, result, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Lerp(this Vec3d[][] vectors, double[] t, int size, Vec3d[] result, bool parallel = false)
-        {
-            if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, size), range => Body(range.Item1, range.Item2));
-            else
-                Body(0, size);
-            
-            void Body(int from, int to)
-            {
-                int last = vectors.Length - 1;
-
-                for (int j = from; j < to; j++)
-                {
-                    double tj = SlurMath.Fract(t[j] * last, out int i);
-
-                    if (i < 0)
-                        result[j] = vectors[0][j];
-                    else if (i >= last)
-                        result[j] = vectors[last][j];
-                    else
-                        result[j] = Vec3d.Lerp(vectors[i][j], vectors[i + 1][j], tj);
-                }
-            }
         }
 
         #endregion

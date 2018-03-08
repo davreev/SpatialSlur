@@ -1,19 +1,17 @@
-﻿using System.Collections.Generic;
-
-using SpatialSlur.SlurCore;
-
+﻿
 /*
  * Notes
- * 
- * All IList extension methods are redirected to equivalent array extension methods where possible for better performance.
  */
 
-namespace SpatialSlur.SlurData
+using System.Collections.Generic;
+using SpatialSlur.SlurData;
+
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class IListExtensions
+    public static partial class IListExtensions
     {
         #region IList<Vec2d>
 

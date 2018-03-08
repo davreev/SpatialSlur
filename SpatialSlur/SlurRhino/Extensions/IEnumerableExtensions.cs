@@ -1,21 +1,22 @@
-﻿#if USING_RHINO
-
-using System.Collections.Generic;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
-using Rhino.Geometry;
-
+﻿
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino
+#if USING_RHINO
+
+using System.Collections.Generic;
+using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
+using SpatialSlur.SlurRhino;
+using Rhino.Geometry;
+
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class IEnumerableExtensions
+    public static partial class IEnumerableExtensions
     {
         #region IEnumerable<Vector3d>
 

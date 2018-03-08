@@ -5,16 +5,17 @@
 
 #if USING_RHINO
 
-using Rhino.Geometry;
-using SpatialSlur.SlurField;
 using System.Collections.Generic;
+using SpatialSlur.SlurField;
+using SpatialSlur.SlurRhino;
+using Rhino.Geometry;
 
-namespace SpatialSlur.SlurRhino
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class ListExtensions
+    public static partial class ListExtensions
     {
         #region List<IDWMesh3d<T>>
 

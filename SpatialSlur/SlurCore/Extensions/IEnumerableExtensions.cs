@@ -13,7 +13,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
-    public static class IEnumerableExtensions
+    public static partial class IEnumerableExtensions
     {
         #region IEnumerable<T>
         

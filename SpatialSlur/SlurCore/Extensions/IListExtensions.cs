@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 /*
  * Notes
  * 
  * IList extension methods are redirected to equivalent array extension methods where possible for better performance.
  */
 
+using System;
+using System.Collections.Generic;
+
 namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class IListExtensions
+    public static partial class IListExtensions
     {
         #region IList<T>
 

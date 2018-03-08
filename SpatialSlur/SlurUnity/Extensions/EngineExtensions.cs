@@ -1,4 +1,9 @@
-﻿#if USING_UNITY
+﻿
+/*
+ * Notes
+ */
+
+#if USING_UNITY
 
 using System;
 using System.Collections.Generic;
@@ -11,10 +16,6 @@ using UnityEngine;
 
 using static SpatialSlur.SlurCore.CoreUtil;
 
-/*
- * Notes
- */ 
-
 namespace SpatialSlur.SlurUnity
 {
     /// <summary>
@@ -22,7 +23,22 @@ namespace SpatialSlur.SlurUnity
     /// </summary>
     public static class EngineExtensions
     {
-#region Matrix4x4
+        #region Matrix4x4
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="scale"></param>
+        /// <param name="rotation"></param>
+        /// <param name="translation"></param>
+        public static void Deconstruct(this Matrix4x4 matrix, out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+        {
+            scale = matrix.ExtractScale();
+            rotation = matrix.ExtractRotation();
+            translation = matrix.ExtractTranslation();
+        }
+
 
         /// <summary>
         /// 
@@ -81,7 +97,7 @@ namespace SpatialSlur.SlurUnity
             return matrix;
         }
 
-#endregion
+        #endregion
     }
 }
 

@@ -17,7 +17,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
-    public static class IReadOnlyListExtensions
+    public static partial class IReadOnlyListExtensions
     {
         #region IReadOnlyList<T>
 

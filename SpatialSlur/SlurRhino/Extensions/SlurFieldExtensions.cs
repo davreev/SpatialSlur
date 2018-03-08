@@ -276,7 +276,6 @@ namespace SpatialSlur.SlurRhino
         }
 
         #endregion
-
     }
 }
 

@@ -2,16 +2,16 @@
 /*
  * Notes
  */
-
-using SpatialSlur.SlurCore;
+ 
 using System.Collections.Generic;
+using SpatialSlur.SlurField;
 
-namespace SpatialSlur.SlurField
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class ListExtensions
+    public static partial class ListExtensions
     {
         #region List<IDWObject3d<T>>
 

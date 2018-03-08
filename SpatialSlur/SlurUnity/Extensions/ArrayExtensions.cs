@@ -1,24 +1,19 @@
-﻿#if USING_UNITY
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SpatialSlur.SlurCore;
-using UnityEngine;
-
+﻿
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurUnity
+#if USING_UNITY
+
+using System;
+using UnityEngine;
+
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class ArrayExtensions
+    public static partial class ArrayExtensions
     {
         #region IReadOnlyList<Color>
 

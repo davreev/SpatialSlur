@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using SpatialSlur.SlurData;
-
 /*
  * Notes
  */
@@ -12,7 +10,7 @@ namespace SpatialSlur.SlurCore
     /// <summary>
     /// 
     /// </summary>
-    public static class ListExtensions
+    public static partial class ListExtensions
     {
         #region List<T>
 
@@ -61,20 +59,6 @@ namespace SpatialSlur.SlurCore
         {
             while (list.Count < count)
                 list.Add(value);
-        }
-
-
-        /// <summary>
-        /// Allows enumeration over segments of the given list.
-        /// </summary>
-        public static IEnumerable<ReadOnlyListView<T>> Batch<T>(this List<T> source, IEnumerable<int> sizes)
-        {
-            int marker = 0;
-            foreach (int n in sizes)
-            {
-                yield return new ReadOnlyListView<T>(source, marker, n);
-                marker += n;
-            }
         }
 
         #endregion

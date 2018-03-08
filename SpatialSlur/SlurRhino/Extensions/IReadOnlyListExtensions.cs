@@ -1,22 +1,21 @@
-﻿#if USING_RHINO
-
-using System.Collections.Generic;
-
-
-using SpatialSlur.SlurCore;
-using Rhino.Geometry;
-using System;
-
+﻿
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurRhino
+#if USING_RHINO
+
+using System;
+using System.Collections.Generic;
+using SpatialSlur.SlurRhino;
+using Rhino.Geometry;
+
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class IReadOnlyListExtensions
+    public static partial class IReadOnlyListExtensions
     {
         #region IReadOnlyList<Point3d>
 
