@@ -57,7 +57,7 @@ namespace SpatialSlur.Examples
 
             // compute vertex normals & write to file
             mesh.UpdateVertexNormals(true);
-            MeshIO.WriteToOBJ(mesh, Paths.Resources + _fileOut);
+            MeshIO.WriteToObj(mesh, Paths.Resources + _fileOut);
             Console.ReadLine();
         }
     }

@@ -331,7 +331,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="path"></param>
-        public static void WriteToOBJ<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, string path, Func<TV, Vec2d> getTexture = null)
+        public static void WriteToObj<TV, TE, TF>(HeMesh<TV, TE, TF> mesh, string path, Func<TV, Vec2d> getTexture = null)
             where TV : HeMesh<TV, TE, TF>.Vertex, IPosition3d, INormal3d
             where TE : HeMesh<TV, TE, TF>.Halfedge
             where TF : HeMesh<TV, TE, TF>.Face
