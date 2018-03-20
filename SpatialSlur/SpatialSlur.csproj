@@ -80,7 +80,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="RhinoCommon">
-      <HintPath>..\..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -110,6 +110,8 @@
     <Compile Include="SlurCore\Sequences.cs" />
     <Compile Include="SlurData\ArrayMath.cs" />
     <Compile Include="SlurData\ArrayView.cs" />
+    <Compile Include="SlurData\Extensions\ArrayExtensions.cs" />
+    <Compile Include="SlurData\Extensions\ListExtensions.cs" />
     <Compile Include="SlurData\HashGrid3d.cs" />
     <Compile Include="SlurData\HashGrid2d.cs" />
     <Compile Include="SlurData\ListView.cs" />
@@ -152,6 +154,7 @@
     <Compile Include="SlurField\GridField3dVec3d.cs" />
     <Compile Include="SlurField\Abstract\GridField3d.cs" />
     <Compile Include="SlurField\GridField2dVec2d.cs" />
+    <Compile Include="SlurField\IDWConstant3d.cs" />
     <Compile Include="SlurField\IDWMesh3d.cs" />
     <Compile Include="SlurField\Isosurface.cs" />
     <Compile Include="SlurField\MeshField3dDouble.cs" />
@@ -275,7 +278,6 @@
     <Compile Include="SlurDynamics\Constraints\TangentialQuad.cs" />
     <Compile Include="SlurDynamics\Constraints\TangentialSmooth.cs" />
     <Compile Include="SlurDynamics\Abstract\MultiConstraint.cs" />
-    <Compile Include="SlurDynamics\DynamicsUtil.cs" />
     <Compile Include="SlurDynamics\Interfaces\IConstraint.cs" />
     <Compile Include="SlurDynamics\Interfaces\IBody.cs" />
     <Compile Include="SlurDynamics\Constraints\LineCollide.cs" />
