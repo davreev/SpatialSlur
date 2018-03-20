@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -13,7 +14,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class HeNodeList<T, E> : HeElementList<T>
+    class HeNodeList<T, E> : HeElementList<T>
         where T : HeNode<T, E>
         where E : Halfedge<E>
     {
@@ -26,12 +27,9 @@ namespace SpatialSlur.SlurMesh
         {
         }
 
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public int CountUnused()
+
+        /// <inheritdoc/>
+        public override int CountUnused()
         {
             int result = 0;
 
@@ -42,12 +40,8 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <summary>
-        /// Removes all unused elements in the list and re-indexes the remaining.
-        /// Does not change the capacity of the list.
-        /// If the list has any associated attributes, be sure to compact those first.
-        /// </summary>
-        public void Compact()
+        /// <inheritdoc/>
+        public override void Compact()
         {
             int marker = 0;
 
@@ -64,25 +58,20 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <summary>
-        /// Removes all attributes corresponding with unused elements.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="attributes"></param>
-        public void CompactAttributes<U>(List<U> attributes)
+        /// <inheritdoc/>
+        public override void CompactAttributes<A>(List<A> attributes)
         {
             int marker = SwimAttributes(attributes);
             attributes.RemoveRange(marker, attributes.Count - marker);
         }
 
 
-        /// <summary>
-        /// Moves attributes corresponding with used elements to the front of the given list.
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="attributes"></param>
-        public int SwimAttributes<U>(IList<U> attributes)
+        /// <inheritdoc/>
+        public override int SwimAttributes<A>(IList<A> attributes)
         {
+            if(attributes is A[] arr)
+                return SwimAttributes(arr);
+
             int marker = 0;
 
             for (int i = 0; i < Count; i++)
@@ -95,23 +84,18 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="K"></typeparam>
-        /// <param name="getKey"></param>
-        public void Sort<K>(Func<T, K> getKey)
-            where K : IComparable<K>
+        /// <inheritdoc/>
+        public override int SwimAttributes<A>(A[] attributes)
         {
-            int index = 0;
+            int marker = 0;
 
-            // sort first
-            foreach (var t in this.OrderBy(getKey))
-                Items[index++] = t;
-            
-            // re-index after since indices may be used to fetch keys
             for (int i = 0; i < Count; i++)
-                Items[i].Index = i;
+            {
+                if (Items[i].IsUnused) continue; // skip unused elements
+                attributes[marker++] = attributes[i];
+            }
+
+            return marker;
         }
     }
 }

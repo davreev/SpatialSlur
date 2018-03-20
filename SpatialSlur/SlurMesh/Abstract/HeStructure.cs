@@ -1,9 +1,11 @@
-﻿using System;
+﻿
+
 
 /*
  * Notes
- * Provides common implementations for all derived Halfedge structures
  */
+
+using System;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -75,18 +77,6 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if the given halfedge belongs to this mesh.
-        /// </summary>
-        /// <param name="hedge"></param>
-        /// <returns></returns>
-        [Obsolete("Use Owns() instead")]
-        public bool Contains(E hedge)
-        {
-            return _hedges.Owns(hedge);
-        }
-
-
-        /// <summary>
         /// Creates a new pair of halfedges and adds them to the list.
         /// Returns the first halfedge in the pair.
         /// </summary>
@@ -106,6 +96,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -118,6 +109,7 @@ namespace SpatialSlur.SlurMesh
             // TODO
             throw new NotImplementedException();
         }
+        */
     }
 
 
@@ -131,7 +123,7 @@ namespace SpatialSlur.SlurMesh
         where V : HeVertex<V, E>
         where E : Halfedge<V, E>
     {
-        private HeNodeList<V, E> _vertices;
+        private HeElementList<V> _vertices;
 
 
         /// <summary>
@@ -149,7 +141,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeNodeList<V, E> Vertices
+        public HeElementList<V> Vertices
         {
             get { return _vertices; }
         }
@@ -197,7 +189,7 @@ namespace SpatialSlur.SlurMesh
         where E : Halfedge<V, E, F>
         where F : HeFace<V, E, F>
     {
-        private HeNodeList<F, E> _faces;
+        private HeElementList<F> _faces;
 
 
         /// <summary>
@@ -215,7 +207,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeNodeList<F, E> Faces
+        public HeElementList<F> Faces
         {
             get { return _faces; }
         }
@@ -266,9 +258,9 @@ namespace SpatialSlur.SlurMesh
         where F : HeFace<V, E, F, G>
         where G : HeNode<G, E>
     {
-        private HeNodeList<G, E> _clusters;
-        private HeNodeList<G, E> _bundles;
-        private HeNodeList<G, E> _cells;
+        private HeElementList<G> _clusters;
+        private HeElementList<G> _bundles;
+        private HeElementList<G> _cells;
 
 
         /// <summary>
@@ -288,7 +280,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeNodeList<G, E> Clusters
+        public HeElementList<G> Clusters
         {
             get { return _bundles; }
         }
@@ -297,7 +289,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeNodeList<G, E> Bundles
+        public HeElementList<G> Bundles
         {
             get { return _bundles; }
         }
@@ -306,7 +298,7 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public HeNodeList<G, E> Cells
+        public HeElementList<G> Cells
         {
             get { return _cells; }
         }

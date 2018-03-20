@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿
 
 /*
  * Notes
  */
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -83,9 +85,9 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="A"></typeparam>
         /// <param name="attributes"></param>
-        public void CompactAttributes<U>(List<U> attributes)
+        public void CompactAttributes<A>(List<A> attributes)
         {
             int marker = SwimAttributes(attributes);
             attributes.RemoveRange(marker, attributes.Count - marker);
@@ -95,9 +97,9 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="A"></typeparam>
         /// <param name="attributes"></param>
-        public int SwimAttributes<U>(IList<U> attributes)
+        public int SwimAttributes<A>(IList<A> attributes)
         {
             int marker = 0;
 
@@ -230,25 +232,14 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Performs an in-place stable sort of edges.
+        /// Reorders edges based on the given key.
         /// </summary>
         /// <typeparam name="K"></typeparam>
         /// <param name="getKey"></param>
         public void Sort<K>(Func<E, K> getKey)
             where K : IComparable<K>
         {
-            int index = 0;
-
-            // sort in pairs
-            foreach (var he0 in this.OrderBy(getKey))
-            {
-                _hedges[index++] = he0;
-                _hedges[index++] = he0.Twin;
-            }
-
-            // re-index after since indices may be used to fetch keys
-            for (int i = 0; i < Count; i++)
-                _hedges[i].Index = i;
+            _hedges.Sort(getKey);
         }
 
 

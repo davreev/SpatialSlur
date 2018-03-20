@@ -1,11 +1,15 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-/*
- * Notes
- */
+using SpatialSlur.SlurCore;
+using SpatialSlur.SlurData;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -115,13 +119,12 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<T> GetEnumerator()
+        public ArrayView<T>.Enumerator GetEnumerator()
         {
-            for (int i = 0; i < _count; i++)
-                yield return _items[i];
+            return _items.GetView(_count).GetEnumerator();
         }
 
-
+        
         /// <summary>
         /// Adds an element to the list.
         /// </summary>
@@ -151,7 +154,21 @@ namespace SpatialSlur.SlurMesh
                 Array.Resize(ref _items, max);
         }
 
-        
+
+        /// <summary>
+        /// Returns the number of unused elements in the list.
+        /// </summary>
+        public abstract int CountUnused();
+
+
+        /// <summary>
+        /// Removes all unused elements in the list and re-indexes the remaining.
+        /// Does not change the capacity of the list.
+        /// If the list has any associated attributes, be sure to compact those first.
+        /// </summary>
+        public abstract void Compact();
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -160,6 +177,48 @@ namespace SpatialSlur.SlurMesh
         {
             Array.Clear(_items, marker, _count - marker);
             _count = marker;
+        }
+
+
+        /// <summary>
+        /// Removes all attributes corresponding with unused elements.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="attributes"></param>
+        public abstract void CompactAttributes<A>(List<A> attributes);
+
+
+        /// <summary>
+        /// Moves attributes corresponding with used elements to the front of the given list.
+        /// </summary>
+        /// <param name="attributes"></param>
+        public abstract int SwimAttributes<A>(IList<A> attributes);
+
+
+        /// <summary>
+        /// Moves attributes corresponding with used elements to the front of the given array.
+        /// </summary>
+        /// <param name="attributes"></param>
+        public abstract int SwimAttributes<A>(A[] attributes);
+
+
+        /// <summary>
+        /// Reorders the elements in the list based on the given key.
+        /// </summary>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="getKey"></param>
+        public virtual void Sort<K>(Func<T, K> getKey)
+            where K : IComparable<K>
+        {
+            int index = 0;
+
+            // sort first
+            foreach (var t in this.OrderBy(getKey))
+                Items[index++] = t;
+
+            // re-index after since indices may be used to fetch keys
+            for (int i = 0; i < Count; i++)
+                Items[i].Index = i;
         }
 
 
@@ -314,14 +373,24 @@ namespace SpatialSlur.SlurMesh
 
 
         #region Explicit interface implementations
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
 
         /// <summary>
-        /// Explicit implementation of non-generic method.
+        /// 
         /// </summary>
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator(); // call generic version
+            return GetEnumerator();
         }
 
         #endregion
