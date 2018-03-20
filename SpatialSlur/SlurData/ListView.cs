@@ -106,6 +106,15 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
+        public List<T> Source
+        {
+            get { return _source; }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int Start
         {
             get => _start;
