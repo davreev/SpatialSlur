@@ -60,8 +60,8 @@ namespace SpatialSlur.SlurField
         /// <returns></returns>
         public sealed override Vec3d ValueAt(Vec3d point)
         {
-            Vec3d sum = DefaultValue * DefaultWeight;
-            double wsum = DefaultWeight;
+            Vec3d sum = Vec3d.Zero;
+            double wsum = 0.0;
 
             foreach (var obj in Objects)
             {

@@ -29,11 +29,7 @@ namespace SpatialSlur.SlurField
         public IDWField3d<T> CreateCopy(IDWField3d<T> other)
         {
             var result = Create(other.Power, other.Epsilon);
-
-            result.DefaultValue = other.DefaultValue;
-            result.DefaultWeight = other.DefaultWeight;
             result.Objects.AddRange(other.Objects.Select(obj => obj.Duplicate()));
-
             return result;
         }
 
@@ -46,11 +42,7 @@ namespace SpatialSlur.SlurField
         public IDWField3d<T> CreateCopy<U>(IDWField3d<U> other, Func<U, T> converter)
         {
             var result = Create(other.Power, other.Epsilon);
-
-            result.DefaultValue = converter(other.DefaultValue);
-            result.DefaultWeight = other.DefaultWeight;
             result.Objects.AddRange(other.Objects.Select(obj => obj.Convert(converter)));
-
             return result;
         }
     }

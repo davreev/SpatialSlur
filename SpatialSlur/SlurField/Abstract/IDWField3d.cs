@@ -30,9 +30,7 @@ namespace SpatialSlur.SlurField
     public abstract class IDWField3d<T> : IField2d<T>, IField3d<T>, IGradient2d<T>, IGradient3d<T>
     {
         private List<IDWObject3d<T>> _objects = new List<IDWObject3d<T>>();
-        
-        private T _defaultValue;
-        private double _defaultWeight;
+       
         private double _power;
         private double _epsilon = SlurMath.ZeroTolerance;
 
@@ -53,26 +51,6 @@ namespace SpatialSlur.SlurField
         public List<IDWObject3d<T>> Objects
         {
             get { return _objects; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public T DefaultValue
-        {
-            get => _defaultValue;
-            set => _defaultValue = value;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double DefaultWeight
-        {
-            get => _defaultWeight;
-            set => _defaultWeight = value;
         }
 
 
