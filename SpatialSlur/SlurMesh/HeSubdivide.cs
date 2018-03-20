@@ -1,10 +1,13 @@
-﻿using System;
-
-using SpatialSlur.SlurCore;
-
+﻿
 /*
  * Notes
+ * 
+ * Refs
+ * http://graphics.stanford.edu/courses/cs468-10-fall/LectureSlides/10_Subdivision.pdf
  */
+
+using System;
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {

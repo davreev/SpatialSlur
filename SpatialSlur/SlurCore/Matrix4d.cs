@@ -1,9 +1,10 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using System.Runtime.CompilerServices;
 
 namespace SpatialSlur.SlurCore
 {
@@ -929,7 +930,7 @@ namespace SpatialSlur.SlurCore
             other.Column2 = Apply(other.Column2);
             other.Column3 = Apply(other.Column3);
         }
-
+        
 
         /// <summary>
         /// 

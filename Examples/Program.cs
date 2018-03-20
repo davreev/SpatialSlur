@@ -2,6 +2,8 @@
  * Notes
  */
 
+using System;
+
 namespace SpatialSlur.Examples
 {
     /// <summary>
@@ -14,8 +16,7 @@ namespace SpatialSlur.Examples
         /// </summary>
         public static void Main()
         {
-            ///PlanarizeHeMesh.Start();
-            Debug.InlineTest.Run();
+            PlanarizeHeMesh.Start();
         }
     }
 }

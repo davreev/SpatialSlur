@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+ 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,10 +16,6 @@ using SpatialSlur.SlurField;
 using SpatialSlur.SlurRhino;
 
 using SpatialSlur.SlurGH.Types;
-
-/*
- * Notes
- */ 
 
 namespace SpatialSlur.SlurGH.Components.Field
 {
@@ -39,8 +40,8 @@ namespace SpatialSlur.SlurGH.Components.Field
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Field", "Field", "Fields to evaluate", GH_ParamAccess.item);
-            pManager.AddPointParameter("Points", "Points", "Points to evaluate at", GH_ParamAccess.list);
+            pManager.AddGenericParameter("field", "field", "Field to evaluate", GH_ParamAccess.item);
+            pManager.AddPointParameter("points", "points", "Points to evaluate at", GH_ParamAccess.list);
         }
 
 
@@ -49,7 +50,7 @@ namespace SpatialSlur.SlurGH.Components.Field
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Values", "Values", "Resulting field values", GH_ParamAccess.list);
+            pManager.AddGenericParameter("values", "values", "Values at the given points", GH_ParamAccess.list);
         }
 
 
@@ -100,7 +101,7 @@ namespace SpatialSlur.SlurGH.Components.Field
         {
             get
             {
-                //You can add image files to your project resources and access them like this:
+                // You can add image files to your project resources and access them like this:
                 // return Resources.IconForThisComponent;
                 return null;
             }

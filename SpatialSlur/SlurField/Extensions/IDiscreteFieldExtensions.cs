@@ -1,12 +1,13 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurField
 {
@@ -23,7 +24,7 @@ namespace SpatialSlur.SlurField
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <returns></returns>
-        public static ArrayView<T> ToView<T>(this IDiscreteField<T> field)
+        public static ArrayView<T> AsView<T>(this IDiscreteField<T> field)
         {
             return field.Values.GetView(0, field.Count);
         }

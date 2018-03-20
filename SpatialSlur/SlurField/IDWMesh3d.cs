@@ -1,12 +1,13 @@
-﻿#if USING_RHINO
+﻿
+/*
+ * Notes
+ */
+
+#if USING_RHINO
 
 using System;
 using Rhino.Geometry;
 using SpatialSlur.SlurCore;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurField
 {
@@ -20,15 +21,15 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="point"></param>
-        /// <param name="data"></param>
+        /// <param name="value"></param>
         /// <param name="influence"></param>
         /// <returns></returns>
-        public static IDWMesh3d<T> Create<T>(Mesh mesh, T data, double influence = 1.0)
+        public static IDWMesh3d<T> Create<T>(Mesh mesh, T value, double influence = 1.0)
         {
             return new IDWMesh3d<T>()
             {
                 Mesh = mesh,
-                Value = data,
+                Value = value,
                 Influence = influence
             };
         }

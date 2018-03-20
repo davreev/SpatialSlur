@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 /*
  * Notes
  * 
@@ -8,6 +7,8 @@
  * http://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
  * http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
  */
+
+using System;
 
 namespace SpatialSlur.SlurCore
 {
@@ -407,7 +408,9 @@ namespace SpatialSlur.SlurCore
         /// <param name="rotation"></param>
         public void Set(ref OrthoBasis3d rotation)
         {
-            // implementation ref http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+            // impl ref 
+            // http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
+
             (var x, var y, var z) = rotation;
             double trace = x.X + y.Y + z.Z;
             
@@ -562,8 +565,9 @@ namespace SpatialSlur.SlurCore
         public Quaterniond SlerpTo(Quaterniond other, double factor)
         {
             var ca = Dot(this, other);
-   
-            // TODO handle "aligned but opposite" case
+
+            // TODO 
+            // handle antiparallel case
             if (Math.Abs(ca) > 1.0 - SlurMath.ZeroTolerance)
                 return this;
 

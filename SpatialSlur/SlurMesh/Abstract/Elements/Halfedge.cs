@@ -1,10 +1,12 @@
-﻿using SpatialSlur.SlurCore;
-using System;
-using System.Collections.Generic;
-
+﻿
 /*
  * Notes
  */
+
+using SpatialSlur.SlurCore;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -208,7 +210,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Returns true if this element is not being used by the halfedge structure i.e. its first halfedge is null.
+        /// Returns true if this element is not being used by the halfedge structure.
         /// </summary>
         /// <returns></returns>
         public bool IsUnused

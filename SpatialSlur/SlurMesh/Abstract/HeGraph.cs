@@ -405,7 +405,7 @@ namespace SpatialSlur.SlurMesh
         #region Edge Operators
 
         /// <summary>
-        /// Adds a new edge between the given nodes.
+        /// Adds a new edge between the given vertices.
         /// Returns the first halfedge in the pair.
         /// </summary>
         /// <param name="v0"></param>

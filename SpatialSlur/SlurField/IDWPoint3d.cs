@@ -1,10 +1,11 @@
-﻿using System;
-
-using SpatialSlur.SlurCore;
+﻿
 
 /*
  * Notes
  */
+
+using System;
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurField
 {
@@ -18,15 +19,15 @@ namespace SpatialSlur.SlurField
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="point"></param>
-        /// <param name="data"></param>
+        /// <param name="value"></param>
         /// <param name="influence"></param>
         /// <returns></returns>
-        public static IDWPoint3d<T> Create<T>(Vec3d point, T data, double influence = 1.0)
+        public static IDWPoint3d<T> Create<T>(Vec3d point, T value, double influence = 1.0)
         {
             return new IDWPoint3d<T>()
             {
                 Point = point,
-                Value = data,
+                Value = value,
                 Influence = influence
             };
         }
