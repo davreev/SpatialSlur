@@ -195,6 +195,7 @@ ModelManifest.xml
 *.3dmbak
 
 # Additional files & folders
+*UnitTests/
 *Documentation/
 *Debug/
 *WIP/
