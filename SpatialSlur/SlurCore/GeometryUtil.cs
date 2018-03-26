@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SpatialSlur.SlurCore
 {
@@ -368,9 +369,8 @@ namespace SpatialSlur.SlurCore
             double d01 = p0.DistanceTo(p1);
             double d12 = p1.DistanceTo(p2);
             double d20 = p2.DistanceTo(p0);
-            double pInv = 1.0 / (d01 + d12 + d20); // inverse perimeter
-
-            return p0 * (d12 * pInv) + p1 * (d20 * pInv) + p2 * (d01 * pInv);
+            double perimInv = 1.0 / (d01 + d12 + d20); // inverse perimeter
+            return p0 * (d12 * perimInv) + p1 * (d20 * perimInv) + p2 * (d01 * perimInv);
         }
 
         
@@ -449,7 +449,7 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Returns the area gradient of the given trianglue with respect to p0.
-        /// https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf p 64
+        /// http://www.cs.cmu.edu/~kmcrane/Projects/Other/TriangleMeshDerivativesCheatSheet.pdf
         /// </summary>
         /// <param name="p0"></param>
         /// <param name="p1"></param>
@@ -467,7 +467,7 @@ namespace SpatialSlur.SlurCore
 
         /// <summary>
         /// Returns the area gradient of the given triangle with respect to each vertex
-        /// https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf p 64
+        /// http://www.cs.cmu.edu/~kmcrane/Projects/Other/TriangleMeshDerivativesCheatSheet.pdf
         /// </summary>
         /// <param name="p0"></param>
         /// <param name="p1"></param>
@@ -521,7 +521,7 @@ namespace SpatialSlur.SlurCore
             }
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -549,6 +549,7 @@ namespace SpatialSlur.SlurCore
         {
             // impl ref
             // http://brickisland.net/DDGFall2017/2017/10/12/assignment-1-coding-investigating-curvature/
+
             return 
                 Math.Atan2(
                 Vec3d.Dot(unitAxis, Vec3d.Cross(leftNormal, rightNormal)), 

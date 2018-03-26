@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurCore
     /// </summary>
     public static partial class ArrayExtensions
     {
-        #region IReadOnlyList<Color>
+        #region Color[]
 
         /// <summary>
         /// 

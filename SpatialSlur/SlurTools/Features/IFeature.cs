@@ -1,9 +1,9 @@
 ﻿
-using SpatialSlur.SlurCore;
-
 /*
  * Notes
  */
+
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurTools.Features
 {

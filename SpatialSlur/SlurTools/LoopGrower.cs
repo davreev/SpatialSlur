@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -12,10 +17,6 @@ using SpatialSlur.SlurTools.Features;
 
 using static SpatialSlur.SlurCore.SlurMath;
 using static SpatialSlur.SlurData.DataUtil;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurTools
 {
@@ -35,6 +36,8 @@ namespace SpatialSlur.SlurTools
         public class Solver
         {
             #region Static
+
+            private const double _radiusToGridScale = 5.0;
 
             /// <summary>
             /// 
@@ -409,9 +412,9 @@ namespace SpatialSlur.SlurTools
             private void UpdateGrid(double radius)
             {
                 if (_grid == null)
-                    _grid = new HashGrid3d<V>(radius * RadiusToHashScale, _verts.Count);
+                    _grid = new HashGrid3d<V>(radius * _radiusToGridScale, _verts.Count);
                 else
-                    _grid.Scale = radius * RadiusToHashScale;
+                    _grid.Scale = radius * _radiusToGridScale;
             }
 
 

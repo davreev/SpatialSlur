@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -8,10 +13,6 @@ using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
 using SpatialSlur.SlurTools.Features;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurTools
 {

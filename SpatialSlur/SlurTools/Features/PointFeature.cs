@@ -1,10 +1,10 @@
-﻿using System;
-
-using SpatialSlur.SlurCore;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurTools.Features
 {

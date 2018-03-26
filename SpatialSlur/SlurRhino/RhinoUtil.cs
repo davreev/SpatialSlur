@@ -1,14 +1,15 @@
-﻿#if USING_RHINO
+﻿
+/*
+ * Notes
+ */
+
+#if USING_RHINO
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpatialSlur.SlurMesh;
 using Rhino.Geometry;
-
-/*
- * Notes
- */
+using SpatialSlur.SlurMesh;
 
 namespace SpatialSlur.SlurRhino
 {

@@ -1,19 +1,18 @@
-﻿#if USING_RHINO
+﻿
+/*
+ * Notes
+ */
+
+#if USING_RHINO
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-using SpatialSlur.SlurCore;
-
 using Rhino.Geometry;
-
+using SpatialSlur.SlurCore;
 using static SpatialSlur.SlurField.GridUtil;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurField
 {

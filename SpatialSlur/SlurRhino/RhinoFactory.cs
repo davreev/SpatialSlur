@@ -1,4 +1,12 @@
-﻿#if USING_RHINO
+﻿
+/*
+ * Notes
+ * 
+ * Factory class is split for consistent type aliasing.
+ * T always refers to the type created by the factory method.
+ */
+
+#if USING_RHINO
 
 using System;
 using System.Collections.Generic;
@@ -6,16 +14,8 @@ using System.Linq;
 using System.Drawing;
 
 using Rhino.Geometry;
-
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
-
-/*
- * Notes
- * 
- * Factory class is split for consistent type aliasing.
- * T always refers to the type produced by the factory method.
- */
 
 namespace SpatialSlur.SlurRhino
 {

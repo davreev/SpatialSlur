@@ -1,11 +1,11 @@
-﻿#if USING_RHINO
-
-
-using Rhino.Geometry;
-
+﻿
 /*
  * Notes
  */
+
+#if USING_RHINO
+
+using Rhino.Geometry;
 
 namespace SpatialSlur.SlurCore
 {

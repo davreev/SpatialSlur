@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -6,10 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurData
 {
@@ -198,7 +199,7 @@ namespace SpatialSlur.SlurData
         private int UpdateNearest()
         {
             // create balanced tree of cluster centers
-            var tree = KdTree<int>.CreateBalanced(_clusterCenters, _clusterIndices);
+            var tree = KdTree.CreateBalanced(_clusterCenters, _clusterIndices);
 
             // for each data point, find the nearest cluster center
             int count = 0;

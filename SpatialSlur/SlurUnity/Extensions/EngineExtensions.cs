@@ -11,8 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using SpatialSlur.SlurCore;
 using UnityEngine;
+using SpatialSlur.SlurCore;
 
 using static SpatialSlur.SlurCore.CoreUtil;
 
@@ -23,7 +23,7 @@ namespace SpatialSlur.SlurUnity
     /// </summary>
     public static class EngineExtensions
     {
-        #region Matrix4x4
+#region Matrix4x4
 
         /// <summary>
         /// 
@@ -97,7 +97,7 @@ namespace SpatialSlur.SlurUnity
             return matrix;
         }
 
-        #endregion
+#endregion
     }
 }
 
