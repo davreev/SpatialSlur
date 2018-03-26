@@ -13,11 +13,11 @@
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Default Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Default Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -26,10 +26,10 @@
     <DocumentationFile>
     </DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Default|AnyCPU' ">
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\Default\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -38,9 +38,9 @@
     </DocumentationFile>
     <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugRhino|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Rhino Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\SpatialSlur\</OutputPath>
+    <OutputPath>bin\Rhino Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;USING_RHINO</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
@@ -48,19 +48,19 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseRhino|AnyCPU'">
-    <OutputPath>bin\ReleaseRhino\</OutputPath>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Rhino|AnyCPU' ">
+    <OutputPath>bin\Rhino\</OutputPath>
     <DefineConstants>TRACE;USING_RHINO</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugUnity|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unity Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DebugUnity\</OutputPath>
+    <OutputPath>bin\Unity Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;USING_UNITY</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
@@ -68,19 +68,19 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseUnity|AnyCPU'">
-    <OutputPath>bin\ReleaseUnity\</OutputPath>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unity|AnyCPU' ">
+    <OutputPath>bin\Unity\</OutputPath>
     <DefineConstants>TRACE;USING_UNITY</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="RhinoCommon">
-      <HintPath>..\..\..\..\..\..\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -165,6 +165,7 @@
     <Compile Include="SlurField\Abstract\GridField2dFactory.cs" />
     <Compile Include="SlurField\Abstract\GridField3dFactory.cs" />
     <Compile Include="SlurField\Extensions\GridField3dExtensions.cs" />
+    <Compile Include="SlurField\SDFUtil.cs" />
     <Compile Include="SlurMesh\Abstract\Elements\Halfedge.cs" />
     <Compile Include="SlurMesh\Abstract\Elements\HeElement.cs" />
     <Compile Include="SlurMesh\Abstract\HeElementList.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="SlurRhino\Conversions.cs" />
     <Compile Include="SlurField\Extensions\MeshFieldExtensions.cs" />
     <Compile Include="SlurRhino\Extensions\ListExtensions.cs" />
+    <Compile Include="SlurRhino\FuncField.cs" />
     <Compile Include="SlurRhino\RhinoUtil.cs" />
     <Compile Include="SlurDynamics\Constraints\OnCurve.cs" />
     <Compile Include="SlurDynamics\Constraints\OnExtendedMesh.cs" />
