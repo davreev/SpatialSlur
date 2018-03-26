@@ -301,6 +301,7 @@ namespace SpatialSlur.SlurGH.Components
         private void NearestClicked(object sender, EventArgs e)
         {
             _sampleMode = SampleMode.Nearest;
+            ExpireSolution(true);
         }
 
 
@@ -312,6 +313,7 @@ namespace SpatialSlur.SlurGH.Components
         private void LinearClicked(object sender, EventArgs e)
         {
             _sampleMode = SampleMode.Linear;
+            ExpireSolution(true);
         }
 
 
@@ -323,6 +325,7 @@ namespace SpatialSlur.SlurGH.Components
         private void ClampClicked(object sender, EventArgs e)
         {
             _wrapMode = WrapMode.Clamp;
+            ExpireSolution(true);
         }
 
 
@@ -334,6 +337,7 @@ namespace SpatialSlur.SlurGH.Components
         private void RepeatClicked(object sender, EventArgs e)
         {
             _wrapMode = WrapMode.Repeat;
+            ExpireSolution(true);
         }
 
 
@@ -345,6 +349,7 @@ namespace SpatialSlur.SlurGH.Components
         private void MirrorClicked(object sender, EventArgs e)
         {
             _wrapMode = WrapMode.Mirror;
+            ExpireSolution(true);
         }
 
 
