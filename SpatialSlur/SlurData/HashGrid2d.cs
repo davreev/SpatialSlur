@@ -1,12 +1,13 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using SpatialSlur.SlurCore;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurData
 {
@@ -19,7 +20,7 @@ namespace SpatialSlur.SlurData
     public class HashGrid2d<T>
     {
         #region Static
-
+        
         private const int DefaultCapacity = 4;
 
         #endregion
@@ -127,7 +128,7 @@ namespace SpatialSlur.SlurData
         private Bin GetBin(BinKey key)
         {
             if (!_bins.TryGetValue(key, out Bin bin))
-                _bins[key] = bin = new Bin(_version);
+                return _bins[key] = new Bin(_version);
 
             return bin;
         }
@@ -149,7 +150,7 @@ namespace SpatialSlur.SlurData
                 bin.Clear();
             }
 
-            bin.Push(value);
+            bin.Add(value);
             _count++;
         }
 
@@ -179,7 +180,7 @@ namespace SpatialSlur.SlurData
                         bin.Clear();
                     }
 
-                    bin.Push(value);
+                    bin.Add(value);
                     _count++;
                 }
             }
@@ -276,7 +277,7 @@ namespace SpatialSlur.SlurData
         /// <summary>
         /// 
         /// </summary>
-        private class Bin : Stack<T>
+        private class Bin : List<T>
         {
             /// <summary></summary>
             public int Version = int.MinValue;
