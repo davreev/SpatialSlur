@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using SpatialSlur.SlurCore;
+﻿
 
 /*
  * Notes
  */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurData
 {
@@ -15,8 +17,7 @@ namespace SpatialSlur.SlurData
     /// </summary>
     public static class DataUtil
     {
-        /// <summary></summary>
-        public const double RadiusToHashScale = 3.5;
+        private const double _radiusToGridScale = 5.0;
 
      
         /// <summary>
@@ -95,7 +96,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid2d<Vec2d>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // add points to result if no duplicates are found
             int i = 0;
@@ -133,7 +134,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid3d<Vec3d>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // add points to result if no duplicates are found
             int i = 0;
@@ -174,7 +175,7 @@ namespace SpatialSlur.SlurData
 
             var result = new List<T>();
             indexMap = new List<int>();
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // add points to result if no duplicates are found
             foreach (var item in items)
@@ -220,7 +221,7 @@ namespace SpatialSlur.SlurData
 
             var result = new List<T>();
             indexMap = new List<int>();
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // add points to result if no duplicates are found
             foreach(var item in items)
@@ -263,7 +264,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid2d<(Vec2d, int)>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // insert
             int i = 0;
@@ -310,7 +311,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid3d<(Vec3d, int)>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // insert
             int i = 0;
@@ -378,7 +379,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid2d<(Vec2d, int)>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // insert B
             int i = 0;
@@ -446,7 +447,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid3d<(Vec3d, int)>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // insert B
             int i = 0;
@@ -512,7 +513,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid2d<(Vec2d, int)>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // insert B
             int i = 0;
@@ -572,7 +573,7 @@ namespace SpatialSlur.SlurData
             if (grid == null)
                 grid = new HashGrid3d<(Vec3d, int)>();
 
-            grid.Scale = tolerance * RadiusToHashScale;
+            grid.Scale = tolerance * _radiusToGridScale;
 
             // insert B
             int i = 0;
@@ -610,7 +611,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public static bool ConsolidatePoints(IList<Vec2d> points, double radius, double tolerance = SlurMath.ZeroTolerance, int maxSteps = 4)
         {
-            var grid = new HashGrid3d<Vec2d>(radius * RadiusToHashScale, points.Count);
+            var grid = new HashGrid3d<Vec2d>(radius * _radiusToGridScale, points.Count);
 
             var radSqr = radius * radius;
             var tolSqr = tolerance * tolerance;
@@ -659,7 +660,7 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         public static bool ConsolidatePoints(IList<Vec3d> points, double radius, double tolerance = SlurMath.ZeroTolerance, int maxSteps = 4)
         {
-            var grid = new HashGrid3d<Vec3d>(radius * RadiusToHashScale, points.Count);
+            var grid = new HashGrid3d<Vec3d>(radius * _radiusToGridScale, points.Count);
 
             var radSqr = radius * radius;
             var tolSqr = tolerance * tolerance;

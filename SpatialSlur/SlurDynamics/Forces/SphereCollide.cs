@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -6,12 +11,7 @@ using System.Linq;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
 
-using static SpatialSlur.SlurData.DataUtil;
 using static System.Threading.Tasks.Parallel;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurDynamics.Forces
 {
@@ -23,6 +23,8 @@ namespace SpatialSlur.SlurDynamics.Forces
     [Serializable]
     public class SphereCollide : MultiForce<H>, IConstraint
     {
+        private const double _radiusToGridScale = 5.0;
+
         private HashGrid3d<H> _grid;
         private double _radius = 1.0;
         private bool _parallel;
@@ -193,9 +195,9 @@ namespace SpatialSlur.SlurDynamics.Forces
         private void UpdateGrid(IReadOnlyList<IBody> bodies)
         {
             if (_grid == null)
-                _grid = new HashGrid3d<H>(Radius * RadiusToHashScale, Handles.Count);
+                _grid = new HashGrid3d<H>(Radius * _radiusToGridScale, Handles.Count);
             else
-                _grid.Scale = Radius * RadiusToHashScale;
+                _grid.Scale = Radius * _radiusToGridScale;
         }
 
 
