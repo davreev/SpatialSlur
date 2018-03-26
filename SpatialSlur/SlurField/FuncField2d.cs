@@ -11,6 +11,24 @@ namespace SpatialSlur.SlurField
     /// <summary>
     /// 
     /// </summary>
+    public static class FuncField2d
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="valueAt"></param>
+        /// <returns></returns>
+        public static FuncField2d<T> Create<T>(Func<Vec2d, T> valueAt)
+        {
+            return new FuncField2d<T>(valueAt);
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <typeparam name="T"></typeparam>
     public class FuncField2d<T> : IField2d<T>, IField3d<T>
     {
@@ -22,7 +40,7 @@ namespace SpatialSlur.SlurField
         /// 
         /// </summary>
         /// <param name="valueAt"></param>
-        public FuncField2d(Func<Vec2d, T> valueAt)
+        internal FuncField2d(Func<Vec2d, T> valueAt)
         {
             ValueAt = valueAt ?? throw new ArgumentNullException();
         }
