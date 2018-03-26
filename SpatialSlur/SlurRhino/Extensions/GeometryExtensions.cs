@@ -1,4 +1,9 @@
-﻿#if USING_RHINO
+﻿
+/*
+ * Notes
+ */
+
+#if USING_RHINO
 
 using System;
 using System.Collections.Generic;
@@ -6,13 +11,9 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Drawing;
 
+using Rhino.Geometry;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurMesh;
-using Rhino.Geometry;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurRhino
 {

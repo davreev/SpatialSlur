@@ -6,10 +6,10 @@
 #if USING_RHINO
 
 using System.Collections.Generic;
-using SpatialSlur.SlurCore;
+
+using Rhino.Geometry;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
-using Rhino.Geometry;
 
 namespace SpatialSlur.SlurCore
 {

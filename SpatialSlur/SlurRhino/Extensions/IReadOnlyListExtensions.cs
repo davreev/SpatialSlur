@@ -7,8 +7,8 @@
 
 using System;
 using System.Collections.Generic;
-using SpatialSlur.SlurRhino;
 using Rhino.Geometry;
+using SpatialSlur.SlurRhino;
 
 namespace SpatialSlur.SlurCore
 {

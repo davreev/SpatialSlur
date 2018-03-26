@@ -6,9 +6,9 @@
 #if USING_RHINO
 
 using System.Collections.Generic;
+using Rhino.Geometry;
 using SpatialSlur.SlurField;
 using SpatialSlur.SlurRhino;
-using Rhino.Geometry;
 
 namespace SpatialSlur.SlurCore
 {
