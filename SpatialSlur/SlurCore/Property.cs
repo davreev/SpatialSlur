@@ -1,8 +1,11 @@
-﻿using System;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace SpatialSlur.SlurCore
 {
@@ -35,10 +38,127 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Property<T, V> Create<T, V>(string name)
         {
-            var propinfo = typeof(T).GetProperty(name);
-            var getter = Delegate.CreateDelegate(typeof(Func<T, V>), propinfo.GetGetMethod());
-            var setter = Delegate.CreateDelegate(typeof(Action<T, V>), propinfo.GetSetMethod());
-            return new Property<T, V>((Func<T, V>)getter, (Action<T, V>)setter);
+            var type = typeof(T);
+            var propInfo = type.GetProperty(name);
+            return propInfo == null ? Create<T, V>(type.GetField(name)) : Create<T, V>(propInfo);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="fieldInfo"></param>
+        /// <returns></returns>
+        public static Property<T, V> Create<T, V>(PropertyInfo info)
+        {
+            return Create(CreateGetter<T, V>(info), CreateSetter<T, V>(info));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public static Func<T, V> CreateGetter<T, V>(PropertyInfo info)
+        {
+            return (Func<T, V>)Delegate.CreateDelegate(typeof(Func<T, V>), info.GetGetMethod());
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public static Action<T, V> CreateSetter<T, V>(PropertyInfo info)
+        {
+            return (Action<T, V>)Delegate.CreateDelegate(typeof(Action<T, V>), info.GetSetMethod());
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="fieldInfo"></param>
+        /// <returns></returns>
+        public static Property<T, V> Create<T, V>(FieldInfo info)
+        {
+            return Create(CreateGetter<T, V>(info), CreateSetter<T, V>(info));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private static Func<T, V> CreateGetter<T, V>(FieldInfo info)
+        {
+            // impl ref
+            // https://stackoverflow.com/questions/16073091/is-there-a-way-to-create-a-delegate-to-get-and-set-values-for-a-fieldinfo
+
+            string methodName = $"{info.ReflectedType.FullName}.get_{info.Name}";
+
+            DynamicMethod method = new DynamicMethod(methodName, typeof(V), new Type[1] { typeof(T) }, true);
+            ILGenerator gen = method.GetILGenerator();
+
+            if (info.IsStatic)
+            {
+                gen.Emit(OpCodes.Ldsfld, info);
+            }
+            else
+            {
+                gen.Emit(OpCodes.Ldarg_0);
+                gen.Emit(OpCodes.Ldfld, info);
+            }
+
+            gen.Emit(OpCodes.Ret);
+            return (Func<T, V>)method.CreateDelegate(typeof(Func<T, V>));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private static Action<T, V> CreateSetter<T, V>(FieldInfo info)
+        {
+            // impl ref
+            // https://stackoverflow.com/questions/16073091/is-there-a-way-to-create-a-delegate-to-get-and-set-values-for-a-fieldinfo
+
+            string methodName = $"{info.ReflectedType.FullName}.set_{info.Name}";
+
+            DynamicMethod method = new DynamicMethod(methodName, null, new Type[2] { typeof(T), typeof(V) }, true);
+            ILGenerator gen = method.GetILGenerator();
+
+            if (info.IsStatic)
+            {
+                gen.Emit(OpCodes.Ldarg_1);
+                gen.Emit(OpCodes.Stsfld, info);
+            }
+            else
+            {
+                gen.Emit(OpCodes.Ldarg_0);
+                gen.Emit(OpCodes.Ldarg_1);
+                gen.Emit(OpCodes.Stfld, info);
+            }
+
+            gen.Emit(OpCodes.Ret);
+            return (Action<T, V>)method.CreateDelegate(typeof(Action<T, V>));
         }
 
 
@@ -108,8 +228,8 @@ namespace SpatialSlur.SlurCore
         /// <param name="set"></param>
         public Property(Func<T, V> get, Action<T, V> set)
         {
-            Get = get ?? throw new ArgumentNullException();
-            Set = set ?? throw new ArgumentNullException();
+            Get = get;
+            Set = set;
         }
 
 
