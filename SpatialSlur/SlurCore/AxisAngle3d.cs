@@ -169,10 +169,8 @@ namespace SpatialSlur.SlurCore
             get { return _axis; }
             set
             {
-                double d = value.SquareLength;
-
-                if (d > 0.0)
-                    _axis = value / Math.Sqrt(d);
+                if (value.Unitize())
+                    _axis = value;
             }
         }
 
@@ -228,7 +226,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Returns false if the axis is undefined.
+        /// Returns true if this rotation has been successfully initialized.
         /// </summary>
         public bool IsValid
         {
@@ -240,7 +238,7 @@ namespace SpatialSlur.SlurCore
         /// The axis and angle of rotation are taken from the direction and length of the given vector respectively.
         /// </summary>
         /// <param name="rotation"></param>
-        public void Set(Vec3d rotation)
+        public bool Set(Vec3d rotation)
         {
             var d = rotation.SquareLength;
 
@@ -249,10 +247,10 @@ namespace SpatialSlur.SlurCore
                 d = Math.Sqrt(d);
                 _axis = rotation / d;
                 Angle = d;
-                return;
+                return true;
             }
 
-            SetIdentity();
+            return false;
         }
 
 
@@ -260,10 +258,10 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public void Set(Quaterniond rotation)
+        public bool Set(Quaterniond rotation)
         {
             if (!rotation.Unitize())
-                return;
+                return false;
 
             var c2 = rotation.W;
             var s2 = 1.0 - c2 * c2; // pythag's identity
@@ -281,11 +279,10 @@ namespace SpatialSlur.SlurCore
                 // double-angle identities
                 _cosAngle = 2.0 * c2 * c2 - 1.0;
                 _sinAngle = 2.0 * c2 * s2;
-
-                return;
+                return true;
             }
-
-            SetIdentity();
+            
+            return false;
         }
 
 
@@ -293,21 +290,9 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public void Set(ref OrthoBasis3d rotation)
+        public bool Set(ref OrthoBasis3d rotation)
         {
-            Set(new Quaterniond(rotation));
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void SetIdentity()
-        {
-            _axis = Vec3d.UnitZ;
-            _angle = 0.0;
-            _cosAngle = 1.0;
-            _sinAngle = 0.0;
+            return Set(new Quaterniond(rotation));
         }
 
 

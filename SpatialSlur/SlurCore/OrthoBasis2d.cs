@@ -120,7 +120,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Return false if this rotation is undefined.
+        /// Returns true if this rotation has been successfully initialized.
         /// </summary>
         public bool IsValid
         {

@@ -348,12 +348,13 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="axis"></param>
         /// <param name="angle"></param>
-        public void Set(Vec3d axis, double angle)
+        public bool Set(Vec3d axis, double angle)
         {
             if (!axis.Unitize())
-                return;
+                return false;
 
             SetImpl(axis, angle);
+            return true;
         }
 
 
@@ -361,7 +362,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public void Set(Vec3d rotation)
+        public bool Set(Vec3d rotation)
         {
             var angle = rotation.SquareLength;
 
@@ -369,10 +370,10 @@ namespace SpatialSlur.SlurCore
             {
                 angle = Math.Sqrt(angle);
                 SetImpl(rotation / angle, angle);
-                return;
+                return true;
             }
 
-            SetIdentity();
+            return false;
         }
 
 
@@ -454,16 +455,6 @@ namespace SpatialSlur.SlurCore
                 Y = (y.Z + z.Y) * s;
                 W = (x.Y - y.X) * s;
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void SetIdentity()
-        {
-            X = Y = Z = 0.0;
-            W = 1.0;
         }
 
 
