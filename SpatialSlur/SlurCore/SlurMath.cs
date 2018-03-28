@@ -21,8 +21,6 @@ namespace SpatialSlur.SlurCore
         public const double InvPI = 1.0 / PI;
         /// <summary></summary>
         public const double Sqrt2 = 1.41421356237309504880168872420969807;
-        /// <summary></summary>
-        public static double[] PowersOfTen = new double[] { 10e0, 10e1, 10e2, 10e3, 10e4, 10e5, 10e6, 10e7, 10e8 };
 
         /// <summary></summary>
         public const float ZeroTolerancef = 1.0e-6f;

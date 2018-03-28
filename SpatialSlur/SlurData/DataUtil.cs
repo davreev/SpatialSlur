@@ -17,9 +17,10 @@ namespace SpatialSlur.SlurData
     /// </summary>
     public static class DataUtil
     {
+        private static double[] _pow10 = new double[] { 10e0, 10e1, 10e2, 10e3, 10e4, 10e5, 10e6, 10e7, 10e8 };
         private const double _radiusToGridScale = 5.0;
 
-     
+
         /// <summary>
         /// 
         /// </summary>
@@ -33,7 +34,7 @@ namespace SpatialSlur.SlurData
             if(hash == null)
                 hash = new HashSet<Vec2i>();
 
-            var scale = SlurMath.PowersOfTen[digits];
+            var scale = _pow10[digits];
 
             int i = 0;
             foreach (var item in source)
@@ -64,7 +65,7 @@ namespace SpatialSlur.SlurData
             if (hash == null)
                 hash = new HashSet<Vec3i>();
 
-            var scale = SlurMath.PowersOfTen[digits];
+            var scale = _pow10[digits];
 
             int i = 0;
             foreach (var item in source)
