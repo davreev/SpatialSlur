@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Transform2d operator *(Transform2d t0, Transform2d t1)
         {
-            t0.Apply(ref t1);
+            t0.Apply(ref t1, ref t1);
             return t1;
         }
 
@@ -160,7 +160,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Transform2d Apply(Transform2d other)
         {
-            Apply(ref other);
+            Apply(ref other, ref other);
             return other;
         }
 
@@ -171,9 +171,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public void Apply(ref Transform2d other)
         {
-            other.Rotation = Rotation.Apply(other.Rotation);
-            other.Translation = Apply(other.Translation);
-            other.Scale *= Scale;
+            Apply(ref other, ref other);
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Apply(ref Transform2d other, ref Transform2d result)
+        {
+            result.Rotation = Rotation.Apply(other.Rotation);
+            result.Translation = Apply(other.Translation);
+            result.Scale = other.Scale * Scale;
         }
 
 
@@ -194,7 +204,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Transform2d ApplyInverse(Transform2d other)
         {
-            ApplyInverse(ref other);
+            ApplyInverse(ref other, ref other);
             return other;
         }
 
@@ -205,9 +215,19 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public void ApplyInverse(ref Transform2d other)
         {
-            other.Rotation = Rotation.ApplyInverse(other.Rotation);
-            other.Translation = ApplyInverse(other.Translation);
-            other.Scale /= Scale;
+            ApplyInverse(ref other, ref other);
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void ApplyInverse(ref Transform2d other, ref Transform2d result)
+        {
+            result.Rotation = Rotation.ApplyInverse(other.Rotation);
+            result.Translation = ApplyInverse(other.Translation);
+            result.Scale = other.Scale / Scale;
         }
 
 

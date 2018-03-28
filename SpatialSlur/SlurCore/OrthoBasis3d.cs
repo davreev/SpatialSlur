@@ -59,7 +59,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static OrthoBasis3d operator *(OrthoBasis3d r0, OrthoBasis3d r1)
         {
-            r0.Apply(ref r1);
+            r0.Apply(ref r1, ref r1);
             return r1;
         }
 
@@ -203,7 +203,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Return false if this rotation is undefined.
+        /// Returns true if this rotation has been successfully initialized.
         /// </summary>
         public bool IsValid
         {
@@ -326,10 +326,10 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="rotation"></param>
         /// <returns></returns>
-        public void Set(ref AxisAngle3d rotation)
+        public bool Set(ref AxisAngle3d rotation)
         {
             if (!rotation.IsValid)
-                return;
+                return false;
 
             var axis = rotation.Axis;
             var cosAngle = rotation.CosAngle;
@@ -358,6 +358,8 @@ namespace SpatialSlur.SlurCore
 
             _y.Z = c + s;
             _z.Y = c - s;
+
+            return true;
         }
         
 
@@ -365,7 +367,7 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="rotation"></param>
-        public void Set(Quaterniond rotation)
+        public bool Set(Quaterniond rotation)
         {
             // impl ref 
             // http://www.cs.ucr.edu/~vbz/resources/quatut.pdf
@@ -403,7 +405,11 @@ namespace SpatialSlur.SlurCore
                 _z.X = xz2 + wy2;
                 _z.Y = yz2 - wx2;
                 _z.Z = 1.0 - xx2 - yy2;
+
+                return true;
             }
+
+            return false;
         }
 
 
@@ -436,7 +442,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public OrthoBasis3d Apply(OrthoBasis3d other)
         {
-            Apply(ref other);
+            Apply(ref other, ref other);
             return other;
         }
 
@@ -448,8 +454,19 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public void Apply(ref OrthoBasis3d other)
         {
-            other.SetXY(
-                Apply(other._x), 
+            Apply(ref other, ref other);
+        }
+
+
+        /// <summary>
+        /// Applies this rotation to the given rotation.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public void Apply(ref OrthoBasis3d other, ref OrthoBasis3d result)
+        {
+            result.SetXY(
+                Apply(other._x),
                 Apply(other._y)
                 );
         }
@@ -473,7 +490,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public OrthoBasis3d ApplyInverse(OrthoBasis3d other)
         {
-            ApplyInverse(ref other);
+            ApplyInverse(ref other, ref other);
             return other;
         }
 
@@ -485,8 +502,19 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public void ApplyInverse(ref OrthoBasis3d other)
         {
-            other.SetXY(
-                ApplyInverse(other._x), 
+            ApplyInverse(ref other, ref other);
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this rotation to the given rotation.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public void ApplyInverse(ref OrthoBasis3d other, ref OrthoBasis3d result)
+        {
+            result.SetXY(
+                ApplyInverse(other._x),
                 ApplyInverse(other._y)
                 );
         }

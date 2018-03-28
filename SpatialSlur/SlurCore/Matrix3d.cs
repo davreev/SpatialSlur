@@ -113,7 +113,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix3d operator *(Matrix3d m0, Matrix3d m1)
         {
-            m0.Apply(ref m1);
+            m0.Apply(ref m1, ref m1);
             return m1;
         }
 
@@ -774,7 +774,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Matrix3d Apply(Matrix3d other)
         {
-            Apply(ref other);
+            Apply(ref other, ref other);
             return other;
         }
 
@@ -786,9 +786,20 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public void Apply(ref Matrix3d other)
         {
-            other.Column0 = Apply(other.Column0);
-            other.Column1 = Apply(other.Column1);
-            other.Column2 = Apply(other.Column2);
+            Apply(ref other, ref other);
+        }
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public void Apply(ref Matrix3d other, ref Matrix3d result)
+        {
+            result.Column0 = Apply(other.Column0);
+            result.Column1 = Apply(other.Column1);
+            result.Column2 = Apply(other.Column2);
         }
 
 

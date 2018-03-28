@@ -59,7 +59,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Orient3d operator *(Orient3d t0, Orient3d t1)
         {
-            t0.Apply(ref t1);
+            t0.Apply(ref t1, ref t1);
             return t1;
         }
 
@@ -226,7 +226,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public Orient3d Apply(Orient3d other)
         {
-            Apply(ref other);
+            Apply(ref other, ref other);
             return other;
         }
 
@@ -237,18 +237,28 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public void Apply(ref Orient3d other)
         {
-            Rotation.Apply(ref other.Rotation);
-            other.Translation = Apply(other.Translation);
+            Apply(ref other, ref other);
         }
 
-        
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Apply(ref Orient3d other, ref Orient3d result)
+        {
+            Rotation.Apply(ref other.Rotation, ref result.Rotation);
+            result.Translation = Apply(other.Translation);
+        }
+
+
         /// <summary>
         /// Applies the inverse of this transformation to the given transformation.
         /// </summary>
         /// <param name="other"></param>
         public Orient3d ApplyInverse(Orient3d other)
         {
-            ApplyInverse(ref other);
+            ApplyInverse(ref other, ref other);
             return other;
         }
 
@@ -259,8 +269,18 @@ namespace SpatialSlur.SlurCore
         /// <param name="other"></param>
         public void ApplyInverse(ref Orient3d other)
         {
-            Rotation.ApplyInverse(ref other.Rotation);
-            other.Translation = ApplyInverse(other.Translation);
+            ApplyInverse(ref other, ref other);
+        }
+
+
+        /// <summary>
+        /// Applies the inverse of this transformation to the given transformation.
+        /// </summary>
+        /// <param name="other"></param>
+        public void ApplyInverse(ref Orient3d other, ref Orient3d result)
+        {
+            Rotation.ApplyInverse(ref other.Rotation, ref result.Rotation);
+            result.Translation = ApplyInverse(other.Translation);
         }
 
 

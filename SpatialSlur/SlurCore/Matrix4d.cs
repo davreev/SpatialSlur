@@ -104,7 +104,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Matrix4d operator *(Matrix4d m0, Matrix4d m1)
         {
-            m0.Apply(ref m1);
+            m0.Apply(ref m1, ref m1);
             return m1;
         }
 
@@ -913,11 +913,11 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public Matrix4d Apply(Matrix4d other)
         {
-            Apply(ref other);
+            Apply(ref other, ref other);
             return other;
         }
 
-
+        
         /// <summary>
         /// Applies this transformation to the given transformation in place.
         /// </summary>
@@ -925,12 +925,23 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public void Apply(ref Matrix4d other)
         {
-            other.Column0 = Apply(other.Column0);
-            other.Column1 = Apply(other.Column1);
-            other.Column2 = Apply(other.Column2);
-            other.Column3 = Apply(other.Column3);
+            Apply(ref other, ref other);
         }
-        
+
+
+        /// <summary>
+        /// Applies this transformation to the given transformation.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public void Apply(ref Matrix4d other, ref Matrix4d result)
+        {
+            result.Column0 = Apply(other.Column0);
+            result.Column1 = Apply(other.Column1);
+            result.Column2 = Apply(other.Column2);
+            result.Column3 = Apply(other.Column3);
+        }
+
 
         /// <summary>
         /// 
