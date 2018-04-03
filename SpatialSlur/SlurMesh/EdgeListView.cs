@@ -1,5 +1,4 @@
 ﻿
-
 /*
  * Notes
  */
@@ -16,7 +15,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class EdgeList<E> : IReadOnlyList<E>
+    public class EdgeListView<E> : IReadOnlyList<E>
         where E : Halfedge<E>
     {
         private HalfedgeList<E> _hedges;
@@ -26,7 +25,7 @@ namespace SpatialSlur.SlurMesh
         /// 
         /// </summary>
         /// <param name="halfedges"></param>
-        internal EdgeList(HalfedgeList<E> halfedges)
+        internal EdgeListView(HalfedgeList<E> halfedges)
         {
             _hedges = halfedges;
         }
