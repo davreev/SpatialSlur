@@ -56,7 +56,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="start"></param>
         /// <param name="setEdge"></param>
-        public static void Unroll(HeMesh3d mesh, HeMesh3d.Face start, Action<HeMesh3d.Vertex, Vec3d> setUnrolledPosition, Func<HeMesh3d.Halfedge, double> getUnrollFactor)
+        public static void Unroll(HeMesh3d mesh, HeMesh3d.Face start, Action<HeMesh3d.Vertex, Vec3d> setUnrolledPosition, Func<HeMesh3d.Halfedge, double> getUnrollFactor = null)
         {
             Unroll(mesh, start, HeMesh3d.Vertex.Accessors.Position, setUnrolledPosition, getUnrollFactor);
         }
@@ -71,7 +71,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="mesh"></param>
         /// <param name="start"></param>
         /// <param name="setEdge"></param>
-        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F start, Func<V, Vec3d> getPosition, Action<V, Vec3d> setUnrolledPosition, Func<E, double> getUnrollFactor)
+        public static void Unroll<V, E, F>(HeMesh<V, E, F> mesh, F start, Func<V, Vec3d> getPosition, Action<V, Vec3d> setUnrolledPosition, Func<E, double> getUnrollFactor = null)
             where V : HeMesh<V, E, F>.Vertex
             where E : HeMesh<V, E, F>.Halfedge
             where F : HeMesh<V, E, F>.Face
@@ -147,7 +147,7 @@ namespace SpatialSlur.SlurMesh
             /// <param name="getPosition"></param>
             /// <param name="setUnrolledPosition"></param>
             /// <param name="getUnrollFactor"></param>
-            public static void Unroll(HeMesh<V, E, F> mesh, F start, Func<V, Vec3d> getPosition, Action<V, Vec3d> setUnrolledPosition, Func<E, double> getUnrollFactor)
+            public static void Unroll(HeMesh<V, E, F> mesh, F start, Func<V, Vec3d> getPosition, Action<V, Vec3d> setUnrolledPosition, Func<E, double> getUnrollFactor = null)
             {
                 const string errorMessage = "Face cycle detected. The given mesh cannot be unrolled.";
                 start.UnusedCheck();
@@ -211,8 +211,11 @@ namespace SpatialSlur.SlurMesh
             /// <summary>
             /// 
             /// </summary>
-            private static Orient3d GetHalfedgeTransform(E hedge, Func<V, Vec3d> getPosition, Func<E, double> getUnrollFactor)
+            private static Orient3d GetHalfedgeTransform(E hedge, Func<V, Vec3d> getPosition, Func<E, double> getUnrollFactor = null)
             {
+                if (getUnrollFactor == null)
+                    return GetHalfedgeTransform(hedge, getPosition);
+
                 var t = getUnrollFactor(hedge);
                 if (t < 0.0) return Orient3d.Identity;
 
@@ -227,7 +230,7 @@ namespace SpatialSlur.SlurMesh
 
                 Vec3d x = p1 - p0;
                 Vec3d y0 = p2 - p0;
-                Vec3d y1 = (t < 1.0) ? y0.SlerpTo(p1 - p3, t) : p1 - p3; // TODO can't slerp if vectors are opposite
+                Vec3d y1 = (t < 1.0) ? y0.SlerpTo(p1 - p3, t) : p1 - p3; // TODO handle anti-parallel case
 
                 return Orient3d.CreateFromTo(
                     new Orient3d(p0, x, y0),
