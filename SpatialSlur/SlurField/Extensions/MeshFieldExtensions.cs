@@ -141,8 +141,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="parallel"></param>
         public static void GetGradient(this MeshField3d<double> field, Vec3d[] result, bool parallel = true)
         {
-            // TODO
-            // revise implementation as per
+            // TODO revise implementation as per
             // http://libigl.github.io/libigl/tutorial/tutorial.html
 
             if (parallel)
@@ -202,8 +201,7 @@ namespace SpatialSlur.SlurRhino
         /// <param name="parallel"></param>
         public static void GetGradient(this MeshField3d<double> field, Func<HeMesh3d.Halfedge, double> getWeight, Vec3d[] result, bool parallel = true)
         {
-            // TODO
-            // revise implementation as per
+            // TODO revise implementation as per
             // http://libigl.github.io/libigl/tutorial/tutorial.html
 
             if (parallel)

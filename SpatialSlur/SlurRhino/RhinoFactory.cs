@@ -612,7 +612,7 @@ namespace SpatialSlur.SlurRhino
             /// <returns></returns>
             public static T CreateIsoTrim(T mesh, IReadOnlyList<double> vertexValues, Intervald interval)
             {
-                // TODO
+                // TODO implement
                 throw new NotImplementedException();
             }
         }

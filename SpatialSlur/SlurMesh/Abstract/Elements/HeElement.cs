@@ -1,12 +1,14 @@
-﻿using SpatialSlur.SlurCore;
-using System;
-using System.Collections.Generic;
+﻿
 
 /*
  * Notes
  * 
  * Abstract/virtual implementations are avoided on element level methods and properties to allow for inline optimization.
  */
+
+using System;
+using System.Collections.Generic;
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -60,7 +62,7 @@ namespace SpatialSlur.SlurMesh
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class HeElement<T>: HeElement
+    public abstract class HeElement<T> : HeElement
         where T : HeElement<T>
     {
         #region Static

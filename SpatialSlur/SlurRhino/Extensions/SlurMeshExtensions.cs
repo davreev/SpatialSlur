@@ -563,7 +563,7 @@ namespace SpatialSlur.SlurRhino
             where V : HeGraph<V, E>.Vertex
             where E : HeGraph<V, E>.Halfedge
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
@@ -608,7 +608,7 @@ namespace SpatialSlur.SlurRhino
             where V : HeGraph<V, E>.Vertex
             where E : HeGraph<V, E>.Halfedge
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 

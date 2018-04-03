@@ -334,8 +334,7 @@ namespace SpatialSlur.SlurTools
             /// <returns></returns>
             private bool FindZipPair(V vertex, out E he0, out E he1)
             {
-                // TODO
-                // test HashGrid performance for closest pair at high valence vertices
+                // TODO use HashGrid for high valence vertices
 
                 var first = vertex.First;
                 var p0 = vertex.Position;

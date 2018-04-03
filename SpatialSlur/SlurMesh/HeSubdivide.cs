@@ -2,6 +2,8 @@
 /*
  * Notes
  * 
+ * TODO support user-specified vertex attributes
+ * 
  * Refs
  * http://graphics.stanford.edu/courses/cs468-10-fall/LectureSlides/10_Subdivision.pdf
  */
@@ -31,7 +33,8 @@ namespace SpatialSlur.SlurMesh
             where E : HeMesh<V, E, F>.Halfedge
             where F : HeMesh<V, E, F>.Face
         {
-            // TODO
+            // TODO implement
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -52,7 +55,7 @@ namespace SpatialSlur.SlurMesh
             where E : HeMesh<V, E, F>.Halfedge
             where F : HeMesh<V, E, F>.Face
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
@@ -168,8 +171,6 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// Applies a single iteration of Catmull-Clark subdivision to the given mesh.
         /// If using external buffers to store vertex attributes, the number of vertices after subdivision equals the sum of the number of vertices, edges, and faces in the initial mesh.
-        /// http://rosettacode.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
-        /// http://w3.impa.br/~lcruz/courses/cma/surfaces.html
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <typeparam name="E"></typeparam>
@@ -182,6 +183,10 @@ namespace SpatialSlur.SlurMesh
             where E : HeMesh<V, E, F>.Halfedge
             where F : HeMesh<V, E, F>.Face
         {
+            // impl ref
+            // http://rosettacode.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
+            // http://w3.impa.br/~lcruz/courses/cma/surfaces.html
+
             CatmullClarkGeometry(mesh, position, boundaryType);
             QuadSplitTopology(mesh);
         }
@@ -582,7 +587,7 @@ namespace SpatialSlur.SlurMesh
 
 
         #region Obsolete implementations
-    
+
         /*
         /// <summary>
         /// Applies a single iteration of Catmull-Clark subdivision to the given mesh.
@@ -1046,7 +1051,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public static HeMesh Weave(HeMesh mesh, IReadOnlyList<Vec3d> faceCenters, IReadOnlyList<Vec3d> vertexNormals, IReadOnlyList<double> edgeValues, double offset)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 

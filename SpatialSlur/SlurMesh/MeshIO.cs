@@ -301,8 +301,7 @@ namespace SpatialSlur.SlurMesh
                     if (start > -1) he.Start = verts[start + nhe];
                 }
 
-                // TODO 
-                // validate topology?
+                // TODO validate topology?
 
                 // set vertex attributes
                 if (setVertexAttributes != null)
@@ -481,8 +480,7 @@ namespace SpatialSlur.SlurMesh
                     if (first != -1) f.First = hedges[first + nhe];
                 }
 
-                // TODO 
-                // validate topology?
+                // TODO validate topology?
 
                 // set vertex attributes
                 if (setVertexAttributes != null)

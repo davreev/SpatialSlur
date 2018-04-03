@@ -1,26 +1,30 @@
-﻿using System;
-using System.Collections.Concurrent;
-using SpatialSlur.SlurCore;
-
-using static System.Threading.Tasks.Parallel;
-
+﻿
 /*
-* Notes
-*/
+ * Notes
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Text;
+using System.Drawing;
+using SpatialSlur.SlurCore;
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.SlurData
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public static partial class ArrayMath
+	/// <summary>
+	/// 
+	/// </summary>
+	public static partial class ArrayMath
 	{
         /// <summary>
 		/// Parallel implementations
 		/// </summary>
 		public static partial class Parallel
 		{
-			#region General
+			#region Common
 
 			#region double
 

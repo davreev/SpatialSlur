@@ -24,8 +24,7 @@ namespace SpatialSlur.SlurField
         /// <param name="field"></param>
         public static void GeodesicDistanceL1(GridField2d<double> field, IEnumerable<int> sources, IEnumerable<int> exclude = null)
         {
-            // TODO 
-            // handle additonal wrap modes
+            // TODO handle additonal wrap modes
 
             var dists = field.Values;
             int nx = field.CountX;
@@ -96,8 +95,7 @@ namespace SpatialSlur.SlurField
         /// <param name="result"></param>
         public static void GeodesicDistanceL1(GridField2d<double> field, double[] cost, IEnumerable<int> sources, IEnumerable<int> exclude = null)
         {
-            // TODO 
-            // handle additonal wrap modes
+            // TODO handle additonal wrap modes
 
             var dists = field.Values;
             int nx = field.CountX;
@@ -168,8 +166,7 @@ namespace SpatialSlur.SlurField
         /// <param name="exclude"></param>
         public static void GeodesicDistanceL2(GridField2d<double> field, double[] cost, IEnumerable<int> sources, IEnumerable<int> exclude = null)
         {
-            // TODO 
-            // handle additonal wrap modes
+            // TODO handle additonal wrap modes
 
             var dists = field.Values;
             var nx = field.CountX;
@@ -340,8 +337,8 @@ namespace SpatialSlur.SlurField
                 result = (Math.Sqrt(disc) - b) * _a2Inv;
                 return true;
 
-                // TODO
-                // compare with alt quadratic solve impl ref
+                // TODO compare with alt quadratic solve 
+                // impl ref
                 // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (5.6)
             }
         }

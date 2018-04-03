@@ -1,4 +1,9 @@
-﻿#if USING_RHINO
+﻿
+/*
+ * Notes 
+ */
+
+#if USING_RHINO
 
 using System;
 using System.Collections.Generic;
@@ -9,10 +14,6 @@ using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurRhino;
 using Rhino.Geometry;
 
-/*
- * Notes 
- */
-
 namespace SpatialSlur.SlurField
 {
     /// <summary>
@@ -21,7 +22,7 @@ namespace SpatialSlur.SlurField
     [Serializable]
     public abstract class MeshField3d
     {
-        #region Static
+#region Static
 
         /// <summary></summary>
         public static readonly MeshField3dFactory<double> Double = new MeshField3dDouble.Factory();
@@ -29,7 +30,7 @@ namespace SpatialSlur.SlurField
         /// <summary></summary>
         public static readonly MeshField3dFactory<Vec3d> Vec3d = new MeshField3dVec3d.Factory();
 
-        #endregion
+#endregion
 
 
         private HeMesh3d _mesh;
@@ -108,7 +109,7 @@ namespace SpatialSlur.SlurField
     public abstract class MeshField3d<T> : MeshField3d, IField2d<T>, IField3d<T>, IDiscreteField3d<T>
         where T : struct
     {
-        #region Static
+#region Static
         
         /// <summary>
         /// 
@@ -119,7 +120,7 @@ namespace SpatialSlur.SlurField
             return field.Values;
         }
 
-        #endregion
+#endregion
 
 
         private T[] _values;
@@ -256,7 +257,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        #region Explicit interface implementations
+#region Explicit interface implementations
 
         /// <summary>
         /// 
@@ -309,7 +310,7 @@ namespace SpatialSlur.SlurField
             return Mesh.Vertices[index].Position;
         }
 
-        #endregion
+#endregion
     }
 }
 

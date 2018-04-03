@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes 
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
@@ -6,10 +11,6 @@ using System.Linq;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
-
-/*
- * Notes 
- */
 
 namespace SpatialSlur.SlurMesh
 {
@@ -2344,7 +2345,7 @@ namespace SpatialSlur.SlurMesh
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
@@ -2373,7 +2374,7 @@ namespace SpatialSlur.SlurMesh
             where E : Halfedge<V, E, F>
             where F : HeFace<V, E, F>
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 

@@ -557,8 +557,7 @@ namespace SpatialSlur.SlurCore
         {
             var ca = Dot(this, other);
 
-            // TODO 
-            // handle antiparallel case
+            // TODO handle antiparallel case
             if (Math.Abs(ca) > 1.0 - SlurMath.ZeroTolerance)
                 return this;
 

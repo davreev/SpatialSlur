@@ -31,10 +31,11 @@ namespace SpatialSlur.SlurMesh
         /// <inheritdoc/>
         public override int CountUnused()
         {
+            var items = Items;
             int result = 0;
 
             for (int i = 0; i < Count; i++)
-                if (Items[i].IsUnused) result++;
+                if (items[i].IsUnused) result++;
 
             return result;
         }
@@ -43,15 +44,16 @@ namespace SpatialSlur.SlurMesh
         /// <inheritdoc/>
         public override void Compact()
         {
+            var items = Items;
             int marker = 0;
 
             for (int i = 0; i < Count; i++)
             {
-                T element = Items[i];
+                T element = items[i];
                 if (element.IsUnused) continue; // skip unused elements
 
                 element.Index = marker;
-                Items[marker++] = element;
+                items[marker++] = element;
             }
 
             AfterCompact(marker);
@@ -72,11 +74,12 @@ namespace SpatialSlur.SlurMesh
             if(attributes is A[] arr)
                 return SwimAttributes(arr);
 
+            var items = Items;
             int marker = 0;
 
             for (int i = 0; i < Count; i++)
             {
-                if (Items[i].IsUnused) continue; // skip unused elements
+                if (items[i].IsUnused) continue; // skip unused elements
                 attributes[marker++] = attributes[i];
             }
 
@@ -87,11 +90,12 @@ namespace SpatialSlur.SlurMesh
         /// <inheritdoc/>
         public override int SwimAttributes<A>(A[] attributes)
         {
+            var items = Items;
             int marker = 0;
 
             for (int i = 0; i < Count; i++)
             {
-                if (Items[i].IsUnused) continue; // skip unused elements
+                if (items[i].IsUnused) continue; // skip unused elements
                 attributes[marker++] = attributes[i];
             }
 

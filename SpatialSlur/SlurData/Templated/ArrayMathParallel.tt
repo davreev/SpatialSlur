@@ -41,6 +41,11 @@ var propertyTable = new Dictionary<string, Dictionary<string, string>>()
     }
 };
 #>
+
+/*
+ * Notes
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -48,12 +53,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using SpatialSlur.SlurCore;
-
 using static System.Threading.Tasks.Parallel;
-
-/*
-* Notes
-*/
 
 namespace SpatialSlur.SlurData
 {
@@ -67,7 +67,7 @@ namespace SpatialSlur.SlurData
 		/// </summary>
 		public static partial class Parallel
 		{
-			#region General
+			#region Common
 
 <# 
 foreach(string type in allTypes)

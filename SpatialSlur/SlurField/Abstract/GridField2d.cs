@@ -1,13 +1,15 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 using SpatialSlur.SlurCore;
-
-/*
- * Notes
- */
+using static SpatialSlur.SlurCore.CoreUtil;
 
 namespace SpatialSlur.SlurField
 {
@@ -119,12 +121,12 @@ namespace SpatialSlur.SlurField
         {
             get
             {
-                CoreUtil.BoundsCheck(i, CountX);
+                BoundsCheck(i, CountX);
                 return _values[IndexAtUnsafe(i, j)];
             }
             set
             {
-                CoreUtil.BoundsCheck(i, CountX);
+                BoundsCheck(i, CountX);
                 _values[IndexAtUnsafe(i, j)] = value;
             }
         }

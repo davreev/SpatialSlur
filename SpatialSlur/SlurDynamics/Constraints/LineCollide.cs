@@ -120,7 +120,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         /// <param name="bodies"></param>
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 

@@ -1,5 +1,4 @@
 ﻿
-
 /*
  * Notes
  */
@@ -33,10 +32,11 @@ namespace SpatialSlur.SlurMesh
         /// <inheritdoc/>
         public override int CountUnused()
         {
+            var items = Items;
             int result = 0;
 
             for (int i = 0; i < Count; i += 2)
-                if (Items[i].IsUnused) result += 2;
+                if (items[i].IsUnused) result += 2;
 
             return result;
         }
@@ -45,20 +45,21 @@ namespace SpatialSlur.SlurMesh
         /// <inheritdoc/>
         public override void Compact()
         {
+            var items = Items;
             int marker = 0;
 
             for (int i = 0; i < Count; i += 2)
             {
-                var he = Items[i];
+                var he = items[i];
                 if (he.IsUnused) continue; // skip unused halfedge pairs
 
                 he.Index = marker;
-                Items[marker++] = he;
+                items[marker++] = he;
 
-                he = he.Twin;
+                he = items[i + 1];
 
                 he.Index = marker;
-                Items[marker++] = he;
+                items[marker++] = he;
             }
 
             AfterCompact(marker);
@@ -79,11 +80,12 @@ namespace SpatialSlur.SlurMesh
             if (attributes is A[] arr)
                 return SwimAttributes(arr);
 
+            var items = Items;
             int marker = 0;
 
             for (int i = 0; i < Count; i += 2)
             {
-                if (Items[i].IsUnused) continue; // skip unused halfedge pairs
+                if (items[i].IsUnused) continue; // skip unused halfedge pairs
                 attributes[marker++] = attributes[i];
                 attributes[marker++] = attributes[i + 1];
             }
@@ -95,11 +97,12 @@ namespace SpatialSlur.SlurMesh
         /// <inheritdoc/>
         public override int SwimAttributes<A>(A[] attributes)
         {
+            var items = Items;
             int marker = 0;
 
             for (int i = 0; i < Count; i += 2)
             {
-                if (Items[i].IsUnused) continue; // skip unused halfedge pairs
+                if (items[i].IsUnused) continue; // skip unused halfedge pairs
                 attributes[marker++] = attributes[i];
                 attributes[marker++] = attributes[i + 1];
             }
@@ -116,23 +119,24 @@ namespace SpatialSlur.SlurMesh
         /// <param name="getKey"></param>
         public override void Sort<K>(Func<E, K> getKey)
         {
+            var items = Items;
             int index = 0;
 
             // sort in pairs
             foreach (var he0 in Edges().OrderBy(getKey))
             {
-                Items[index++] = he0;
-                Items[index++] = he0.Twin;
+                items[index++] = he0;
+                items[index++] = he0.Twin;
             }
 
-            // re-index after since indices may be used to fetch keys
+            // re-index after since indices may be used to fetch sort keys
             for (int i = 0; i < Count; i++)
-                Items[i].Index = i;
+                items[i].Index = i;
 
             IEnumerable<E> Edges()
             {
                 for (int i = 0; i < Count; i += 2)
-                    yield return Items[i];
+                    yield return items[i];
             }
         }
     }

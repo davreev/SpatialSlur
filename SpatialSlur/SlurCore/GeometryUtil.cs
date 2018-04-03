@@ -398,7 +398,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static Vec3d GetBarycentric(Vec3d point, Vec3d a, Vec3d b, Vec3d c)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
@@ -413,7 +413,7 @@ namespace SpatialSlur.SlurCore
         /// <returns></returns>
         public static bool IsInTriangle(Vec3d point, Vec3d a, Vec3d b, Vec3d c)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
         

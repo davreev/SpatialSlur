@@ -1,13 +1,15 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ * 
+ * TODO test SIMD optimization https://docs.microsoft.com/en-us/dotnet/api/system.numerics.vector-1?view=netcore-2.0
+ */
+
+using System;
 using System.Collections.Concurrent;
 using SpatialSlur.SlurCore;
 
 using static System.Threading.Tasks.Parallel;
-
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurData
 {
