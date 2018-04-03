@@ -17,18 +17,17 @@ namespace SpatialSlur.SlurData
     public struct ArrayView<T> : IList<T>, IReadOnlyList<T>
     {
         #region Nested types
-
+        
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public struct Enumerator : IEnumerator<T>, IEnumerator
+        public struct Enumerator : IEnumerator<T>
         {
             private T[] _source;
             private int _index;
             private int _end;
-            private T _current;
-            
+
 
             /// <summary>
             /// 
@@ -39,9 +38,8 @@ namespace SpatialSlur.SlurData
             public Enumerator(T[] source, int start, int count)
             {
                 _source = source;
-                _index = start;
+                _index = start - 1;
                 _end = start + count;
-                _current = default(T);
             }
 
 
@@ -50,16 +48,16 @@ namespace SpatialSlur.SlurData
             /// </summary>
             public T Current
             {
-                get => _current;
+                get => _source[_index];
             }
 
-
+            
             /// <summary>
             /// 
             /// </summary>
             object IEnumerator.Current
             {
-                get => _current;
+                get => Current;
             }
 
 
@@ -68,13 +66,7 @@ namespace SpatialSlur.SlurData
             /// </summary>
             public bool MoveNext()
             {
-                if (_index < _end)
-                {
-                    _current = _source[_index++];
-                    return true;
-                }
-
-                return false;
+                return ++_index < _end;
             }
 
 

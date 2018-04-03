@@ -22,12 +22,11 @@ namespace SpatialSlur.SlurData
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public struct Enumerator : IEnumerator<T>, IEnumerator
+        public struct Enumerator : IEnumerator<T>
         {
             private List<T> _source;
             private int _index;
             private int _end;
-            private T _current;
 
 
             /// <summary>
@@ -39,9 +38,8 @@ namespace SpatialSlur.SlurData
             public Enumerator(List<T> source, int start, int count)
             {
                 _source = source;
-                _index = start;
+                _index = start - 1;
                 _end = start + count;
-                _current = default(T);
             }
 
 
@@ -50,7 +48,7 @@ namespace SpatialSlur.SlurData
             /// </summary>
             public T Current
             {
-                get => _current;
+                get => _source[_index];
             }
 
 
@@ -59,7 +57,7 @@ namespace SpatialSlur.SlurData
             /// </summary>
             object IEnumerator.Current
             {
-                get => _current;
+                get => Current;
             }
 
 
@@ -68,13 +66,7 @@ namespace SpatialSlur.SlurData
             /// </summary>
             public bool MoveNext()
             {
-                if (_index < _end)
-                {
-                    _current = _source[_index++];
-                    return true;
-                }
-
-                return false;
+                return ++_index < _end;
             }
 
 
