@@ -78,13 +78,14 @@ namespace SpatialSlur.SlurMesh
                 First.Previous.MakeConsecutive(hedge);
                 he.MakeConsecutive(First);
             }
-
+            
 
             /// <summary>
             /// 
             /// </summary>
             /// <param name="compare"></param>
-            public void SortOutgoing(Comparison<TE> compare)
+            [Obsolete]
+            public void SortOutgoingHalfedges(Comparison<TE> compare)
             {
                 var hedges = OutgoingHalfedges.ToArray();
                 Array.Sort(hedges, compare);
@@ -101,12 +102,26 @@ namespace SpatialSlur.SlurMesh
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="getPosition"></param>
-            /// <param name="normal"></param>
-            public void SortOutgoingRadial(Func<TV, Vec3d> getPosition, Vec3d normal)
+            /// <param name="compare"></param>
+            public void SortOutgoingHalfedges<K>(Func<TE, K> getKey)
+                where K : IComparable<K>
             {
-                // TODO
-                throw new NotImplementedException();
+                var hedges = OutgoingHalfedges.OrderBy(getKey);
+
+                var itr = hedges.GetEnumerator();
+                if (!itr.MoveNext()) return;
+
+                var first = itr.Current;
+                var prev = first;
+                
+                while(itr.MoveNext())
+                {
+                    var he = itr.Current;
+                    prev.Twin.MakeConsecutive(he);
+                    prev = he;
+                }
+
+                prev.Twin.MakeConsecutive(first);
             }
         }
 
@@ -145,7 +160,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertexCapacity"></param>
         /// <param name="hedgeCapacity"></param>
         public HeGraph(int vertexCapacity = DefaultCapacity, int hedgeCapacity = DefaultCapacity)
-            : base(vertexCapacity, hedgeCapacity)
+            :base(vertexCapacity, hedgeCapacity)
         {
         }
 
@@ -183,12 +198,6 @@ namespace SpatialSlur.SlurMesh
             where UV : HeGraph<UV, UE>.Vertex
             where UE : HeGraph<UV, UE>.Halfedge
         {
-            if (setVertex == null)
-                setVertex = delegate { };
-
-            if (setHedge == null)
-                setHedge = delegate { };
-
             var vertsB = other.Vertices;
             var hedgesB = other.Halfedges;
 
@@ -213,7 +222,7 @@ namespace SpatialSlur.SlurMesh
                 var v1 = Vertices[i + nvA];
 
                 // transfer attributes
-                setVertex(v1, v0);
+                setVertex?.Invoke(v1, v0);
 
                 if (v0.IsUnused) continue;
                 v1.First = Halfedges[v0.First.Index + nhA];
@@ -226,7 +235,7 @@ namespace SpatialSlur.SlurMesh
                 var he1 = Halfedges[i + nhA];
 
                 // transfer attributes
-                setHedge(he1, he0);
+                setHedge?.Invoke(he1, he0);
 
                 if (he0.IsUnused) continue;
                 he1.Previous = Halfedges[he0.Previous.Index + nhA];
@@ -250,12 +259,6 @@ namespace SpatialSlur.SlurMesh
             where UE : HeMesh<UV, UE, UF>.Halfedge
             where UF : HeMesh<UV, UE, UF>.Face
         {
-            if (setVertex == null)
-                setVertex = delegate { };
-
-            if (setHedge == null)
-                setHedge = delegate { };
-
             int nhe = Halfedges.Count;
             int nv = Vertices.Count;
 
@@ -276,7 +279,7 @@ namespace SpatialSlur.SlurMesh
                 var v1 = Vertices[i + nv];
 
                 // transfer attributes
-                setVertex(v1, v0);
+                setVertex?.Invoke(v1, v0);
 
                 if (v0.IsUnused) continue;
                 v1.First = Halfedges[v0.First + nhe];
@@ -289,7 +292,7 @@ namespace SpatialSlur.SlurMesh
                 var he1 = Halfedges[i + nhe];
 
                 // transfer attributes
-                setHedge(he1, he0);
+                setHedge?.Invoke(he1, he0);
 
                 if (he0.IsUnused) continue;
                 he1.Previous = Halfedges[he0.Previous + nhe];
@@ -313,12 +316,6 @@ namespace SpatialSlur.SlurMesh
             where UE : HeMesh<UV, UE, UF>.Halfedge
             where UF : HeMesh<UV, UE, UF>.Face
         {
-            if (setVertex == null)
-                setVertex = delegate { };
-
-            if (setHedge == null)
-                setHedge = delegate { };
-
             int nhe = Halfedges.Count;
             int nv = Vertices.Count;
 
@@ -339,7 +336,7 @@ namespace SpatialSlur.SlurMesh
                 var vA = Vertices[i + nv];
 
                 // transfer attributes
-                setVertex(vA, fB);
+                setVertex?.Invoke(vA, fB);
 
                 if (fB.IsUnused) continue;
                 var heB = fB.First;
@@ -362,7 +359,7 @@ namespace SpatialSlur.SlurMesh
                 var heA0 = Halfedges[i + nhe];
 
                 // transfer attributes
-                setHedge(heA0, heB0);
+                setHedge?.Invoke(heA0, heB0);
 
                 if (heB0.IsUnused || heB0.IsBoundary) continue;
                 var heB1 = heB0;
@@ -382,7 +379,7 @@ namespace SpatialSlur.SlurMesh
         /// Returns the first halfedge from each loop in the graph.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<TE> GetEdgeLoops()
+        public IEnumerable<TE> GetHalfedgeLoops()
         {
             int currTag = Halfedges.NextTag;
 
@@ -846,7 +843,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertex"></param>
         public void ExpandVertex(TV vertex)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
@@ -947,6 +944,7 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         /// <param name="compare"></param>
         /// <param name="parallel"></param>
+        [Obsolete]
         public void SortOutgoingHalfedges(Comparison<TE> compare, bool parallel = false)
         {
             if (parallel)
@@ -960,7 +958,32 @@ namespace SpatialSlur.SlurMesh
                 {
                     var v = Vertices[i];
                     if (v.IsUnused) continue;
-                    v.SortOutgoing(compare);
+                    v.SortOutgoingHalfedges(compare);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Sorts the outgoing halfedges around each vertex.
+        /// </summary>
+        /// <param name="compare"></param>
+        /// <param name="parallel"></param>
+        public void SortOutgoingHalfedges<K>(Func<TE, K> getKey, bool parallel = false)
+            where K : IComparable<K>
+        {
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, Vertices.Count), range => Body(range.Item1, range.Item2));
+            else
+                Body(0, Vertices.Count);
+
+            void Body(int from, int to)
+            {
+                for (int i = from; i < to; i++)
+                {
+                    var v = Vertices[i];
+                    if (v.IsUnused) continue;
+                    v.SortOutgoingHalfedges(getKey);
                 }
             }
         }

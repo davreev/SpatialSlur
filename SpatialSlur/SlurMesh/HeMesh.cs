@@ -136,7 +136,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="other"></param>
         public void Append(M other)
         {
-            Append(other, delegate { }, delegate { }, delegate { });
+            Append(other, null, null, null);
         }
 
 
@@ -146,7 +146,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public M GetDual()
         {
-            return Factory.CreateDual(this, delegate { }, delegate { }, delegate { });
+            return Factory.CreateDual(this, null, null, null);
         }
 
 
@@ -156,7 +156,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="other"></param>
         public void AppendDual(M other)
         {
-            AppendDual(other, delegate { }, delegate { }, delegate { });
+            AppendDual(other, null, null, null);
         }
 
 
@@ -166,7 +166,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public M[] SplitDisjoint()
         {
-            return Factory.CreateConnectedComponents(this, delegate { }, delegate { }, delegate { });
+            return Factory.CreateConnectedComponents(this, null, null, null);
         }
 
 
@@ -178,7 +178,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public M[] SplitDisjoint(out int[] componentIndices, out int[] edgeIndices)
         {
-            return Factory.CreateConnectedComponents(this, out componentIndices, out edgeIndices, delegate { }, delegate { }, delegate { });
+            return Factory.CreateConnectedComponents(this, out componentIndices, out edgeIndices, null, null, null);
         }
 
 
@@ -190,7 +190,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public M[] SplitDisjoint(Property<E, int> componentIndex, Property<E, int> edgeIndex)
         {
-            return Factory.CreateConnectedComponents(this, componentIndex, edgeIndex, delegate { }, delegate { }, delegate { });
+            return Factory.CreateConnectedComponents(this, componentIndex, edgeIndex, null, null, null);
         }
     }
 

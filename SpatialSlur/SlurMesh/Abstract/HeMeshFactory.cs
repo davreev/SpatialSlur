@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using SpatialSlur.SlurCore;
+﻿
 
 /*
  * Notes
  */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using SpatialSlur.SlurCore;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -161,15 +162,6 @@ namespace SpatialSlur.SlurMesh
             where UE : HeMesh<UV, UE, UF>.Halfedge
             where UF : HeMesh<UV, UE, UF>.Face
         {
-            if (setVertex == null)
-                setVertex = delegate { };
-
-            if (setHedge == null)
-                setHedge = delegate { };
-
-            if (setFace == null)
-                setFace = delegate { };
-
             var vertices = mesh.Vertices;
             var hedges = mesh.Halfedges;
             var faces = mesh.Faces;
@@ -208,7 +200,7 @@ namespace SpatialSlur.SlurMesh
                 heB0.MakeConsecutive(heB1);
 
                 // transfer attributes
-                setHedge(heB0, heA0);
+                setHedge?.Invoke(heB0, heA0);
             }
 
             // create component vertices
@@ -229,7 +221,7 @@ namespace SpatialSlur.SlurMesh
                     he.Start = vB;
 
                 // transfer attributes
-                setVertex(vB, vA);
+                setVertex?.Invoke(vB, vA);
             }
 
             // create component faces
@@ -250,10 +242,28 @@ namespace SpatialSlur.SlurMesh
                     he.Face = fB;
 
                 // transfer attributes
-                setFace(fB, fA);
+                setFace?.Invoke(fB, fA);
             }
 
             return comps;
+        }
+
+
+        /// <summary>
+        /// Assumes the halfedges of the given graph are correctly sorted around each vertex.
+        /// </summary>
+        /// <typeparam name="UV"></typeparam>
+        /// <typeparam name="UE"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="setVertex"></param>
+        /// <param name="setHedge"></param>
+        /// <returns></returns>
+        public TM CreateFromGraph<UV, UE>(HeGraph<UV, UE> graph, Action<TV, UV> setVertex = null, Action<TE, UE> setHedge = null)
+            where UV : HeGraph<UV, UE>.Vertex
+            where UE : HeGraph<UV, UE>.Halfedge
+        {
+            // TODO implement
+            throw new NotImplementedException();
         }
 
 
@@ -441,7 +451,7 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-#region WIP
+        #region WIP
 
         /// <summary>
         /// If using external buffers to store vertex attributes, the number of vertices in the resulting mesh equals 8 times the number of edges in the given mesh.
@@ -592,8 +602,7 @@ namespace SpatialSlur.SlurMesh
             where E : HeMeshBase<V, E, F>.Halfedge
             where F : HeMeshBase<V, E, F>.Face
         {
-            // TODO 
-            // generalized implementation that handles interpolation of arbitrary vertex attributes
+            // TODO generalized implementation that handles interpolation of arbitrary vertex attributes
 
             var edges = mesh.Edges;
             int ne = edges.Count;
@@ -666,7 +675,7 @@ namespace SpatialSlur.SlurMesh
             where UE : HeMesh<UV, UE, UF>.Halfedge
             where UF : HeMesh<UV, UE, UF>.Face
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
 
             int ne = mesh.Edges.Count;
@@ -695,7 +704,7 @@ namespace SpatialSlur.SlurMesh
             where UE : HeMesh<UV, UE, UF>.Halfedge
             where UF : HeMesh<UV, UE, UF>.Face
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
 
             int ne = mesh.Edges.Count;
@@ -706,6 +715,6 @@ namespace SpatialSlur.SlurMesh
             return result;
         }
 
-#endregion
+        #endregion
     }
 }

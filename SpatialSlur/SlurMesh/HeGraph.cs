@@ -106,7 +106,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="other"></param>
         public void Append(G other)
         {
-            Append(other, delegate { }, delegate { });
+            Append(other, null, null);
         }
 
 
@@ -116,7 +116,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public G[] SplitDisjoint()
         {
-            return Factory.CreateConnectedComponents(this, delegate { }, delegate { });
+            return Factory.CreateConnectedComponents(this, null, null);
         }
 
 
@@ -128,7 +128,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public G[] SplitDisjoint(out int[] componentIndices, out int[] edgeIndices)
         {
-            return Factory.CreateConnectedComponents(this, out componentIndices, out edgeIndices, delegate { }, delegate { });
+            return Factory.CreateConnectedComponents(this, out componentIndices, out edgeIndices, null, null);
         }
 
 
@@ -140,7 +140,7 @@ namespace SpatialSlur.SlurMesh
         /// <returns></returns>
         public G[] SplitDisjoint(Property<E, int> componentIndex, Property<E, int> edgeIndex)
         {
-            return Factory.CreateConnectedComponents(this, componentIndex, edgeIndex, delegate { }, delegate { });
+            return Factory.CreateConnectedComponents(this, componentIndex, edgeIndex, null, null);
         }
     }
 

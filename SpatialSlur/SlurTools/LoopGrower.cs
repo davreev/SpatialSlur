@@ -55,7 +55,7 @@ namespace SpatialSlur.SlurTools
                 where TE : HeMesh<TV, TE, TF>.Halfedge
                 where TF : HeMesh<TV, TE, TF>.Face
             {
-                var copy = HeMesh.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, delegate { }, delegate { });
+                var copy = HeMesh.Factory.CreateCopy(mesh, (v0, v1) => v0.Position = v1.Position, null, null);
                 return new Solver(copy, target, features, settings);
             }
 

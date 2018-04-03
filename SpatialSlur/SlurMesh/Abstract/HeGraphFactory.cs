@@ -120,12 +120,6 @@ namespace SpatialSlur.SlurMesh
             where UV : HeGraph<UV, UE>.Vertex
             where UE : HeGraph<UV, UE>.Halfedge
         {
-            if (setVertex == null)
-                setVertex = delegate { };
-
-            if (setHedge == null)
-                setHedge = delegate { };
-
             var vertices = graph.Vertices;
             var hedges = graph.Halfedges;
 
@@ -163,7 +157,7 @@ namespace SpatialSlur.SlurMesh
                 heB0.MakeConsecutive(heB1);
 
                 // transfer attributes
-                setHedge(heB0, heA0);
+                setHedge?.Invoke(heB0, heA0);
             }
 
             // create component vertices
@@ -184,7 +178,7 @@ namespace SpatialSlur.SlurMesh
                     he.Start = vB;
 
                 // transfer attributes
-                setVertex(vB, vA);
+                setVertex?.Invoke(vB, vA);
             }
 
             return comps;

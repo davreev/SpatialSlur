@@ -133,7 +133,7 @@ namespace SpatialSlur.SlurGH.Components
 
             // output
             DA.SetData(0, new GH_String(_print.ToString()));
-            DA.SetData(1, new GH_HeMesh3d(HeMesh3d.Factory.CreateCopy(_solver.Mesh, _setV, delegate { }, delegate { })));
+            DA.SetData(1, new GH_HeMesh3d(HeMesh3d.Factory.CreateCopy(_solver.Mesh, _setV, null, null)));
 
             // recall
             if (state == 1)

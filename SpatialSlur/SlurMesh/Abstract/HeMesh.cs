@@ -1,14 +1,15 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Linq;
 
 using SpatialSlur.SlurCore;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurMesh
 {
@@ -267,15 +268,6 @@ namespace SpatialSlur.SlurMesh
             where UE : HeMesh<UV, UE, UF>.Halfedge
             where UF : HeMesh<UV, UE, UF>.Face
         {
-            if (setVertex == null)
-                setVertex = delegate { };
-
-            if (setHedge == null)
-                setHedge = delegate { };
-
-            if (setFace == null)
-                setFace = delegate { };
-
             var otherVerts = other.Vertices;
             var otherHedges = other.Halfedges;
             var otherFaces = other.Faces;
@@ -306,7 +298,7 @@ namespace SpatialSlur.SlurMesh
                 var v1 = Vertices[i + nvA];
 
                 // transfer attributes
-                setVertex(v1, v0);
+                setVertex?.Invoke(v1, v0);
 
                 if (v0.IsUnused) continue;
                 v1.First = Halfedges[v0.First.Index + nhA];
@@ -319,7 +311,7 @@ namespace SpatialSlur.SlurMesh
                 var f1 = Faces[i + nfA];
 
                 // transfer attributes
-                setFace(f1, f0);
+                setFace?.Invoke(f1, f0);
 
                 if (f0.IsUnused) continue;
                 f1.First = Halfedges[f0.First.Index + nhA];
@@ -332,7 +324,7 @@ namespace SpatialSlur.SlurMesh
                 var he1 = Halfedges[i + nhA];
 
                 // transfer attributes
-                setHedge(he1, he0);
+                setHedge?.Invoke(he1, he0);
 
                 if (he0.IsUnused) continue;
                 he1.Previous = Halfedges[he0.Previous.Index + nhA];
@@ -361,15 +353,6 @@ namespace SpatialSlur.SlurMesh
             where UE : HeMesh<UV, UE, UF>.Halfedge
             where UF : HeMesh<UV, UE, UF>.Face
         {
-            if (setVertex == null)
-                setVertex = delegate { };
-
-            if (setHedge == null)
-                setHedge = delegate { };
-
-            if (setFace == null)
-                setFace = delegate { };
-
             var vertsB = other.Vertices;
             var hedgesB = other.Halfedges;
             var facesB = other.Faces;
@@ -421,7 +404,7 @@ namespace SpatialSlur.SlurMesh
                 var heB0 = hedgesB[i];
 
                 // transfer attributes
-                setHedge(heA0, heB0);
+                setHedge?.Invoke(heA0, heB0);
 
                 // invalid dual edges have a null start vertex
                 if (heA0.Start == null)
@@ -448,7 +431,7 @@ namespace SpatialSlur.SlurMesh
                 var vB = vertsB[i];
 
                 // transfer attributes
-                setFace(fA, vB);
+                setFace?.Invoke(fA, vB);
 
                 if (vB.IsUnused || vB.IsBoundary) continue;
                 fA.First = Halfedges[vB.First.Twin.Index + nhA]; // can assume dual edge around interior vertex is valid
@@ -461,7 +444,7 @@ namespace SpatialSlur.SlurMesh
                 var fB = facesB[i];
 
                 // transfer attributes
-                setVertex(vA, fB);
+                setVertex?.Invoke(vA, fB);
 
                 if (fB.IsUnused) continue;
                 var heB = fB.First; // primal halfedge
@@ -1549,7 +1532,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="he1"></param>
         public void DetachVertex(TE he0, TE he1)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
@@ -1647,7 +1630,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="vertex"></param>
         private void ChamferVertexImpl(TV vertex)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
@@ -2720,7 +2703,7 @@ namespace SpatialSlur.SlurMesh
         /// <param name="center"></param>
         internal void QuadPokeFaceImpl(TE first, TV center)
         {
-            // TODO
+            // TODO implement
             throw new NotImplementedException();
         }
 
