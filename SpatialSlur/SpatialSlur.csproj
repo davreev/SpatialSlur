@@ -108,6 +108,7 @@
     <Compile Include="SlurCore\Obsolete\Rotation3d.cs" />
     <Compile Include="SlurCore\Quaterniond.cs" />
     <Compile Include="SlurCore\Sequences.cs" />
+    <Compile Include="SlurCore\Plane3d.cs" />
     <Compile Include="SlurData\ArrayMath.cs" />
     <Compile Include="SlurData\ArrayView.cs" />
     <Compile Include="SlurData\Extensions\ArrayExtensions.cs" />
@@ -127,6 +128,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ArrayMathParallel.tt</DependentUpon>
     </Compile>
+    <Compile Include="SlurData\UniformPartitioner.cs" />
     <Compile Include="SlurDynamics\Abstract\Force.cs" />
     <Compile Include="SlurDynamics\Abstract\MultiForce.cs" />
     <Compile Include="SlurDynamics\Constraints\OnRotation.cs" />
@@ -175,7 +177,7 @@
     <Compile Include="SlurMesh\Abstract\HeStructure.cs" />
     <Compile Include="SlurMesh\Abstract\Elements\HeVertex.cs" />
     <Compile Include="SlurMesh\Abstract\HeVolume.cs" />
-    <Compile Include="SlurMesh\EdgeList.cs" />
+    <Compile Include="SlurMesh\EdgeListView.cs" />
     <Compile Include="SlurMesh\Enums\SmoothBoundaryType.cs" />
     <Compile Include="SlurMesh\Extensions\HeStructureExtensions.cs" />
     <Compile Include="SlurMesh\Extensions\HeElementExtensions.cs" />
