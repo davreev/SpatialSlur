@@ -384,6 +384,18 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
+        /// Assumes that divisor y is positive
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static int DivideCeil(int x, int y)
+        {
+            return (x + y - 1) / y;
+        }
+
+
+        /// <summary>
         /// Returns fractional portion of t.
         /// </summary>
         /// <param name="value"></param>
@@ -460,7 +472,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// Assumes that n is positive to save a few ticks.
+        /// Assumes that divisor n is positive to save a few ticks.
         /// </summary>
         /// <param name="a"></param>
         /// <param name="n"></param>
