@@ -606,8 +606,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Shift<T>(this T[] array, int offset, int from, int to)
         {
-            offset = SlurMath.Mod2(offset, to - from + 1);
-            Reverse(array, from, from + offset - 1);
+            offset = SlurMath.Mod2(offset, to - from);
+            Reverse(array, from, from + offset);
             Reverse(array, from + offset, to);
             Reverse(array, from, to);
         }
@@ -618,7 +618,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Reverse<T>(this T[] array)
         {
-            Reverse(array, 0, array.Length - 1);
+            Reverse(array, 0, array.Length);
         }
 
 
@@ -627,8 +627,8 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Reverse<T>(this T[] array, int from, int to)
         {
-            while (to > from)
-                array.Swap(from++, to--);
+            while (--to > from)
+                array.Swap(from++, to);
         }
 
 
@@ -680,57 +680,147 @@ namespace SpatialSlur.SlurCore
         /// Returns the nth smallest item in linear amortized time.
         /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
         /// </summary>
-        public static T QuickSelect<T>(this T[] array, int n)
+        public static T QuickSelect<T>(this T[] items, int n)
             where T : IComparable<T>
         {
-            return array.QuickSelect(n, 0, array.Length - 1);
+            return items.QuickSelect(n, 0, items.Length);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T>(this T[] array, int n, int from, int to)
+        public static T QuickSelect<T>(this T[] items, int n, int from, int to)
             where T : IComparable<T>
         {
-            if (n < from || n > to)
+            if (n < from || n >= to)
                 throw new IndexOutOfRangeException();
 
-            while (to > from)
+            while (to - from > 1)
             {
-                int i = array.Partition(from, to);
-                if (i > n) to = i - 1;
-                else if (i < n) from = i + 1;
-                else return array[i];
+                int i = items.Partition(from, to);
+            
+                if (i > n)
+                    to = i;
+                else if (i < n)
+                    from = i + 1;
+                else
+                    return items[i];
             }
-            return array[from];
-        }
 
+            return items[from];
+        }
+        
 
         /// <summary>
         /// 
         /// </summary>
-        private static int Partition<T>(this T[] array, int from, int to)
+        private static int Partition<T>(this T[] items, int from, int to)
             where T : IComparable<T>
         {
-            T pivot = array[from]; // get pivot element
+            T pivot = items[from];
             int i = from;
-            int j = to + 1;
+            int j = to;
 
             while (true)
             {
-                while (pivot.CompareTo(array[++i]) > 0)
-                    if (i == to) break;
+                do
+                {
+                    if (--j == i) goto Break;
+                } while (pivot.CompareTo(items[j]) < 0);
 
-                while (pivot.CompareTo(array[--j]) < 0)
-                    if (j == from) break;
-
-                if (i >= j) break; // check if indices have crossed
-                array.Swap(i, j);
+                do
+                {
+                    if (++i == j) goto Break;
+                } while (pivot.CompareTo(items[i]) > 0);
+                
+                items.Swap(i, j);
             }
 
-            // swap with pivot element
-            array.Swap(from, j);
+            Break:;
+            items.Swap(from, j);
+            return j;
+        }
+
+
+        /// <summary>
+        /// Returns the nth smallest item in linear amortized time.
+        /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
+        /// </summary>
+        public static T QuickSelect<T>(this T[] items, int n, Comparison<T> compare)
+        {
+            return items.QuickSelect(n, 0, items.Length, compare);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static T QuickSelect<T>(this T[] items, int n, IComparer<T> comparer)
+        {
+            return items.QuickSelect(n, 0, items.Length, comparer.Compare);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static T QuickSelect<T>(this T[] items, int n, int from, int to, IComparer<T> comparer)
+        {
+            return items.QuickSelect(n, from, to, comparer.Compare);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static T QuickSelect<T>(this T[] items, int n, int from, int to, Comparison<T> compare)
+        {
+            if (n < from || n >= to)
+                throw new IndexOutOfRangeException();
+
+            while (to - from > 1)
+            {
+                int i = items.Partition(from, to, compare);
+
+                if (i > n)
+                    to = i;
+                else if (i < n)
+                    from = i + 1;
+                else
+                    return items[i];
+            }
+
+            return items[from];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static int Partition<T>(this T[] items, int from, int to, Comparison<T> compare)
+        {
+            T pivot = items[from];
+            int i = from;
+            int j = to;
+
+            while (true)
+            {
+                do
+                {
+                    if (--j == i) goto Break;
+                } while (compare(pivot, items[j]) < 0);
+
+                do
+                {
+                    if (++i == j) goto Break;
+                } while (compare(pivot, items[i]) > 0);
+
+                items.Swap(i, j);
+            }
+
+            Break:;
+            items.Swap(from, j);
             return j;
         }
 
@@ -743,7 +833,7 @@ namespace SpatialSlur.SlurCore
         public static K QuickSelect<K, V>(this K[] keys, V[] values, int n)
             where K : IComparable<K>
         {
-            return keys.QuickSelect(values, n, 0, keys.Length - 1);
+            return keys.QuickSelect(values, n, 0, keys.Length);
         }
 
 
@@ -753,16 +843,21 @@ namespace SpatialSlur.SlurCore
         public static K QuickSelect<K, V>(this K[] keys, V[] values, int n, int from, int to)
             where K : IComparable<K>
         {
-            if (n < from || n > to)
+            if (n < from || n >= to)
                 throw new IndexOutOfRangeException();
 
-            while (to > from)
+            while (to - from > 1)
             {
                 int i = keys.Partition(values, from, to);
-                if (i > n) to = i - 1;
-                else if (i < n) from = i + 1;
-                else return keys[i];
+
+                if (i > n)
+                    to = i;
+                else if (i < n)
+                    from = i + 1;
+                else
+                    return keys[i];
             }
+
             return keys[from];
         }
 
@@ -773,100 +868,29 @@ namespace SpatialSlur.SlurCore
         private static int Partition<K, V>(this K[] keys, V[] values, int from, int to)
             where K : IComparable<K>
         {
-            K pivot = keys[from]; // get pivot element
+            K pivot = keys[from];
             int i = from;
-            int j = to + 1;
+            int j = to;
 
             while (true)
             {
-                while (pivot.CompareTo(keys[++i]) > 0)
-                    if (i == to) break;
+                do
+                {
+                    if (--j == i) goto Break;
+                } while (pivot.CompareTo(keys[j]) < 0);
 
-                while (pivot.CompareTo(keys[--j]) < 0)
-                    if (j == from) break;
+                do
+                {
+                    if (++i == j) goto Break;
+                } while (pivot.CompareTo(keys[i]) > 0);
 
-                if (i >= j) break; // check if indices have crossed
                 keys.Swap(i, j);
                 values.Swap(i, j);
             }
 
-            // swap with pivot element
+            Break:;
             keys.Swap(from, j);
             values.Swap(from, j);
-            return j;
-        }
-
-
-        /// <summary>
-        /// Returns the nth smallest item in linear amortized time.
-        /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
-        /// </summary>
-        public static T QuickSelect<T>(this T[] array, int n, Comparison<T> compare)
-        {
-            return array.QuickSelect(n, 0, array.Length - 1, compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static T QuickSelect<T>(this T[] array, int n, IComparer<T> comparer)
-        {
-            return array.QuickSelect(n, 0, array.Length - 1, comparer.Compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static T QuickSelect<T>(this T[] array, int n, int from, int to, IComparer<T> comparer)
-        {
-            return array.QuickSelect(n, from, to, comparer.Compare);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static T QuickSelect<T>(this T[] array, int n, int from, int to, Comparison<T> compare)
-        {
-            if (n < from || n > to)
-                throw new IndexOutOfRangeException();
-
-            while (to > from)
-            {
-                int i = array.Partition(from, to, compare);
-                if (i > n) to = i - 1;
-                else if (i < n) from = i + 1;
-                else return array[i];
-            }
-            return array[from];
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static int Partition<T>(this T[] array, int from, int to, Comparison<T> compare)
-        {
-            T pivot = array[from]; // get pivot element
-            int i = from;
-            int j = to + 1;
-
-            while (true)
-            {
-                while (compare(pivot, array[++i]) > 0)
-                    if (i == to) break;
-
-                while (compare(pivot, array[--j]) < 0)
-                    if (j == from) break;
-
-                if (i >= j) break; // check if indices have crossed
-                array.Swap(i, j);
-            }
-
-            // swap with pivot element
-            array.Swap(from, j);
             return j;
         }
 

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿
 
-using SpatialSlur.SlurCore;
-
-using static SpatialSlur.SlurData.ArrayMath;
 
 /*
  * Notes
@@ -19,11 +14,16 @@ using static SpatialSlur.SlurData.ArrayMath;
  * https://www.cs.umd.edu/class/spring2008/cmsc420/L19.kd-trees.pdf
  * http://www.cs.umd.edu/~meesh/420/Notes/MountNotes/lecture18-kd2.pdf
  * 
- * TODO
- * Compare to array-based implementation
+ * TODO compare to array-based implementation
  * Would be more efficient for rebalancing/updating points
  * Doesn't improve cache locality though since nodes are heap allocated.
  */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using SpatialSlur.SlurCore;
+using static SpatialSlur.SlurData.ArrayMath;
 
 namespace SpatialSlur.SlurData
 {
@@ -85,7 +85,7 @@ namespace SpatialSlur.SlurData
             KdTree<T> result = new KdTree<T>(points.First().Length);
             Node[] nodes = points.Zip(values, (p, v) => new Node(p, v)).ToArray();
 
-            result._root = result.InsertBalanced(nodes, 0, nodes.Length - 1, 0);
+            result._root = result.InsertBalanced(nodes, 0, nodes.Length, 0);
             result._count = nodes.Length;
             return result;
         }
@@ -99,7 +99,7 @@ namespace SpatialSlur.SlurData
             KdTree<T> result = new KdTree<T>(points[0].Length);
             Node[] nodes = points.Convert((p, i) => new Node(p, values[i]));
 
-            result._root = result.InsertBalanced(nodes, 0, nodes.Length - 1, 0);
+            result._root = result.InsertBalanced(nodes, 0, nodes.Length, 0);
             result._count = nodes.Length;
             return result;
         }
@@ -410,7 +410,7 @@ namespace SpatialSlur.SlurData
 
             return node;
         }
-        
+
 
         /// <summary>
         /// 
@@ -422,34 +422,36 @@ namespace SpatialSlur.SlurData
         /// <returns></returns>
         private Node InsertBalanced(Node[] nodes, int from, int to, int i)
         {
-            // stopping conditions
-            if (from > to)
+            int n = to - from;
+            
+            // stopping condition
+            if (n < 1)
                 return null;
-            else if (from == to)
+            if (n == 1)
                 return nodes[from];
 
             // wrap dimension
             if (i == _k) i = 0;
 
-            // sort the median element
-            int mid = ((to - from) >> 1) + from;
-            var midValue = nodes.QuickSelect(mid, from, to, (n0, n1) => n0.Point[i].CompareTo(n1.Point[i])).Point[i];
+            // find the median node in the current dimension
+            int med = (n >> 1) + from;
+            var value = nodes.QuickSelect(med, from, to, (n0, n1) => n0.Point[i].CompareTo(n1.Point[i])).Point[i];
 
-            // ensure no duplicate elements to the left of the median
+            // ensure no equal elements to the left of the median
             int j = from;
-            while (j < mid)
+            while (j < med)
             {
-                if (nodes[j].Point[i] == midValue)
-                    nodes.Swap(j, --mid);
+                if (nodes[j].Point[i] == value)
+                    nodes.Swap(j, --med);
                 else
                     j++;
             }
-            
+
             // recall on left and right children
-            var midNode = nodes[mid];
-            midNode.Left = InsertBalanced(nodes, from, mid - 1, i + 1);
-            midNode.Right = InsertBalanced(nodes, mid + 1, to, i + 1);
-            return midNode;
+            var node = nodes[med];
+            node.Left = InsertBalanced(nodes, from, med, i + 1);
+            node.Right = InsertBalanced(nodes, med + 1, to, i + 1);
+            return node;
         }
 
 

@@ -255,8 +255,8 @@ namespace SpatialSlur.SlurCore
                 return;
             }
 
-            offset = SlurMath.Mod2(offset, to - from + 1);
-            Reverse(list, from, from + offset - 1);
+            offset = SlurMath.Mod2(offset, to - from);
+            Reverse(list, from, from + offset);
             Reverse(list, from + offset, to);
             Reverse(list, from, to);
         }
@@ -267,7 +267,7 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         public static void Reverse<T>(this IList<T> list)
         {
-            Reverse(list, 0, list.Count - 1);
+            Reverse(list, 0, list.Count);
         }
 
 
@@ -278,12 +278,12 @@ namespace SpatialSlur.SlurCore
         {
             if (list is T[] arr)
             {
-                Array.Reverse(arr, from, to);
+                ArrayExtensions.Reverse(arr, from, to);
                 return;
             }
 
-            while (to > from)
-                list.Swap(from++, to--);
+            while (--to > from)
+                list.Swap(from++, to);
         }
 
 
@@ -341,60 +341,68 @@ namespace SpatialSlur.SlurCore
         /// Returns the nth smallest item in linear amortized time.
         /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
         /// </summary>
-        public static T QuickSelect<T>(this IList<T> list, int n)
+        public static T QuickSelect<T>(this IList<T> items, int n)
             where T : IComparable<T>
         {
-            return list.QuickSelect(n, 0, list.Count - 1);
+            return items.QuickSelect(n, 0, items.Count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T>(this IList<T> list, int n, int from, int to)
+        public static T QuickSelect<T>(this IList<T> items, int n, int from, int to)
             where T : IComparable<T>
         {
-            if (list is T[] arr)
+            if (items is T[] arr)
                 return ArrayExtensions.QuickSelect(arr, n, from, to);
 
-            if (n < from || n > to)
+            if (n < from || n >= to)
                 throw new IndexOutOfRangeException();
 
-            while (to > from)
+            while (to - from > 1)
             {
-                int i = list.Partition(from, to);
-                if (i > n) to = i - 1;
-                else if (i < n) from = i + 1;
-                else return list[i];
+                int i = items.Partition(from, to);
+
+                if (i > n)
+                    to = i;
+                else if (i < n)
+                    from = i + 1;
+                else
+                    return items[i];
             }
-            return list[from];
+
+            return items[from];
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static int Partition<T>(this IList<T> list, int from, int to)
+        private static int Partition<T>(this IList<T> items, int from, int to)
             where T : IComparable<T>
         {
-            T pivot = list[from]; // get pivot element
+            T pivot = items[from];
             int i = from;
-            int j = to + 1;
+            int j = to;
 
             while (true)
             {
-                while (pivot.CompareTo(list[++i]) > 0)
-                    if (i == to) break;
+                do
+                {
+                    if (--j == i) goto Break;
+                } while (pivot.CompareTo(items[j]) < 0);
 
-                while (pivot.CompareTo(list[--j]) < 0)
-                    if (j == from) break;
+                do
+                {
+                    if (++i == j) goto Break;
+                } while (pivot.CompareTo(items[i]) > 0);
 
-                if (i >= j) break; // check if indices have crossed
-                list.Swap(i, j);
+                items.Swap(i, j);
             }
 
-            // swap with pivot element
-            list.Swap(from, j);
+            Break:;
+            items.Swap(from, j);
             return j;
         }
 
@@ -403,75 +411,83 @@ namespace SpatialSlur.SlurCore
         /// Returns the nth smallest item in linear amortized time.
         /// Partially sorts the array with respect to the nth item such that items to the left are less than or equal and items to the right are greater than or equal.
         /// </summary>
-        public static T QuickSelect<T>(this IList<T> list, int n, Comparison<T> compare)
+        public static T QuickSelect<T>(this IList<T> items, int n, Comparison<T> compare)
         {
-            return list.QuickSelect(n, 0, list.Count - 1, compare);
+            return items.QuickSelect(n, 0, items.Count, compare);
         }
 
         
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T>(this IList<T> list, int n, IComparer<T> comparer)
+        public static T QuickSelect<T>(this IList<T> items, int n, IComparer<T> comparer)
         {
-            return list.QuickSelect(n, 0, list.Count - 1, comparer.Compare);
+            return items.QuickSelect(n, 0, items.Count, comparer.Compare);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T>(this IList<T> list, int n, int from, int to, IComparer<T> comparer)
+        public static T QuickSelect<T>(this IList<T> items, int n, int from, int to, IComparer<T> comparer)
         {
-            return list.QuickSelect(n, from, to, comparer.Compare);
+            return items.QuickSelect(n, from, to, comparer.Compare);
         }
 
         
         /// <summary>
         /// 
         /// </summary>
-        public static T QuickSelect<T>(this IList<T> list, int n, int from, int to, Comparison<T> compare)
+        public static T QuickSelect<T>(this IList<T> items, int n, int from, int to, Comparison<T> compare)
         {
-            if (list is T[] arr)
+            if (items is T[] arr)
                 return ArrayExtensions.QuickSelect(arr, n, from, to, compare);
 
-            if (n < from || n > to)
+            if (n < from || n >= to)
                 throw new IndexOutOfRangeException();
 
-            while (to > from)
+            while (to - from > 1)
             {
-                int i = list.Partition(from, to, compare);
-                if (i > n) to = i - 1;
-                else if (i < n) from = i + 1;
-                else return list[i];
+                int i = items.Partition(from, to, compare);
+
+                if (i > n)
+                    to = i;
+                else if (i < n)
+                    from = i + 1;
+                else
+                    return items[i];
             }
-            return list[from];
+
+            return items[from];
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static int Partition<T>(this IList<T> list, int from, int to, Comparison<T> compare)
+        private static int Partition<T>(this IList<T> items, int from, int to, Comparison<T> compare)
         {
-            T pivot = list[from]; // get pivot element
+            T pivot = items[from];
             int i = from;
-            int j = to + 1;
+            int j = to;
 
             while (true)
             {
-                while (compare(pivot, list[++i]) > 0)
-                    if (i == to) break;
+                do
+                {
+                    if (--j == i) goto Break;
+                } while (compare(pivot, items[j]) < 0);
 
-                while (compare(pivot, list[--j]) < 0)
-                    if (j == from) break;
+                do
+                {
+                    if (++i == j) goto Break;
+                } while (compare(pivot, items[i]) > 0);
 
-                if (i >= j) break; // check if indices have crossed
-                list.Swap(i, j);
+                items.Swap(i, j);
             }
 
-            // swap with pivot element
-            list.Swap(from, j);
+            Break:;
+            items.Swap(from, j);
             return j;
         }
 
@@ -484,7 +500,7 @@ namespace SpatialSlur.SlurCore
         public static K QuickSelect<K, V>(this IList<K> keys, IList<V> values, int n)
             where K : IComparable<K>
         {
-            return keys.QuickSelect(values, n, 0, keys.Count - 1);
+            return keys.QuickSelect(values, n, 0, keys.Count);
         }
 
 
@@ -497,16 +513,21 @@ namespace SpatialSlur.SlurCore
             if (keys is K[] arr0 && values is V[] arr1)
                 return ArrayExtensions.QuickSelect(arr0, arr1, n, from, to);
 
-            if (n < from || n > to)
+            if (n < from || n >= to)
                 throw new IndexOutOfRangeException();
 
-            while (to > from)
+            while (to - from > 1)
             {
                 int i = keys.Partition(values, from, to);
-                if (i > n) to = i - 1;
-                else if (i < n) from = i + 1;
-                else return keys[i];
+
+                if (i > n)
+                    to = i;
+                else if (i < n)
+                    from = i + 1;
+                else
+                    return keys[i];
             }
+
             return keys[from];
         }
 
@@ -517,24 +538,27 @@ namespace SpatialSlur.SlurCore
         private static int Partition<K, V>(this IList<K> keys, IList<V> values, int from, int to)
             where K : IComparable<K>
         {
-            K pivot = keys[from]; // get pivot element
+            K pivot = keys[from];
             int i = from;
-            int j = to + 1;
+            int j = to;
 
             while (true)
             {
-                while (pivot.CompareTo(keys[++i]) > 0)
-                    if (i == to) break;
+                do
+                {
+                    if (--j == i) goto Break;
+                } while (pivot.CompareTo(keys[j]) < 0);
 
-                while (pivot.CompareTo(keys[--j]) < 0)
-                    if (j == from) break;
+                do
+                {
+                    if (++i == j) goto Break;
+                } while (pivot.CompareTo(keys[i]) > 0);
 
-                if (i >= j) break; // check if indices have crossed
                 keys.Swap(i, j);
                 values.Swap(i, j);
             }
 
-            // swap with pivot element
+            Break:;
             keys.Swap(from, j);
             values.Swap(from, j);
             return j;
