@@ -32,7 +32,7 @@ To get started, download the precompiled binaries from the [latest release](http
 ### Grasshopper
 To use within Grasshopper, start by moving the contents of the **Binaries > Rhino** folder to your Grasshopper components folder (**File > Special Folders > Components Folder**). 
 
-Once done, restart Rhino, launch Grasshopper, and drop a C#/VB Script component on the canvas. Right click on the component icon/name, and go to **Manage Assemblies**. Add **SpatialSlur.dll** from your Grasshopper components folder to the list of referenced assemblies and click **OK** to confirm. SpatialSlur types will now be accessible to code written within this component.
+Once done, restart Rhino, launch Grasshopper, and drop a C#/VB Script component on the canvas. Right click on the component icon/name, and go to **Manage Assemblies**. Add **SpatialSlur.dll** from your Grasshopper components folder to the list of referenced assemblies and click **OK** to confirm. SpatialSlur types will now be accessible from code written within this component.
 
 ### Unity
 Before using within Unity, the editor must to be configured to target .NET 4.6 (available in Unity 2017.1 or later). To do so, go to **Edit > Project Settings > Player** and expand the **Other Settings** dropdown. Under **Configruation**, set the **Scripting Runtime Version** to **Experimental (.Net 4.6 Equivalent)**.
