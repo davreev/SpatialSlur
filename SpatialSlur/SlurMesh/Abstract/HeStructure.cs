@@ -1,6 +1,4 @@
 ﻿
-
-
 /*
  * Notes
  */
@@ -25,9 +23,9 @@ namespace SpatialSlur.SlurMesh
         
 
         private HalfedgeList<E> _hedges;
-        private EdgeList<E> _edges;
+        private EdgeListView<E> _edges;
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -36,7 +34,7 @@ namespace SpatialSlur.SlurMesh
         public HeStructure(int hedgeCapacity = DefaultCapacity)
         {
             _hedges = new HalfedgeList<E>(hedgeCapacity);
-            _edges = new EdgeList<E>(_hedges);
+            _edges = new EdgeListView<E>(_hedges);
         }
 
 
@@ -45,16 +43,18 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HalfedgeList<E> Halfedges
         {
-            get { return _hedges; }
+            get => _hedges;
+            internal set => _hedges = value;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public EdgeList<E> Edges
+        public EdgeListView<E> Edges
         {
-            get { return _edges; }
+            get => _edges;
+            internal set => _edges = value;
         }
 
 
@@ -94,22 +94,6 @@ namespace SpatialSlur.SlurMesh
 
             return he0;
         }
-
-
-        /*
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="nodes"></param>
-        protected void Append<T, U>(HeNodeList<T, E> nodes, HeNodeList<U, E> other, Action<T, U> setNode)
-            where T : HeNode<T, E>
-            where U : HeNode<U, E>
-        {
-            // TODO
-            throw new NotImplementedException();
-        }
-        */
     }
 
 
@@ -125,7 +109,7 @@ namespace SpatialSlur.SlurMesh
     {
         private HeElementList<V> _vertices;
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -143,7 +127,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeElementList<V> Vertices
         {
-            get { return _vertices; }
+            get => _vertices;
+            internal set => _vertices = value;
         }
 
 
@@ -191,7 +176,7 @@ namespace SpatialSlur.SlurMesh
     {
         private HeElementList<F> _faces;
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -209,7 +194,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeElementList<F> Faces
         {
-            get { return _faces; }
+            get => _faces;
+            internal set => _faces = value;
         }
 
 
@@ -263,6 +249,7 @@ namespace SpatialSlur.SlurMesh
         private HeElementList<G> _cells;
 
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -275,6 +262,7 @@ namespace SpatialSlur.SlurMesh
             _bundles = new HeNodeList<G, E>(hedgeCapacity >> 3); // assumes 4 edges per bundle
             _cells = new HeNodeList<G, E>(faceCapacity >> 2); // assumes 4 faces per cell
         }
+        */
 
 
         /// <summary>
@@ -282,7 +270,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeElementList<G> Clusters
         {
-            get { return _bundles; }
+            get => _clusters;
+            internal set => _clusters = value;
         }
 
 
@@ -291,7 +280,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeElementList<G> Bundles
         {
-            get { return _bundles; }
+            get => _bundles;
+            internal set => _bundles = value;
         }
 
 
@@ -300,7 +290,8 @@ namespace SpatialSlur.SlurMesh
         /// </summary>
         public HeElementList<G> Cells
         {
-            get { return _cells; }
+            get => _cells;
+            internal set => _cells = value;
         }
 
 
@@ -318,7 +309,7 @@ namespace SpatialSlur.SlurMesh
         internal G AddCluster()
         {
             var g = NewGroup();
-            _bundles.Add(g);
+            _clusters.Add(g);
             return g;
         }
 
