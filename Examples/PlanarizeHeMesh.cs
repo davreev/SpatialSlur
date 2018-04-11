@@ -1,14 +1,14 @@
-﻿using System;
-using System.Linq;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
-using SpatialSlur.SlurDynamics;
-using SpatialSlur.SlurDynamics.Constraints;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using System.Linq;
+using SpatialSlur.SlurCore;
+using SpatialSlur.SlurMesh;
+using SpatialSlur.SlurDynamics;
+using SpatialSlur.SlurDynamics;
 
 namespace SpatialSlur.Examples
 {

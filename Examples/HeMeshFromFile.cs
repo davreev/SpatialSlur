@@ -1,12 +1,12 @@
-﻿using System;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
-using SpatialSlur.SlurMesh;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using SpatialSlur.SlurCore;
+using SpatialSlur.SlurField;
+using SpatialSlur.SlurMesh;
 
 namespace SpatialSlur.Examples
 {

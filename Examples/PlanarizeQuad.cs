@@ -1,12 +1,12 @@
-﻿using System;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurDynamics;
-using SpatialSlur.SlurDynamics.Constraints;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using SpatialSlur.SlurCore;
+using SpatialSlur.SlurDynamics;
+using SpatialSlur.SlurDynamics;
 
 namespace SpatialSlur.Examples
 {

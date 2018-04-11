@@ -1,8 +1,7 @@
-﻿/*
+﻿
+/*
  * Notes
  */
-
-using System;
 
 namespace SpatialSlur.Examples
 {
