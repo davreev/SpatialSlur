@@ -1,40 +1,60 @@
-# SpatialSlur
-SpatialSlur is an open source library of geometric data structures and algorithms intended to facilitate the development of novel computational design methods. It is written in C# and compiled against .NET 4.6.
+# Spatial Slur
+Spatial Slur is an open source library of geometric data structures and algorithms intended to facilitate the development of novel computational design methods. It is written in C# and compiled against .NET 4.6.
 
 <p align="center">
-  <img src="https://github.com/daveReeves/SpatialSlur/blob/master/Examples/Gallery/170720_Relief_02.gif" alt="Banner">
+  <img src="https://github.com/daveReeves/SpatialSlur/blob/master/Examples/Gallery/170720_Relief_02.gif" alt="Header">
 </p>
 
 ## Overview
-This repository consists of a standalone core library along with a number of extension libraries for interfacing with .NET APIs from other applications such as Rhino and Unity.
+Below is a brief outline of the library by namespace. For further detail, take a look at the [reference documentation](http://www.spatialslur.com/documentation/0_2_4/index.html) or just dive into the source files and poke around. If you have any questions, comments, or suggestions, feel free to [get in touch](http://spatialslur.com/contact/).
 
-Below is a brief outline of the core library by namespace. For further detail, take a look at the [reference documentation](http://www.spatialslur.com/documentation/0_2_3/index.html) or dive into the source files and poke around. If you have specific questions, comments, or suggestions, feel free to [get in touch](http://spatialslur.com/contact/).
++ __SlurCore__ contains primitive data types and utility methods for geometry processing along with general-purpose extension methods for .NET Framework types.
 
-+ __SlurCore__ contains primitive data types for geometry processing, various utility methods, and extension methods for .NET Framework types.
++ __SlurData__ contains various generic data structures with a particular focus on those used for efficient spatial queries and related algorithms.
 
-+ __SlurData__ contains generic data structures for efficient spatial queries and related algorithms.
++ __SlurDynamics__ contains a projection based constraint solver and various constraint types for geometry optimization and form-finding. This is based on methods described in [(1)](http://lgg.epfl.ch/publications/2012/shapeup/paper.pdf) and follows many of the implementation details given in [(2)](http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf).
 
-+ __SlurDynamics__ contains a projection based constraint solver and various constraint types for geometry optimization and form-finding. This is an implementation of principles described in (1) and follows many of the implementation details given in (2).
++ __SlurField__ contains generic data structures for discrete and continuous field representations (scalar, vector, and tensor) along with various algorithms for processing and visualization.
 
-+ __SlurField__ contains generic data structures for discrete and continuous field representations along with various algorithms for processing and visualization.
++ __SlurMesh__ contains generic half-edge data structures for discrete representations of networks, surfaces, and volumes (coming soon) along with various algorithms for geometry processing, graph processing, segmentation, and subdivision.
 
-+ __SlurMesh__ contains half-edge data structures for discrete representations of networks and surfaces along with various algorithms for geometry processing, topological traversal, segmentation, and subdivision.
++ __SlurTools__ contains more specific tools and applications that utilize functionality offered by the rest of library such as dynamic remeshing and Steiner tree relaxation.
 
-## Dependencies
-While the core library has no dependencies beyond the .NET framework, extension libraries typically reference additional assemblies from their respective applications. If these dependencies can't be resolved for a particular extension library, simply remove its project folder from the solution before compiling.
+Additionally, the following namespaces contain classes and convenience methods for interfacing with the .NET APIs of their respective applications.
+
++ __SlurRhino__
+
++ __SlurUnity__
 
 ## Setup
-To get started, either download precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases) or clone/download the repo and compile locally. Note that .dll files might be blocked by default when downloaded from the web so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to unblock. If compiling locally, you'll need [Visual Studio 2017](https://www.visualstudio.com/vs/whatsnew/) or later as the library makes use of some C# 7 features.
+To get started, download the precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases). Depending on your operating system, the downloaded files may be blocked by default so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to make sure they're unblocked before referencing them within your own project(s).
 
 ### Grasshopper
-To use within Grasshopper, drop a C#/VB scripting component on the canvas, right click on the component icon/name, and go to **Manage Assemblies**. Add SpatialSlur.dll and SlurRhino.dll to the list of referenced assemblies and click **OK** to confirm. SpatialSlur types will now be accessible within this scripting component.
+To use within Grasshopper, start by moving the contents of the **Binaries > Rhino** folder to your Grasshopper components folder (**File > Special Folders > Components Folder**). 
+
+Once done, restart Rhino, launch Grasshopper, and drop a C#/VB Script component on the canvas. Right click on the component icon/name, and go to **Manage Assemblies**. Add **SpatialSlur.dll** from your Grasshopper components folder to the list of referenced assemblies and click **OK** to confirm. SpatialSlur types will now be accessible to code written within this component.
 
 ### Unity
-Before using in Unity, the editor must to be configured to target .NET 4.6 (available in Unity 2017.1 or later). To do so, go to **Edit > Project Settings > Player** and expand the **Other Settings** dropdown. Under **Configruation**, set the **Scripting Runtime Version** to **Experimental (.Net 4.6 Equivalent)**.
+Before using within Unity, the editor must to be configured to target .NET 4.6 (available in Unity 2017.1 or later). To do so, go to **Edit > Project Settings > Player** and expand the **Other Settings** dropdown. Under **Configruation**, set the **Scripting Runtime Version** to **Experimental (.Net 4.6 Equivalent)**.
 
-Once this has been set, create a **Libraries** folder within the **Assets** folder of the current project and copy in SpatialSlur.dll along with System.ValueTuple.dll. SpatialSlur types will now be accessible from any C# script in this project.
+Once this has been set, import **SpatialSlur.unitypackage** into your current project (**Assets > Import Package > Custom Package...**). SpatialSlur types will now be accessible from any C# script in this project.
 
-___
-#### References
-1. _<http://lgg.epfl.ch/publications/2012/shapeup/paper.pdf>_
-2. _<http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf>_
+## Building From Source
+If you're interested in keeping up with the latest developments between releases, you'll need to make a [clone](https://help.github.com/articles/cloning-a-repository/) and compile the binaries on your own machine. The following goes over a few important build-related details to be aware of while doing so.
+
+### IDE
+While all projects in the solution currently target .NET 4.6, they do make use of some backwards compatible C# 7 features so you'll likely run into problems with older IDEs. For Windows users, [Visual Studio 2017](https://www.visualstudio.com/downloads/) or later is recommended.
+
+### Configurations
+The solution file contains different build configurations for different use cases - each of which has a unique set of dependencies as detailed below.
+
+__Default__ has no dependencies beyond the .NET Framework
+
+__Rhino__ has the following additional dependencies:
+* RhinoCommon.dll
+* Grasshopper.dll
+* GH_IO.dll
+
+__Unity__ has the following additional dependencies:
+* UnityEngine.dll
+* UnityEditor.dll
