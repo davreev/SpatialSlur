@@ -177,7 +177,19 @@ namespace SpatialSlur.SlurCore
             return new Vec3i(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z));
         }
 
- 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec3i Max(Vec3i v, int t)
+        {
+            return new Vec3i(Math.Max(v.X, t), Math.Max(v.Y, t), Math.Max(v.Z, t));
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -187,6 +199,18 @@ namespace SpatialSlur.SlurCore
         public static Vec3i Max(Vec3i v0, Vec3i v1)
         {
             return new Vec3i(Math.Max(v0.X, v1.X), Math.Max(v0.Y, v1.Y), Math.Max(v0.Z, v1.Z));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec3i Min(Vec3i v, int t)
+        {
+            return new Vec3i(Math.Min(v.X, t), Math.Min(v.Y, t), Math.Min(v.Z, t));
         }
 
 

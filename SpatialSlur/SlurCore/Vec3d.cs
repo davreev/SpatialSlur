@@ -204,12 +204,36 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec3d Max(Vec3d v, double t)
+        {
+            return new Vec3d(Math.Max(v.X, t), Math.Max(v.Y, t), Math.Max(v.Z, t));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
         public static Vec3d Max(Vec3d v0, Vec3d v1)
         {
             return new Vec3d(Math.Max(v0.X, v1.X), Math.Max(v0.Y, v1.Y), Math.Max(v0.Z, v1.Z));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec3d Min(Vec3d v, double t)
+        {
+            return new Vec3d(Math.Min(v.X, t), Math.Min(v.Y, t), Math.Min(v.Z, t));
         }
 
 

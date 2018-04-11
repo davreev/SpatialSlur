@@ -217,6 +217,18 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec4d Max(Vec4d v, double t)
+        {
+            return new Vec4d(Math.Max(v.X, t), Math.Max(v.Y, t), Math.Max(v.Z, t), Math.Max(v.W, t));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
@@ -235,6 +247,18 @@ namespace SpatialSlur.SlurCore
         public static Vec4d Min(Vec4d v0, Vec4d v1)
         {
             return new Vec4d(Math.Min(v0.X, v1.X), Math.Min(v0.Y, v1.Y), Math.Min(v0.Z, v1.Z), Math.Min(v0.W, v1.W));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vec4d Min(Vec4d v, double t)
+        {
+            return new Vec4d(Math.Min(v.X, t), Math.Min(v.Y, t), Math.Min(v.Z, t), Math.Min(v.W, t));
         }
 
 
