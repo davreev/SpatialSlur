@@ -20,23 +20,14 @@ namespace SpatialSlur.SlurField
         /// </summary>
         internal class Factory : GridField3dFactory<double>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="countX"></param>
-            /// <param name="countY"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override GridField3d<double> Create(int countX, int countY, int countZ)
             {
                 return new GridField3dDouble(countX, countY, countZ);
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="grid"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override GridField3d<double> Create(Grid3d grid)
             {
                 return new GridField3dDouble(grid);
@@ -66,13 +57,9 @@ namespace SpatialSlur.SlurField
             : base(other)
         {
         }
-        
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="setValues"></param>
-        /// <returns></returns>
+
+
+        /// <inheritdoc />
         public sealed override GridField3d<double> Duplicate(bool setValues)
         {
             var result = GridField3d.Double.Create(this);
@@ -81,12 +68,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override double ValueAtLinear(Vec3d point)
         {
             point = ToGridSpace(point);
@@ -116,12 +98,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override double ValueAtLinearUnsafe(Vec3d point)
         {
             point = ToGridSpace(point);
@@ -149,12 +126,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override double ValueAt(GridPoint3d point)
         {
             return FieldUtil.ValueAt(Values, point.Corners, point.Weights);

@@ -52,9 +52,7 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddVectorParameter("scale", "scale", "", GH_ParamAccess.item, new Vector3d(1, 1, 1));
@@ -65,20 +63,14 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_Vector scale = null;
@@ -108,11 +100,8 @@ namespace SpatialSlur.SlurGH.Components
             }
         }
 
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="menu"></param>
+
+        /// <inheritdoc />
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
             base.AppendAdditionalComponentMenuItems(menu);

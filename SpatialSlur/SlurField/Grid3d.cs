@@ -188,9 +188,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// Returns the size of the grid.
-        /// </summary>
+        /// <inheritdoc />
         public int Count
         {
             get { return _n; }
@@ -272,9 +270,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// Enumerates over coordinates of the grid.
-        /// </summary>
+        /// <inheritdoc />
         public IEnumerable<Vec3d> Coordinates
         {
             get

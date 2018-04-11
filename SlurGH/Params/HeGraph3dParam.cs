@@ -25,38 +25,28 @@ namespace SpatialSlur.SlurGH.Params
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override GH_Exposure Exposure
         {
             get { return GH_Exposure.primary; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         protected override Bitmap Icon
         {
             get { return null; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override Guid ComponentGuid
         {
             get { return new Guid("{E173CB1B-FBE2-4F71-89A2-D520C6AF6A7F}"); }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected override GH_GetterResult Prompt_Singular(ref GH_HeGraph3d value)
         {
             value = new GH_HeGraph3d();
@@ -64,11 +54,7 @@ namespace SpatialSlur.SlurGH.Params
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected override GH_GetterResult Prompt_Plural(ref List<GH_HeGraph3d> values)
         {
             values = new List<GH_HeGraph3d>();

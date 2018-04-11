@@ -35,9 +35,7 @@ namespace SpatialSlur.SlurGH.Components.Field
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("field", "field", "Field to evaluate", GH_ParamAccess.item);
@@ -45,19 +43,14 @@ namespace SpatialSlur.SlurGH.Components.Field
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("values", "values", "Values at the given points", GH_ParamAccess.list);
         }
 
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_ObjectWrapper fieldGoo = null;
@@ -94,23 +87,17 @@ namespace SpatialSlur.SlurGH.Components.Field
         }
 
 
-        /// <summary>
-        /// Provides an Icon for the component.
-        /// </summary>
+        /// <inheritdoc />
         protected override System.Drawing.Bitmap Icon
         {
             get
             {
-                // You can add image files to your project resources and access them like this:
-                // return Resources.IconForThisComponent;
                 return null;
             }
         }
 
 
-        /// <summary>
-        /// Gets the unique ID for this component. Do not change this ID after release.
-        /// </summary>
+        /// <inheritdoc />
         public override Guid ComponentGuid
         {
             get { return new Guid("9906e722-0ac2-45ad-a86a-8bb290bff637"); }

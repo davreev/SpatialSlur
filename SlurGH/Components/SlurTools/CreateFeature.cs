@@ -5,7 +5,7 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 using SpatialSlur.SlurTools;
-using SpatialSlur.SlurTools.Features;
+using SpatialSlur.SlurTools;
 
 /*
  * Notes
@@ -22,45 +22,36 @@ namespace SpatialSlur.SlurGH.Components
         /// 
         /// </summary>
         public CreateFeature()
-          : base("Creates Features", "Feat",
+          : base("Creates Features", "Feature",
               "Creates a geometric feature used for dynamic remeshing",
               "SpatialSlur", "Mesh")
         {
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("geometry", "geom", "", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("feature", "feat", "", GH_ParamAccess.item);
+            pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_ObjectWrapper goo = null;
             if (!DA.GetData(0, ref goo)) return;
-
-            var obj = goo.Value;
+            
             IFeature feat = null;
 
-            switch (obj)
+            switch (goo.Value)
             {
                 case Mesh m:
                     feat = new MeshFeature(m);

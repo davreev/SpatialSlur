@@ -155,11 +155,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public double ValueAt(Vec2d point)
         {
             ToNoiseSpace(ref point);
@@ -225,11 +221,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public double ValueAt(Vec3d point)
         {
             ToNoiseSpace(ref point);
@@ -285,47 +277,28 @@ namespace SpatialSlur.SlurField
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         Vec2d IField2d<Vec2d>.ValueAt(Vec2d point)
         {
             return VectorAt(point);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         Vec3d IField3d<Vec3d>.ValueAt(Vec3d point)
         {
             return VectorAt(point);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="gx"></param>
-        /// <param name="gy"></param>
+        /// <inheritdoc />
         void IGradient2d<double>.GradientAt(Vec2d point, out double gx, out double gy)
         {
             (gx, gy) = GradientAt(point);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="gx"></param>
-        /// <param name="gy"></param>
-        /// <param name="gz"></param>
+        /// <inheritdoc />
         void IGradient3d<double>.GradientAt(Vec3d point, out double gx, out double gy, out double gz)
         {
             (gx, gy, gz) = GradientAt(point);

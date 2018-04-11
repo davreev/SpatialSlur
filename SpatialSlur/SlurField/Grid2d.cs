@@ -156,11 +156,9 @@ namespace SpatialSlur.SlurField
                     );
             }
         }
-        
 
-        /// <summary>
-        /// Returns the size of the grid.
-        /// </summary>
+
+        /// <inheritdoc />
         public int Count
         {
             get { return _n; }
@@ -214,9 +212,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// Enumerates over the coordinates of the grid.
-        /// </summary>
+        /// <inheritdoc />
         public IEnumerable<Vec2d> Coordinates
         {
             get
@@ -245,11 +241,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public Vec2d CoordinateAt(int index)
         {
             (int i, int j) = IndicesAt(index);

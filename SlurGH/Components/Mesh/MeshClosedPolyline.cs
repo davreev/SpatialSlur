@@ -1,12 +1,12 @@
-﻿using System;
-
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
+using Rhino.Geometry;
 
 namespace SpatialSlur.SlurGH.Components
 {
@@ -26,29 +26,21 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("polyline", "poly", "Closed polyline to mesh", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddMeshParameter("mesh", "mesh", "Resulting mesh", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_Curve curve = null;

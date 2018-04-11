@@ -11,7 +11,7 @@ using SpatialSlur.SlurMesh;
 
 using SpatialSlur.SlurRhino;
 using SpatialSlur.SlurTools;
-using SpatialSlur.SlurTools.Features;
+using SpatialSlur.SlurTools;
 
 using SpatialSlur.SlurGH.Types;
 using SpatialSlur.SlurGH.Params;
@@ -60,9 +60,7 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddParameter(new HeMesh3dParam(), "source", "source", "Mesh to start from", GH_ParamAccess.item);
@@ -80,9 +78,7 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter("out", "out", "", GH_ParamAccess.item);
@@ -90,11 +86,7 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             int state = 0;

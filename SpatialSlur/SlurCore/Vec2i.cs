@@ -331,10 +331,7 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"({X}, {Y})";
@@ -374,21 +371,14 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             return obj is Vec2i && Equals((Vec2i)obj);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             const int p0 = 73856093;

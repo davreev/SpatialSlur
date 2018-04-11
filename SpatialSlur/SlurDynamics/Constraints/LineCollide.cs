@@ -7,7 +7,7 @@ using SpatialSlur.SlurData;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = LineCollide.CustomHandle;
 
@@ -103,21 +103,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
             set { _parallel = value; }
         }
 
-        
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.Position; }
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             // TODO implement
@@ -125,11 +119,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
@@ -138,11 +128,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-        
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get { return Handles; }

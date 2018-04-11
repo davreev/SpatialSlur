@@ -27,28 +27,21 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddParameter(new HeMesh3dParam(), "result", "result", "", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_HeMesh3d hemGoo = null;
@@ -101,23 +94,14 @@ namespace SpatialSlur.SlurGH.Components
         */
 
 
-        /// <summary>
-        /// Provides an Icon for the component.
-        /// </summary>
+        /// <inheritdoc />
         protected override System.Drawing.Bitmap Icon
         {
-            get
-            {
-                //You can add image files to your project resources and access them like this:
-                // return Resources.IconForThisComponent;
-                return null;
-            }
+            get { return null; }
         }
 
 
-        /// <summary>
-        /// Gets the unique ID for this component. Do not change this ID after release.
-        /// </summary>
+        /// <inheritdoc />
         public override Guid ComponentGuid
         {
             get { return new Guid("16754bb3-1170-4361-be24-bc6ee85b5268"); }

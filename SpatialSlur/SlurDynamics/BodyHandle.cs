@@ -35,9 +35,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public Vec3d AngleDelta
         {
             get => _angleDelta;

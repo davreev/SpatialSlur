@@ -235,21 +235,13 @@ namespace SpatialSlur.SlurCore
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         V IReadOnlyProperty<T, V>.Get(T item)
         {
             return Get(item);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item"></param>
-        /// <param name="value"></param>
+        /// <inheritdoc />
         void IProperty<T, V>.Set(T item, V value)
         {
             Set(item, value);

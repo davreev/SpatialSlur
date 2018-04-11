@@ -21,10 +21,7 @@ namespace SpatialSlur.SlurField
         /// </summary>
         internal class Factory : IDWFieldFactory<Vec3d>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override IDWField3d<Vec3d> Create(double power, double epsilon = SlurMath.ZeroTolerance)
             {
                 return new IDWField3dVec3d(power, epsilon);
@@ -43,21 +40,14 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override IDWField3d<Vec3d> Duplicate()
         {
             return IDWField3d.Vec3d.CreateCopy(this);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override Vec3d ValueAt(Vec3d point)
         {
             Vec3d sum = Vec3d.Zero;
@@ -74,13 +64,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="gx"></param>
-        /// <param name="gy"></param>
-        /// <param name="gz"></param>
+        /// <inheritdoc />
         public sealed override void GradientAt(Vec3d point, out Vec3d gx, out Vec3d gy, out Vec3d gz)
         {
             throw new NotImplementedException();

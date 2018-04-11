@@ -80,9 +80,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// Returns the array of values used by this field.
-        /// </summary>
+        /// <inheritdoc />
         public T[] Values
         {
             get { return _values; }
@@ -99,11 +97,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public T this[int index]
         {
             get { return _values[index]; }
@@ -132,10 +126,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"GridField2d<{typeof(T).Name}> ({CountX}, {CountY})";
@@ -184,7 +175,7 @@ namespace SpatialSlur.SlurField
 
 
         /*
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public T ValueAt(Vec2d point)
         {
             switch (SampleMode)
@@ -200,7 +191,7 @@ namespace SpatialSlur.SlurField
         */
 
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public T ValueAt(Vec2d point)
         {
             // conditional is used instead of switch for inline optimization
@@ -527,50 +518,35 @@ namespace SpatialSlur.SlurField
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         T IField3d<T>.ValueAt(Vec3d point)
         {
             return ValueAt(new Vec2d(point.X, point.Y));
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IDiscreteField<T> IDiscreteField<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IDiscreteField2d<T> IDiscreteField2d<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IDiscreteField3d<T> IDiscreteField3d<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         IEnumerable<Vec3d> IDiscreteField3d<T>.Coordinates
         {
             get
@@ -584,11 +560,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         Vec3d IDiscreteField3d<T>.CoordinateAt(int index)
         {
             return CoordinateAt(index);

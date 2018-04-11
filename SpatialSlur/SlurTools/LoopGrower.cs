@@ -13,7 +13,7 @@ using SpatialSlur.SlurCore;
 using SpatialSlur.SlurData;
 using SpatialSlur.SlurField;
 using SpatialSlur.SlurMesh;
-using SpatialSlur.SlurTools.Features;
+using SpatialSlur.SlurTools;
 
 using static SpatialSlur.SlurCore.SlurMath;
 using static SpatialSlur.SlurData.DataUtil;
@@ -122,12 +122,16 @@ namespace SpatialSlur.SlurTools
             /// </summary>
             private void InitFeatures(IEnumerable<IFeature> features)
             {
+                // TODO update as per DynamicRemesher.Solver
+
                 _features = new List<IFeature>();
                 var tolSqr = Square(_settings.FeatureTolerance);
 
                 // create features
                 foreach (var f in features)
                 {
+                    // TODO assign point features separately
+
                     int index = _features.Count;
                     _features.Add(f);
 
@@ -566,47 +570,6 @@ namespace SpatialSlur.SlurTools
             }
 
 
-            /*
-            /// <summary>
-            /// Splits long edges
-            /// </summary>
-            private void SplitEdges(int count)
-            {
-                _vertTag++;
-
-                for (int i = 0; i < count; i += 2)
-                {
-                    var he = _hedges[i];
-                    if (he.IsUnused) continue;
-
-                    var v0 = he.Start;
-                    var v1 = he.End;
-
-                    // don't split edge that spans between 2 different features
-                    var fi0 = v0.FeatureIndex;
-                    var fi1 = v1.FeatureIndex;
-                    // if (fi0 > -1 && fi1 > -1 && fi0 != fi1) continue;
-
-                    var p0 = v0.Position;
-                    var p1 = v1.Position;
-
-                    // split edge if length exceeds max
-                    if (p0.SquareDistanceTo(p1) > he.MaxLength * he.MaxLength)
-                    {
-                        var v2 = _mesh.SplitEdge(he).Start;
-
-                        // set attributes of new vertex
-                        v2.Position = (v0.Position + v1.Position) * 0.5;
-                        // v2.FeatureIndex = Math.Min(fi0, fi1);
-
-                        // if same feature
-                        v2.FeatureIndex = (fi0 == fi1) ? -1 : Math.Min(fi0, fi1);
-                    }
-                }
-            }
-            */
-
-
             /// <summary>
             /// 
             /// </summary>
@@ -792,14 +755,19 @@ namespace SpatialSlur.SlurTools
                 public Vec3d Position;
                 /// <summary></summary>
                 public Vec3d Velocity;
-                /// <summary></summary>
-                public Vec3d MoveSum;
-                /// <summary></summary>
-                public double WeightSum;
-                /// <summary></summary>
-                public int FeatureIndex = -1;
-
+                
+                internal Vec3d MoveSum;
+                internal double WeightSum;
                 private double _growthRate;
+                private int _featureIndex = -1;
+
+
+                /// <summary></summary>
+                public int FeatureIndex
+                {
+                    get => _featureIndex;
+                    internal set => _featureIndex = value;
+                }
 
 
                 /// <summary>
@@ -807,13 +775,14 @@ namespace SpatialSlur.SlurTools
                 /// </summary>
                 public double GrowthRate
                 {
-                    get { return _growthRate; }
-                    set { _growthRate = Saturate(value); }
+                    get => _growthRate;
+                    set => _growthRate = Saturate(value);
                 }
 
 
                 #region Explicit interface implementations
 
+                /// <inheritdoc />
                 Vec3d IPosition3d.Position
                 {
                     get { return Position; }
@@ -883,30 +852,22 @@ namespace SpatialSlur.SlurTools
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            
+            /// <inheritdoc />
             protected sealed override V NewVertex()
             {
                 return new V();
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             protected sealed override E NewHalfedge()
             {
                 return new E();
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             protected sealed override F NewFace()
             {
                 return new F();
@@ -920,10 +881,7 @@ namespace SpatialSlur.SlurTools
         [Serializable]
         public class HeMeshFactory : HeMeshFactory<HeMesh, V, E, F>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             public sealed override HeMesh Create(int vertexCapacity, int halfedgeCapacity, int faceCapacity)
             {
                 return new HeMesh(vertexCapacity, halfedgeCapacity, faceCapacity);

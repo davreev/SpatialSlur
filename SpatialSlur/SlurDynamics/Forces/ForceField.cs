@@ -8,7 +8,7 @@ using SpatialSlur.SlurField;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Forces
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
@@ -54,31 +54,21 @@ namespace SpatialSlur.SlurDynamics.Forces
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.Position; }
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             _handle.Delta = _field.ValueAt(bodies[_handle].Position) * Strength;
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             bodies[_handle].ApplyForce(_handle.Delta);
@@ -87,9 +77,7 @@ namespace SpatialSlur.SlurDynamics.Forces
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get { yield return _handle; }

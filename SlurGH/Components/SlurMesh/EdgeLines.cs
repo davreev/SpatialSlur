@@ -26,74 +26,40 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public EdgeLines()
           : base("Edge Lines", "EdgeLns",
-              "Returns a line for each edge in a given halfedge graph",
+              "Returns a line for each edge in a given halfedge structure",
               "SpatialSlur", "Mesh")
         {
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("heGraph", "heGraph", "", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddLineParameter("result", "result", "Edge lines", GH_ParamAccess.list);
         }
 
 
-        /*
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
-        protected override void SolveInstance(IGH_DataAccess DA)
-        {
-            IGH_Goo goo = null;
-            if (!DA.GetData(0, ref goo)) return;
-
-            if (goo is GH_Goo<HeGraph3d>)
-            {
-                var value = ((GH_Goo<HeGraph3d>)goo).Value;
-                DA.SetDataList(0, GetEdgeLines(value, v => v.Position));
-            }
-            else if (goo is GH_Goo<HeMesh3d>)
-            {
-                var value = ((GH_Goo<HeMesh3d>)goo).Value;
-                DA.SetDataList(0, GetEdgeLines(value, v => v.Position));
-            }
-        }
-        */
-
-
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_ObjectWrapper goo = null;
             if (!DA.GetData(0, ref goo)) return;
 
-            var obj = goo.Value;
-
-            if (obj is HeGraph3d)
+            switch(goo.Value)
             {
-                DA.SetDataList(0, GetEdgeLines((HeGraph3d)obj, v => v.Position));
-            }
-            else if (obj is HeMesh3d)
-            {
-                DA.SetDataList(0, GetEdgeLines((HeMesh3d)obj, v => v.Position));
+                case HeGraph3d g:
+                    DA.SetDataList(0, GetEdgeLines(g, v => v.Position));
+                    break;
+                case HeMesh3d m:
+                    DA.SetDataList(0, GetEdgeLines(m, v => v.Position));
+                    break;
             }
         }
 

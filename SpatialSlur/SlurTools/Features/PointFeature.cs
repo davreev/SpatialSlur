@@ -6,7 +6,7 @@
 using System;
 using SpatialSlur.SlurCore;
 
-namespace SpatialSlur.SlurTools.Features
+namespace SpatialSlur.SlurTools
 {
     /// <summary>
     /// 
@@ -27,20 +27,14 @@ namespace SpatialSlur.SlurTools.Features
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public int Rank
         {
             get { return 0; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public Vec3d ClosestPoint(Vec3d point)
         {
             return _point;

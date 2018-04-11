@@ -75,9 +75,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public T[] Values
         {
             get { return _values; }
@@ -94,11 +92,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public T this[int index]
         {
             get { return _values[index]; }
@@ -130,10 +124,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"GridField3d<{typeof(T).Name}> ({CountX}, {CountY}, {CountZ})";
@@ -454,7 +445,7 @@ namespace SpatialSlur.SlurField
                 SpatialFunctionXYZ(func, result, parallel);
         }
 
-        //£
+
         /// <summary>
         /// 
         /// </summary>
@@ -586,35 +577,25 @@ namespace SpatialSlur.SlurField
 
             this.Sample((IField3d<U>)other, converter, parallel);
         }
-        
+
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         T IField2d<T>.ValueAt(Vec2d point)
         {
             return ValueAt(new Vec3d(point.X, point.Y, 0.0));
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IDiscreteField<T> IDiscreteField<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IDiscreteField3d<T> IDiscreteField3d<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);

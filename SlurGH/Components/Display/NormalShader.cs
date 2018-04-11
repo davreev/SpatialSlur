@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+ 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -8,10 +13,6 @@ using Rhino.Geometry;
 
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurRhino;
-
-/*
- * Notes
- */
 
 namespace SpatialSlur.SlurGH.Components
 {
@@ -31,9 +32,7 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddMeshParameter("mesh", "mesh", "Mesh to paint", GH_ParamAccess.item);
@@ -42,20 +41,14 @@ namespace SpatialSlur.SlurGH.Components
         }
 
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddMeshParameter("mesh", "mesh", "Painted mesh", GH_ParamAccess.item);
         }
 
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
+        /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Mesh mesh = null;

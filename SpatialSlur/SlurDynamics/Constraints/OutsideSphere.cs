@@ -7,7 +7,7 @@ using SpatialSlur.SlurCore;
  * Notes 
  */
 
-namespace SpatialSlur.SlurDynamics.Forces
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
@@ -73,20 +73,14 @@ namespace SpatialSlur.SlurDynamics.Forces
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.Position; }
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             var d = _origin - bodies[_handle].Position;
@@ -103,11 +97,7 @@ namespace SpatialSlur.SlurDynamics.Forces
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             if (_apply)
@@ -117,10 +107,7 @@ namespace SpatialSlur.SlurDynamics.Forces
 
         #region Explicit interface implementations
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get { yield return _handle; }

@@ -20,23 +20,14 @@ namespace SpatialSlur.SlurField
         /// </summary>
         internal class Factory : GridField2dFactory<Vec2d>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="countX"></param>
-            /// <param name="countY"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override GridField2d<Vec2d> Create(int countX, int countY)
             {
                 return new GridField2dVec2d(countX, countY);
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="grid"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override GridField2d<Vec2d> Create(Grid2d grid)
             {
                 return new GridField2dVec2d(grid);
@@ -68,10 +59,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override GridField2d<Vec2d> Duplicate(bool setValues)
         {
             var result = GridField2d.Vec2d.Create(this);
@@ -80,12 +68,7 @@ namespace SpatialSlur.SlurField
         }
 
         
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override Vec2d ValueAtLinear(Vec2d point)
         {
             point = ToGridSpace(point);
@@ -106,12 +89,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override Vec2d ValueAtLinearUnsafe(Vec2d point)
         {
             point = ToGridSpace(point);
@@ -130,12 +108,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override Vec2d ValueAt(GridPoint2d point)
         {
             return FieldUtil.ValueAt(Values, point.Corners, point.Weights);

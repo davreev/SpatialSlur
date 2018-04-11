@@ -72,9 +72,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public int Count
         {
             get { return _mesh.Vertices.Count; }
@@ -148,20 +146,14 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// Returns a reference to the underly value array
-        /// </summary>
+        /// <inheritdoc />
         public T[] Values
         {
             get { return _values; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public T this[int index]
         {
             get
@@ -207,11 +199,7 @@ namespace SpatialSlur.SlurField
         public abstract MeshField3d<T> Duplicate(bool setValues);
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public T ValueAt(Vec3d point)
         {
             return ValueAt(ClosestMeshPoint(point));
@@ -257,54 +245,37 @@ namespace SpatialSlur.SlurField
         }
 
 
-#region Explicit interface implementations
+        #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IDiscreteField<T> IDiscreteField<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IDiscreteField3d<T> IDiscreteField3d<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         T IField2d<T>.ValueAt(Vec2d point)
         {
             return ValueAt(point);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         IEnumerable<Vec3d> IDiscreteField3d<T>.Coordinates
         {
             get { return Mesh.Vertices.Select(v => v.Position); }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         Vec3d IDiscreteField3d<T>.CoordinateAt(int index)
         {
             return Mesh.Vertices[index].Position;

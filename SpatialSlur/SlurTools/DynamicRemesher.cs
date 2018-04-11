@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using SpatialSlur.SlurMesh;
 using SpatialSlur.SlurCore;
 using SpatialSlur.SlurField;
-using SpatialSlur.SlurTools.Features;
+using SpatialSlur.SlurTools;
 
 namespace SpatialSlur.SlurTools
 {
@@ -32,6 +32,9 @@ namespace SpatialSlur.SlurTools
         public class Solver
         {
             #region Static
+
+            private static readonly Func<V, Vec3d> _getPosition = v => v.Position;
+
 
             /// <summary>
             /// 
@@ -108,7 +111,7 @@ namespace SpatialSlur.SlurTools
                 _stepCount = 0;
 
                 // triangulate all faces starting with the shortest diagonal
-                _mesh.TriangulateFaces(FaceTriangulators.Strip.CreateFromMin(mesh, he =>
+                _mesh.TriangulateFaces(FaceTriangulator.CreateStrip(mesh, he =>
                 {
                     var p0 = he.Start.Position;
                     var p1 = he.Next.End.Position;
@@ -129,7 +132,9 @@ namespace SpatialSlur.SlurTools
             private void InitFeatures(IEnumerable<IFeature> features)
             {
                 _features = new List<IFeature>();
-                var tolSqr = Square(_settings.FeatureTolerance);
+
+                var tolSqr = _settings.FeatureTolerance;
+                tolSqr *= tolSqr;
 
                 var verts = Mesh.Vertices;
                 var edges = Mesh.Edges;
@@ -137,6 +142,8 @@ namespace SpatialSlur.SlurTools
                 // assign features to coincident vertices and edges
                 foreach (var f in features)
                 {
+                    // TODO assign point features separately
+
                     int fi = _features.Count;
                     _features.Add(f);
                     _vertStamp++;
@@ -157,7 +164,7 @@ namespace SpatialSlur.SlurTools
                         }
                     }
 
-                    // if mid point of edge is also close enough, assign feature
+                    // if mid point of edge is also close enough, assign feature to edge
                     foreach (var he in edges)
                     {
                         var v0 = he.Start;
@@ -175,11 +182,6 @@ namespace SpatialSlur.SlurTools
 
                 // InitBoundaryFeatures();
                 FixVertices();
-
-                double Square(double x)
-                {
-                    return x * x;
-                }
             }
 
 
@@ -222,10 +224,10 @@ namespace SpatialSlur.SlurTools
                 return new MeshFeature(RhinoFactory.Mesh.CreateExtrusion(poly, new Vector3d()));
             }
             */
-
+            
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             private void FixVertices()
             {
@@ -237,18 +239,18 @@ namespace SpatialSlur.SlurTools
                     switch (v.FeatureCount)
                     {
                         case 0:
-                            break;
+                            return;
                         case 1:
-                            if (CheckFixed(v)) v.Fix();
-                            break;
+                            if (Test(v)) v.Fix();
+                            return;
                         default:
                             v.Fix();
-                            break;
+                            return;
                     }
                 }
 
-                // returns true if v has one incident feature edge
-                bool CheckFixed(V v)
+                // Returns true if v has exactly one incident feature edge
+                bool Test(V v)
                 {
                     int n = 0;
 
@@ -360,7 +362,7 @@ namespace SpatialSlur.SlurTools
                             count++;
                         }
 
-                        v.DeltaSum += (sum / count - v.Position) * weight;
+                        v.MoveSum += (sum / count - v.Position) * weight;
                         v.WeightSum += weight;
                     }
                 });
@@ -389,7 +391,7 @@ namespace SpatialSlur.SlurTools
 
                         foreach (var he in v.OutgoingHalfedges)
                         {
-                            norm += he.GetNormal(V.GetPosition);
+                            norm += he.GetNormal(_getPosition);
                             sum += he.End.Position;
                             count++;
                         }
@@ -401,7 +403,7 @@ namespace SpatialSlur.SlurTools
                         if (m > 0.0)
                             d -= Vec3d.Dot(d, norm) / m * norm;
 
-                        v.DeltaSum += d * weight;
+                        v.MoveSum += d * weight;
                         v.WeightSum += weight;
                     }
                 });
@@ -426,12 +428,12 @@ namespace SpatialSlur.SlurTools
 
                         if (v.IsFeature)
                         {
-                            v.DeltaSum += (_features[v.FeatureIndex].ClosestPoint(p) - p) * weight;
+                            v.MoveSum += (_features[v.FeatureIndex].ClosestPoint(p) - p) * weight;
                             v.WeightSum += weight;
                         }
                         else if (_target != null)
                         {
-                            v.DeltaSum += _target.ClosestPoint(p) - p;
+                            v.MoveSum += _target.ClosestPoint(p) - p;
                             v.WeightSum += 1.0;
                         }
                     }
@@ -455,10 +457,10 @@ namespace SpatialSlur.SlurTools
                         v.Velocity *= (1.0 - damping);
 
                         double w = v.WeightSum;
-                        if (w > 0.0) v.Velocity += v.DeltaSum * (timeStep / w);
+                        if (w > 0.0) v.Velocity += v.MoveSum * (timeStep / w);
                         v.Position += v.Velocity * timeStep;
 
-                        v.DeltaSum = new Vec3d();
+                        v.MoveSum = new Vec3d();
                         v.WeightSum = 0.0;
                     }
                 });
@@ -810,34 +812,16 @@ namespace SpatialSlur.SlurTools
             [Serializable]
             public new class Vertex : HeMesh<V, E, F>.Vertex
             {
-                #region Static
-
-                /// <summary></summary>
-                public static readonly Func<V, Vec3d> GetPosition = v => v.Position;
-                /// <summary> </summary>
-                public static readonly Action<V, Vec3d> SetPosition = (v, p) => v.Position = p;
-
-                #endregion
-
-
                 /// <summary></summary>
                 public Vec3d Position;
                 /// <summary></summary>
                 public Vec3d Velocity;
-
-                /// <summary></summary>
-                internal Vec3d DeltaSum;
-                /// <summary></summary>
+                
+                internal Vec3d MoveSum;
                 internal double WeightSum;
-
-                /// <summary></summary>
                 internal int FeatureCount = 0;
-                /// <summary></summary>
                 internal int Stamp = int.MinValue;
-                /// <summary></summary>
                 internal int DegreeCached;
-
-                /// <summary></summary>
                 private int _featureIndex = -1;
 
 
@@ -846,8 +830,8 @@ namespace SpatialSlur.SlurTools
                 /// </summary>
                 public int FeatureIndex
                 {
-                    get { return _featureIndex; }
-                    internal set { _featureIndex = value; }
+                    get => _featureIndex;
+                    internal set => _featureIndex = value;
                 }
 
 
@@ -856,7 +840,7 @@ namespace SpatialSlur.SlurTools
                 /// </summary>
                 public bool IsFeature
                 {
-                    get { return FeatureIndex != -1; }
+                    get => FeatureIndex != -1;
                 }
 
 
@@ -865,16 +849,26 @@ namespace SpatialSlur.SlurTools
                 /// </summary>
                 public bool IsFixed
                 {
-                    get { return FeatureCount == -1; }
+                    get => FeatureCount == -1;
                 }
 
 
                 /// <summary>
                 /// 
                 /// </summary>
-                internal void Fix()
+                public void Fix()
                 {
                     FeatureCount = -1;
+                }
+
+
+                /// <summary>
+                /// 
+                /// </summary>
+                public void Unfix()
+                {
+                    if (IsFixed)
+                        FeatureCount = 0;
                 }
             }
 
@@ -980,30 +974,21 @@ namespace SpatialSlur.SlurTools
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             protected sealed override V NewVertex()
             {
                 return new V();
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             protected sealed override E NewHalfedge()
             {
                 return new E();
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             protected sealed override F NewFace()
             {
                 return new F();
@@ -1017,10 +1002,7 @@ namespace SpatialSlur.SlurTools
         [Serializable]
         public class HeMeshFactory : HeMeshFactory<HeMesh, V, E, F>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             public sealed override HeMesh Create(int vertexCapacity, int halfedgeCapacity, int faceCapacity)
             {
                 return new HeMesh(vertexCapacity, halfedgeCapacity, faceCapacity);

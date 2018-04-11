@@ -87,43 +87,24 @@ namespace SpatialSlur.SlurField
         public abstract IDWField3d<T> Duplicate();
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public abstract T ValueAt(Vec3d point);
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="gx"></param>
-        /// <param name="gy"></param>
-        /// <param name="gz"></param>
+        /// <inheritdoc />
         public abstract void GradientAt(Vec3d point, out T gx, out T gy, out T gz);
 
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         T IField2d<T>.ValueAt(Vec2d point)
         {
             return ValueAt(new Vec3d(point.X, point.Y, 0.0));
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="gx"></param>
-        /// <param name="gy"></param>
+        /// <inheritdoc />
         void IGradient2d<T>.GradientAt(Vec2d point, out T gx, out T gy)
         {
             GradientAt(point, out gx, out gy, out T gz);

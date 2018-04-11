@@ -24,22 +24,14 @@ namespace SpatialSlur.SlurField
         /// </summary>
         internal class Factory : MeshField3dFactory<Vec3d>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="mesh"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override MeshField3d<Vec3d> Create(HeMesh3d mesh)
             {
                 return new MeshField3dVec3d(mesh);
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="field"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override MeshField3d<Vec3d> Create(MeshField3d field)
             {
                 return new MeshField3dVec3d(field);
@@ -69,10 +61,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override MeshField3d<Vec3d> Duplicate(bool setValues)
         {
             var result = MeshField3d.Vec3d.Create(this);
@@ -81,16 +70,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="i0"></param>
-        /// <param name="i1"></param>
-        /// <param name="i2"></param>
-        /// <param name="w0"></param>
-        /// <param name="w1"></param>
-        /// <param name="w2"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override Vec3d ValueAt(int i0, int i1, int i2, double w0, double w1, double w2)
         {
             return Values[i0] * w0 + Values[i1] * w1 + Values[i2] * w2;

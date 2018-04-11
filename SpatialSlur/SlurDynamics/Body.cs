@@ -63,9 +63,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public Quaterniond Rotation
         {
             get { return _rotation; }
@@ -73,9 +71,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public Vec3d AngularVelocity
         {
             get { return _angleVeloctiy; }
@@ -83,21 +79,14 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="delta"></param>
+        /// <inheritdoc />
         public void ApplyTorque(Vec3d delta)
         {
             _torqueSum += delta;
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="delta"></param>
-        /// <param name="weight"></param>
+        /// <inheritdoc />
         public void ApplyRotate(Vec3d delta, double weight)
         {
             _rotateSum += delta * weight;
@@ -105,11 +94,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeStep"></param>
-        /// <param name="damping"></param>
+        /// <inheritdoc />
         public double UpdateRotation(double timeStep, double damping)
         {
             _angleVeloctiy *= (1.0 - damping);
@@ -158,19 +143,14 @@ namespace SpatialSlur.SlurDynamics
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         bool IBody.HasRotation
         {
             get { return true; }
         }
-        
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+
+        /// <inheritdoc />
         IBody IBody.Duplicate()
         {
             return new Body(this);

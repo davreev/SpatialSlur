@@ -123,22 +123,14 @@ namespace SpatialSlur.SlurField
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         T IField2d<T>.ValueAt(Vec2d point)
         {
             return ValueAt(point);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         T IField3d<T>.ValueAt(Vec3d point)
         {
             return ValueAt(point);

@@ -6,7 +6,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
@@ -65,20 +65,15 @@ namespace SpatialSlur.SlurDynamics.Constraints
             get { return _h2; }
         }
 
-        
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.Position; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             Vec3d p0 = bodies[_h0].Position;
@@ -88,13 +83,9 @@ namespace SpatialSlur.SlurDynamics.Constraints
             const double inv6 = 1.0 / 6.0;
             _h0.Delta = _h1.Delta = _h2.Delta = Vec3d.Cross(p1 - p0, p2 - p1) * (Strength * inv6); // force is proportional to 1/3 area of tri
         }
-        
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             bodies[_h0].ApplyForce(_h0.Delta);
@@ -105,10 +96,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
         #region Explicit interface implementations
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get

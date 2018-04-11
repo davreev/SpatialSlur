@@ -6,7 +6,7 @@ using System.Linq;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = ParticleHandle;
 
@@ -38,20 +38,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.Position; }
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             // TODO solve best fit sphere
@@ -59,11 +53,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
@@ -72,10 +62,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-        
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get { return Handles; }

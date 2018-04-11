@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpatialSlur.SlurCore;
+using SpatialSlur.SlurData;
 
 /*
  * Notes
@@ -15,14 +15,19 @@ namespace SpatialSlur.SlurDynamics
     /// 
     /// </summary>
     [Serializable]
-    public class Coincident : MultiConstraint<H>, IConstraint
+    public class LineCollide : MultiForce<H>, IConstraint
     {
+        private HashGrid3d<H> _grid;
+        private double _radius;
+        private bool _parallel;
+
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="capacity"></param>
         /// <param name="weight"></param>
-        public Coincident(double weight = 1.0, int capacity = DefaultCapacity)
+        public LineCollide(double weight = 1.0, int capacity = DefaultCapacity)
             : base(weight, capacity)
         {
         }
@@ -33,10 +38,36 @@ namespace SpatialSlur.SlurDynamics
         /// </summary>
         /// <param name="indices"></param>
         /// <param name="weight"></param>
-        public Coincident(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
+        public LineCollide(IEnumerable<int> indices, double weight = 1.0, int capacity = DefaultCapacity)
             : base(weight, capacity)
         {
             Handles.AddRange(indices.Select(i => new H(i)));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Radius
+        {
+            get { return _radius; }
+            set
+            {
+                if (value < 0.0)
+                    throw new ArgumentOutOfRangeException("The value can not be negative");
+
+                _radius = value;
+            }
+        }
+
+
+        /// <summary>
+        /// If true, collisions are calculated in parallel
+        /// </summary>
+        public bool Parallel
+        {
+            get { return _parallel; }
+            set { _parallel = value; }
         }
 
 
@@ -50,15 +81,8 @@ namespace SpatialSlur.SlurDynamics
         /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
-            Vec3d mean = new Vec3d();
-
-            foreach(var h in Handles)
-                mean += bodies[h].Position;
-
-            mean /= Handles.Count;
-
-            foreach (var h in Handles)
-                h.Delta = mean - bodies[h].Position;
+            // TODO implement
+            throw new NotImplementedException();
         }
 
 
@@ -66,7 +90,7 @@ namespace SpatialSlur.SlurDynamics
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
-                bodies[h].ApplyMove(h.Delta, Weight);
+                bodies[h].ApplyForce(h.Delta);
         }
 
 

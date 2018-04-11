@@ -90,40 +90,28 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override V NewVertex()
         {
             return new V();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override E NewHalfedge()
         {
             return new E();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override F NewFace()
         {
             return new F();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("HeMesh (V:{0} E:{1} F:{2})", Vertices.Count, Edges.Count, Faces.Count);
@@ -201,10 +189,7 @@ namespace SpatialSlur.SlurMesh
     [Serializable]
     public class HeMeshFactory : HeMeshFactory<M, V, E, F>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override M Create(int vertexCapacity, int hedgeCapacity, int faceCapacity)
         {
             return new M(vertexCapacity, hedgeCapacity, faceCapacity);

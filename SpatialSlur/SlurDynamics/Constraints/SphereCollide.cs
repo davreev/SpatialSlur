@@ -13,7 +13,7 @@ using SpatialSlur.SlurData;
 
 using static System.Threading.Tasks.Parallel;
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = SphereCollide.CustomHandle;
 
@@ -117,21 +117,16 @@ namespace SpatialSlur.SlurDynamics.Constraints
             get { return _parallel; }
             set { _parallel = value; }
         }
-        
 
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.Position; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             UpdateGrid(bodies);
@@ -249,12 +244,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
                 _grid.Scale = Radius * _radiusToGridScale;
         }
 
-        
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
@@ -263,11 +254,8 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
 
         #region Explicit interface implementations
-        
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get { return Handles; }

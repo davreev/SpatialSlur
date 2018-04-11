@@ -9,7 +9,7 @@ using Rhino.Geometry;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     /// <summary>
     /// 

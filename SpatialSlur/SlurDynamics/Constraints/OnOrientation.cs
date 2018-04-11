@@ -6,7 +6,7 @@ using SpatialSlur.SlurCore;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = BodyHandle;
 
@@ -66,20 +66,14 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.PositionRotation; }
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             var p = bodies[_handle];
@@ -88,11 +82,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             var b = bodies[_handle];
@@ -103,9 +93,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
         #region Explicit interface implementations
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get { yield return _handle; }

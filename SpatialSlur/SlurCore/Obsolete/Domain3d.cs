@@ -367,10 +367,7 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("({0} to {1}, {2} to {3}, {4} to {5})", X.T0, X.T1, Y.T0, Y.T1, Z.T0, Z.T1);

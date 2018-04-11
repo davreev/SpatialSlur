@@ -88,33 +88,21 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override double DistanceTo(Vec3d point)
         {
             return _point.DistanceTo(point);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override IDWObject3d<T> Duplicate()
         {
             return IDWPoint3d.Create(this);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="converter"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override IDWObject3d<U> Convert<U>(Func<T, U> converter)
         {
             return IDWPoint3d.Create(this, converter);

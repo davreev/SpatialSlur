@@ -493,6 +493,7 @@ namespace SpatialSlur.SlurTools
 
                 #region Explicit interface implementations
 
+                /// <inheritdoc />
                 Vec3d IPosition3d.Position
                 {
                     get { return Position; }
@@ -500,6 +501,7 @@ namespace SpatialSlur.SlurTools
                 }
 
 
+                /// <inheritdoc />
                 Vec3d INormal3d.Normal
                 {
                     get { return new Vec3d(); }
@@ -588,20 +590,14 @@ namespace SpatialSlur.SlurTools
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             protected sealed override V NewVertex()
             {
                 return new V();
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             protected sealed override E NewHalfedge()
             {
                 return new E();
@@ -615,10 +611,7 @@ namespace SpatialSlur.SlurTools
         [Serializable]
         public class HeGraphFactory : HeGraphFactory<HeGraph, V, E>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             public sealed override HeGraph Create(int vertexCapacity, int halfedgeCapacity)
             {
                 return new HeGraph(vertexCapacity, halfedgeCapacity);

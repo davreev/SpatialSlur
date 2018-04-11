@@ -62,36 +62,28 @@ namespace SpatialSlur.SlurGH.Types
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override bool IsValid
         {
             get { return true; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override string TypeName
         {
             get { return "HeGraph"; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override string TypeDescription
         {
             get { return "HeGraph"; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override BoundingBox Boundingbox
         {
             get
@@ -104,77 +96,56 @@ namespace SpatialSlur.SlurGH.Types
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override IGH_Goo Duplicate()
         {
             return DuplicateGeometry();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override IGH_GeometricGoo DuplicateGeometry()
         {
             return new GH_HeGraph3d(new HeGraph3d(Value));
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return Value.ToString();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override object ScriptVariable()
         {
             return Value;
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="Q"></typeparam>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public override bool CastTo<Q>(ref Q target)
+        /// <inheritdoc />
+        public override bool CastTo<T>(ref T target)
         {
-            if (typeof(Q).IsAssignableFrom(typeof(HeGraph3d)))
+            if (typeof(T).IsAssignableFrom(typeof(HeGraph3d)))
             {
                 object obj = Value;
-                target = (Q)obj;
+                target = (T)obj;
                 return true;
             }
 
-            if (typeof(Q).IsAssignableFrom(typeof(GH_ObjectWrapper)))
+            if (typeof(T).IsAssignableFrom(typeof(GH_ObjectWrapper)))
             {
                 object obj = new GH_ObjectWrapper(Value);
-                target = (Q)obj;
+                target = (T)obj;
                 return true;
             }
 
             return false;
         }
-    
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
+
+        /// <inheritdoc />
         public override bool CastFrom(object source)
         {
             if (source is HeGraph3d g)
@@ -211,11 +182,7 @@ namespace SpatialSlur.SlurGH.Types
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xform"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override BoundingBox GetBoundingBox(Transform xform)
         {
             var b = Boundingbox;
@@ -224,11 +191,7 @@ namespace SpatialSlur.SlurGH.Types
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xform"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override IGH_GeometricGoo Transform(Transform xform)
         {
             Value.Transform(xform);
@@ -236,11 +199,7 @@ namespace SpatialSlur.SlurGH.Types
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xmorph"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override IGH_GeometricGoo Morph(SpaceMorph xmorph)
         {
             Value.SpaceMorph(xmorph);

@@ -50,9 +50,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public Vec3d Delta
         {
             get => _delta;
@@ -60,9 +58,7 @@ namespace SpatialSlur.SlurDynamics
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public int Index
         {
             get => _index;
@@ -72,7 +68,7 @@ namespace SpatialSlur.SlurDynamics
 
         #region Explicit interface implementations
 
-        /// <summary></summary>
+        /// <inheritdoc />
         Vec3d IHandle.AngleDelta
         {
             get { return Vec3d.Zero; }

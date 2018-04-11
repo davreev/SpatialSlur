@@ -70,30 +70,21 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override V NewVertex()
         {
             return new V();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override E NewHalfedge()
         {
             return new E();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("HeGraph (V:{0} E:{1})", Vertices.Count, Edges.Count);
@@ -151,10 +142,7 @@ namespace SpatialSlur.SlurMesh
     [Serializable]
     public class HeGraphFactory : HeGraphFactory<G, V, E>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override G Create(int vertexCapacity, int hedgeCapacity)
         {
             return new G(vertexCapacity, hedgeCapacity);

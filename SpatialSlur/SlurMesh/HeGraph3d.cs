@@ -43,12 +43,12 @@ namespace SpatialSlur.SlurMesh
             }
 
             #endregion
+            
 
-
-            /// <summary></summary>
+            /// <inheritdoc />
             public Vec3d Position { get; set; }
 
-            /// <summary></summary>
+            /// <inheritdoc />
             public Vec3d Normal { get; set; }
         }
 
@@ -125,30 +125,21 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override V NewVertex()
         {
             return new V();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override E NewHalfedge()
         {
             return new E();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("HeGraph3d (V:{0} E:{1})", Vertices.Count, Edges.Count);
@@ -226,10 +217,7 @@ namespace SpatialSlur.SlurMesh
     [Serializable]
     public class HeGraph3dFactory : HeGraphFactory<G, V, E>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override G Create(int vertexCapacity, int hedgeCapacity)
         {
             return new G(vertexCapacity, hedgeCapacity);

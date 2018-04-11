@@ -328,10 +328,7 @@ namespace SpatialSlur.SlurData
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override int GetHashCode()
             {
                 const int p0 = 73856093;
@@ -340,11 +337,7 @@ namespace SpatialSlur.SlurData
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="obj"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override bool Equals(object obj)
             {
                 return obj is BinKey && Equals((BinKey)obj);

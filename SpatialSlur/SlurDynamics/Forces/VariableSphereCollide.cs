@@ -7,7 +7,7 @@ using SpatialSlur.SlurData;
  * Notes
  */
 
-namespace SpatialSlur.SlurDynamics.Constraints
+namespace SpatialSlur.SlurDynamics
 {
     using H = VariableSphereCollide.CustomHandle;
 
@@ -15,7 +15,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class VariableSphereCollide : MultiConstraint<H>, IConstraint
+    public class VariableSphereCollide : MultiForce<H>, IConstraint
     {
         #region Nested types
 
@@ -26,8 +26,7 @@ namespace SpatialSlur.SlurDynamics.Constraints
         public class CustomHandle : ParticleHandle
         {
             private double _radius = 1.0;
-            private bool _apply;
-            
+      
 
             /// <summary>
             /// 
@@ -51,16 +50,6 @@ namespace SpatialSlur.SlurDynamics.Constraints
 
                     _radius = value;
                 }
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            internal bool Apply
-            {
-                get => _apply;
-                set => _apply = value;
             }
         }
 
@@ -102,22 +91,16 @@ namespace SpatialSlur.SlurDynamics.Constraints
             get { return _parallel; }
             set { _parallel = value; }
         }
-        
 
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         public ConstraintType Type
         {
             get { return ConstraintType.Position; }
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Calculate(IReadOnlyList<IBody> bodies)
         {
             // TODO implement
@@ -125,24 +108,17 @@ namespace SpatialSlur.SlurDynamics.Constraints
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bodies"></param>
+        /// <inheritdoc />
         public void Apply(IReadOnlyList<IBody> bodies)
         {
             foreach (var h in Handles)
-                if (h.Apply) bodies[h].ApplyMove(h.Delta, Weight);
+                bodies[h].ApplyForce(h.Delta);
         }
 
 
         #region Explicit interface implementations
-        
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
+
+        /// <inheritdoc />
         IEnumerable<IHandle> IConstraint.Handles
         {
             get { return Handles; }

@@ -9,54 +9,42 @@ namespace SpatialSlur.SlurGH
     /// </summary>
     public class SlurGHInfo : GH_AssemblyInfo
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override string Name
         {
             get { return "SpatialSlur.SlurGH"; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override Bitmap Icon
         {
             get { return null; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override string Description
         {
             get { return ""; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override Guid Id
         {
             get { return new Guid("8546948e-7b1e-4e42-beb9-a924be0b7964"); }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override string AuthorName
         {
             get { return "David Reeves"; }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override string AuthorContact
         {
             get { return "http://spatialslur.com/"; }

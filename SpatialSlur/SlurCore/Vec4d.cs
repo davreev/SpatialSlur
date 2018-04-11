@@ -556,10 +556,7 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"({X}, {Y}, {Z}, {W})";

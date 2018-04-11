@@ -259,10 +259,7 @@ namespace SpatialSlur.SlurCore
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("{0} to {1}", A, B);

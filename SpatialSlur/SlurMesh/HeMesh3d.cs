@@ -46,11 +46,11 @@ namespace SpatialSlur.SlurMesh
 
             #endregion
 
-            
-            /// <summary></summary>
+
+            /// <inheritdoc />
             public Vec3d Position { get; set; }
 
-            /// <summary></summary>
+            /// <inheritdoc />
             public Vec3d Normal { get; set; }
             
 
@@ -146,40 +146,28 @@ namespace SpatialSlur.SlurMesh
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override V NewVertex()
         {
             return new V();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override E NewHalfedge()
         {
             return new E();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override F NewFace()
         {
             return new F();
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("HeMesh3d (V:{0} E:{1} F:{2})", Vertices.Count, Edges.Count, Faces.Count);
@@ -280,10 +268,7 @@ namespace SpatialSlur.SlurMesh
     [Serializable]
     public class HeMesh3dFactory : HeMeshFactory<M, V, E, F>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override M Create(int vertexCapacity, int halfedgeCapacity, int faceCapacity)
         {
             return new M(vertexCapacity, halfedgeCapacity, faceCapacity);

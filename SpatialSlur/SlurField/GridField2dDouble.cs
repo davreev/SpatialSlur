@@ -21,23 +21,14 @@ namespace SpatialSlur.SlurField
         /// </summary>
         internal class Factory : GridField2dFactory<double>
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="countX"></param>
-            /// <param name="countY"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override GridField2d<double> Create(int countX, int countY)
             {
                 return new GridField2dDouble(countX, countY);
             }
 
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="grid"></param>
-            /// <returns></returns>
+            /// <inheritdoc />
             public override GridField2d<double> Create(Grid2d grid)
             {
                 return new GridField2dDouble(grid);
@@ -69,10 +60,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override GridField2d<double> Duplicate(bool setValues)
         {
             var result = GridField2d.Double.Create(this);
@@ -81,12 +69,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override double ValueAtLinear(Vec2d point)
         {
             point = ToGridSpace(point);
@@ -107,12 +90,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         protected sealed override double ValueAtLinearUnsafe(Vec2d point)
         {
             point = ToGridSpace(point);
@@ -131,12 +109,7 @@ namespace SpatialSlur.SlurField
         }
 
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public sealed override double ValueAt(GridPoint2d point)
         {
             return FieldUtil.ValueAt(Values, point.Corners, point.Weights);
