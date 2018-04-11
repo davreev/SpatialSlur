@@ -235,7 +235,38 @@ namespace SpatialSlur.SlurMesh
        where F : HeFace<V, E, F, G>
        where G : HeNode<G, E>
     {
+        private F _previous;
+        private F _next;
         private G _cell;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public F PreviousInCell
+        {
+            get => _previous;
+            internal set => _previous = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public F NextInCell
+        {
+            get => _next;
+            internal set => _next = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public F Twin
+        {
+            get => First.Adjacent.Face;
+        }
 
 
         /// <summary>
@@ -251,9 +282,18 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
-        public F Twin
+        public IEnumerable<F> CirculateCell
         {
-            get => First.Adjacent.Face;
+            get
+            {
+                var f = Self;
+
+                do
+                {
+                    yield return f;
+                    f = f.NextInCell;
+                } while (f != this);
+            }
         }
     }
 }

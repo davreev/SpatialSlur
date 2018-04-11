@@ -725,6 +725,24 @@ namespace SpatialSlur.SlurMesh
         /// <summary>
         /// 
         /// </summary>
+        public E PreviousInBundle
+        {
+            get => Twin._adjacent;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public E NextInBundle
+        {
+            get => _adjacent.Twin;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsFirstInBundle
         {
             get => this == _bundle.First;
@@ -761,7 +779,7 @@ namespace SpatialSlur.SlurMesh
                 do
                 {
                     yield return he;
-                    he = he.Twin._adjacent;
+                    he = he.NextInBundle;
                 } while (he != this);
             }
         }

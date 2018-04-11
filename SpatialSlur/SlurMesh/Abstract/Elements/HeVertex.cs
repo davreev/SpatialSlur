@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using System.Collections.Generic;
 
 namespace SpatialSlur.SlurMesh
 {
@@ -248,7 +249,29 @@ namespace SpatialSlur.SlurMesh
        where F : HeFace<V, E, F, G>
        where G : HeNode<G, E>
     {
+        private V _previous;
+        private V _next;
         private G _cluster;
+
+
+        /// <summary>
+        /// Returns the previous vertex in the cluster.
+        /// </summary>
+        public V PreviousInCluster
+        {
+            get => _previous;
+            internal set => _previous = value;
+        }
+
+
+        /// <summary>
+        /// Returns the next vertex in the cluster.
+        /// </summary>
+        public V NextInCluster
+        {
+            get => _next;
+            internal set => _next = value;
+        }
 
 
         /// <summary>
@@ -258,6 +281,24 @@ namespace SpatialSlur.SlurMesh
         {
             get => _cluster;
             internal set => _cluster = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IEnumerable<V> CirculateCluster
+        {
+            get
+            {
+                var v = Self;
+
+                do
+                {
+                    yield return v;
+                    v = v.NextInCluster;
+                } while (v != this);
+            }
         }
     }
 }
