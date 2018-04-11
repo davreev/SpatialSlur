@@ -199,21 +199,6 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="direction"></param>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
-        /// <returns></returns>
-        [Obsolete("Use ProjectToPlaneAlong instead")]
-        public static Vec3d ProjectToPlane(Vec3d point, Vec3d origin, Vec3d normal, Vec3d direction)
-        {
-            return point + Vec3d.MatchProjection(direction, origin - point, normal);
-        }
-
-
-        /// <summary>
         /// Projects a vector to the given plane along the given direction.
         /// </summary>
         /// <param name="vector"></param>
@@ -373,18 +358,18 @@ namespace SpatialSlur.SlurCore
             return p0 * (d12 * perimInv) + p1 * (d20 * perimInv) + p2 * (d01 * perimInv);
         }
 
-        
+
         /// <summary>
+        /// Returns the angle of the vector in the given basis.
         /// Assumes the given axes are orthonormal.
         /// </summary>
         /// <param name="vector"></param>
         /// <param name="xAxis"></param>
         /// <param name="yAxis"></param>
         /// <returns></returns>
-        public static double GetAngleInPlane(Vec3d vector, Vec3d xAxis, Vec3d yAxis)
+        public static double GetPolarAngle(Vec3d vector, Vec3d xAxis, Vec3d yAxis)
         {
-            double t = Math.Atan2(Vec3d.Dot(vector, xAxis), Vec3d.Dot(vector, yAxis));
-            return (t < 0.0) ? t + SlurMath.TwoPI : t; // shift discontinuity to 0
+            return Math.Atan2(Vec3d.Dot(vector, yAxis), Vec3d.Dot(vector, xAxis));
         }
 
 
