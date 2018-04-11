@@ -142,15 +142,15 @@ namespace SpatialSlur.SlurField
         private static void ReadFromImage<T>(Bitmap image, T[] values, int index, Func<Color, T> mapper)
         {
             PixelFormat pf = image.PixelFormat;
-            int bpp = Image.GetPixelFormatSize(pf) >> 3; // bytes per pixel
-            PixelFormatCheck(bpp); // ensure 4 bytes per pixel
+            int stride = Image.GetPixelFormatSize(pf) >> 3; // bytes per pixel
+            PixelFormatCheck(stride); // ensure 4 bytes per pixel
 
             unsafe
             {
                 BitmapData bmpData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, pf);
                 byte* first = (byte*)bmpData.Scan0;
 
-                if (bpp == 3)
+                if (stride == 3)
                 {
                     for (int y = 0; y < image.Height; y++)
                     {
@@ -158,7 +158,7 @@ namespace SpatialSlur.SlurField
 
                         for (int x = 0; x < image.Width; x++)
                         {
-                            int bx = x * bpp;
+                            int bx = x * stride;
                             byte b = currLn[bx];
                             byte g = currLn[bx + 1];
                             byte r = currLn[bx + 2];
@@ -175,7 +175,7 @@ namespace SpatialSlur.SlurField
 
                         for (int x = 0; x < image.Width; x++)
                         {
-                            int bx = x * bpp;
+                            int bx = x * stride;
                             byte b = currLn[bx];
                             byte g = currLn[bx + 1];
                             byte r = currLn[bx + 2];

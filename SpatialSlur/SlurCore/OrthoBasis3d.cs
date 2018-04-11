@@ -16,8 +16,7 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly OrthoBasis3d Identity = new OrthoBasis3d()
-        {
+        public static readonly OrthoBasis3d Identity = new OrthoBasis3d {
             _x = Vec3d.UnitX,
             _y = Vec3d.UnitY,
             _z = Vec3d.UnitZ
@@ -30,8 +29,7 @@ namespace SpatialSlur.SlurCore
         /// <param name="rotation"></param>
         public static implicit operator OrthoBasis3d(OrthoBasis2d rotation)
         {
-            return new OrthoBasis3d()
-            {
+            return new OrthoBasis3d {
                 _x = rotation.X,
                 _y = rotation.Y,
                 _z = Vec3d.UnitZ
@@ -93,8 +91,7 @@ namespace SpatialSlur.SlurCore
             var c = Vec3d.Dot(from, to);
             var k = 1.0 / (1.0 + c);
 
-            return new OrthoBasis3d()
-            {
+            return new OrthoBasis3d {
                 _x = new Vec3d(v.X * v.X * k + c, v.X * v.Y * k + v.Z, v.X * v.Z * k - v.Y),
                 _y = new Vec3d(v.Y * v.X * k - v.Z, v.Y * v.Y * k + c, v.Y * v.Z * k + v.X),
                 _z = new Vec3d(v.Z * v.X * k + v.Y, v.Z * v.Y * k - v.X, v.Z * v.Z * k + c)
@@ -112,8 +109,7 @@ namespace SpatialSlur.SlurCore
         {
             GeometryUtil.Orthonormalize(ref direction, ref up, out Vec3d z);
 
-            return new OrthoBasis3d()
-            {
+            return new OrthoBasis3d {
                 _x = z,
                 _y = direction,
                 _z = up
@@ -131,10 +127,10 @@ namespace SpatialSlur.SlurCore
         /// <summary>
         /// 
         /// </summary>
-        public OrthoBasis3d(Vec3d x, Vec3d y)
+        public OrthoBasis3d(Vec3d x, Vec3d xy)
             : this()
         {
-            Set(x, y);
+            Set(x, xy);
         }
 
 
@@ -192,8 +188,7 @@ namespace SpatialSlur.SlurCore
         {
             get
             {
-                return new OrthoBasis3d()
-                {
+                return new OrthoBasis3d {
                     _x = new Vec3d(_x.X, _y.X, _z.X),
                     _y = new Vec3d(_x.Y, _y.Y, _z.Y),
                     _z = new Vec3d(_x.Z, _y.Z, _z.Z)
@@ -215,11 +210,11 @@ namespace SpatialSlur.SlurCore
         /// Returns true if the given vectors form a valid orthonormal basis i.e. they aren't parallel or zero length.
         /// </summary>
         /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <param name="xy"></param>
         /// <returns></returns>
-        public bool Set(Vec3d x, Vec3d y)
+        public bool Set(Vec3d x, Vec3d xy)
         {
-            Vec3d z = Vec3d.Cross(x, y);
+            Vec3d z = Vec3d.Cross(x, xy);
             double m = z.SquareLength;
 
             if (m > 0.0)

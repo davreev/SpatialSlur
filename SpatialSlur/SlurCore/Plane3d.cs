@@ -1,10 +1,15 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */ 
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpatialSlur.SlurCore.WIP
+namespace SpatialSlur.SlurCore
 {
     /// <summary>
     /// 

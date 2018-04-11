@@ -2,7 +2,7 @@
  * Notes
  */
 
-namespace SpatialSlur.SlurTools.Features
+namespace SpatialSlur.SlurTools
 {
     /// <summary>
     /// Strongly typed wrapper for subset of IFeatures

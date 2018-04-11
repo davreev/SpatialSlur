@@ -15,16 +15,14 @@ namespace SpatialSlur.SlurCore
         #region Static
 
         /// <summary></summary>
-        public static readonly AxisAngle3d Identity = new AxisAngle3d()
-        {
+        public static readonly AxisAngle3d Identity = new AxisAngle3d {
             _axis = Vec3d.UnitZ,
             _cosAngle = 1.0
         };
 
 
         /// <summary>Describes a half rotation around the X axis</summary>
-        public static readonly AxisAngle3d HalfX = new AxisAngle3d()
-        {
+        public static readonly AxisAngle3d HalfX = new AxisAngle3d {
             _axis = Vec3d.UnitX,
             _angle = Math.PI,
             _cosAngle = -1.0
@@ -32,8 +30,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>Describes a half rotation around the Y axis</summary>
-        public static readonly AxisAngle3d HalfY = new AxisAngle3d()
-        {
+        public static readonly AxisAngle3d HalfY = new AxisAngle3d {
             _axis = Vec3d.UnitY,
             _angle = Math.PI,
             _cosAngle = -1.0
@@ -41,8 +38,7 @@ namespace SpatialSlur.SlurCore
 
 
         /// <summary>Describes a half rotation around the Z axis</summary>
-        public static readonly AxisAngle3d HalfZ = new AxisAngle3d()
-        {
+        public static readonly AxisAngle3d HalfZ = new AxisAngle3d {
             _axis = Vec3d.UnitZ,
             _angle = Math.PI,
             _cosAngle = -1.0

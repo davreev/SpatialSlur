@@ -2,8 +2,7 @@
 /*
  * Notes
  * 
- * Factory class is split for consistent type aliasing.
- * T always refers to the type created by the factory method.
+ * Factory class is split up for consistent type aliasing where T always refers to the type created by the factory method.
  */
 
 #if USING_RHINO
@@ -310,7 +309,7 @@ namespace SpatialSlur.SlurRhino
 
                 // default quadrangulator
                 if (quadrangulator == null)
-                    quadrangulator = FaceQuadrangulators.Strip.Create(mesh);
+                    quadrangulator = FaceQuadrangulator.CreateStrip(mesh);
 
                 // add vertices per face
                 foreach (var f in mesh.Faces)
@@ -476,7 +475,7 @@ namespace SpatialSlur.SlurRhino
 
                 // default quadrangulator
                 if (quadrangulator == null)
-                    quadrangulator = FaceQuadrangulators.Strip.Create(mesh);
+                    quadrangulator = FaceQuadrangulator.CreateStrip(mesh);
 
                 // add vertices
                 for (int i = 0; i < verts.Count; i++)
@@ -649,7 +648,7 @@ namespace SpatialSlur.SlurRhino
             /// <param name="plane"></param>
             public static T CreateInverseFromPlane(Plane plane)
             {
-                return CreateInverseOrtho(plane.Origin, plane.XAxis, plane.YAxis, plane.ZAxis);
+                return CreateOrthoInverse(plane.Origin, plane.XAxis, plane.YAxis, plane.ZAxis);
             }
 
 
@@ -657,13 +656,13 @@ namespace SpatialSlur.SlurRhino
             /// 
             /// </summary>
             /// <param name="origin"></param>
-            /// <param name="basisX"></param>
-            /// <param name="basisY"></param>
+            /// <param name="xAxis"></param>
+            /// <param name="xyVector"></param>
             /// <returns></returns>
-            public static T CreateOrtho(Vec3d origin, Vec3d basisX, Vec3d basisY)
+            public static T CreateProperRigid(Vec3d origin, Vec3d xAxis, Vec3d xyVector)
             {
-                if (GeometryUtil.Orthonormalize(ref basisX, ref basisY, out Vec3d z))
-                    return Create(origin, basisX, basisY, z);
+                if (GeometryUtil.Orthonormalize(ref xAxis, ref xyVector, out Vec3d z))
+                    return Create(origin, xAxis, xyVector, z);
 
                 return T.Unset;
             }
@@ -673,13 +672,13 @@ namespace SpatialSlur.SlurRhino
             /// 
             /// </summary>
             /// <param name="origin"></param>
-            /// <param name="basisX"></param>
-            /// <param name="basisY"></param>
+            /// <param name="xAxis"></param>
+            /// <param name="xyVector"></param>
             /// <returns></returns>
-            public static T CreateInverseOrtho(Vec3d origin, Vec3d basisX, Vec3d basisY)
+            public static T CreateProperRigidInverse(Vec3d origin, Vec3d xAxis, Vec3d xyVector)
             {
-                if (GeometryUtil.Orthonormalize(ref basisX, ref basisY, out Vec3d z))
-                    return CreateInverseOrtho(origin, basisX, basisY, z);
+                if (GeometryUtil.Orthonormalize(ref xAxis, ref xyVector, out Vec3d z))
+                    return CreateOrthoInverse(origin, xAxis, xyVector, z);
 
                 return T.Unset;
             }
@@ -724,7 +723,7 @@ namespace SpatialSlur.SlurRhino
             /// <param name="y"></param>
             /// <param name="z"></param>
             /// <returns></returns>
-            private static T CreateInverseOrtho(Vec3d origin, Vec3d x, Vec3d y, Vec3d z)
+            private static T CreateOrthoInverse(Vec3d origin, Vec3d x, Vec3d y, Vec3d z)
             {
                 T m = T.Identity;
 

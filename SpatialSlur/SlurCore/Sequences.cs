@@ -28,12 +28,12 @@ namespace SpatialSlur.SlurCore
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static IEnumerable<int> CountFrom(int start, int step)
+        public static IEnumerable<int> CountFrom(int start, int stride)
         {
             while (true)
             {
                 yield return start;
-                start += step;
+                start += stride;
             }
         }
 

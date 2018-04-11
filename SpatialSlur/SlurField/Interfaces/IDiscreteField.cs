@@ -10,7 +10,7 @@ namespace SpatialSlur.SlurField
     public interface IDiscreteField<T>
     {
         /// <summary>
-        /// Returns a reference to the internal array of values.
+        /// Returns a reference to the internal array of field values.
         /// </summary>
         T[] Values { get; }
 

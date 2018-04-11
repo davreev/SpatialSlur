@@ -1689,7 +1689,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calcuated as the exterior between adjacent faces.
+        /// Calcuated as the exterior angle between adjacent faces.
         /// Result is in range [0 - 2Pi].
         /// Assumes the given face normals are unitized.
         /// </summary>
@@ -1703,7 +1703,7 @@ namespace SpatialSlur.SlurMesh
 
 
         /// <summary>
-        /// Calcuated as the exterior between adjacent faces.
+        /// Calcuated as the exterior angle between adjacent faces.
         /// Result is in range [0 - 2Pi].
         /// Assumes the given face normals are unitized.
         /// </summary>

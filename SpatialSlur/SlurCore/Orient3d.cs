@@ -156,11 +156,11 @@ namespace SpatialSlur.SlurCore
         /// 
         /// </summary>
         /// <param name="origin"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public Orient3d(Vec3d origin, Vec3d x, Vec3d y)
+        /// <param name="xAxis"></param>
+        /// <param name="xyVector"></param>
+        public Orient3d(Vec3d origin, Vec3d xAxis, Vec3d xyVector)
         {
-            Rotation = new OrthoBasis3d(x, y);
+            Rotation = new OrthoBasis3d(xAxis, xyVector);
             Translation = origin;
         }
   

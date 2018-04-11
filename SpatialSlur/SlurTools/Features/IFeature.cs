@@ -5,7 +5,7 @@
 
 using SpatialSlur.SlurCore;
 
-namespace SpatialSlur.SlurTools.Features
+namespace SpatialSlur.SlurTools
 {
     /// <summary>
     /// 
