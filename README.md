@@ -58,3 +58,10 @@ __Rhino__ has the following additional dependencies:
 __Unity__ has the following additional dependencies:
 * UnityEngine.dll
 * UnityEditor.dll
+
+## Reference Documentation
+See below for links to reference documentation by version number. For earlier versions please refer to the corresponding [release](https://github.com/daveReeves/SpatialSlur/releases).
+
+* [0.2.4](http://spatialslur.com/documentation/0_2_4/index.html)
+* [0.2.3](http://spatialslur.com/documentation/0_2_3/index.html)
+* [0.2.2](http://spatialslur.com/documentation/0_2_2/index.html)
