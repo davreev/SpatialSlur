@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+using SpatialSlur.Collections;
+
 namespace SpatialSlur.Meshes.Impl
 {
     /// <summary>
@@ -74,6 +76,18 @@ namespace SpatialSlur.Meshes.Impl
         /// <param name="values"></param>
         /// <returns></returns>
         public static Property<T, U> CreateProperty<U>(U[] values)
+        {
+            return new Property<T, U>(t => values[t], (t, u) => values[t] = u);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static Property<T, U> CreateProperty<U>(ArrayView<U> values)
         {
             return new Property<T, U>(t => values[t], (t, u) => values[t] = u);
         }

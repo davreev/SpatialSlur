@@ -8,6 +8,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+using SpatialSlur.Collections;
+
 namespace SpatialSlur.Meshes.Impl
 {
     /// <summary>
@@ -18,6 +20,46 @@ namespace SpatialSlur.Meshes.Impl
     public abstract class Halfedge<E> : Node<E>
         where E : Halfedge<E>
     {
+        #region Static Members
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static Property<E, U> CreateEdgeProperty<U>(U[] values)
+        {
+            return new Property<E, U>(he => values[he.EdgeIndex], (he, u) => values[he.EdgeIndex] = u);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static Property<E, U> CreateEdgeProperty<U>(ArrayView<U> values)
+        {
+            return new Property<E, U>(he => values[he.EdgeIndex], (he, u) => values[he.EdgeIndex] = u);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static Property<E, U> CreateEdgeProperty<U>(IList<U> values)
+        {
+            return new Property<E, U>(he => values[he.EdgeIndex], (he, u) => values[he.EdgeIndex] = u);
+        }
+
+        #endregion
+
+
         private E _twin;
         private E _prev;
         private E _next;
