@@ -1,0 +1,929 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#
+// type array
+var types = new string[]{"double", "float"};
+
+// table of scalar type properties
+var scalarProperties = new Dictionary<string, Dictionary<string, string>>()
+{
+    {
+        "double", new Dictionary<string, string>()
+        {
+            {"Suffix", "d"},             
+            {"Epsilon", "SlurMath.ZeroToleranced"}
+        }
+    },
+    {
+        "float", new Dictionary<string, string>()
+        {
+            {"Suffix", "f"},             
+            {"Epsilon", "SlurMath.ZeroTolerancef"}
+        }
+    }
+};
+#>
+
+/*
+ * Notes
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Text;
+using System.Drawing;
+
+using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
+
+namespace SpatialSlur
+{
+	/// <summary>
+	/// Contains common operations for n-dimensional vectors
+	/// </summary>
+	public static partial class Vector
+	{
+        /// <summary>
+	    /// Contains parallel implementations
+	    /// </summary>
+        public static partial class Parallel
+        {
+<#
+foreach(string t in types) 
+{
+    var props = scalarProperties[t];
+    var s = props["Suffix"];
+    var e = props["Epsilon"];
+
+	var vecIn = $"ReadOnlyArrayView<{t}>";
+	var vecOut = $"ArrayView<{t}>";
+#>
+
+            #region <#= t #>
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Max(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = Math.Max(v0[i], v1[i]);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Min(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = Math.Min(v0[i], v1[i]);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Abs(<#= vecIn #> vector, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, vector.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = Math.Abs(vector[i]);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Add(<#= vecIn #> vector, <#= t #> scalar, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, vector.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = vector[i] + scalar;
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Add(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] + v1[i];
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Subtract(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] - v1[i];
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Multiply(<#= vecIn #> vector, <#= t #> scalar, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, vector.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = vector[i] * scalar;
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void MultiplyPointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] * v1[i];
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void DividePointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] / v1[i];
+                });
+            }
+
+
+            /// <summary>
+            /// result = v0 + v1 * t
+            /// </summary>
+            public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] + v1[i] * t;
+                });
+            }
+
+
+            /// <summary>
+            /// result = v0 + v1 * t
+            /// </summary>
+            public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> t, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] + v1[i] * t[i];
+                });
+            }
+
+
+            /// <summary>
+            /// result = v0 * t0 + v1 * t1
+            /// </summary>
+            public static void AddScaled(<#= vecIn #> v0, <#= t #> t0, <#= vecIn #> v1, <#= t #> t1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] * t0 + v1[i] * t1;
+                });
+            }
+
+
+            /// <summary>
+            /// result = v0 * t0 + v1 * t1
+            /// </summary>
+            public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> t0, <#= vecIn #> v1, <#= vecIn #> t1, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] * t0[i] + v1[i] * t1[i];
+                });
+            }
+
+
+            /// <summary>
+            /// result = v0 + (v1 - v2) * t
+            /// </summary>
+            public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= t #> t, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] + (v1[i] - v2[i]) * t;
+                });
+            }
+
+
+            /// <summary>
+            /// result = v0 + (v1 - v2) * t
+            /// </summary>
+            public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= vecIn #> t, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = v0[i] + (v1[i] - v2[i]) * t[i];
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Lerp(<#= vecIn #> vector, <#= t #> value, <#= t #> t, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, vector.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = SlurMath.Lerp(vector[i], value, t);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = SlurMath.Lerp(v0[i], v1[i], t);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> t, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, v0.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = SlurMath.Lerp(v0[i], v1[i], t[i]);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Normalize(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, vector.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = SlurMath.Normalize(vector[i], interval.A, interval.B);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Evaluate(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, vector.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = SlurMath.Lerp(interval.A, interval.B, vector[i]);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Remap(<#= vecIn #> vector, Interval<#= s #> from, Interval<#= s #> to, <#= vecOut #> result)
+            {
+                ForEach(Partitioner.Create(0, vector.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                        result[i] = SlurMath.Remap(vector[i], from.A, from.B, to.A, to.B);
+                });
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Project(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                Multiply(v1, Dot(v0, v1) / Dot(v1, v1), result);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Reject(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                Project(v0, v1, result);
+                Subtract(v0, result, result);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void Reflect(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                Multiply(v1, Dot(v0, v1) / Dot(v1, v1) * 2.0<#= s #>, result);
+                AddScaled(result, v0, -1.0<#= s #>, result);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void MatchProjection(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            {
+                Multiply(v0, Dot(v1, v1) / Dot(v0, v1), result);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static void MatchProjection(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= vecOut #> result)
+            {
+                Multiply(v0, Dot(v1, v2) / Dot(v0, v2), result);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static bool Unitize(<#= vecIn #> vector, <#= vecOut #> result)
+            {
+                var d = Dot(vector, vector);
+
+                if (d > 0.0<#= s #>)
+                {
+                    Multiply(vector, 1.0<#= s #> / Sqrt(d), result);
+                    return true;
+                }
+
+                return false;
+            }
+
+            #endregion
+
+<#
+}
+#>
+        }
+
+<#
+foreach(string t in types) 
+{
+    var props = scalarProperties[t];
+    var s = props["Suffix"];
+    var e = props["Epsilon"];
+		
+	var vecIn = $"ReadOnlyArrayView<{t}>";
+	var vecOut = $"ArrayView<{t}>";
+#>
+
+		#region <#= t #>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> Max(<#= vecIn #>  vector)
+        {
+            var result = vector[0];
+
+            for (int i = 1; i < vector.Count; i++)
+				result = Math.Max(vector[i], result);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> Min(<#= vecIn #>  vector)
+        {
+            var result = vector[0];
+
+            for (int i = 1; i < vector.Count; i++)
+				result = Math.Min(vector[i], result);
+
+            return result;
+        }
+
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public static <#= t #> Sum(<#= vecIn #> vector)
+		{
+			var sum = default(<#= t #>);
+
+			for (int i = 0; i < vector.Count; i++)
+				sum += vector[i];
+
+			return sum;
+		}
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> Sum(<#= vecIn #> vector, <#= vecIn #> weights)
+        {
+            var result = 0.0<#= s #>;
+
+            for (int i = 0; i < vector.Count; i++)
+                result += vector[i] * weights[i];
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> Mean(<#= vecIn #> vector)
+        {
+            return Sum(vector) / vector.Count;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> Mean(<#= vecIn #> vector, <#= vecIn #> weights)
+        {
+            var sum = 0.0<#= s #>;
+            var wsum = 0.0<#= s #>;
+
+            for (int i = 0; i < vector.Count; i++)
+            {
+                var w = weights[i];
+                sum += vector[i] * w;
+                wsum += w;
+            }
+
+            return sum / wsum;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> epsilon = <#= e #>)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                if (Math.Abs(v1[i] - v0[i]) >= epsilon) return false;
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #>  epsilon)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                if (Math.Abs(v1[i] - v0[i]) >= epsilon[i]) return false;
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Max(<#= vecIn #>  v0, <#= vecIn #>  v1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = Math.Max(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Min(<#= vecIn #>  v0, <#= vecIn #>  v1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = Math.Min(v0[i], v1[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Abs(<#= vecIn #> vector, <#= vecOut #> result)
+        {
+            for (int i = 0; i < vector.Count; i++)
+                result[i] = Math.Abs(vector[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= vecIn #> vector, <#= t #> value, <#= vecOut #> result)
+        {
+            for (int i = 0; i < vector.Count; i++)
+                result[i] = vector[i] + value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] + v1[i];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Subtract(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] - v1[i];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Multiply(<#= vecIn #> vector, <#= t #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < vector.Count; i++)
+                result[i] = vector[i] * t;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MultiplyPointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] * v1[i];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void DividePointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] / v1[i];
+        }
+
+
+        /// <summary>
+        /// result = v0 + v1 * t
+        /// </summary>
+        public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] + v1[i] * t;
+        }
+
+
+        /// <summary>
+        /// result = v0 + v1 * t
+        /// </summary>
+        public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] + v1[i] * t[i];
+        }
+
+
+        /// <summary>
+        /// result = v0 * t0 + v1 * t1
+        /// </summary>
+        public static void AddScaled(<#= vecIn #> v0, <#= t #> t0, <#= vecIn #> v1, <#= t #> t1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] * t0 + v1[i] * t1;
+        }
+
+
+        /// <summary>
+        /// result = v0 * t0 + v1 * t1
+        /// </summary>
+        public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> t0, <#= vecIn #> v1, <#= vecIn #> t1, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = v0[i] * t0[i] + v1[i] * t1[i];
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - x) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> x, <#= t #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] += v0[i] + (v1[i] - x) * t;
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= t #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] += v0[i] + (v1[i] - v2[i]) * t;
+        }
+
+
+        /// <summary>
+        /// result = v0 + (v1 - v2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= vecIn #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] += v0[i] + (v1[i] - v2[i]) * t[i];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= vecIn #> vector, <#= t #> value, <#= t #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < vector.Count; i++)
+                result[i] = SlurMath.Lerp(vector[i], value, t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = SlurMath.Lerp(v0[i], v1[i], t);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> t, <#= vecOut #> result)
+        {
+            for (int i = 0; i < v0.Count; i++)
+                result[i] = SlurMath.Lerp(v0[i], v1[i], t[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Normalize(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+        {
+            for (int i = 0; i < vector.Count; i++)
+                result[i] = SlurMath.Normalize(vector[i], interval.A, interval.B);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Evaluate(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+        {
+            for (int i = 0; i < vector.Count; i++)
+                result[i] = SlurMath.Lerp(interval.A, interval.B, vector[i]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Remap(<#= vecIn #> vector, Interval<#= s #> from, Interval<#= s #> to, <#= vecOut #> result)
+        {
+            for (int i = 0; i < vector.Count; i++)
+                result[i] = SlurMath.Remap(vector[i], from.A, from.B, to.A, to.B);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> Dot(<#= vecIn #>  v0, <#= vecIn #>  v1)
+        {
+            var result = 0.0<#= s #>;
+
+            for (int i = 0; i < v0.Count; i++)
+                result += v0[i] * v1[i];
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> AbsDot(<#= vecIn #> v0, <#= vecIn #>  v1)
+        {
+            var result = 0.0<#= s #>;
+
+            for (int i = 0; i < v0.Count; i++)
+                result += Math.Abs(v0[i] * v1[i]);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Project(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            Multiply(v1, Dot(v0, v1) / Dot(v1, v1), result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reject(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            Project(v0, v1, result);
+            Subtract(v0, result, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Reflect(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            Multiply(v1, Dot(v0, v1) / Dot(v1, v1) * 2.0<#= s #>, result);
+            AddScaled(result, v0, -1.0<#= s #>, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        {
+            Multiply(v0, Dot(v1, v1) / Dot(v0, v1), result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void MatchProjection(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= vecOut #> result)
+        {
+            Multiply(v0, Dot(v1, v2) / Dot(v0, v2), result);
+        }
+
+
+        /// <summary>
+        /// Returns the L1 or Manhattan length of the given vector.
+        /// </summary>
+        public static <#= t #> NormL1(<#= vecIn #> vector)
+        {
+            var result = 0.0<#= s #>;
+
+            for (int i = 0; i < vector.Count; i++)
+                result += Math.Abs(vector[i]);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Returns the L2 or Euclidean length of the given vector.
+        /// </summary>
+        public static <#= t #> NormL2(<#= vecIn #> vector)
+        {
+            return Sqrt(Dot(vector, vector));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> DistanceL1(<#= vecIn #> v0, <#= vecIn #> v1)
+        {
+            var result = 0.0<#= s #>;
+
+            for (int i = 0; i < v0.Count; i++)
+                result += Math.Abs(v1[i] - v0[i]);
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> DistanceL2(<#= vecIn #> v0, <#= vecIn #> v1)
+        {
+            return Sqrt(SquareDistanceL2(v0, v1));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static <#= t #> SquareDistanceL2(<#= vecIn #> v0, <#= vecIn #> v1)
+        {
+            var result = 0.0<#= s #>;
+
+            for (int i = 0; i < v0.Count; i++)
+            {
+                var d = v1[i] - v0[i];
+                result += d * d;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool Unitize(<#= vecIn #> vector, <#= vecOut #> result)
+        {
+            var d = Dot(vector, vector);
+
+            if (d > 0.0<#= s #>)
+            {
+                Multiply(vector, 1.0<#= s #> / Sqrt(d), result);
+                return true;
+            }
+
+            return false;
+        }
+
+		#endregion
+
+<#
+}
+#>
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static double Sqrt(double x)
+        {
+            return Math.Sqrt(x);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static float Sqrt(float x)
+        {
+            return (float)Math.Sqrt(x);
+        }
+	}
+}

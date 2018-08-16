@@ -1,0 +1,732 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#
+// type array
+var types = new string[]{"Vector2d", "Vector3d"};
+
+// table of column type properties
+var columnProperties = new Dictionary<string, Dictionary<string, string>>()
+{
+    {
+        "Vector2d", new Dictionary<string, string>()
+        {
+            {"Scalar", "double"},
+            {"Dimension", "2"}
+        }
+    },
+    {
+        "Vector3d", new Dictionary<string, string>()
+        {              
+            {"Scalar", "double"},
+            {"Dimension", "3"}
+        }
+    },
+    {
+        "Vector4d", new Dictionary<string, string>()
+        {              
+            {"Scalar", "double"},
+            {"Dimension", "4"}
+        }
+    }
+};
+
+// table of scalar type properties
+var scalarProperties = new Dictionary<string, Dictionary<string, string>>()
+{
+    {
+        "double", new Dictionary<string, string>()
+        {
+            {"Suffix", "d"},             
+            {"Epsilon", "SlurMath.ZeroToleranced"}
+        }
+    },
+    {
+        "float", new Dictionary<string, string>()
+        {              
+            {"Suffix", "f"},             
+            {"Epsilon", "SlurMath.ZeroTolerancef"}
+        }
+    }
+};
+#>
+
+/*
+ * Notes
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Text;
+using System.Drawing;
+
+using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
+
+namespace SpatialSlur
+{
+	/// <summary>
+	/// Contains common operations for n-dimensional matrices
+	/// </summary>
+	public static partial class Matrix
+	{
+        /// <summary>
+	    /// Contains parallel implementations
+	    /// </summary>
+        public static partial class Parallel
+        {
+<#
+foreach(string tcol in types) 
+{
+	var colProps= columnProperties[tcol];
+	var tval = colProps["Scalar"];
+    var d = colProps["Dimension"];
+
+    var valProps = scalarProperties[tval];
+    var s = valProps["Suffix"];
+    var e = valProps["Epsilon"];
+		
+	var matIn = $"ReadOnlyArrayView<{tcol}>";
+	var matOut = $"ArrayView<{tcol}>";
+
+	var vecIn = $"ReadOnlyArrayView<{tval}>";
+	var vecOut = $"ArrayView<{tval}>";
+#>
+
+		#region <#= tcol #>
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Abs(<#= matIn #> matrix, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = <#= tcol #>.Abs(matrix[i]);
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Max(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = <#= tcol #>.Max(m0[i], m1[i]);
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Min(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = <#= tcol #>.Min(m0[i], m1[i]);
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= matIn #> matrix, <#= tval #> scalar, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = matrix[i] + new <#= tcol #>(scalar);
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] + m1[i];
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Subtract(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] - m1[i];
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Multiply(<#= matIn #> matrix, <#= tval #> scalar, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = matrix[i] * scalar;
+            });
+        }
+
+
+		/// <summary>
+        /// Note that the given vector is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void Multiply(<#= matIn #> matrix, <#= vecIn #> vector, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = matrix[i] * vector[i];
+            });
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void MultiplyPointwise(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] * m1[i];
+            });
+        }
+
+
+		/// <summary>
+        /// Note that the given vector is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void Divide(<#= matIn #> matrix, <#= vecIn #> vector, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = matrix[i] / vector[i];
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void DividePointwise(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] / m1[i];
+            });
+        }
+
+
+		/// <summary>
+        /// result = m0 + m1 * t
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= matIn #> m1, <#= tval #> t, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] + m1[i] * t;
+            });
+        }
+
+
+		/// <summary>
+        /// result = m0 + m1 * t
+		/// Note that t is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= matIn #> m1, <#= vecIn #> t, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] + m1[i] * t[i];
+            });
+        }
+
+
+		/// <summary>
+        /// result = m0 * t0 + m1 * t1
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= tval #> t0, <#= matIn #> m1, <#= tval #> t1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] * t0 + m1[i] * t1;
+            });
+        }
+
+
+		/// <summary>
+        /// result = m0 * t0 + m1 * t1
+		/// Note that t0 and t1 are assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= vecIn #> t0, <#= matIn #> m1, <#= vecIn #> t1, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] * t0[i] + m1[i] * t1[i];
+            });
+        }
+
+
+		/// <summary>
+        /// result = m0 + (m1 - m2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= matIn #> m0, <#= matIn #> m1, <#= matIn #> m2, <#= tval #> t, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] + (m1[i] - m2[i]) * t;
+            });
+        }
+
+
+		/// <summary>
+        /// result = m0 + (m1 - m2) * t
+		/// Note that t is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void AddScaledDelta(<#= matIn #> m0, <#= matIn #> m1, <#= matIn #> m2, <#= vecIn #> t, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i] + (m1[i] - m2[i]) * t[i];
+            });
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void Lerp(<#= matIn #> m0, <#= matIn #> m1, <#= tval #> t, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i].LerpTo(m1[i], t);
+            });
+        }
+
+
+		/// <summary>
+        /// result = m0 + (m1 - m0) * t
+        /// Note that t is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void LerpColumns(<#= matIn #> m0, <#= matIn #> m1, <#= vecIn #> t, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, m0.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = m0[i].LerpTo(m1[i], t[i]);
+            });
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void UnitizeColumns(<#= matIn #> matrix, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = matrix[i].Unit;
+            });
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void NormalizeColumns(<#= matIn #> matrix, Interval<#= d #><#= s #> interval, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = interval.Normalize(matrix[i]);
+            });
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void EvaluateColumns(<#= matIn #> matrix, Interval<#= d #><#= s #> interval, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = interval.Evaluate(matrix[i]);
+            });
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void RemapColumns(<#= matIn #> matrix, Interval<#= d #><#= s #> from, Interval<#= d #><#= s #> to, <#= matOut #> result)
+        {
+            ForEach(new UniformPartitioner(0, matrix.Count), p =>
+            {
+                for (int i = p.From; i < p.To; i++)
+                    result[i] = Interval<#= d #><#= s #>.Remap(matrix[i], from, to);
+            });
+        }
+
+		#endregion
+
+<#
+}
+#>
+        }
+
+<#
+foreach(string tcol in types) 
+{
+	var colProps= columnProperties[tcol];
+	var tval = colProps["Scalar"];
+    var d = colProps["Dimension"];
+
+    var valProps = scalarProperties[tval];
+    var s = valProps["Suffix"];
+    var e = valProps["Epsilon"];
+		
+	var matIn = $"ReadOnlyArrayView<{tcol}>";
+	var matOut = $"ArrayView<{tcol}>";
+
+	var vecIn = $"ReadOnlyArrayView<{tval}>";
+	var vecOut = $"ArrayView<{tval}>";
+#>
+
+		#region <#= tcol #>
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static <#= tcol #> ColumnMax(<#= matIn #> matrix)
+        {
+			var result = matrix[0];
+
+            for (int i = 1; i < matrix.Count; i++)
+                result = <#= tcol #>.Max(matrix[i], result);
+
+            return result;
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static <#= tcol #> ColumnMin(<#= matIn #> matrix)
+        {
+			var result = matrix[0];
+
+            for (int i = 1; i < matrix.Count; i++)
+                result = <#= tcol #>.Min(matrix[i], result);
+
+            return result;
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static <#= tcol #> ColumnSum(<#= matIn #> matrix)
+        {
+			var sum = <#= tcol #>.Zero;
+
+            for (int i = 0; i < matrix.Count; i++)
+                sum += matrix[i];
+
+            return sum;
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static <#= tcol #> ColumnMean(<#= matIn #> matrix)
+        {
+			return ColumnSum(matrix) / matrix.Count;
+		}
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool ApproxEquals(<#= matIn #> m0, <#= matIn #> m1, <#= tval #> epsilon = <#= e #>)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                if (!m0[i].ApproxEquals(m1[i], epsilon)) return false;
+
+            return true;
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Abs(<#= matIn #> matrix, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = <#= tcol #>.Abs(matrix[i]);
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Max(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = <#= tcol #>.Max(m0[i], m1[i]);
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Min(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = <#= tcol #>.Min(m0[i], m1[i]);
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= matIn #> matrix, <#= tval #> scalar, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = matrix[i] + new <#= tcol #>(scalar);
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Add(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] + m1[i];
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Subtract(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] - m1[i];
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void Multiply(<#= matIn #> matrix, <#= tval #> scalar, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = matrix[i] * scalar;
+        }
+
+
+		/// <summary>
+        /// Note that the given vector is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void Multiply(<#= matIn #> matrix, <#= vecIn #> vector, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = matrix[i] * vector[i];
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void MultiplyPointwise(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] * m1[i];
+        }
+
+
+		/// <summary>
+        /// Note that the given vector is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void Divide(<#= matIn #> matrix, <#= vecIn #> vector, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = matrix[i] / vector[i];
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void DividePointwise(<#= matIn #> m0, <#= matIn #> m1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] / m1[i];
+        }
+
+
+		/// <summary>
+        /// result = m0 + m1 * t
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= matIn #> m1, <#= tval #> t, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] + m1[i] * t;
+        }
+
+
+		/// <summary>
+        /// result = m0 + m1 * t
+		/// Note that t is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= matIn #> m1, <#= vecIn #> t, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] + m1[i] * t[i];
+        }
+
+
+		/// <summary>
+        /// result = m0 * t0 + m1 * t1
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= tval #> t0, <#= matIn #> m1, <#= tval #> t1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] * t0 + m1[i] * t1;
+        }
+
+
+		/// <summary>
+        /// result = m0 * t0 + m1 * t1
+		/// Note that t0 and t1 are assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void AddScaled(<#= matIn #> m0, <#= vecIn #> t0, <#= matIn #> m1, <#= vecIn #> t1, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] * t0[i] + m1[i] * t1[i];
+        }
+
+
+		/// <summary>
+        /// result = m0 + (m1 - m2) * t
+        /// </summary>
+        public static void AddScaledDelta(<#= matIn #> m0, <#= matIn #> m1, <#= matIn #> m2, <#= tval #> t, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] + (m1[i] - m2[i]) * t;
+        }
+
+
+		/// <summary>
+        /// result = m0 + (m1 - m2) * t
+		/// Note that t is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void AddScaledDelta(<#= matIn #> m0, <#= matIn #> m1, <#= matIn #> m2, <#= vecIn #> t, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i] + (m1[i] - m2[i]) * t[i];
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void Lerp(<#= matIn #> m0, <#= matIn #> m1, <#= tval #> t, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i].LerpTo(m1[i], t);
+        }
+
+
+		/// <summary>
+        /// result = m0 + (m1 - m0) * t
+        /// Note that t is assumed to represent the diagonal elements of a square matrix.
+        /// </summary>
+        public static void LerpColumns(<#= matIn #> m0, <#= matIn #> m1, <#= vecIn #> t, <#= matOut #> result)
+        {
+            for (int i = 0; i < m0.Count; i++)
+                result[i] = m0[i].LerpTo(m1[i], t[i]);
+        }
+
+
+		/// <summary>
+        /// 
+        /// </summary>
+        public static void UnitizeColumns(<#= matIn #> matrix, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = matrix[i].Unit;
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void NormalizeColumns(<#= matIn #> matrix, Interval<#= d #><#= s #> interval, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = interval.Normalize(matrix[i]);
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void EvaluateColumns(<#= matIn #> matrix, Interval<#= d #><#= s #> interval, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = interval.Evaluate(matrix[i]);
+        }
+
+
+		/// <summary>
+        ///
+        /// </summary>
+        public static void RemapColumns(<#= matIn #> matrix, Interval<#= d #><#= s #> from, Interval<#= d #><#= s #> to, <#= matOut #> result)
+        {
+            for (int i = 0; i < matrix.Count; i++)
+                result[i] = Interval<#= d #><#= s #>.Remap(matrix[i], from, to);
+        }
+
+		#endregion
+
+<#
+}
+#>
+	}
+}
