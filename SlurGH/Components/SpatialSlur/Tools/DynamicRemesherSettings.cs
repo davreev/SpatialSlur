@@ -1,15 +1,14 @@
-﻿using System;
-
-using Grasshopper.Kernel;
-using Rhino.Geometry;
-
-using SpatialSlur.SlurTools;
-
+﻿
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Components
+using System;
+using Rhino.Geometry;
+using Grasshopper.Kernel;
+using SpatialSlur.Tools;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 

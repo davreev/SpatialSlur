@@ -1,23 +1,23 @@
-﻿using System.Linq;
-using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
-using SpatialSlur.SlurRhino;
-
+﻿
 /*
  * Notes 
  */
 
-namespace SpatialSlur.SlurGH.Types
+using System.Linq;
+using Rhino.Geometry;
+using Grasshopper.Kernel.Types;
+using SpatialSlur;
+using SpatialSlur.Meshes;
+using SpatialSlur.Rhino;
+
+namespace SpatialSlur.Grasshopper.Types
 {
     /// <summary>
     /// 
     /// </summary>
     public class GH_HeGraph3d : GH_GeometricGoo<HeGraph3d>
     {
-        #region Static
+        #region Static members
 
         /// <summary>
         /// 
@@ -162,7 +162,7 @@ namespace SpatialSlur.SlurGH.Types
 
             if (source is Mesh m)
             {
-                Value = m.ToHeGraph();
+                base.Value = m.ToHeGraph();
                 return true;
             }
 

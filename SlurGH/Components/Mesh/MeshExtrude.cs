@@ -4,12 +4,14 @@
  */
 
 using System;
+using Rhino.Geometry;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-using SpatialSlur.SlurRhino;
+using SpatialSlur.Rhino;
 
-namespace SpatialSlur.SlurGH.Components
+using Vec3d = Rhino.Geometry.Vector3d;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -31,7 +33,7 @@ namespace SpatialSlur.SlurGH.Components
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("polyline", "poly", "", GH_ParamAccess.item);
-            pManager.AddVectorParameter("direction", "dir", "", GH_ParamAccess.item, Vector3d.Zero);
+            pManager.AddVectorParameter("direction", "dir", "", GH_ParamAccess.item, Vec3d.Zero);
         }
 
 
@@ -46,17 +48,17 @@ namespace SpatialSlur.SlurGH.Components
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Curve crv = null;
-            Vector3d dir = new Vector3d();
+            var dir = new Vec3d();
 
             if (!DA.GetData(0, ref crv)) return;
             if (!DA.GetData(1, ref dir)) return;
 
             Polyline poly;
+
             if (!crv.TryGetPolyline(out poly))
                 throw new ArgumentException();
 
             var mesh = RhinoFactory.Mesh.CreateExtrusion(poly, dir);
-
             DA.SetData(0, new GH_Mesh(mesh));
         }
 

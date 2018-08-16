@@ -1,16 +1,17 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+ 
+ using System;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
+using SpatialSlur;
+using SpatialSlur.Fields;
 
-/*
- * Notes
- */
-
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -57,13 +58,13 @@ namespace SpatialSlur.SlurGH.Components
 
             var source = sourceGoo.Value;
             var sampler = sampleGoo.Value;
-      
-            if (sampler is IDiscreteField3d<double>)
+            
+            if (sampler is ISampledField3d<double>)
             {
                 if (source is IField3d<double>)
                 {
                     var f0 = (IField3d<double>)source;
-                    var f1 = ((IDiscreteField3d<double>)sampler).Duplicate(false);
+                    var f1 = ((ISampledField3d<double>)sampler).Duplicate(false);
 
                     f1.Sample(f0, _parallel);
                     DA.SetData(0, new GH_ObjectWrapper(f1));
@@ -71,12 +72,12 @@ namespace SpatialSlur.SlurGH.Components
                 }
             }
 
-            if (sampler is IDiscreteField3d<Vec3d>)
+            if (sampler is ISampledField3d<Vector3d>)
             {
-                if (source is IField3d<Vec3d>)
+                if (source is IField3d<Vector3d>)
                 {
-                    var f0 = (IField3d<Vec3d>)source;
-                    var f1 = ((IDiscreteField3d<Vec3d>)sampler).Duplicate(false);
+                    var f0 = (IField3d<Vector3d>)source;
+                    var f1 = ((ISampledField3d<Vector3d>)sampler).Duplicate(false);
 
                     f1.Sample(f0, _parallel);
                     DA.SetData(0, new GH_ObjectWrapper(f1));

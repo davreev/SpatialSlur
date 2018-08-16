@@ -10,10 +10,12 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurData;
+using SpatialSlur;
+using SpatialSlur.Collections;
 
-namespace SpatialSlur.SlurGH.Components
+using Vec3d = Rhino.Geometry.Vector3d;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -56,9 +58,9 @@ namespace SpatialSlur.SlurGH.Components
             if (!DA.GetData(1, ref tol)) return;
 
             var verts = mesh.Vertices;
-            var points = verts.Select(p => (Vec3d)p).ToArray();
+            var points = verts.Select(p => (Vector3d)p).ToArray();
 
-            points.Consolidate(tol, 3);
+            Proximity.Consolidate(points, tol, 3);
             //Message = (points.Consolidate(tol)) ? "Converged" : "Not converged";
    
             for (int i = 0; i < verts.Count; i++)

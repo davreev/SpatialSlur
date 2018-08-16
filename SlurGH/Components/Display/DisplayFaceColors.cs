@@ -9,11 +9,12 @@ using System.Drawing;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using SpatialSlur.SlurMesh;
-using SpatialSlur.SlurRhino;
-using SpatialSlur.SlurGH.Params;
 
-namespace SpatialSlur.SlurGH.Components
+using SpatialSlur.Meshes;
+using SpatialSlur.Rhino;
+using SpatialSlur.Grasshopper.Params;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 

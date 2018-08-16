@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 

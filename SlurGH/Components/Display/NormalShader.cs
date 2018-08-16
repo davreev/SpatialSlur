@@ -11,10 +11,12 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurRhino;
+using SpatialSlur;
+using SpatialSlur.Rhino;
 
-namespace SpatialSlur.SlurGH.Components
+using Vec3d = Rhino.Geometry.Vector3d;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -37,7 +39,7 @@ namespace SpatialSlur.SlurGH.Components
         {
             pManager.AddMeshParameter("mesh", "mesh", "Mesh to paint", GH_ParamAccess.item);
             pManager.AddColourParameter("colors", "colors", "", GH_ParamAccess.list);
-            pManager.AddVectorParameter("direction", "dir", "", GH_ParamAccess.item, Vector3d.ZAxis);
+            pManager.AddVectorParameter("direction", "dir", "", GH_ParamAccess.item, Vec3d.ZAxis);
         }
 
 
@@ -52,8 +54,8 @@ namespace SpatialSlur.SlurGH.Components
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Mesh mesh = null;
-            List<Color> colors = new List<Color>();
-            Vector3d dir = new Vector3d();
+            var colors = new List<Color>();
+            var dir = new Vec3d();
 
             if (!DA.GetData(0, ref mesh)) return;
             if (!DA.GetDataList(1, colors)) return;
@@ -65,7 +67,6 @@ namespace SpatialSlur.SlurGH.Components
                 norms.ComputeNormals();
             
             mesh.ColorVertices(i => colors.Lerp(dir * norms[i] * 0.5 + 0.5), true);
-
             DA.SetData(0, new GH_Mesh(mesh));
         }
 

@@ -18,7 +18,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Rhino Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\SpatialSlur\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -35,6 +35,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Rhino\SlurGH.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GH_IO">
@@ -46,7 +47,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="RhinoCommon">
-      <HintPath>..\..\..\..\..\..\Program Files\Rhinoceros 5 (64-bit)\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -66,35 +67,35 @@
     <Compile Include="Components\Mesh\MeshFlip.cs" />
     <Compile Include="Components\Mesh\MeshSeparate.cs" />
     <Compile Include="Components\Display\NormalShader.cs" />
-    <Compile Include="Components\SlurField\CreateNoiseField.cs" />
-    <Compile Include="Components\SlurField\CreateGridField.cs" />
+    <Compile Include="Components\SpatialSlur\Fields\CreateNoiseField.cs" />
+    <Compile Include="Components\SpatialSlur\Fields\CreateGridField.cs" />
     <Compile Include="Components\Enums\FieldType.cs" />
-    <Compile Include="Components\SlurField\EvaluateField.cs" />
-    <Compile Include="Components\SlurField\GeodesicDistance.cs" />
-    <Compile Include="Components\SlurField\IntegrateField.cs" />
+    <Compile Include="Components\SpatialSlur\Fields\EvaluateField.cs" />
+    <Compile Include="Components\SpatialSlur\Fields\GeodesicDistance.cs" />
+    <Compile Include="Components\SpatialSlur\Fields\IntegrateField.cs" />
     <Compile Include="Components\Enums\NoiseType.cs" />
-    <Compile Include="Components\SlurField\ResampleField.cs" />
-    <Compile Include="Components\SlurMesh\CreateDual.cs" />
-    <Compile Include="Components\SlurMesh\FacePlanarity.cs" />
-    <Compile Include="Components\SlurMesh\HeGraphFromLines.cs" />
-    <Compile Include="Components\SlurMesh\HeMeshFromPolylines.cs" />
-    <Compile Include="Components\SlurMesh\EdgeLines.cs" />
-    <Compile Include="Components\SlurMesh\HoleBoundaries.cs" />
-    <Compile Include="Components\SlurMesh\FacePolylines.cs" />
-    <Compile Include="Components\SlurMesh\HeMeshUnroll.cs" />
-    <Compile Include="Components\SlurMesh\VertexPositions.cs" />
-    <Compile Include="Components\SlurTools\CreateFeature.cs" />
+    <Compile Include="Components\SpatialSlur\Fields\ResampleField.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\CreateDual.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\FacePlanarity.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\HeGraphFromLines.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\HeMeshFromPolylines.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\EdgeLines.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\HoleBoundaries.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\FacePolylines.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\HeMeshUnroll.cs" />
+    <Compile Include="Components\SpatialSlur\Meshes\VertexPositions.cs" />
+    <Compile Include="Components\SpatialSlur\Tools\CreateFeature.cs" />
     <Compile Include="Types\GH_HeGraph3d.cs" />
     <Compile Include="Types\GH_HeMesh3d.cs" />
-    <Compile Include="Params\HeGraph3dParam.cs" />
-    <Compile Include="Params\HeMesh3dParam.cs" />
+    <Compile Include="Params\SpatialSlur\HeGraph3dParam.cs" />
+    <Compile Include="Params\SpatialSlur\HeMesh3dParam.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Components\SlurTools\DynamicRemesherSolver.cs" />
-    <Compile Include="Components\SlurTools\DynamicRemesherSettings.cs" />
+    <Compile Include="Components\SpatialSlur\Tools\DynamicRemesherSolver.cs" />
+    <Compile Include="Components\SpatialSlur\Tools\DynamicRemesherSettings.cs" />
     <Compile Include="SlurGHInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.Drawing;
 using Grasshopper.Kernel;
 
-using SpatialSlur.SlurGH.Types;
+using SpatialSlur.Grasshopper.Types;
 
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Params
+namespace SpatialSlur.Grasshopper.Params
 {
     /// <summary>
     /// 
     /// </summary>
-    public class HeGraph3dParam : GH_PersistentParam<GH_HeGraph3d>
+    public class HeMesh3dParam : GH_PersistentParam<GH_HeMesh3d>
     {
         /// <summary>
         /// 
         /// </summary>
-        public HeGraph3dParam()
-            :base("HeGraph", "HeGraph", "", "SpatialSlur", "Parameters")
+        public HeMesh3dParam()
+            :base("HeMesh", "HeMesh", "", "SpatialSlur", "Parameters")
         {
         }
 
@@ -42,22 +42,22 @@ namespace SpatialSlur.SlurGH.Params
         /// <inheritdoc />
         public override Guid ComponentGuid
         {
-            get { return new Guid("{E173CB1B-FBE2-4F71-89A2-D520C6AF6A7F}"); }
+            get { return new Guid("{AEEA983D-0B68-44F0-B908-C5B3FCB09C13}"); }
         }
 
 
         /// <inheritdoc />
-        protected override GH_GetterResult Prompt_Singular(ref GH_HeGraph3d value)
+        protected override GH_GetterResult Prompt_Singular(ref GH_HeMesh3d value)
         {
-            value = new GH_HeGraph3d();
+            value = new GH_HeMesh3d();
             return GH_GetterResult.success;
         }
 
 
         /// <inheritdoc />
-        protected override GH_GetterResult Prompt_Plural(ref List<GH_HeGraph3d> values)
+        protected override GH_GetterResult Prompt_Plural(ref List<GH_HeMesh3d> values)
         {
-            values = new List<GH_HeGraph3d>();
+            values = new List<GH_HeMesh3d>();
             return GH_GetterResult.success;
         }
     }

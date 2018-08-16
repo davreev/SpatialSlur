@@ -1,29 +1,31 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
+using System.Linq;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-using SpatialSlur.SlurTools;
-using SpatialSlur.SlurTools;
+using SpatialSlur.Grasshopper.Types;
+using SpatialSlur.Grasshopper.Params;
 
-/*
- * Notes
- */
-
-namespace SpatialSlur.SlurGH.Components
+namespace SlurGH.Components
 {
     /// <summary>
     /// 
     /// </summary>
-    public class CreateFeature : GH_Component
+    public class FacePolylines : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public CreateFeature()
-          : base("Creates Features", "Feature",
-              "Creates a geometric feature used for dynamic remeshing",
+        public FacePolylines()
+          : base("Face Polylines", "FacePolys",
+              "Returns the boundary of each face in a given halfedge mesh as a closed polyline",
               "SpatialSlur", "Mesh")
         {
         }
@@ -32,41 +34,34 @@ namespace SpatialSlur.SlurGH.Components
         /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("geometry", "geom", "", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "heMesh", "heMesh", "", GH_ParamAccess.item);
         }
 
 
         /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.item);
+            pManager.AddCurveParameter("result", "result", "", GH_ParamAccess.list);
         }
 
 
         /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_ObjectWrapper goo = null;
-            if (!DA.GetData(0, ref goo)) return;
-            
-            IFeature feat = null;
+            GH_HeMesh3d mesh = null;
+            if (!DA.GetData(0, ref mesh)) return;
 
-            switch (goo.Value)
+            var result = mesh.Value.Faces.Select(f =>
             {
-                case Mesh m:
-                    feat = new MeshFeature(m);
-                    break;
-                case Curve c:
-                    feat = new CurveFeature(c);
-                    break;
-                case Point3d p:
-                    feat = new PointFeature(p);
-                    break;
-                default:
-                    throw new ArgumentException();
-            }
-            
-            DA.SetData(0, new GH_ObjectWrapper(feat));
+                if (f.IsUnused) return new GH_Curve();
+
+                var poly = new Polyline(f.Halfedges.Select(he => (Point3d)he.Start.Position));
+                poly.Add(poly[0]);
+
+                return new GH_Curve(poly.ToNurbsCurve());
+            });
+        
+            DA.SetDataList(0, result);
         }
 
 
@@ -87,7 +82,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{0FEF2BE4-6432-4352-ADE2-F160108EDA12}"); }
+            get { return new Guid("{BD140500-B9EA-43EE-94B9-358BEACF803C}"); }
         }
     }
 }

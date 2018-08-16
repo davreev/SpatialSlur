@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,15 +12,13 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
+using SpatialSlur;
+using SpatialSlur.Fields;
 using System.Windows.Forms;
 
-/*
- * Notes
- */
+using Vec3d = Rhino.Geometry.Vector3d;
 
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -87,12 +90,12 @@ namespace SpatialSlur.SlurGH.Components
 
             switch(fieldGoo.Value)
             {
-                case IField3d<Vec3d> f:
+                case IField3d<Vector3d> f:
                     {
                         paths = SolveInstanceImpl(f, points, stepSize, stepCount);
                         break;
                     }
-                case IField2d<Vec2d> f:
+                case IField2d<Vector2d> f:
                     {
                         paths = SolveInstanceImpl(f, points, stepSize, stepCount);
                         break;
@@ -110,18 +113,13 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="points"></param>
-        /// <param name="stepSize"></param>
-        /// <param name="stepCount"></param>
-        /// <param name="mode"></param>
-        private PolylineCurve[] SolveInstanceImpl(IField3d<Vec3d> field, List<Point3d> points, double stepSize, int stepCount)
+        private PolylineCurve[] SolveInstanceImpl(IField3d<Vector3d> field, List<Point3d> points, double stepSize, int stepCount)
         {
             var result = new PolylineCurve[points.Count];
 
             Parallel.For(0, points.Count, i =>
             {
-                var pts = field.IntegrateFrom(points[i], stepSize, _mode).Take(stepCount).Select(p => (Point3d)p);
+                var pts = Streamline.IntegrateFrom(field, points[i], stepSize, _mode).Take(stepCount).Select(p => (Point3d)p);
                 result[i] = new PolylineCurve(pts);
             });
 
@@ -132,21 +130,16 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="points"></param>
-        /// <param name="stepSize"></param>
-        /// <param name="stepCount"></param>
-        /// <param name="mode"></param>
-        private PolylineCurve[] SolveInstanceImpl(IField2d<Vec2d> field, List<Point3d> points, double stepSize, int stepCount)
+        private PolylineCurve[] SolveInstanceImpl(IField2d<Vector2d> field, List<Point3d> points, double stepSize, int stepCount)
         {
             var result = new PolylineCurve[points.Count];
 
             Parallel.For(0, points.Count, i =>
             {
-                Vec3d p0 = points[i];
-                var z = p0.Z;
+                Vector3d p0 = points[i];
+                double z = p0.Z;
 
-                var pts = field.IntegrateFrom(p0, stepSize, _mode).Take(stepCount).Select(p => new Point3d(p.X, p.Y, z));
+                var pts = Streamline.IntegrateFrom(field, p0.XY, stepSize, _mode).Take(stepCount).Select(p => new Point3d(p.X, p.Y, z));
                 result[i] = new PolylineCurve(pts);
             });
 
@@ -169,8 +162,6 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void EulerClicked(object sender, EventArgs e)
         {
             IntegrationMode = IntegrationMode.Euler;
@@ -181,8 +172,6 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void RK2Clicked(object sender, EventArgs e)
         {
             IntegrationMode = IntegrationMode.RK2;
@@ -193,8 +182,6 @@ namespace SpatialSlur.SlurGH.Components
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void RK4Clicked(object sender, EventArgs e)
         {
             IntegrationMode = IntegrationMode.RK4;

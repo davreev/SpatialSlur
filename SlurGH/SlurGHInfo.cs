@@ -2,13 +2,16 @@
 using System.Drawing;
 using Grasshopper.Kernel;
 
-namespace SpatialSlur.SlurGH
+namespace SpatialSlur.Grasshopper
 {
     /// <summary>
     /// 
     /// </summary>
     public class SlurGHInfo : GH_AssemblyInfo
     {
+        private const string _version = "0.3.0";
+
+
         /// <inheritdoc />
         public override string Name
         {
@@ -47,7 +50,14 @@ namespace SpatialSlur.SlurGH
         /// <inheritdoc />
         public override string AuthorContact
         {
-            get { return "http://spatialslur.com/"; }
+            get { return "http://spatialslur.com/contact/"; }
+        }
+        
+
+        /// <inheritdoc />
+        public override string AssemblyVersion
+        {
+            get => _version;
         }
     }
 }

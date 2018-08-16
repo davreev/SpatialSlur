@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -8,15 +13,11 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Grasshopper.Kernel.Parameters;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
-using SpatialSlur.SlurRhino;
+using SpatialSlur;
+using SpatialSlur.Fields;
+using SpatialSlur.Rhino;
 
-/*
- * Notes
- */
-
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -147,7 +148,7 @@ namespace SpatialSlur.SlurGH.Components
             List<GH_Number> vals = new List<GH_Number>();
 
             if (DA.GetDataList(4, vals))
-                f.Set(LongestList(vals.Select(x => x.Value), f.Count));
+                f.Set(LongestList(vals.Select(x => x.Value), f.CountXY));
 
             DA.SetData(0, new GH_ObjectWrapper(f));
         }
@@ -165,7 +166,7 @@ namespace SpatialSlur.SlurGH.Components
             List<GH_Number> vals = new List<GH_Number>();
 
             if (DA.GetDataList(4, vals))
-                f.Set(LongestList(vals.Select(x => x.Value), f.Count));
+                f.Set(LongestList(vals.Select(x => x.Value), f.CountXYZ));
 
             DA.SetData(0, new GH_ObjectWrapper(f));
         }
@@ -176,20 +177,21 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         private void InitVector(IGH_DataAccess DA, int nx, int ny, Interval2d bounds)
         {
-            var f = GridField2d.Vec2d.Create(nx, ny, bounds);
+            var f = GridField2d.Vector2d.Create(nx, ny, bounds);
             f.WrapMode = _wrapMode;
             f.SampleMode = _sampleMode;
 
             List<GH_Vector> vals = new List<GH_Vector>();
 
             if (DA.GetDataList(4,vals))
-                f.Set(LongestList(vals.Select(x => ToVec2d(x.Value)), f.Count));
+                f.Set(LongestList(vals.Select(As2d), f.CountXY));
 
             DA.SetData(0, new GH_ObjectWrapper(f));
-
-            Vec2d ToVec2d(Vector3d v)
+            
+            Vector2d As2d(GH_Vector vector)
             {
-                return new Vec2d(v.X, v.Y);
+                var v = vector.Value;
+                return new Vector2d(v.X, v.Y);
             }
         }
 
@@ -199,14 +201,14 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         private void InitVector(IGH_DataAccess DA, int nx, int ny, int nz, Interval3d bounds)
         {
-            var f = GridField3d.Vec3d.Create(nx, ny, nz, bounds);
+            var f = GridField3d.Vector3d.Create(nx, ny, nz, bounds);
             f.WrapMode = _wrapMode;
             f.SampleMode = _sampleMode;
 
             List<GH_Vector> vals = new List<GH_Vector>();
 
             if (DA.GetDataList(4, vals))
-                f.Set(LongestList(vals.Select(x => (Vec3d)x.Value), f.Count));
+                f.Set(LongestList(vals.Select(x => (Vector3d)x.Value), f.CountXYZ));
 
             DA.SetData(0, new GH_ObjectWrapper(f));
         }

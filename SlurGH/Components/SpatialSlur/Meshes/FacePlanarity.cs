@@ -1,15 +1,16 @@
-﻿using System;
-using System.Linq;
-
-using Grasshopper.Kernel;
-using SpatialSlur.SlurMesh;
-
-using SpatialSlur.SlurGH.Types;
-using SpatialSlur.SlurGH.Params;
-
+﻿
 /*
  * Notes
  */
+
+using System;
+using System.Linq;
+
+using Grasshopper.Kernel;
+
+using SpatialSlur.Meshes;
+using SpatialSlur.Grasshopper.Types;
+using SpatialSlur.Grasshopper.Params;
 
 namespace SlurGH.Components
 {

@@ -11,13 +11,11 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
-using SpatialSlur.SlurRhino;
+using SpatialSlur;
+using SpatialSlur.Fields;
+using SpatialSlur.Grasshopper.Types;
 
-using SpatialSlur.SlurGH.Types;
-
-namespace SpatialSlur.SlurGH.Components.Field
+namespace SpatialSlur.Grasshopper.Components.Field
 {
     /// <summary>
     /// 
@@ -67,13 +65,13 @@ namespace SpatialSlur.SlurGH.Components.Field
                         DA.SetDataList(0, vals.Select(x => new GH_Number(x)));
                         break;
                     }
-                case IField3d<Vec2d> f:
+                case IField3d<Vector2d> f:
                     {
                         var vals = points.Convert(p => f.ValueAt(p.Value), true);
-                        DA.SetDataList(0, vals.Select(x => new GH_Vector((Vec3d)x)));
+                        DA.SetDataList(0, vals.Select(x => new GH_Vector(x.As3d)));
                         break;
                     }
-                case IField3d<Vec3d> f:
+                case IField3d<Vector3d> f:
                     {
                         var vals = points.Convert(p => f.ValueAt(p.Value), true);
                         DA.SetDataList(0, vals.Select(x => new GH_Vector(x)));

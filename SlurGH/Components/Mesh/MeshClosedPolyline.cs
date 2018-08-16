@@ -8,7 +8,9 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-namespace SpatialSlur.SlurGH.Components
+using Vec3d = Rhino.Geometry.Vector3d;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 

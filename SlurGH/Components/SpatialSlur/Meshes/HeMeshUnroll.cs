@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Grasshopper.Kernel;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
-
-using SpatialSlur.SlurGH.Types;
-using SpatialSlur.SlurGH.Params;
-
+﻿
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Components
+using System;
+using System.Collections.Generic;
+using Grasshopper.Kernel;
+using SpatialSlur;
+using SpatialSlur.Meshes;
+using SpatialSlur.Grasshopper.Types;
+using SpatialSlur.Grasshopper.Params;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -68,7 +66,7 @@ namespace SpatialSlur.SlurGH.Components
             HeMeshUnroller.DetachFaceCycles(mesh, f);
 
             // perform unroll
-            var unrolled = new Vec3d[mesh.Vertices.Count];
+            var unrolled = new Vector3d[mesh.Vertices.Count];
             var last = factors.Count - 1;
             HeMeshUnroller.Unroll(mesh, f, (v, p) => unrolled[v] = p, he => factors[Math.Min(he >> 1, last)]);
 

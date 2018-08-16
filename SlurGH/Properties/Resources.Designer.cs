@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SpatialSlur.SlurGH.Properties {
+namespace SpatialSlur.Grasshopper.Properties {
     using System;
     
     

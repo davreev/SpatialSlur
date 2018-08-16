@@ -1,23 +1,24 @@
-﻿using System.Linq;
-using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurMesh;
-using SpatialSlur.SlurRhino;
-
+﻿
 /*
  * Notes
  */
+ 
+ using System.Linq;
+using Grasshopper.Kernel.Types;
+using Rhino.Geometry;
 
-namespace SpatialSlur.SlurGH.Types
+using SpatialSlur;
+using SpatialSlur.Meshes;
+using SpatialSlur.Rhino;
+
+namespace SpatialSlur.Grasshopper.Types
 {
     /// <summary>
     /// 
     /// </summary>
     public class GH_HeMesh3d : GH_GeometricGoo<HeMesh3d>
     {
-        #region Static
+        #region Static members
 
         /// <summary>
         /// 
@@ -136,7 +137,7 @@ namespace SpatialSlur.SlurGH.Types
 
             if (typeof(T).IsAssignableFrom(typeof(Mesh)))
             {
-                object obj = new GH_Mesh(Value.ToMesh());
+                object obj = new GH_Mesh(base.Value.ToMesh());
                 target = (T)obj;
                 return true;
             }
@@ -170,7 +171,7 @@ namespace SpatialSlur.SlurGH.Types
 
             if (source is Mesh m)
             {
-                Value = m.ToHeMesh();
+                base.Value = m.ToHeMesh();
                 return true;
             }
 

@@ -1,18 +1,17 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using SpatialSlur.Fields;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
-
-/*
- * Notes
- */
-
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -79,12 +78,12 @@ namespace SpatialSlur.SlurGH.Components
             {
                 case DistanceMetric.Manhattan:
                     {
-                        ProcessingUtil.GeodesicDistanceL1(result, cost, sources.Select(x => x.Value));
+                        Geodesic.GetDistanceL1(cost, sources.Select(x => x.Value), result);
                         break;
                     }
                 case DistanceMetric.Euclidean:
                     {
-                        ProcessingUtil.GeodesicDistanceL2(result, cost, sources.Select(x => x.Value));
+                        Geodesic.GetDistanceL2(cost, sources.Select(x => x.Value), result);
                         break;
                     }
                 default:

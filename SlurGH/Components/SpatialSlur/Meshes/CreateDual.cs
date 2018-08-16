@@ -2,14 +2,14 @@
 
 using Grasshopper.Kernel;
 
-using SpatialSlur.SlurGH.Types;
-using SpatialSlur.SlurGH.Params;
+using SpatialSlur.Grasshopper.Types;
+using SpatialSlur.Grasshopper.Params;
 
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 

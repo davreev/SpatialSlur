@@ -1,4 +1,9 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -6,17 +11,11 @@ using System.Windows.Forms;
 using Rhino.Geometry;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Grasshopper.Kernel.Parameters;
+using SpatialSlur.Fields;
 
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
-using SpatialSlur.SlurRhino;
+using Vec3d = Rhino.Geometry.Vector3d;
 
-/*
- * Notes
- */
-
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
@@ -55,8 +54,8 @@ namespace SpatialSlur.SlurGH.Components
         /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddVectorParameter("scale", "scale", "", GH_ParamAccess.item, new Vector3d(1, 1, 1));
-            pManager.AddVectorParameter("offset", "offset", "", GH_ParamAccess.item, new Vector3d(1, 1, 1));
+            pManager.AddVectorParameter("scale", "scale", "", GH_ParamAccess.item, new Vec3d(1.0, 1.0, 1.0));
+            pManager.AddVectorParameter("offset", "offset", "", GH_ParamAccess.item, new Vec3d(1.0, 1.0, 1.0));
 
             pManager[0].Optional = true;
             pManager[1].Optional = true;
@@ -83,13 +82,13 @@ namespace SpatialSlur.SlurGH.Components
             {
                 case NoiseType.Perlin:
                     {
-                        var f = new PerlinNoiseField(scale.Value, offset.Value);
+                        var f = new PerlinNoise3d(scale.Value, offset.Value);
                         DA.SetData(0, new GH_ObjectWrapper(f));
                         break;
                     }
                 case NoiseType.Simplex:
                     {
-                        var f = new SimplexNoiseField(scale.Value, offset.Value);
+                        var f = new SimplexNoise3d(scale.Value, offset.Value);
                         DA.SetData(0, new GH_ObjectWrapper(f));
                         break;
                     }

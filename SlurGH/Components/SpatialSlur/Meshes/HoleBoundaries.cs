@@ -1,16 +1,17 @@
-﻿using System;
+﻿
+/*
+ * Notes
+ */
+
+using System;
 using System.Linq;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-using SpatialSlur.SlurGH.Types;
-using SpatialSlur.SlurGH.Params;
-
-/*
- * Notes
- */
+using SpatialSlur.Grasshopper.Types;
+using SpatialSlur.Grasshopper.Params;
 
 namespace SlurGH.Components
 {

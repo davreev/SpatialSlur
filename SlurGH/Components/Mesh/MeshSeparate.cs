@@ -4,12 +4,12 @@
  */
 
 using System;
+using Rhino.Geometry;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-using SpatialSlur.SlurRhino;
+using SpatialSlur.Rhino;
 
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 

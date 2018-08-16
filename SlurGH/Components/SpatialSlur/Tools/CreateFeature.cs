@@ -1,27 +1,27 @@
-﻿using System;
-using System.Linq;
-
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using SpatialSlur.SlurMesh;
-
+﻿
 /*
  * Notes
  */
+ 
+ using System;
+using Rhino.Geometry;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
+using SpatialSlur.Tools;
 
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
     /// </summary>
-    public class VertexPositions : GH_Component
+    public class CreateFeature : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public VertexPositions()
-          : base("Vertex Positions", "VertPos",
-              "Returns the position of each vertex in a halfedge graph.",
+        public CreateFeature()
+          : base("Creates Features", "Feature",
+              "Creates a geometric feature used for dynamic remeshing",
               "SpatialSlur", "Mesh")
         {
         }
@@ -30,14 +30,14 @@ namespace SpatialSlur.SlurGH.Components
         /// <inheritdoc />
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("heGraph", "heGraph", "", GH_ParamAccess.item);
+            pManager.AddGenericParameter("geometry", "geom", "", GH_ParamAccess.item);
         }
 
 
         /// <inheritdoc />
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddPointParameter("result", "result", "Vertex positions", GH_ParamAccess.list);
+            pManager.AddGenericParameter("result", "result", "", GH_ParamAccess.item);
         }
 
 
@@ -46,19 +46,25 @@ namespace SpatialSlur.SlurGH.Components
         {
             GH_ObjectWrapper goo = null;
             if (!DA.GetData(0, ref goo)) return;
+            
+            IFeature feat = null;
 
-            var obj = goo.Value;
-
-            if (obj is HeGraph3d)
+            switch (goo.Value)
             {
-                var graph = (HeGraph3d)obj;
-                DA.SetDataList(0, graph.Vertices.Select(v => new GH_Point(v.Position)));
+                case Mesh m:
+                    feat = new MeshFeature(m);
+                    break;
+                case Curve c:
+                    feat = new CurveFeature(c);
+                    break;
+                case Point3d p:
+                    feat = new PointFeature(p);
+                    break;
+                default:
+                    throw new ArgumentException();
             }
-            else if (obj is HeMesh3d)
-            {
-                var mesh = (HeMesh3d)obj;
-                DA.SetDataList(0, mesh.Vertices.Select(v => new GH_Point(v.Position)));
-            }
+            
+            DA.SetData(0, new GH_ObjectWrapper(feat));
         }
 
 
@@ -79,7 +85,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{F39B5887-09E7-4D40-B0C6-CA69073936B1}"); }
+            get { return new Guid("{0FEF2BE4-6432-4352-ADE2-F160108EDA12}"); }
         }
     }
 }

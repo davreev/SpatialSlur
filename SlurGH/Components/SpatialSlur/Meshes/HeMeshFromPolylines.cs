@@ -1,32 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using SpatialSlur.SlurMesh;
-using SpatialSlur.SlurRhino;
-
-using SpatialSlur.SlurGH.Types;
-using SpatialSlur.SlurGH.Params;
-
+﻿
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Components
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Rhino.Geometry;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
+
+using SpatialSlur.Meshes;
+using SpatialSlur.Rhino;
+using SpatialSlur.Grasshopper.Types;
+using SpatialSlur.Grasshopper.Params;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
     /// </summary>
-    public class HeGraphFromLines : GH_Component
+    public class HeMeshFromPolylines : GH_Component
     {
         /// <summary>
         /// 
         /// </summary>
-        public HeGraphFromLines()
-          : base("HeGraph From Lines", "FromLns",
-              "Creates a halfedge graph from a list of line segments",
+        public HeMeshFromPolylines()
+          : base("HeMesh From Polylines", "FromPolys",
+              "Creates a halfedge mesh from a list of closed polylines",
               "SpatialSlur", "Mesh")
         {
         }
@@ -35,40 +37,34 @@ namespace SpatialSlur.SlurGH.Components
         /// <inheritdoc />
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddLineParameter("lines", "lines", "", GH_ParamAccess.list);
+            pManager.AddCurveParameter("polylines", "polys", "", GH_ParamAccess.list);
             pManager.AddNumberParameter("tolerance", "tol", "", GH_ParamAccess.item, 1.0e-4);
-
-            // TODO make menu items
-            pManager.AddBooleanParameter("allowMulti", "multi", "", GH_ParamAccess.item, false);
-            pManager.AddBooleanParameter("allowLoops", "loops", "", GH_ParamAccess.item, false);
         }
 
 
         /// <inheritdoc />
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddParameter(new HeGraph3dParam(), "result", "result", "", GH_ParamAccess.item);
+            pManager.AddParameter(new HeMesh3dParam(), "result", "result", "", GH_ParamAccess.item);
         }
 
 
         /// <inheritdoc />
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var lines = new List<GH_Line>();
-            if (!DA.GetDataList(0, lines)) return;
+            var curves = new List<GH_Curve>();
+            if (!DA.GetDataList(0, curves)) return;
 
             var tol = 0.0;
             if (!DA.GetData(1, ref tol)) return;
 
-            var multi = false;
-            if (!DA.GetData(2, ref multi)) return;
+            var mesh = HeMesh3d.Factory.CreateFromPolylines(curves.Select(crv =>
+            {
+                crv.Value.TryGetPolyline(out Polyline poly);
+                return poly;
+            }), tol);
 
-            var loops = false;
-            if (!DA.GetData(3, ref loops)) return;
-
-            var graph = HeGraph3d.Factory.CreateFromLineSegments(lines.Select(ln => ln.Value), tol, multi, loops);
-
-            DA.SetData(0, new GH_HeGraph3d(graph));
+            DA.SetData(0, new GH_HeMesh3d(mesh));
         }
 
 
@@ -89,7 +85,7 @@ namespace SpatialSlur.SlurGH.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("{AD761F5E-656B-4FA3-903C-E176ED422868}"); }
+            get { return new Guid("{2A36DB93-46BB-419C-810B-98B67D88BEDB}"); }
         }
     }
 }

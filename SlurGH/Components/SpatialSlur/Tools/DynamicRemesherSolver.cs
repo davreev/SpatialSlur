@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-using SpatialSlur.SlurField;
-using SpatialSlur.SlurMesh;
-
-using SpatialSlur.SlurRhino;
-using SpatialSlur.SlurTools;
-using SpatialSlur.SlurTools;
-
-using SpatialSlur.SlurGH.Types;
-using SpatialSlur.SlurGH.Params;
-
+﻿
 /*
  * Notes
  */
 
-namespace SpatialSlur.SlurGH.Components
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using Rhino.Geometry;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
+
+using SpatialSlur.Fields;
+using SpatialSlur.Meshes;
+using SpatialSlur.Rhino;
+using SpatialSlur.Tools;
+using SpatialSlur.Grasshopper.Types;
+using SpatialSlur.Grasshopper.Params;
+
+namespace SpatialSlur.Grasshopper.Components
 {
     using M = DynamicRemesher.HeMesh;
 
@@ -139,6 +138,7 @@ namespace SpatialSlur.SlurGH.Components
         /// 
         /// </summary>
         /// <param name="DA"></param>
+        /// <param name="settings"></param>
         private void InitializeSolver(IGH_DataAccess DA, DynamicRemesher.Settings settings)
         {
             GH_HeMesh3d source = null;

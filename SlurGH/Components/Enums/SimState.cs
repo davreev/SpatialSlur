@@ -2,7 +2,7 @@
  * Notes
  */ 
 
-namespace SpatialSlur.SlurGH.Components
+namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
     /// 
