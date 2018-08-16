@@ -629,6 +629,24 @@ namespace SpatialSlur.Meshes
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        /// <param name="exclude"></param>
+        public static void GetEdgeDepths<V,E>(this HeStructure<V, E> graph, IEnumerable<E> sources, ArrayView<int> result, IEnumerable<E> exclude = null)
+            where V : HeStructure<V, E>.Vertex
+            where E : HeStructure<V, E>.Halfedge
+        {
+            var prop = Halfedge<E>.CreateEdgeProperty(result);
+            GetEdgeDepths(graph, sources, prop, exclude);
+        }
+
+
+        /// <summary>
         /// Calculates the minimum topological depth of each edge from a collection of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
@@ -760,6 +778,24 @@ namespace SpatialSlur.Meshes
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        /// <param name="exclude"></param>
+        public static void GetVertexDepths<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, ArrayView<int> result, IEnumerable<V> exclude = null)
+            where V : HeStructure<V, E>.Vertex
+            where E : HeStructure<V, E>.Halfedge
+        {
+            var prop = Node<V>.CreateProperty(result);
+            GetVertexDepths(graph, sources, prop, exclude);
+        }
+
+
+        /// <summary>
         /// Calculates the minimum topological depth of each vertex from a collection of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
@@ -807,8 +843,27 @@ namespace SpatialSlur.Meshes
                 }
             }
         }
-        
-        
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="sources"></param>
+        /// <param name="getLength"></param>
+        /// <param name="result"></param>
+        /// <param name="bestFirst"></param>
+        public static void GetVertexDistances<V, E>(this HeStructure<V, E> graph, IEnumerable<V> sources, Func<E, double> getLength, ArrayView<double> result, bool bestFirst = false)
+            where V : HeStructure<V, E>.Vertex
+            where E : HeStructure<V, E>.Halfedge
+        {
+            var prop = Node<V>.CreateProperty(result);
+            GetVertexDistances(graph, sources, getLength, prop, bestFirst);
+        }
+
+
         /// <summary>
         /// Calculates the minimum topological distance to each vertex from a collection of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
@@ -1224,15 +1279,35 @@ namespace SpatialSlur.Meshes
 
 
         #region Edge Attributes
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        /// <param name="exclude"></param>
+        public static void GetEdgeDepths<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<E> sources, ArrayView<int> result, IEnumerable<E> exclude = null)
+           where V : HeStructure<V, E, F>.Vertex
+           where E : HeStructure<V, E, F>.Halfedge
+           where F : HeStructure<V, E, F>.Face
+        {
+            var prop = Halfedge<E>.CreateEdgeProperty(result);
+            GetEdgeDepths(mesh, sources, prop, exclude);
+        }
+
+
         /// <summary>
         /// Calculates the minimum topological depth of each edge from a collection of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
         public static void GetEdgeDepths<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<E> sources, Property<E, int> depth, IEnumerable<E> exclude = null)
-            where V : HeStructure<V, E, F>.Vertex
-            where E : HeStructure<V, E, F>.Halfedge
-            where F : HeStructure<V, E, F>.Face
+        where V : HeStructure<V, E, F>.Vertex
+        where E : HeStructure<V, E, F>.Halfedge
+        where F : HeStructure<V, E, F>.Face
         {
             var edges = mesh.Edges;
             var queue = new Queue<E>();
@@ -1502,6 +1577,26 @@ namespace SpatialSlur.Meshes
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="sources"></param>
+        /// <param name="result"></param>
+        /// <param name="exclude"></param>
+        public static void GetFaceDepths<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, ArrayView<int> result, IEnumerable<F> exclude = null)
+           where V : HeStructure<V, E, F>.Vertex
+           where E : HeStructure<V, E, F>.Halfedge
+           where F : HeStructure<V, E, F>.Face
+        {
+            var prop = Node<F>.CreateProperty(result);
+            GetFaceDepths(mesh, sources, prop, exclude);
+        }
+
+
+        /// <summary>
         /// Calculates the minimum topological depth of all faces connected to a set of sources.
         /// Note that corresponding get/set delegates must read/write to the same location.
         /// </summary>
@@ -1528,7 +1623,7 @@ namespace SpatialSlur.Meshes
             }
 
             // exclude
-            if(exclude != null)
+            if (exclude != null)
             {
                 foreach (var f in exclude)
                     depth.Set(f, 0);
@@ -1561,9 +1656,30 @@ namespace SpatialSlur.Meshes
         /// <param name="mesh"></param>
         /// <param name="sources"></param>
         /// <param name="getLength"></param>
+        /// <param name="result"></param>
+        /// <param name="bestFirst"></param>
+        public static void GetFaceDistances<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, double> getLength, ArrayView<double> result, bool bestFirst = false)
+           where V : HeStructure<V, E, F>.Vertex
+           where E : HeStructure<V, E, F>.Halfedge
+           where F : HeStructure<V, E, F>.Face
+        {
+            var prop = Node<F>.CreateProperty(result);
+            GetFaceDistances(mesh, sources, getLength, prop, bestFirst);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <typeparam name="E"></typeparam>
+        /// <typeparam name="F"></typeparam>
+        /// <param name="mesh"></param>
+        /// <param name="sources"></param>
+        /// <param name="getLength"></param>
         /// <param name="distance"></param>
         /// <param name="bestFirst"></param>
-        private static void GetFaceDistances<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, double> getLength, Property<F, double> distance, bool bestFirst = false)
+        public static void GetFaceDistances<V, E, F>(this HeStructure<V, E, F> mesh, IEnumerable<F> sources, Func<E, double> getLength, Property<F, double> distance, bool bestFirst = false)
             where V : HeStructure<V, E, F>.Vertex
             where E : HeStructure<V, E, F>.Halfedge
             where F : HeStructure<V, E, F>.Face
