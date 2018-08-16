@@ -63,7 +63,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static implicit operator Vec2d(Vector2d vector)
         {
-            return new Vector2d(vector.X, vector.Y);
+            return new Vec2d(vector.X, vector.Y);
         }
 
 
@@ -161,7 +161,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static implicit operator Vec3d(Vector3d vector)
         {
-            return new Vector3d(vector.X, vector.Y, vector.Z);
+            return new Vec3d(vector.X, vector.Y, vector.Z);
         }
 
 
