@@ -4,9 +4,8 @@
  */
 
 using System;
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurField;
-using SpatialSlur.SlurMesh;
+using SpatialSlur.Fields;
+using SpatialSlur.Meshes;
 
 namespace SpatialSlur.Examples
 {
@@ -15,8 +14,8 @@ namespace SpatialSlur.Examples
     /// </summary>
     static class HeMeshFromFile
     {
-        const string _fileIn = "face.obj";
-        const string _fileOut = "face_mapped.obj";
+        const string _fileIn = "face_0.obj";
+        const string _fileOut = "face_mapped_0.obj";
 
 
         /// <summary>
@@ -28,7 +27,7 @@ namespace SpatialSlur.Examples
             var mesh = HeMesh3d.Factory.CreateFromOBJ(Paths.Resources + _fileIn);
             var verts = mesh.Vertices;
 
-            var texCoords = new Vec2d[verts.Count];
+            var texCoords = new Vector2d[verts.Count];
             double scale = 0.5;
             double offset = scale * Math.PI * 0.25;
 
@@ -38,12 +37,12 @@ namespace SpatialSlur.Examples
                 var p = verts[i].Position * scale;
                 var u = ImplicitSurfaces.Gyroid(p.X, p.Y, p.Z);
                 var v = ImplicitSurfaces.Gyroid(p.X + offset, p.Y + offset, p.Z + offset);
-                texCoords[i] = new Vec2d(u, v);
+                texCoords[i] = new Vector2d(u, v);
             }
-
+            
             // compute vertex normals & write to file
-            mesh.UpdateVertexNormals();
-            MeshIO.WriteToObj(mesh, Paths.Resources + _fileOut, v => texCoords[v]);
+            mesh.Vertices.Action(v => v.Normal = v.GetNormal(), true);
+            Interop.Meshes.WriteToObj(mesh, Paths.Resources + _fileOut, v => texCoords[v]);
 
             Console.WriteLine("File written successfully. Press return to exit.");
             Console.ReadLine();

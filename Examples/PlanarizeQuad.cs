@@ -4,9 +4,8 @@
  */
 
 using System;
-using SpatialSlur.SlurCore;
-using SpatialSlur.SlurDynamics;
-using SpatialSlur.SlurDynamics;
+using SpatialSlur;
+using SpatialSlur.Dynamics;
 
 namespace SpatialSlur.Examples
 {
@@ -22,14 +21,14 @@ namespace SpatialSlur.Examples
         public static void Start()
         {
             var random = new Random(0);
-            var box = new Interval3d(new Vec3d(0.0), new Vec3d(10.0)); // create a interval between the (0,0,0) and (10,10,10)
+            var box = new Interval3d(new Vector3d(0.0), new Vector3d(10.0)); // create a interval between the (0,0,0) and (10,10,10)
 
-            // create particles
-            var particles = new Particle[] {
-                new Particle(random.NextVec3d(box)),
-                new Particle(random.NextVec3d(box)),
-                new Particle(random.NextVec3d(box)),
-                new Particle(random.NextVec3d(box))
+            // create bodies
+            var bodies = new Body[] {
+                new Body(random.NextVector3d(box)),
+                new Body(random.NextVector3d(box)),
+                new Body(random.NextVector3d(box)),
+                new Body(random.NextVector3d(box))
             };
 
             // create constraints
@@ -47,7 +46,7 @@ namespace SpatialSlur.Examples
             // step the solver until converged
             while (!solver.IsConverged)
             {
-                solver.Step(particles, constraints);
+                solver.Step(bodies, constraints);
                 Console.WriteLine($"    step {solver.StepCount}");
             }
 
