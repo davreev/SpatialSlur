@@ -16,7 +16,7 @@ namespace SpatialSlur
     [Serializable]
     public partial struct Intervalf
     {
-        #region Static members
+        #region Static Members
         
         /// <summary></summary>
         public static readonly Intervalf Zero = new Intervalf();
@@ -184,31 +184,21 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Returns true if A is greater than B.
+        /// Returns true if A is less than B.
         /// </summary>
         public bool IsIncreasing
         {
-            get { return B > A; }
+            get { return A < B; }
         }
 
 
 
         /// <summary>
-        /// Returns true if A is less than B.
+        /// Returns true if A is greater than B.
         /// </summary>
         public bool IsDecreasing
         {
-            get { return B < A; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public int Orientation
-        {
-            get { return Math.Sign(B - A); }
+            get { return A > B; }
         }
 
 
@@ -222,11 +212,21 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Defined as B - A
+        /// B - A
         /// </summary>
-        public float Length
+        public float Delta
         {
             get { return B - A; }
+        }
+
+
+        /// <summary>
+        /// Returns positive if this interval is increasing, negative if it's decreasing, and zero if it's invalid.
+        /// </summary>
+        /// <returns></returns>
+        public int Sign
+        {
+            get { return Math.Sign(B - A); }
         }
 
 

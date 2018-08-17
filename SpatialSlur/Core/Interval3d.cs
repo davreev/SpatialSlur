@@ -15,7 +15,7 @@ namespace SpatialSlur
     [Serializable]
     public partial struct Interval3d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Interval3d Zero = new Interval3d();
@@ -298,16 +298,6 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public Vector3i Orientation
-        {
-            get { return new Vector3i(X.Orientation, Y.Orientation, Z.Orientation); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         public bool IsValid
         {
             get { return X.IsValid && Y.IsValid && Z.IsValid; }
@@ -345,20 +335,21 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// 
+        /// B - A
         /// </summary>
-        public (Intervald, Intervald, Intervald) Components
+        public Vector3d Delta
         {
-            get { return (X, Y, Z); }
+            get { return new Vector3d(X.Delta, Y.Delta, Z.Delta); }
         }
 
 
         /// <summary>
-        /// Defined as B - A
+        /// 
         /// </summary>
-        public Vector3d Length
+        /// <returns></returns>
+        public Vector3i Sign
         {
-            get { return new Vector3d(X.Length, Y.Length, Z.Length); }
+            get { return new Vector3i(X.Sign, Y.Sign, Z.Sign); }
         }
 
 
@@ -394,7 +385,7 @@ namespace SpatialSlur
         /// </summary>
         public double Area
         {
-            get { return Math.Abs(X.Length * Y.Length * Z.Length); }
+            get { return Math.Abs(X.Delta * Y.Delta * Z.Delta); }
         }
 
 
@@ -483,7 +474,10 @@ namespace SpatialSlur
         /// <returns></returns>
         public bool Contains(Vector3d point)
         {
-            return X.Contains(point.X) && Y.Contains(point.Y) && Z.Contains(point.Z);
+            return 
+                X.Contains(point.X) && 
+                Y.Contains(point.Y) && 
+                Z.Contains(point.Z);
         }
 
 
@@ -494,7 +488,10 @@ namespace SpatialSlur
         /// <returns></returns>
         public bool ContainsIncl(Vector3d point)
         {
-            return X.ContainsIncl(point.X) && Y.ContainsIncl(point.Y) && Z.ContainsIncl(point.Z);
+            return 
+                X.ContainsIncl(point.X) && 
+                Y.ContainsIncl(point.Y) && 
+                Z.ContainsIncl(point.Z);
         }
 
 

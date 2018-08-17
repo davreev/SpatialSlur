@@ -15,7 +15,7 @@ namespace SpatialSlur
     [Serializable]
     public struct Interval2d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Interval2d Zero = new Interval2d();
@@ -268,16 +268,6 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public Vector2i Orientation
-        {
-            get { return new Vector2i(X.Orientation, Y.Orientation); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         public bool IsValid
         {
             get { return X.IsValid && Y.IsValid; }
@@ -313,20 +303,21 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// 
+        /// B - A
         /// </summary>
-        public (Intervald, Intervald) Components
+        public Vector2d Delta
         {
-            get { return (X, Y); }
+            get { return new Vector2d(X.Delta, Y.Delta); }
         }
 
 
         /// <summary>
-        /// Defined as B - A
+        /// 
         /// </summary>
-        public Vector2d Length
+        /// <returns></returns>
+        public Vector2i Sign
         {
-            get { return new Vector2d(X.Length, Y.Length); }
+            get { return new Vector2i(X.Sign, Y.Sign); }
         }
 
 
@@ -362,7 +353,7 @@ namespace SpatialSlur
         /// </summary>
         public double Area
         {
-            get { return Math.Abs(X.Length * Y.Length); }
+            get { return Math.Abs(X.Delta * Y.Delta); }
         }
 
 
@@ -456,7 +447,9 @@ namespace SpatialSlur
         /// <returns></returns>
         public bool Contains(Vector2d point)
         {
-            return X.Contains(point.X) && Y.Contains(point.Y);
+            return 
+                X.Contains(point.X) && 
+                Y.Contains(point.Y);
         }
 
 
@@ -467,7 +460,9 @@ namespace SpatialSlur
         /// <returns></returns>
         public bool ContainsIncl(Vector2d point)
         {
-            return X.ContainsIncl(point.X) && Y.ContainsIncl(point.Y);
+            return 
+                X.ContainsIncl(point.X) && 
+                Y.ContainsIncl(point.Y);
         }
 
 
