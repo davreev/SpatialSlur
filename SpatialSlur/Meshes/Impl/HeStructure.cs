@@ -18,7 +18,7 @@ namespace SpatialSlur.Meshes.Impl
         where V : HeStructure<V, E>.Vertex
         where E : HeStructure<V, E>.Halfedge
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -347,7 +347,7 @@ namespace SpatialSlur.Meshes.Impl
         where E : HeStructure<V, E, F>.Halfedge
         where F : HeStructure<V, E, F>.Face
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -882,7 +882,7 @@ namespace SpatialSlur.Meshes.Impl
         where EG : HeStructure<V, E, F, VG, EG, FG>.Bundle
         where FG : HeStructure<V, E, F, VG, EG, FG>.Cell
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 

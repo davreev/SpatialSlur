@@ -290,6 +290,7 @@
     <Compile Include="Fields\Streamline.cs" />
     <Compile Include="Fields\Filter.cs" />
     <Compile Include="Fields\DistanceFunctions.cs" />
+    <Compile Include="Fields\WIP~\DistanceTransform.cs" />
     <Compile Include="Meshes\TriMesh.cs" />
     <Compile Include="Meshes\Delegates.cs" />
     <Compile Include="Meshes\Matrix.cs" />

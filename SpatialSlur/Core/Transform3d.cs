@@ -12,7 +12,7 @@ namespace SpatialSlur
     /// </summary>
     public partial struct Transform3d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Transform3d Identity = new Transform3d(new Vector3d(1.0), OrthoBasis3d.Identity, Vector3d.Zero);

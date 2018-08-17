@@ -271,7 +271,7 @@ namespace SpatialSlur.Meshes
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
         
         IEnumerator IEnumerable.GetEnumerator()
         {

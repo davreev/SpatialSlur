@@ -33,7 +33,7 @@ namespace SpatialSlur.Tools
         [Serializable]
         public class Solver
         {
-            #region Static members
+            #region Static Members
 
             private const double _radiusToGridScale = 5.0;
 
@@ -738,7 +738,7 @@ namespace SpatialSlur.Tools
         [Serializable]
         public class HeMesh : HeMesh<V, E, F>
         {
-            #region Nested types
+            #region Nested Types
             
             /// <summary>
             /// 
@@ -775,7 +775,7 @@ namespace SpatialSlur.Tools
                 }
 
 
-                #region Explicit interface implementations
+                #region Explicit Interface Implementations
 
                 Vector3d IPosition3d.Position
                 {
@@ -807,7 +807,7 @@ namespace SpatialSlur.Tools
             #endregion
 
 
-            #region Static members
+            #region Static Members
 
             /// <summary></summary>
             public static readonly HeMeshFactory Factory = new HeMeshFactory();

@@ -285,7 +285,7 @@ namespace SpatialSlur.Collections
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         T IList<T>.this[int index]
         {

@@ -13,7 +13,7 @@ namespace SpatialSlur.Meshes
     /// </summary>
     public class TriMesh
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// Adds the given item to the given buffer

@@ -196,7 +196,7 @@ namespace SpatialSlur
 
             #region JSON
 
-            #region Nested types
+            #region Nested Types
 
             /// <summary>
             /// Json serializable representation of a halfedge graph.

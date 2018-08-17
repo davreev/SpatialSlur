@@ -14,7 +14,7 @@ namespace SpatialSlur
     [Serializable]
     public struct Orient3d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Orient3d Identity = new Orient3d(OrthoBasis3d.Identity, Vector3d.Zero);

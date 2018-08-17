@@ -22,12 +22,12 @@ namespace SpatialSlur.Meshes
             /// <summary>
             /// 
             /// </summary>
-            public static readonly Func<T, Vector3d> Get = v => v.Position;
+            public static readonly Func<T, Vector3d> Get = t => t.Position;
 
             /// <summary>
             /// 
             /// </summary>
-            public static readonly Action<T, Vector3d> Set = (v, p) => v.Position = p;
+            public static readonly Action<T, Vector3d> Set = (t, p) => t.Position = p;
         }
 
         
@@ -41,12 +41,12 @@ namespace SpatialSlur.Meshes
             /// <summary>
             /// 
             /// </summary>
-            public static readonly Func<T, Vector3d> Get = v => v.Normal;
+            public static readonly Func<T, Vector3d> Get = t => t.Normal;
 
             /// <summary>
             /// 
             /// </summary>
-            public static readonly Action<T, Vector3d> Set = (v, n) => v.Normal = n;
+            public static readonly Action<T, Vector3d> Set = (t, n) => t.Normal = n;
         }
     }
 }

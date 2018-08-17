@@ -13,7 +13,7 @@ namespace SpatialSlur
     [Serializable]
     public partial struct Vector2d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Vector2d Zero = new Vector2d();

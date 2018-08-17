@@ -179,9 +179,9 @@ namespace SpatialSlur.Fields
             set
             {
                 Origin = value.A;
-                ScaleX = value.X.Length / (_nx - 1);
-                ScaleY = value.Y.Length / (_ny - 1);
-                ScaleZ = value.Z.Length / (_nz - 1);
+                ScaleX = value.X.Delta / (_nx - 1);
+                ScaleY = value.Y.Delta / (_ny - 1);
+                ScaleZ = value.Z.Delta / (_nz - 1);
             }
         }
 

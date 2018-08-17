@@ -20,7 +20,7 @@ namespace SpatialSlur.Meshes
     [Serializable]
     public class HeMesh : HeMesh<V, E, F>
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -51,7 +51,7 @@ namespace SpatialSlur.Meshes
         #endregion
 
 
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly HeMeshFactory Factory = new HeMeshFactory();

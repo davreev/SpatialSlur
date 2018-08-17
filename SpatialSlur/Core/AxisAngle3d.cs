@@ -13,7 +13,7 @@ namespace SpatialSlur
     [Serializable]
     public struct AxisAngle3d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly AxisAngle3d Identity = new AxisAngle3d {

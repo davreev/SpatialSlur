@@ -97,7 +97,7 @@ namespace SpatialSlur.Fields
         public abstract void GradientAt(Vector3d point, out T gx, out T gy, out T gz);
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         T IField2d<T>.ValueAt(Vector2d point)
         {

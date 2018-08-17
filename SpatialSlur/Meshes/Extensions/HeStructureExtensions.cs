@@ -522,8 +522,6 @@ namespace SpatialSlur.Meshes
         }
 
 
-        #region Edge Attributes
-
         /// <summary>
         /// 
         /// </summary>
@@ -702,11 +700,6 @@ namespace SpatialSlur.Meshes
                 }
             }
         }
-
-        #endregion
-
-
-        #region Vertex Attributes
 
 
         /// <summary>
@@ -993,8 +986,6 @@ namespace SpatialSlur.Meshes
 
         #endregion
 
-        #endregion
-
 
         #region HeStructure<V, E, F>
 
@@ -1273,13 +1264,6 @@ namespace SpatialSlur.Meshes
         }
 
 
-        #region Halfedge Attributes
-
-        #endregion
-
-
-        #region Edge Attributes
-
         /// <summary>
         /// 
         /// </summary>
@@ -1359,10 +1343,6 @@ namespace SpatialSlur.Meshes
             }
         }
 
-        #endregion
-
-
-        #region Vertex Attributes
 
         /// <summary>
         /// Calculates the barycentric dual area around each vertex.
@@ -1523,10 +1503,6 @@ namespace SpatialSlur.Meshes
             throw new NotImplementedException();
         }
 
-        #endregion
-
-
-        #region Face Attributes
         
         /// <summary>
         /// Returns the total surface area of the mesh.
@@ -1810,8 +1786,6 @@ namespace SpatialSlur.Meshes
                     normal.Set(v, -n);
             }
         }
-
-        #endregion
 
         #endregion
     }

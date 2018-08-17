@@ -17,7 +17,7 @@ namespace SpatialSlur.Collections
     [Serializable]
     public class ProbabilitySelector
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// Returns the index of the first element larger than the given value.

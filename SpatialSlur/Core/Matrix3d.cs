@@ -17,7 +17,7 @@ namespace SpatialSlur
     [Serializable]
     public struct Matrix3d
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -242,7 +242,7 @@ namespace SpatialSlur
         #endregion
 
 
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Matrix3d Identity = new Matrix3d(1.0);

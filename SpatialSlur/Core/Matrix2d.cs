@@ -67,7 +67,7 @@ namespace SpatialSlur
         #endregion
 
 
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Matrix2d Identity = new Matrix2d(1.0);

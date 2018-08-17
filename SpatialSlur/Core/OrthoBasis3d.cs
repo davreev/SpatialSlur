@@ -14,7 +14,7 @@ namespace SpatialSlur
     [Serializable]
     public struct OrthoBasis3d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly OrthoBasis3d Identity = new OrthoBasis3d

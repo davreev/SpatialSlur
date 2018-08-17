@@ -15,7 +15,7 @@ namespace SpatialSlur.Fields
     /// </summary>
     public static class Geodesic
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// Eikonal equation solver for 2D grids

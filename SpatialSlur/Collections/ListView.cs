@@ -36,7 +36,7 @@ namespace SpatialSlur.Collections
     [Serializable]
     public readonly struct ListView<T>: IList<T>, IReadOnlyList<T>
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 
@@ -50,7 +50,7 @@ namespace SpatialSlur.Collections
         #endregion
 
 
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -227,7 +227,7 @@ namespace SpatialSlur.Collections
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
         
         void IList<T>.Insert(int index, T item)
         {

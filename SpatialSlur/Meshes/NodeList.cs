@@ -25,7 +25,7 @@ namespace SpatialSlur.Meshes
     public abstract class NodeList<T> : IReadOnlyList<T>
         where T : Node
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 
@@ -422,7 +422,7 @@ namespace SpatialSlur.Meshes
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
         
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {

@@ -21,7 +21,7 @@ namespace SpatialSlur.Meshes
     [Serializable]
     public class HeGraph3d : HeGraph<V, E>
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -50,7 +50,7 @@ namespace SpatialSlur.Meshes
         #endregion
 
 
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly HeGraph3dFactory Factory = new HeGraph3dFactory();

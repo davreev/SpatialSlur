@@ -16,7 +16,7 @@ namespace SpatialSlur.Collections
     public class PriorityQueue<K, V>
         where K : IComparable<K>
     {
-        #region Static members
+        #region Static Members
 
         private const string _emptyMessage = "The queue is empty.";
 

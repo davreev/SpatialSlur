@@ -77,7 +77,7 @@ namespace SpatialSlur.Dynamics.Forces
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         bool IConstraint.AffectsPosition
         {

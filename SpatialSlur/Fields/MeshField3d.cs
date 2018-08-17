@@ -25,7 +25,7 @@ namespace SpatialSlur.Fields
     [Serializable]
     public abstract class MeshField3d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly MeshField3dFactory<double> Double = new MeshField3dDouble.Factory();
@@ -123,7 +123,7 @@ namespace SpatialSlur.Fields
     public abstract class MeshField3d<T> : MeshField3d, IField2d<T>, IField3d<T>, ISampledField3d<T>
         where T : struct
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 
@@ -249,7 +249,7 @@ namespace SpatialSlur.Fields
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
         
         ISampledField<T> ISampledField<T>.Duplicate(bool setValues)
         {

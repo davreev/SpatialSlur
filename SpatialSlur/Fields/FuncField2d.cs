@@ -29,7 +29,7 @@ namespace SpatialSlur.Fields
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         T IField2d<T>.ValueAt(Vector2d point)
         {

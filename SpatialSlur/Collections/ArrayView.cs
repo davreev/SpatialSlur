@@ -36,7 +36,7 @@ namespace SpatialSlur.Collections
     [Serializable]
     public readonly struct ArrayView<T> : IList<T>, IReadOnlyList<T>
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 
@@ -50,7 +50,7 @@ namespace SpatialSlur.Collections
         #endregion
 
 
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -266,7 +266,7 @@ namespace SpatialSlur.Collections
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
         
         T IList<T>.this[int index]
         {

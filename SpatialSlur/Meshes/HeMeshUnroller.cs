@@ -124,7 +124,7 @@ namespace SpatialSlur.Meshes
         }
    
 
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 

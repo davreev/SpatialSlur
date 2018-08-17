@@ -17,7 +17,7 @@ namespace SpatialSlur.Collections
     [Serializable]
     public class HashGrid2d<T>
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 

@@ -16,7 +16,7 @@ namespace SpatialSlur.Collections
     /// </summary>
     public readonly struct UniformPartitioner : IEnumerable<(int From, int To)>
     {
-        #region Static members
+        #region Static Members
 
         private static readonly int _defaultCount = Environment.ProcessorCount << 3; // TODO test other values
 
@@ -104,7 +104,7 @@ namespace SpatialSlur.Collections
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
         
         IEnumerator IEnumerable.GetEnumerator()
         {

@@ -36,7 +36,7 @@ namespace SpatialSlur.Tools
         [Serializable]
         public class Solver
         {
-            #region Static members
+            #region Static Members
 
             private static readonly Func<V, Vector3d> _getPosition = v => v.Position;
 
@@ -812,7 +812,7 @@ namespace SpatialSlur.Tools
         [Serializable]
         public class HeMesh : HeMesh<V, E, F>
         {
-            #region Nested types
+            #region Nested Types
 
             /// <summary>
             /// 
@@ -943,7 +943,7 @@ namespace SpatialSlur.Tools
             #endregion
 
 
-            #region Static members
+            #region Static Members
 
             /// <summary></summary>
             public static readonly HeMeshFactory Factory = new HeMeshFactory();

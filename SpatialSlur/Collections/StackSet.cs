@@ -111,7 +111,7 @@ namespace SpatialSlur.Collections
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {

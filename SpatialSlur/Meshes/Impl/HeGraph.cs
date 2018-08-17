@@ -21,7 +21,7 @@ namespace SpatialSlur.Meshes.Impl
         where TV : HeGraph<TV, TE>.Vertex
         where TE : HeGraph<TV, TE>.Halfedge
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -135,7 +135,7 @@ namespace SpatialSlur.Meshes.Impl
         #endregion
 
 
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// Throws an exception if the topology of the given mesh is not valid.

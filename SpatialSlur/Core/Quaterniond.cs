@@ -18,7 +18,7 @@ namespace SpatialSlur
     /// </summary>
     public partial struct Quaterniond
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Quaterniond Zero = new Quaterniond();

@@ -16,7 +16,7 @@ namespace SpatialSlur
     /// </summary>
     public struct Plane3d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 

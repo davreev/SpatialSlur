@@ -14,7 +14,7 @@ namespace SpatialSlur
     [Serializable]
     public partial struct Matrix4d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Matrix4d Identity = new Matrix4d(1.0);

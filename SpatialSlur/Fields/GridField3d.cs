@@ -36,7 +36,7 @@ namespace SpatialSlur.Fields
     public abstract class GridField3d<T> : Grid3d, IField2d<T>, IField3d<T>, ISampledField3d<T>
         where T : struct
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 
@@ -662,7 +662,7 @@ namespace SpatialSlur.Fields
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
         
         ArrayView<T> ISampledField<T>.Values
         {

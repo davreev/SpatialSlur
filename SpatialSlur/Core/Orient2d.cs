@@ -13,7 +13,7 @@ namespace SpatialSlur
     /// </summary>
     public struct Orient2d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Orient2d Identity = new Orient2d(OrthoBasis2d.Identity, Vector2d.Zero);

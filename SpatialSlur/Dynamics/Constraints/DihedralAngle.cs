@@ -15,7 +15,7 @@ namespace SpatialSlur.Dynamics.Constraints
     [Serializable]
     public class DihedralAngle : Constraint, IConstraint
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// Assumes both angles are between 0 and 2PI
@@ -152,7 +152,7 @@ namespace SpatialSlur.Dynamics.Constraints
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         bool IConstraint.AffectsPosition
         {

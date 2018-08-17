@@ -25,7 +25,7 @@ namespace SpatialSlur.Meshes.Impl
         where TE : HeMesh<TV, TE, TF>.Halfedge
         where TF : HeMesh<TV, TE, TF>.Face
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -73,7 +73,7 @@ namespace SpatialSlur.Meshes.Impl
         #endregion
 
 
-        #region Static members
+        #region Static Members
         
         /// <summary>
         /// Throws an exception if the topology of the given mesh is not valid.

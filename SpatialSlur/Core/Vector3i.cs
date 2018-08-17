@@ -13,7 +13,7 @@ namespace SpatialSlur
     [Serializable]
     public struct Vector3i : IEquatable<Vector3i>
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Vector3i Zero = new Vector3i();

@@ -14,7 +14,7 @@ namespace SpatialSlur.Meshes
     /// </summary>
     public static class FaceQuadrangulator
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 

@@ -15,7 +15,7 @@ namespace SpatialSlur.Collections
     /// <typeparam name="T"></typeparam>
     public struct ReadOnlySet<T> : IEnumerable<T>
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 
@@ -72,7 +72,7 @@ namespace SpatialSlur.Collections
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {

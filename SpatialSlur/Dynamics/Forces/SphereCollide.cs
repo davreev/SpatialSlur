@@ -18,7 +18,7 @@ namespace SpatialSlur.Dynamics.Forces
     [Serializable]
     public class SphereCollide : PositionGroup
     {
-        #region Static members
+        #region Static Members
 
         private const double _radiusToGridScale = 5.0;
 

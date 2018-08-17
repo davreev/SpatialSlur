@@ -71,7 +71,7 @@ namespace SpatialSlur.Collections
     [Serializable]
     public class KdTree<T>
     {
-        #region Nested types
+        #region Nested Types
 
         /// <summary>
         /// 
@@ -124,7 +124,7 @@ namespace SpatialSlur.Collections
         #endregion
 
 
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// Inserts point value pairs in a way that produces a balanced tree.

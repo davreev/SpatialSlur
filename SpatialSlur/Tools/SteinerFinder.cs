@@ -27,7 +27,7 @@ namespace SpatialSlur.Tools
         /// </summary>
         public class Solver
         {
-            #region Static members
+            #region Static Members
 
             /// <summary>
             /// 
@@ -505,7 +505,7 @@ namespace SpatialSlur.Tools
         /// </summary>
         public class HeGraph : HeGraph<V, E>
         {
-            #region Nested types
+            #region Nested Types
 
             /// <summary>
             /// 
@@ -523,7 +523,7 @@ namespace SpatialSlur.Tools
                 public bool IsTerminal;
 
 
-                #region Explicit interface implementations
+                #region Explicit Interface Implementations
 
                 Vector3d IPosition3d.Position
                 {
@@ -575,7 +575,7 @@ namespace SpatialSlur.Tools
             #endregion
 
 
-            #region Static members
+            #region Static Members
 
             /// <summary></summary>
             public static readonly HeGraphFactory Factory = new HeGraphFactory();

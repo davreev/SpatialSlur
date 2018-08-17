@@ -20,7 +20,7 @@ namespace SpatialSlur.Meshes.Impl
     [Serializable]
     public abstract class Node
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// Implicitly converts an element to its index for convenience.
@@ -67,7 +67,7 @@ namespace SpatialSlur.Meshes.Impl
     public abstract class Node<T> : Node
         where T : Node<T>
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 

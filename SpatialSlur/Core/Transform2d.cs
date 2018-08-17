@@ -10,7 +10,7 @@ namespace SpatialSlur
     /// </summary>
     public struct Transform2d
     {
-        #region Static members
+        #region Static Members
 
         /// <summary></summary>
         public static readonly Transform2d Identity = new Transform2d(new Vector2d(1.0), OrthoBasis2d.Identity, Vector2d.Zero);

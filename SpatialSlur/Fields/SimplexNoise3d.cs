@@ -107,7 +107,7 @@ namespace SpatialSlur.Fields
         }
 
 
-        #region Explicit interface implementations
+        #region Explicit Interface Implementations
 
         Vector3d IField3d<Vector3d>.ValueAt(Vector3d point)
         {

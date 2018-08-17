@@ -17,7 +17,7 @@ namespace SpatialSlur.Grasshopper.Types
     /// </summary>
     public class GH_HeGraph3d : GH_GeometricGoo<HeGraph3d>
     {
-        #region Static members
+        #region Static Members
 
         /// <summary>
         /// 
