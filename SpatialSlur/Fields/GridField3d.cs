@@ -25,6 +25,9 @@ namespace SpatialSlur.Fields
 
         /// <summary></summary>
         public static readonly GridField3dFactory<Vector3d> Vector3d = new GridField3dVector3d.Factory();
+
+        /// <summary></summary>
+        public static readonly GridField3dFactory<Matrix3d> Matrix3d = new GridField3dMatrix3d.Factory();
     }
 
 
