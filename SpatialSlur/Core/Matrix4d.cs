@@ -591,7 +591,7 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// 
+        /// Returns the matrix of minors.
         /// </summary>
         public Matrix4d Minor
         {
@@ -608,7 +608,7 @@ namespace SpatialSlur
         
 
         /// <summary>
-        /// Returns the transpose of the cofactor matrix
+        /// Returns the cofactor matrix
         /// </summary>
         public Matrix4d Cofactor
         {
@@ -625,7 +625,7 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Returns the transpose of the cofactor matrix
+        /// Returns the adjugate matrix i.e. the transpose of the cofactor matrix.
         /// </summary>
         public Matrix4d Adjugate
         {

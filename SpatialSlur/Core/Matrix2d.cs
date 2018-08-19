@@ -467,8 +467,7 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Returns the adjugate matrix.
-        /// This is defined as the transpose of the cofactor matrix.
+        /// Returns the adjugate matrix i.e. the transpose of the cofactor matrix.
         /// </summary>
         public Matrix2d Adjugate
         {
