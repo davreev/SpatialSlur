@@ -181,8 +181,21 @@ namespace SpatialSlur
 
             return matrix;
         }
-        
-        
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m0"></param>
+        /// <param name="m1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Matrix4d Lerp(Matrix4d m0, Matrix4d m1, double t)
+        {
+            return m0.LerpTo(m1, t);
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -1094,6 +1107,22 @@ namespace SpatialSlur
                 SlurMath.ApproxEquals(M31, other.M31, epsilon) &&
                 SlurMath.ApproxEquals(M32, other.M32, epsilon) &&
                 SlurMath.ApproxEquals(M33, other.M33, epsilon);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Matrix4d LerpTo(Matrix4d other, double factor)
+        {
+            return CreateFromRows(
+                Row0.LerpTo(other.Row0, factor),
+                Row1.LerpTo(other.Row1, factor),
+                Row2.LerpTo(other.Row2, factor),
+                Row3.LerpTo(other.Row3, factor));
         }
 
 

@@ -184,26 +184,17 @@ namespace SpatialSlur
         }
 
 
-        /*
         /// <summary>
-        /// Matrix vector multiplication
+        /// 
         /// </summary>
+        /// <param name="m0"></param>
+        /// <param name="m1"></param>
+        /// <param name="t"></param>
         /// <returns></returns>
-        public static Vec2d Multiply(Matrix2d matrix, Vec2d vector)
+        public static Matrix2d Lerp(Matrix2d m0, Matrix2d m1, double t)
         {
-            return matrix.Apply(vector);
+            return m0.LerpTo(m1, t);
         }
-
-
-        /// <summary>
-        /// Matrix multiplication
-        /// </summary>
-        /// <returns></returns>
-        public static Matrix2d Multiply(Matrix2d m0, Matrix2d m1)
-        {
-            return m0.Apply(m1);
-        }
-        */
 
 
         /// <summary>
@@ -306,7 +297,7 @@ namespace SpatialSlur
             return CreateJacobian(p => Geometry.GetGradient(function, vector, epsilon), vector, epsilon);
         }
 
-        #endregion
+#endregion
 
 
         /// <summary>Entry at row 0 column 0</summary>
@@ -720,6 +711,20 @@ namespace SpatialSlur
             // no unique solution
             x = Vector2d.Zero;
             return false;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Matrix2d LerpTo(Matrix2d other, double factor)
+        {
+            return CreateFromRows(
+                Row0.LerpTo(other.Row0, factor),
+                Row1.LerpTo(other.Row1, factor));
         }
 
 

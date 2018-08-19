@@ -395,7 +395,20 @@ namespace SpatialSlur
 
             return matrix;
         }
-       
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m0"></param>
+        /// <param name="m1"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Matrix3d Lerp(Matrix3d m0, Matrix3d m1, double t)
+        {
+            return m0.LerpTo(m1, t);
+        }
+
 
         /// <summary>
         /// 
@@ -1140,6 +1153,21 @@ namespace SpatialSlur
 
             // TODO
             throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Matrix3d LerpTo(Matrix3d other, double factor)
+        {
+            return CreateFromRows(
+                Row0.LerpTo(other.Row0, factor),
+                Row1.LerpTo(other.Row1, factor),
+                Row2.LerpTo(other.Row2, factor));
         }
 
 
