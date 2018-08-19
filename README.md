@@ -12,7 +12,7 @@ Below is a brief outline of the library by namespace. For further detail, take a
 
 + __SpatialSlur.Collections__ contains generic data structures for spatial queries and related algorithms. Also contains various general-purpose extension methods for .NET collection types.
 
-+ __SpatialSlur.Dynamics__ contains a projection based constraint solver and various constraint types for geometry optimization and form-finding. This is based on methods described in [(1)](http://lgg.epfl.ch/publications/2012/shapeup/paper.pdf) and follows many of the implementation details given in [(2)](http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf).
++ __SpatialSlur.Dynamics__ contains a projection based constraint solver and various constraint types for geometry optimization and shape exploration. This is based on methods described in [(1)](http://lgg.epfl.ch/publications/2012/shapeup/paper.pdf) and follows many of the implementation details given in [(2)](http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf).
 
 + __SpatialSlur.Fields__ contains generic data structures for discrete and continuous field representations (scalar, vector, and tensor) along with various algorithms for processing, compositing, and visualization.
 
