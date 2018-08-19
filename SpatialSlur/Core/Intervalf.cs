@@ -11,7 +11,6 @@ namespace SpatialSlur
 {
     /// <summary>
     /// Represents a single precision interval.
-    /// https://en.wikipedia.org/wiki/Interval_(mathematics)
     /// </summary>
     [Serializable]
     public partial struct Intervalf
@@ -102,6 +101,7 @@ namespace SpatialSlur
         }
 
 
+#if OBSOLETE
         /// <summary>
         /// Returns the union of a and b.
         /// </summary>
@@ -138,6 +138,7 @@ namespace SpatialSlur
         {
             throw new NotImplementedException();
         }
+#endif
 
         #endregion
 
@@ -475,6 +476,25 @@ namespace SpatialSlur
 
 
         /// <summary>
+        /// Expands this interval to include another
+        /// </summary>
+        /// <param name="other"></param>
+        public void Include(Intervalf other)
+        {
+            if (IsDecreasing)
+            {
+                IncludeDecreasing(other.A);
+                IncludeDecreasing(other.B);
+            }
+            else
+            {
+                IncludeIncreasing(other.A);
+                IncludeIncreasing(other.B);
+            }
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="t"></param>
@@ -493,17 +513,6 @@ namespace SpatialSlur
         {
             if (t > B) B = t;
             else if (t < A) A = t;
-        }
-
-
-        /// <summary>
-        /// Expands this interval to include another
-        /// </summary>
-        /// <param name="other"></param>
-        public void Include(Intervalf other)
-        {
-            Include(other.A);
-            Include(other.B);
         }
 
 

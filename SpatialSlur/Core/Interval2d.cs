@@ -118,34 +118,6 @@ namespace SpatialSlur
             return point;
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="d0"></param>
-        /// <param name="d1"></param>
-        /// <returns></returns>
-        public static Interval2d Intersect(Interval2d d0, Interval2d d1)
-        {
-            d0.X = Intervald.Intersect(d0.X, d1.X);
-            d0.Y = Intervald.Intersect(d0.Y, d1.Y);
-            return d0;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Interval2d Union(Interval2d a, Interval2d b)
-        {
-            a.X = Intervald.Union(a.X, b.X);
-            a.Y = Intervald.Union(a.Y, b.Y);
-            return a;
-        }
-
         #endregion
 
 

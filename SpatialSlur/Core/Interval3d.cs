@@ -124,36 +124,6 @@ namespace SpatialSlur
             return point;
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="d0"></param>
-        /// <param name="d1"></param>
-        /// <returns></returns>
-        public static Interval3d Intersect(Interval3d d0, Interval3d d1)
-        {
-            d0.X = Intervald.Intersect(d0.X, d1.X);
-            d0.Y = Intervald.Intersect(d0.Y, d1.Y);
-            d0.Z = Intervald.Intersect(d0.Z, d1.Z);
-            return d0;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Interval3d Union(Interval3d a, Interval3d b)
-        {
-            a.X = Intervald.Union(a.X, b.X);
-            a.Y = Intervald.Union(a.Y, b.Y);
-            a.Z = Intervald.Union(a.Z, b.Z);
-            return a;
-        }
-
         #endregion
 
 
