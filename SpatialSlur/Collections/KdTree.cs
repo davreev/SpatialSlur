@@ -24,7 +24,7 @@ using System.Linq;
 namespace SpatialSlur.Collections
 {
     /// <summary>
-    /// Constains type-inferred static creation methods.
+    /// 
     /// </summary>
     public static class KdTree
     {
@@ -66,7 +66,7 @@ namespace SpatialSlur.Collections
 
     
     /// <summary>
-    /// Generic implementation of a k-dimensional binary search tree.
+    /// 
     /// </summary>
     [Serializable]
     public class KdTree<T>
@@ -514,8 +514,6 @@ namespace SpatialSlur.Collections
         /// <param name="value"></param>
         private void Insert(Node node, double[] point, T value)
         {
-            // faster than recursive implementation
-
             int n = _dimension;
             int i = 0;
 
@@ -624,6 +622,7 @@ namespace SpatialSlur.Collections
 
             node.Left = InsertBalanced(nodes, from, median, i);
             node.Right = InsertBalanced(nodes, median + 1, to, i);
+
             return node;
         }
 

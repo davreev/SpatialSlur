@@ -1,6 +1,9 @@
 ﻿
 /*
  * Notes
+ * 
+ * impl ref
+ * http://matthias-mueller-fischer.ch/publications/tetraederCollision.pdf
  */
 
 using System;
@@ -11,7 +14,6 @@ namespace SpatialSlur.Collections
 {
     /// <summary>
     /// Infinite uniform grid for broad phase collision detection between dynamic objects.
-    /// Implementation is based on http://matthias-mueller-fischer.ch/publications/tetraederCollision.pdf.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
