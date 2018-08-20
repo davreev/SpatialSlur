@@ -12,7 +12,7 @@ namespace SpatialSlur.Fields
     /// <summary>
     /// 
     /// </summary>
-    public interface ISampledField3d<T> : ISampledField<T>
+    public interface ISampledField3d<T> : ISampledField<T>, IField3d<T>
     {
         /// <summary>
         /// Returns all sample points used by this field.

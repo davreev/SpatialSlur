@@ -37,7 +37,6 @@ namespace SpatialSlur.Fields
 
 
         private HeMesh3d _mesh;
-        private NodeList<V> _vertices;
         private Mesh _queryMesh; // triangulated mesh for closest point queries and raycasts
 
 
@@ -58,7 +57,6 @@ namespace SpatialSlur.Fields
         public MeshField3d(MeshField3d other)
         {
             _mesh = other._mesh;
-            _vertices = other._vertices;
             _queryMesh = other._queryMesh;
         }
 
@@ -66,34 +64,17 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// Returns the mesh referenced by this field.
         /// </summary>
-        public HeMesh3d Mesh
+        public virtual HeMesh3d Mesh
         {
             get { return _mesh; }
             set
             {
                 _mesh = value ?? throw new ArgumentNullException();
-                _vertices = _mesh.Vertices;
                 RebuildQueryMesh();
             }
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        protected NodeList<V> Vertices
-        {
-            get { return _vertices; }
-        }
-
-
-        /// <inheritdoc />
-        public int Count
-        {
-            get { return _vertices.Count; }
-        }
-
-        
         /// <summary>
         /// This must be called after making changes to the referenced mesh
         /// </summary>
@@ -120,7 +101,7 @@ namespace SpatialSlur.Fields
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class MeshField3d<T> : MeshField3d, IField2d<T>, IField3d<T>, ISampledField3d<T>
+    public abstract class MeshField3d<T> : MeshField3d, ISampledField2d<T>, ISampledField3d<T>
         where T : struct
     {
         #region Static Members
@@ -131,13 +112,14 @@ namespace SpatialSlur.Fields
         /// <param name="field"></param>
         public static implicit operator ArrayView<T>(MeshField3d<T> field)
         {
-            return field._values.AsView(field.Count);
+            return field.Values;
         }
 
         #endregion
 
 
-        private T[] _values;
+        private T[] _values = Array.Empty<T>();
+        private int _count;
 
 
         /// <summary>
@@ -147,7 +129,7 @@ namespace SpatialSlur.Fields
         public MeshField3d(HeMesh3d mesh)
             : base(mesh)
         {
-            _values = new T[Count];
+            EnsureCapacity();
         }
 
 
@@ -158,23 +140,23 @@ namespace SpatialSlur.Fields
         public MeshField3d(MeshField3d other)
             : base(other)
         {
-            _values = new T[Count];
+            EnsureCapacity();
         }
 
 
         /// <inheritdoc />
         public ArrayView<T> Values
         {
-            get { return _values.AsView(Count); }
+            get { return _values.AsView(_count); }
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>
-        public int Capacity
+        public int Count
         {
-            get { return _values.Length; }
+            get { return _count; }
         }
 
 
@@ -232,8 +214,11 @@ namespace SpatialSlur.Fields
         /// </summary>
         public void EnsureCapacity()
         {
-            if (_values.Length < Vertices.Count)
-                Array.Resize(ref _values, Vertices.Capacity);
+            var verts = Mesh.Vertices;
+            _count = verts.Count;
+
+            if (_values.Length < _count)
+                Array.Resize(ref _values, verts.Capacity);
         }
 
 
@@ -242,7 +227,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public void TrimExcess()
         {
-            int max = Count << 1;
+            int max = _count << 1;
 
             if (_values.Length > max)
                 Array.Resize(ref _values, max);
@@ -250,13 +235,19 @@ namespace SpatialSlur.Fields
 
 
         #region Explicit Interface Implementations
-        
+
         ISampledField<T> ISampledField<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
         }
 
-        
+
+        ISampledField2d<T> ISampledField2d<T>.Duplicate(bool setValues)
+        {
+            return Duplicate(setValues);
+        }
+
+
         ISampledField3d<T> ISampledField3d<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
@@ -269,9 +260,21 @@ namespace SpatialSlur.Fields
         }
 
 
+        IEnumerable<Vector2d> ISampledField2d<T>.Points
+        {
+            get { return Mesh.Vertices.Select(v => v.Position.XY); }
+        }
+
+
         IEnumerable<Vector3d> ISampledField3d<T>.Points
         {
             get { return Mesh.Vertices.Select(v => v.Position); }
+        }
+
+
+        Vector2d ISampledField2d<T>.PointAt(int index)
+        {
+            return Mesh.Vertices[index].Position.XY;
         }
 
 

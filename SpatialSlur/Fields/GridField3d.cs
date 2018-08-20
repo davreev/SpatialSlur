@@ -36,7 +36,7 @@ namespace SpatialSlur.Fields
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class GridField3d<T> : Grid3d, IField2d<T>, IField3d<T>, ISampledField3d<T>
+    public abstract class GridField3d<T> : Grid3d, ISampledField3d<T>
         where T : struct
     {
         #region Static Members
@@ -679,12 +679,6 @@ namespace SpatialSlur.Fields
         }
 
 
-        T IField2d<T>.ValueAt(Vector2d point)
-        {
-            return ValueAt(new Vector3d(point.X, point.Y, 0.0));
-        }
-
-
         ISampledField<T> ISampledField<T>.Duplicate(bool setValues)
         {
             return Duplicate(setValues);
@@ -720,6 +714,6 @@ namespace SpatialSlur.Fields
             return ToWorldSpace(index);
         }
 
-        #endregion
+#endregion
     }
 }

@@ -22,7 +22,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         int Count { get; }
 
-        
+
         /// <summary>
         /// Returns a copy of this field.
         /// Note that that value array of the returned field is a deep copy but other fields may be shallow depending on the implementation.

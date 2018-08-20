@@ -36,7 +36,7 @@ namespace SpatialSlur.Fields
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class GridField2d<T> : Grid2d, IField2d<T>, IField3d<T>, ISampledField2d<T>, ISampledField3d<T>
+    public abstract class GridField2d<T> : Grid2d, ISampledField2d<T>, ISampledField3d<T>
         where T : struct
     {
         #region Static Members
@@ -579,7 +579,7 @@ namespace SpatialSlur.Fields
         {
             get { return _values; }
         }
-
+       
 
         int ISampledField<T>.Count
         {
@@ -652,6 +652,6 @@ namespace SpatialSlur.Fields
             return ToWorldSpace(index).As3d;
         }
 
-        #endregion
+#endregion
     }
 }
