@@ -8,6 +8,7 @@ using System.Linq;
 using SpatialSlur;
 using SpatialSlur.Meshes;
 using SpatialSlur.Dynamics;
+using SpatialSlur.Dynamics.Constraints;
 
 namespace SpatialSlur.Examples
 {
