@@ -12,6 +12,9 @@ using Rhino.Geometry;
 using SpatialSlur.Meshes;
 using SpatialSlur.Meshes.Impl;
 
+using Vec3d = Rhino.Geometry.Vector3d;
+using Vec3f = Rhino.Geometry.Vector3f;
+
 namespace SpatialSlur.Rhino
 {
     /// <summary>
@@ -33,7 +36,7 @@ namespace SpatialSlur.Rhino
             where E : HeMesh<V, E, F>.Halfedge
             where F : HeMesh<V, E, F>.Face
         {
-            return RhinoFactory.Mesh.CreateFromHeMesh(mesh, v => (Point3f)v.Position, null, null, null, quadrangulator);
+            return RhinoFactory.Mesh.CreateFromHeMesh(mesh, v => v.Position.As3f, null, null, null, quadrangulator);
         }
 
 
@@ -50,7 +53,7 @@ namespace SpatialSlur.Rhino
         /// <param name="getTexture"></param>
         /// <param name="getColor"></param>
         /// <returns></returns>
-        public static Mesh ToMesh<V, E, F>(this HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null, IFaceQuadrangulator quadrangulator = null)
+        public static Mesh ToMesh<V, E, F>(this HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vec3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null, IFaceQuadrangulator quadrangulator = null)
             where V : HeMesh<V, E, F>.Vertex
             where E : HeMesh<V, E, F>.Halfedge
             where F : HeMesh<V, E, F>.Face
@@ -74,7 +77,7 @@ namespace SpatialSlur.Rhino
             where E : HeMesh<V, E, F>.Halfedge
             where F : HeMesh<V, E, F>.Face
         {
-            return RhinoFactory.Mesh.CreatePolySoup(mesh, v => (Point3f)v.Position, getColor, quadrangulator);
+            return RhinoFactory.Mesh.CreatePolySoup(mesh, v => v.Position.As3f, getColor, quadrangulator);
         }
 
 

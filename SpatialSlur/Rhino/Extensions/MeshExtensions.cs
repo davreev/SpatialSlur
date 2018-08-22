@@ -16,6 +16,7 @@ using SpatialSlur.Collections;
 using SpatialSlur.Meshes;
 
 using Vec3d = Rhino.Geometry.Vector3d;
+using Vec3f = Rhino.Geometry.Vector3f;
 
 namespace SpatialSlur.Rhino
 {

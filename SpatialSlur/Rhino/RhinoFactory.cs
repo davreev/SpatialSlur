@@ -18,7 +18,7 @@ using SpatialSlur.Meshes;
 using SpatialSlur.Meshes.Impl;
 
 using Vec3d = Rhino.Geometry.Vector3d;
-
+using Vec3f = Rhino.Geometry.Vector3f;
 
 #region Mesh
 
@@ -464,7 +464,7 @@ namespace SpatialSlur.Rhino
             /// <param name="getTexture"></param>
             /// <param name="getColor"></param>
             /// <returns></returns>
-            public static T CreateFromHeMesh<V, E, F>(HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null, IFaceQuadrangulator quadrangulator = null)
+            public static T CreateFromHeMesh<V, E, F>(HeMesh<V, E, F> mesh, Func<V, Point3f> getPosition, Func<V, Vec3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null, IFaceQuadrangulator quadrangulator = null)
                 where V : HeMesh<V, E, F>.Vertex
                 where E : HeMesh<V, E, F>.Halfedge
                 where F : HeMesh<V, E, F>.Face
@@ -551,7 +551,7 @@ namespace SpatialSlur.Rhino
             /// <param name="getTexture"></param>
             /// <param name="getColor"></param>
             /// <returns></returns>
-            public static T CreateFromQuadStrip<V, E, F>(QuadStrip<V, E, F> strip, Func<V, Point3f> getPosition, Func<V, Vector3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null)
+            public static T CreateFromQuadStrip<V, E, F>(QuadStrip<V, E, F> strip, Func<V, Point3f> getPosition, Func<V, Vec3f> getNormal = null, Func<V, Point2f> getTexture = null, Func<V, Color> getColor = null)
                 where V : HeMesh<V, E, F>.Vertex
                 where E : HeMesh<V, E, F>.Halfedge
                 where F : HeMesh<V, E, F>.Face
