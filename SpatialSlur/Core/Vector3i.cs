@@ -400,6 +400,15 @@ namespace SpatialSlur
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector3f As3f
+        {
+            get => new Vector3f(X, Y, Z);
+        }
+
+
         /// <inheritdoc />
         public override string ToString()
         {

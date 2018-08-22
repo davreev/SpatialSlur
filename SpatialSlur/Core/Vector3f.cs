@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using F = SpatialSlur.SlurMath.Constantsf;
 
 namespace SpatialSlur
 {
@@ -13,25 +13,25 @@ namespace SpatialSlur
     /// 
     /// </summary>
     [Serializable]
-    public partial struct Vector3d
+    public partial struct Vector3f
     {
         #region Static Members
 
         /// <summary></summary>
-        public static readonly Vector3d Zero = new Vector3d();
+        public static readonly Vector3f Zero = new Vector3f();
         /// <summary></summary>
-        public static readonly Vector3d UnitX = new Vector3d(1.0, 0.0, 0.0);
+        public static readonly Vector3f UnitX = new Vector3f(1.0f, 0.0f, 0.0f);
         /// <summary></summary>
-        public static readonly Vector3d UnitY = new Vector3d(0.0, 1.0, 0.0);
+        public static readonly Vector3f UnitY = new Vector3f(0.0f, 1.0f, 0.0f);
         /// <summary></summary>
-        public static readonly Vector3d UnitZ = new Vector3d(0.0, 0.0, 1.0);
+        public static readonly Vector3f UnitZ = new Vector3f(0.0f, 0.0f, 1.0f);
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="vector"></param>
-        public static implicit operator string(Vector3d vector)
+        public static implicit operator string(Vector3f vector)
         {
             return vector.ToString();
         }
@@ -41,19 +41,9 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="vector"></param>
-        public static implicit operator Vector3d(Vector3f vector)
+        public static implicit operator Vector3f(Vector3i vector)
         {
-            return vector.As3d;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vector"></param>
-        public static implicit operator Vector3d(Vector3i vector)
-        {
-            return vector.As3d;
+            return vector.As3f;
         }
 
 
@@ -63,7 +53,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d operator +(Vector3d v0, Vector3d v1)
+        public static Vector3f operator +(Vector3f v0, Vector3f v1)
         {
             v0.X += v1.X;
             v0.Y += v1.Y;
@@ -78,7 +68,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d operator -(Vector3d v0, Vector3d v1)
+        public static Vector3f operator -(Vector3f v0, Vector3f v1)
         {
             v0.X -= v1.X;
             v0.Y -= v1.Y;
@@ -92,7 +82,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vector3d operator -(Vector3d vector)
+        public static Vector3f operator -(Vector3f vector)
         {
             vector.X = -vector.X;
             vector.Y = -vector.Y;
@@ -107,7 +97,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vector3d operator *(Vector3d vector, double scalar)
+        public static Vector3f operator *(Vector3f vector, float scalar)
         {
             vector.X *= scalar;
             vector.Y *= scalar;
@@ -122,7 +112,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vector3d operator *(double scalar, Vector3d vector)
+        public static Vector3f operator *(float scalar, Vector3f vector)
         {
             vector.X *= scalar;
             vector.Y *= scalar;
@@ -137,7 +127,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d operator *(Vector3d v0, Vector3d v1)
+        public static Vector3f operator *(Vector3f v0, Vector3f v1)
         {
             v0.X *= v1.X;
             v0.Y *= v1.Y;
@@ -152,9 +142,9 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vector3d operator /(Vector3d vector, double scalar)
+        public static Vector3f operator /(Vector3f vector, float scalar)
         {
-            scalar = 1.0 / scalar;
+            scalar = 1.0f / scalar;
             vector.X *= scalar;
             vector.Y *= scalar;
             vector.Z *= scalar;
@@ -168,7 +158,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="scalar"></param>
         /// <returns></returns>
-        public static Vector3d operator /(double scalar, Vector3d vector)
+        public static Vector3f operator /(float scalar, Vector3f vector)
         {
             vector.X = scalar / vector.X;
             vector.Y = scalar / vector.Y;
@@ -183,7 +173,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d operator /(Vector3d v0, Vector3d v1)
+        public static Vector3f operator /(Vector3f v0, Vector3f v1)
         {
             v0.X /= v1.X;
             v0.Y /= v1.Y;
@@ -198,9 +188,9 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static Vector3d Max(Vector3d vector, double value)
+        public static Vector3f Max(Vector3f vector, float value)
         {
-            return new Vector3d(
+            return new Vector3f(
                 Math.Max(vector.X, value), 
                 Math.Max(vector.Y, value), 
                 Math.Max(vector.Z, value));
@@ -213,9 +203,9 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d Max(Vector3d v0, Vector3d v1)
+        public static Vector3f Max(Vector3f v0, Vector3f v1)
         {
-            return new Vector3d(
+            return new Vector3f(
                 Math.Max(v0.X, v1.X), 
                 Math.Max(v0.Y, v1.Y), 
                 Math.Max(v0.Z, v1.Z));
@@ -228,9 +218,9 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static Vector3d Min(Vector3d vector, double value)
+        public static Vector3f Min(Vector3f vector, float value)
         {
-            return new Vector3d(
+            return new Vector3f(
                 Math.Min(vector.X, value), 
                 Math.Min(vector.Y, value), 
                 Math.Min(vector.Z, value));
@@ -243,9 +233,9 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d Min(Vector3d v0, Vector3d v1)
+        public static Vector3f Min(Vector3f v0, Vector3f v1)
         {
-            return new Vector3d(
+            return new Vector3f(
                 Math.Min(v0.X, v1.X), 
                 Math.Min(v0.Y, v1.Y), 
                 Math.Min(v0.Z, v1.Z));
@@ -257,9 +247,9 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vector3d Abs(Vector3d vector)
+        public static Vector3f Abs(Vector3f vector)
         {
-            return new Vector3d(
+            return new Vector3f(
                 Math.Abs(vector.X), 
                 Math.Abs(vector.Y), 
                 Math.Abs(vector.Z));
@@ -271,12 +261,12 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vector3d Floor(Vector3d vector)
+        public static Vector3f Floor(Vector3f vector)
         {
-            return new Vector3d(
-               Math.Floor(vector.X),
-               Math.Floor(vector.Y),
-               Math.Floor(vector.Z));
+            return new Vector3f(
+               SlurMath.Floor(vector.X),
+               SlurMath.Floor(vector.Y),
+               SlurMath.Floor(vector.Z));
         }
 
 
@@ -285,12 +275,12 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vector3d Ceiling(Vector3d vector)
+        public static Vector3f Ceiling(Vector3f vector)
         {
-            return new Vector3d(
-               Math.Ceiling(vector.X),
-               Math.Ceiling(vector.Y),
-               Math.Ceiling(vector.Z));
+            return new Vector3f(
+               SlurMath.Ceiling(vector.X),
+               SlurMath.Ceiling(vector.Y),
+               SlurMath.Ceiling(vector.Z));
         }
 
 
@@ -299,24 +289,24 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static Vector3d Round(Vector3d vector)
+        public static Vector3f Round(Vector3f vector)
         {
-            return new Vector3d(
-               Math.Round(vector.X),
-               Math.Round(vector.Y),
-               Math.Round(vector.Z));
+            return new Vector3f(
+               SlurMath.Round(vector.X),
+               SlurMath.Round(vector.Y),
+               SlurMath.Round(vector.Z));
         }
 
         
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="vector"></param>
         /// <param name="whole"></param>
         /// <returns></returns>
-        public static Vector3d Fract(Vector3d vector, out Vector3i whole)
+        public static Vector3f Fract(Vector3f vector, out Vector3i whole)
         {
-            return new Vector3d(
+            return new Vector3f(
                SlurMath.Fract(vector.X, out whole.X),
                SlurMath.Fract(vector.Y, out whole.Y),
                SlurMath.Fract(vector.Z, out whole.Z));
@@ -329,7 +319,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double Dot(Vector3d v0, Vector3d v1)
+        public static float Dot(Vector3f v0, Vector3f v1)
         {
             return v0.X * v1.X + v0.Y * v1.Y + v0.Z * v1.Z;
         }
@@ -341,7 +331,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double AbsDot(Vector3d v0, Vector3d v1)
+        public static float AbsDot(Vector3f v0, Vector3f v1)
         {
             return Math.Abs(v0.X * v1.X) + Math.Abs(v0.Y * v1.Y) + Math.Abs(v0.Z * v1.Z);
         }
@@ -353,9 +343,9 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d Cross(Vector3d v0, Vector3d v1)
+        public static Vector3f Cross(Vector3f v0, Vector3f v1)
         {
-            return new Vector3d(
+            return new Vector3f(
                 v0.Y * v1.Z - v0.Z * v1.Y,
                 v0.Z * v1.X - v0.X * v1.Z,
                 v0.X * v1.Y - v0.Y * v1.X);
@@ -369,7 +359,7 @@ namespace SpatialSlur
         /// <param name="v"></param>
         /// <param name="w"></param>
         /// <returns></returns>
-        public static double ScalarTriple(Vector3d u, Vector3d v, Vector3d w)
+        public static float ScalarTriple(Vector3f u, Vector3f v, Vector3f w)
         {
             return Dot(Cross(u, v), w);
         }
@@ -382,7 +372,7 @@ namespace SpatialSlur
         /// <param name="v"></param>
         /// <param name="w"></param>
         /// <returns></returns>
-        public static Vector3d VectorTriple(Vector3d u, Vector3d v, Vector3d w)
+        public static Vector3f VectorTriple(Vector3f u, Vector3f v, Vector3f w)
         {
             return v * Cross(u, w) - w * Cross(u, v);
         }
@@ -394,10 +384,10 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double Angle(Vector3d v0, Vector3d v1)
+        public static float Angle(Vector3f v0, Vector3f v1)
         {
             var d = v0.SquareLength * v1.SquareLength;
-            return d > 0.0 ? SlurMath.AcosSafe(Dot(v0, v1) / Math.Sqrt(d)) : 0.0;
+            return d > 0.0f ? SlurMath.AcosSafe(Dot(v0, v1) / SlurMath.Sqrt(d)) : 0.0f;
         }
 
 
@@ -408,10 +398,10 @@ namespace SpatialSlur
         /// <param name="v1"></param>
         /// <param name="up"></param>
         /// <returns></returns>
-        public static double SignedAngle(Vector3d v0, Vector3d v1, Vector3d up)
+        public static float SignedAngle(Vector3f v0, Vector3f v1, Vector3f up)
         {
             var c = Cross(v0, v1);
-            return Math.Atan2(c.Length * Math.Sign(Dot(c, up)), Dot(v0, v1));
+            return SlurMath.Atan2(c.Length * Math.Sign(Dot(c, up)), Dot(v0, v1));
         }
 
 
@@ -421,7 +411,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static double Cotangent(Vector3d v0, Vector3d v1)
+        public static float Cotangent(Vector3f v0, Vector3f v1)
         {
             return Dot(v0, v1) / Cross(v0, v1).Length;
         }
@@ -433,7 +423,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d Project(Vector3d v0, Vector3d v1)
+        public static Vector3f Project(Vector3f v0, Vector3f v1)
         {
             return Dot(v0, v1) / v1.SquareLength * v1;
         }
@@ -446,7 +436,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d Reject(Vector3d v0, Vector3d v1)
+        public static Vector3f Reject(Vector3f v0, Vector3f v1)
         {
             return v0 - Project(v0, v1);
         }
@@ -458,10 +448,10 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d Reflect(Vector3d v0, Vector3d v1)
+        public static Vector3f Reflect(Vector3f v0, Vector3f v1)
         {
             //return Project(v0, v1) * 2.0 - v0;
-            return v1 * (Dot(v0, v1) / v1.SquareLength * 2.0) - v0;
+            return v1 * (Dot(v0, v1) / v1.SquareLength * 2.0f) - v0;
         }
 
 
@@ -471,7 +461,7 @@ namespace SpatialSlur
         /// <param name="v0"></param>
         /// <param name="v1"></param>
         /// <returns></returns>
-        public static Vector3d MatchProjection(Vector3d v0, Vector3d v1)
+        public static Vector3f MatchProjection(Vector3f v0, Vector3f v1)
         {
             return v1.SquareLength / Dot(v0, v1) * v0;
         }
@@ -484,7 +474,7 @@ namespace SpatialSlur
         /// <param name="v1"></param>
         /// <param name="v2"></param>
         /// <returns></returns>
-        public static Vector3d MatchProjection(Vector3d v0, Vector3d v1, Vector3d v2)
+        public static Vector3f MatchProjection(Vector3f v0, Vector3f v1, Vector3f v2)
         {
             return Dot(v1, v2) / Dot(v0, v2) * v0;
         }
@@ -497,7 +487,7 @@ namespace SpatialSlur
         /// <param name="v1"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vector3d Lerp(Vector3d v0, Vector3d v1, double factor)
+        public static Vector3f Lerp(Vector3f v0, Vector3f v1, float factor)
         {
             return v0.LerpTo(v1, factor);
         }
@@ -510,7 +500,7 @@ namespace SpatialSlur
         /// <param name="v1"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vector3d Slerp(Vector3d v0, Vector3d v1, double factor)
+        public static Vector3f Slerp(Vector3f v0, Vector3f v1, float factor)
         {
             return v0.SlerpTo(v1, Angle(v0, v1), factor);
         }
@@ -524,7 +514,7 @@ namespace SpatialSlur
         /// <param name="angle"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public static Vector3d Slerp(Vector3d v0, Vector3d v1, double angle, double factor)
+        public static Vector3f Slerp(Vector3f v0, Vector3f v1, float angle, float factor)
         {
             return v0.SlerpTo(v1, angle, factor);
         }
@@ -533,18 +523,18 @@ namespace SpatialSlur
 
 
         /// <summary></summary>
-        public double X;
+        public float X;
         /// <summary></summary>
-        public double Y;
+        public float Y;
         /// <summary></summary>
-        public double Z;
+        public float Z;
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="xyz"></param>
-        public Vector3d(double xyz)
+        public Vector3f(float xyz)
         {
             X = Y = Z = xyz;
         }
@@ -556,7 +546,7 @@ namespace SpatialSlur
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public Vector3d(double x, double y, double z)
+        public Vector3f(float x, float y, float z)
         {
             X = x;
             Y = y;
@@ -564,12 +554,13 @@ namespace SpatialSlur
         }
 
 
+#if false
         /// <summary>
         /// 
         /// </summary>
         /// <param name="other"></param>
         /// <param name="z"></param>
-        public Vector3d(Vector2d other, double z)
+        public Vector3f(Vector2f other, float z)
         {
             X = other.X;
             Y = other.Y;
@@ -580,40 +571,11 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public Vector2d XY
+        public Vector2f XY
         {
-            get { return new Vector2d(X, Y); }
+            get { return new Vector2f(X, Y); }
         }
-
-
-        /// <summary>
-        /// Returns the cross product of this vector vector with the x Axis
-        /// </summary>
-        /// <returns></returns>
-        public Vector3d CrossX
-        {
-            get => new Vector3d(0.0, Z, -Y);
-        }
-
-
-        /// <summary>
-        /// Returns the cross product of this vector with the Y Axis
-        /// </summary>
-        /// <returns></returns>
-        public Vector3d CrossY
-        {
-            get => new Vector3d(-Z, 0.0, X);
-        }
-
-
-        /// <summary>
-        /// Returns the cross product of this vector with the Y Axis
-        /// </summary>
-        /// <returns></returns>
-        public Vector3d CrossZ
-        {
-            get => new Vector3d(Y, -X, 0.0);
-        }
+#endif
 
 
         /// <summary>
@@ -621,7 +583,7 @@ namespace SpatialSlur
         /// Returns the zero vector if this vector is zero length.
         /// </summary>
         /// <returns></returns>
-        public Vector3d Unit
+        public Vector3f Unit
         {
             get
             {
@@ -635,9 +597,9 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <returns></returns>
-        public double Length
+        public float Length
         {
-            get { return Math.Sqrt(SquareLength); }
+            get { return SlurMath.Sqrt(SquareLength); }
         }
 
 
@@ -645,7 +607,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <returns></returns>
-        public double SquareLength
+        public float SquareLength
         {
             get { return X * X + Y * Y + Z * Z; }
         }
@@ -655,7 +617,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <returns></returns>
-        public double ManhattanLength
+        public float ManhattanLength
         {
             get { return Math.Abs(X) + Math.Abs(Y) + Math.Abs(Z); }
         }
@@ -664,7 +626,7 @@ namespace SpatialSlur
         /// <summary>
         /// Returns the sum of components.
         /// </summary>
-        public double ComponentSum
+        public float ComponentSum
         {
             get { return X + Y + Z; }
         }
@@ -673,11 +635,11 @@ namespace SpatialSlur
         /// <summary>
         /// Returns the mean of components.
         /// </summary>
-        public double ComponentMean
+        public float ComponentMean
         {
             get
             {
-                const double inv3 = 1.0 / 3.0;
+                const float inv3 = 1.0f / 3.0f;
                 return (X + Y + Z) * inv3;
             }
         }
@@ -687,7 +649,7 @@ namespace SpatialSlur
         /// Returns the largest component in the vector.
         /// </summary>
         /// <returns></returns>
-        public double ComponentMax
+        public float ComponentMax
         {
             get { return Math.Max(X, Math.Max(Y, Z)); }
         }
@@ -697,7 +659,7 @@ namespace SpatialSlur
         /// Returns the smallest component in the vector.
         /// </summary>
         /// <returns></returns>
-        public double ComponentMin
+        public float ComponentMin
         {
             get { return Math.Min(X, Math.Min(Y, Z)); }
         }
@@ -706,9 +668,9 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public Vector3f As3f
+        public Vector3d As3d
         {
-            get => new Vector3f((float)X, (float)Y, (float)Z);
+            get => new Vector3d(X, Y, Z);
         }
 
 
@@ -734,7 +696,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance = D.ZeroTolerance)
+        public bool IsZero(float tolerance = F.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -743,9 +705,9 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance = D.ZeroTolerance)
+        public bool IsUnit(float tolerance = F.ZeroTolerance)
         {
-            return SlurMath.ApproxEquals(SquareLength, 1.0, tolerance);
+            return SlurMath.ApproxEquals(SquareLength, 1.0f, tolerance);
         }
 
 
@@ -760,7 +722,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="xyz"></param>
-        public void Set(double xyz)
+        public void Set(float xyz)
         {
             X = Y = Z = xyz;
         }
@@ -772,7 +734,7 @@ namespace SpatialSlur
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public void Set(double x, double y, double z)
+        public void Set(float x, float y, float z)
         {
             X = x;
             Y = y;
@@ -785,10 +747,10 @@ namespace SpatialSlur
         /// (x,y,z) = (radius, azimuth, polar)
         /// </summary>
         /// <returns></returns>
-        public Vector3d ToSpherical()
+        public Vector3f ToSpherical()
         {
-            double r = Length;
-            return new Vector3d(r, Math.Atan(Y / X), SlurMath.AcosSafe(Z / r));
+            float r = Length;
+            return new Vector3f(r, SlurMath.Atan(Y / X), SlurMath.AcosSafe(Z / r));
         }
 
 
@@ -797,10 +759,10 @@ namespace SpatialSlur
         /// (x,y,z) = (radius, azimuth, polar)
         /// </summary>
         /// <returns></returns>
-        public Vector3d ToEuclidean()
+        public Vector3f ToEuclidean()
         {
-            double rxy = Math.Sin(Z) * X * X;
-            return new Vector3d(Math.Cos(Y) * rxy, Math.Sin(Y) * rxy, Math.Cos(Z) * X);
+            float rxy = SlurMath.Sin(Z) * X * X;
+            return new Vector3f(SlurMath.Cos(Y) * rxy, SlurMath.Sin(Y) * rxy, SlurMath.Cos(Z) * X);
         }
 
 
@@ -810,7 +772,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vector3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Vector3f other, float epsilon = F.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&
@@ -824,7 +786,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public double DistanceTo(Vector3d other)
+        public float DistanceTo(Vector3f other)
         {
             other.X -= X;
             other.Y -= Y;
@@ -838,7 +800,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public double SquareDistanceTo(Vector3d other)
+        public float SquareDistanceTo(Vector3f other)
         {
             other.X -= X;
             other.Y -= Y;
@@ -852,7 +814,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public double ManhattanDistanceTo(Vector3d other)
+        public float ManhattanDistanceTo(Vector3f other)
         {
             other.X -= X;
             other.Y -= Y;
@@ -867,11 +829,11 @@ namespace SpatialSlur
         /// </summary>
         public bool Unitize()
         {
-            double d = SquareLength;
+            float d = SquareLength;
 
-            if (d > 0.0)
+            if (d > 0.0f)
             {
-                d = 1.0 / Math.Sqrt(d);
+                d = 1.0f / SlurMath.Sqrt(d);
                 X *= d;
                 Y *= d;
                 Z *= d;
@@ -899,9 +861,9 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public Vector3d LerpTo(Vector3d other, double factor)
+        public Vector3f LerpTo(Vector3f other, float factor)
         {
-            return new Vector3d(
+            return new Vector3f(
                 X + (other.X - X) * factor,
                 Y + (other.Y - Y) * factor,
                 Z + (other.Z - Z) * factor);
@@ -914,7 +876,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public Vector3d SlerpTo(Vector3d other, double factor)
+        public Vector3f SlerpTo(Vector3f other, float factor)
         {
             return SlerpTo(other, Angle(this, other), factor);
         }
@@ -927,16 +889,16 @@ namespace SpatialSlur
         /// <param name="angle"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public Vector3d SlerpTo(Vector3d other, double angle, double factor)
+        public Vector3f SlerpTo(Vector3f other, float angle, float factor)
         {
-            var sa = Math.Sin(angle);
+            var sa = SlurMath.Sin(angle);
 
             // handle aligned cases
-            if (sa > 0.0)
+            if (sa > 0.0f)
             {
-                var saInv = 1.0 / sa;
+                var saInv = 1.0f / sa;
                 var af = angle * factor;
-                return this * Math.Sin(angle - af) * saInv + other * Math.Sin(af) * saInv;
+                return this * SlurMath.Sin(angle - af) * saInv + other * SlurMath.Sin(af) * saInv;
             }
 
             return this;
@@ -944,12 +906,42 @@ namespace SpatialSlur
 
 
         /// <summary>
+        /// Returns the cross product of this vector vector with the x Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f CrossX()
+        {
+            return new Vector3f(0.0f, Z, -Y);
+        }
+
+
+        /// <summary>
+        /// Returns the cross product of this vector with the Y Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f CrossY()
+        {
+            return new Vector3f(-Z, 0.0f, X);
+        }
+
+
+        /// <summary>
+        /// Returns the cross product of this vector with the Y Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f CrossZ()
+        {
+            return new Vector3f(Y, -X, 0.0f);
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public double[] ToArray()
+        public float[] ToArray()
         {
-            var result = new double[3];
+            var result = new float[3];
             ToArray(result);
             return result;
         }
@@ -959,7 +951,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void ToArray(double[] result)
+        public void ToArray(float[] result)
         {
             result[0] = X;
             result[1] = Y;
@@ -973,7 +965,7 @@ namespace SpatialSlur
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public void Deconstruct(out double x, out double y, out double z)
+        public void Deconstruct(out float x, out float y, out float z)
         {
             x = X;
             y = Y;
