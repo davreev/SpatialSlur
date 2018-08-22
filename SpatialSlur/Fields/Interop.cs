@@ -15,7 +15,7 @@ using SpatialSlur.Fields;
 namespace SpatialSlur
 {
     /// <summary>
-    /// Static methods for importing and exporting types belonging to SpatialSlur.Fields
+    /// Static methods for importing from and exporting to external formats.
     /// </summary>
     public static partial class Interop
     {

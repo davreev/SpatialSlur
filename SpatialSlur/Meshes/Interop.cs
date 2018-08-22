@@ -22,7 +22,7 @@ namespace SpatialSlur
     public static partial class Interop
     {
         /// <summary>
-        /// Static methods for importing and exporting types belonging to SpatialSlur.Meshes
+        /// Static methods for importing from and exporting to external formats.
         /// </summary>
         public static class Meshes
         {

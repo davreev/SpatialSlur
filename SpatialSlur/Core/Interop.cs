@@ -10,7 +10,7 @@ using System.Runtime.Serialization.Json;
 namespace SpatialSlur
 {
     /// <summary>
-    /// Static methods for importing and exporting types belonging to this namespace.
+    /// Static methods for importing from and exporting to external formats.
     /// </summary>
     public static partial class Interop
     {
