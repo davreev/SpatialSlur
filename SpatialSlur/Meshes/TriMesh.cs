@@ -1,7 +1,7 @@
 ﻿
 /*
  * Notes
- */ 
+ */
 
 using System;
 using SpatialSlur.Collections;
@@ -11,7 +11,8 @@ namespace SpatialSlur.Meshes
     /// <summary>
     /// Simple face-vertex representation of a triangle mesh.
     /// </summary>
-    public class TriMesh
+    public abstract class TriMesh<TVector>
+        where TVector : struct
     {
         #region Static Members
 
@@ -69,8 +70,8 @@ namespace SpatialSlur.Meshes
         #endregion
 
 
-        private Vector3d[] _positions = Array.Empty<Vector3d>();
-        private Vector3d[] _normals = Array.Empty<Vector3d>();
+        private TVector[] _positions = Array.Empty<TVector>();
+        private TVector[] _normals = Array.Empty<TVector>();
         private Vector3i[] _faces = Array.Empty<Vector3i>();
 
         private int _positionCount;
@@ -91,8 +92,8 @@ namespace SpatialSlur.Meshes
         /// </summary>
         public TriMesh(int positionCapacity, int normalCapacity, int faceCapacity)
         {
-            _positions = new Vector3d[positionCapacity];
-            _normals = new Vector3d[normalCapacity];
+            _positions = new TVector[positionCapacity];
+            _normals = new TVector[normalCapacity];
             _faces = new Vector3i[faceCapacity];
         }
 
@@ -101,7 +102,7 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public TriMesh(TriMesh other)
+        public TriMesh(TriMesh<TVector> other)
         {
             _positions = other._positions.ShallowCopy();
             _normals = other._normals.ShallowCopy();
@@ -116,7 +117,7 @@ namespace SpatialSlur.Meshes
         /// <summary>
         /// Returns the array of vertex positions
         /// </summary>
-        public ArrayView<Vector3d> Positions
+        public ArrayView<TVector> Positions
         {
             get { return _positions.AsView(_positionCount); }
         }
@@ -125,7 +126,7 @@ namespace SpatialSlur.Meshes
         /// <summary>
         /// Returns the array of vertex normals
         /// </summary>
-        public ArrayView<Vector3d> Normals
+        public ArrayView<TVector> Normals
         {
             get { return _normals.AsView(_normalCount); }
         }
@@ -144,7 +145,7 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <param name="position"></param>
-        public void AddPosition(Vector3d position)
+        public void AddPosition(TVector position)
         {
             Add(ref _positions, _positionCount++, position);
         }
@@ -154,7 +155,7 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <param name="normal"></param>
-        public void AddNormal(Vector3d normal)
+        public void AddNormal(TVector normal)
         {
             Add(ref _normals, _normalCount++, normal);
         }
@@ -174,7 +175,7 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public void Append(TriMesh other)
+        public void Append(TriMesh<TVector> other)
         {
             Append(ref _positions, _positionCount, other._positions, other._positionCount);
             Append(ref _normals, _normalCount, other._normals, other._normalCount);
