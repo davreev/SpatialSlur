@@ -122,6 +122,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Core\Vector3f.cs" />
     <Compile Include="Dynamics\Body.cs" />
     <Compile Include="Dynamics\BodyPosition.cs" />
     <Compile Include="Dynamics\BodyRotation.cs" />
@@ -294,6 +295,9 @@
     <Compile Include="Meshes\TriMesh.cs" />
     <Compile Include="Meshes\Delegates.cs" />
     <Compile Include="Meshes\Matrix.cs" />
+    <Compile Include="Meshes\TriMesh2d.cs" />
+    <Compile Include="Meshes\TriMesh3d.cs" />
+    <Compile Include="Meshes\TriMesh3f.cs" />
     <Compile Include="Rhino\Extensions\ArrayViewExtensions.cs" />
     <Compile Include="Rhino\Extensions\PriorityQueueExtensions.cs" />
     <Compile Include="Rhino\Isosurface.cs" />
@@ -370,7 +374,6 @@
     <Compile Include="Unity\Extensions\ArrayExtensions.cs" />
     <Compile Include="Unity\Extensions\IReadOnlyListExtensions.cs" />
     <Compile Include="Unity\Extensions\Matrix4x4Extensions.cs" />
-    <Compile Include="Unity\SlurMath.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tools\Extensions\" />
