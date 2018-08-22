@@ -9,6 +9,8 @@ using System.Linq;
 
 using SpatialSlur.Collections;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur
 {
     /// <summary>
@@ -603,7 +605,7 @@ namespace SpatialSlur
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<Vector2d> RemoveCoincident(this IEnumerable<Vector2d> points, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<Vector2d> RemoveCoincident(this IEnumerable<Vector2d> points, double tolerance = D.ZeroTolerance)
         {
             return Proximity.RemoveCoincident(points, p => p, tolerance);
         }
@@ -616,7 +618,7 @@ namespace SpatialSlur
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vector2d> RemoveCoincident(this IEnumerable<Vector2d> points, out List<int> indexMap, double tolerance = SlurMath.ZeroToleranced)
+        public static List<Vector2d> RemoveCoincident(this IEnumerable<Vector2d> points, out List<int> indexMap, double tolerance = D.ZeroTolerance)
         {
             return Proximity.RemoveCoincident(points, p => p, out indexMap, tolerance);
         }
@@ -667,7 +669,7 @@ namespace SpatialSlur
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<Vector3d> RemoveCoincident(this IEnumerable<Vector3d> points, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<Vector3d> RemoveCoincident(this IEnumerable<Vector3d> points, double tolerance = D.ZeroTolerance)
         {
             return Proximity.RemoveCoincident(points, p => p, tolerance);
         }
@@ -680,7 +682,7 @@ namespace SpatialSlur
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<Vector3d> RemoveCoincident(this IEnumerable<Vector3d> points, out List<int> indexMap, double tolerance = SlurMath.ZeroToleranced)
+        public static List<Vector3d> RemoveCoincident(this IEnumerable<Vector3d> points, out List<int> indexMap, double tolerance = D.ZeroTolerance)
         {
             return Proximity.RemoveCoincident(points, p => p, out indexMap, tolerance);
         }

@@ -4,7 +4,10 @@
  */
 
 using System;
+using static System.Math;
 using static SpatialSlur.SlurMath;
+
+using D = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -241,7 +244,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Matrix4d CreateJacobian(Func<Vector4d, Vector4d> function, Vector4d vector, double epsilon = ZeroToleranced)
+        public static Matrix4d CreateJacobian(Func<Vector4d, Vector4d> function, Vector4d vector, double epsilon = D.ZeroTolerance)
         {
             (var x, var y, var z, var w) = vector;
 
@@ -887,7 +890,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool IsSymmetric(double epsilon = ZeroToleranced)
+        public bool IsSymmetric(double epsilon = D.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(M01, M10) &&
@@ -1073,7 +1076,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Matrix4d other, double epsilon = ZeroToleranced)
+        public bool ApproxEquals(Matrix4d other, double epsilon = D.ZeroTolerance)
         {
             return ApproxEquals(ref other, epsilon);
         }
@@ -1085,7 +1088,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(ref Matrix4d other, double epsilon = ZeroToleranced)
+        public bool ApproxEquals(ref Matrix4d other, double epsilon = D.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(M00, other.M00, epsilon) &&

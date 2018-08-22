@@ -8,6 +8,8 @@ using System.Linq;
 
 using SpatialSlur;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Fields
 {
     /// <summary>
@@ -19,7 +21,7 @@ namespace SpatialSlur.Fields
         /// 
         /// </summary>
         /// <returns></returns>
-        public abstract IDWField3d<T> Create(double power, double epsilon = SlurMath.ZeroToleranced);
+        public abstract IDWField3d<T> Create(double power, double epsilon = D.ZeroTolerance);
 
 
         /// <summary>

@@ -6,6 +6,8 @@
 using System;
 using static SpatialSlur.Utilities;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur
 {
     /// <summary>
@@ -761,7 +763,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(OrthoBasis3d other, double epsilon = SlurMath.ZeroToleranced)
+        public bool ApproxEquals(OrthoBasis3d other, double epsilon = D.ZeroTolerance)
         {
             return ApproxEquals(ref other, epsilon);
         }
@@ -773,7 +775,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(ref OrthoBasis3d other, double epsilon = SlurMath.ZeroToleranced)
+        public bool ApproxEquals(ref OrthoBasis3d other, double epsilon = D.ZeroTolerance)
         {
             return
                 _x.ApproxEquals(other._x, epsilon) &&

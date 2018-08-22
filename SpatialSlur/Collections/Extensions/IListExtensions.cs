@@ -271,7 +271,7 @@ namespace SpatialSlur.Collections
                 return;
             }
 
-            offset = SlurMath.RepeatPositive(offset, to - from);
+            offset = SlurMath.RepeatPos(offset, to - from);
             Reverse(list, from, from + offset);
             Reverse(list, from + offset, to);
             Reverse(list, from, to);

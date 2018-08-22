@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur
 {
     /// <summary>
@@ -191,7 +193,7 @@ namespace SpatialSlur
             A = B = values.First();
 
             foreach (var t in values.Skip(1))
-                IncludeIncreasing(t);
+                IncludePos(t);
         }
 
 
@@ -303,7 +305,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Intervald other, double epsilon = SlurMath.ZeroToleranced)
+        public bool ApproxEquals(Intervald other, double epsilon = D.ZeroTolerance)
         {
             return 
                 SlurMath.ApproxEquals(A, other.A, epsilon) &&
@@ -395,7 +397,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        public double Wrap(double t)
+        public double Repeat(double t)
         {
             return SlurMath.Repeat(t, A, B);
         }
@@ -477,9 +479,9 @@ namespace SpatialSlur
         public void Include(double t)
         {
             if (IsDecreasing)
-                IncludeDecreasing(t);
+                IncludeNeg(t);
             else
-                IncludeIncreasing(t);
+                IncludePos(t);
         }
 
 
@@ -491,13 +493,13 @@ namespace SpatialSlur
         {
             if(IsDecreasing)
             {
-                IncludeDecreasing(other.A);
-                IncludeDecreasing(other.B);
+                IncludeNeg(other.A);
+                IncludeNeg(other.B);
             }
             else
             {
-                IncludeIncreasing(other.A);
-                IncludeIncreasing(other.B);
+                IncludePos(other.A);
+                IncludePos(other.B);
             }
         }
 
@@ -506,7 +508,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="t"></param>
-        internal void IncludeDecreasing(double t)
+        internal void IncludeNeg(double t)
         {
             if (t > A) A = t;
             else if (t < B) B = t;
@@ -517,7 +519,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="t"></param>
-        internal void IncludeIncreasing(double t)
+        internal void IncludePos(double t)
         {
             if (t > B) B = t;
             else if (t < A) A = t;

@@ -3,6 +3,8 @@
  * Notes
  */
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur
 {
     /// <summary>
@@ -211,7 +213,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Transform2d other, double epsilon = SlurMath.ZeroToleranced)
+        public bool ApproxEquals(Transform2d other, double epsilon = D.ZeroTolerance)
         {
             return
                 Translation.ApproxEquals(other.Translation, epsilon) &&

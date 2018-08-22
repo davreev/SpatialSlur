@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using SpatialSlur;
 using SpatialSlur.Meshes.Impl;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Meshes
 {
     using G = HeGraph3d;
@@ -35,7 +37,7 @@ namespace SpatialSlur.Meshes
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public G CreateFromLineSegments(IReadOnlyList<Vector3d> endPoints, double tolerance = SlurMath.ZeroToleranced, bool allowMultiEdges = false, bool allowLoops = false)
+        public G CreateFromLineSegments(IReadOnlyList<Vector3d> endPoints, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
         {
             return CreateFromLineSegments(endPoints, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
         }

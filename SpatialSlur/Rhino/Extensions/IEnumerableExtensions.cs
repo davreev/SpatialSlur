@@ -13,6 +13,8 @@ using SpatialSlur;
 using SpatialSlur.Meshes;
 using SpatialSlur.Rhino;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Collections
 {
     /// <summary>
@@ -78,7 +80,7 @@ namespace SpatialSlur.Collections
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static HeGraph3d ToHeGraph(this IEnumerable<Line> lines, double tolerance = SlurMath.ZeroToleranced, bool allowMultiEdges = false, bool allowLoops = false)
+        public static HeGraph3d ToHeGraph(this IEnumerable<Line> lines, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
         {
             return HeGraph3d.Factory.CreateFromLineSegments(lines, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
         }
@@ -94,7 +96,7 @@ namespace SpatialSlur.Collections
         /// <param name="polylines"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static HeMesh3d ToHeMesh(this IEnumerable<Polyline> polylines, double tolerance = SlurMath.ZeroToleranced)
+        public static HeMesh3d ToHeMesh(this IEnumerable<Polyline> polylines, double tolerance = D.ZeroTolerance)
         {
             return HeMesh3d.Factory.CreateFromPolylines(polylines, tolerance);
         }

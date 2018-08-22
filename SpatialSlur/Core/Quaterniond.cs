@@ -11,6 +11,8 @@
 using System;
 using static SpatialSlur.SlurMath;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur
 {
     /// <summary>
@@ -149,7 +151,7 @@ namespace SpatialSlur
                 //opposite check
                 if(ca < 0.0)
                 {
-                    var perp = from.X < 1.0 ? from.CrossX() : from.CrossY();
+                    var perp = from.X < 1.0 ? from.CrossX : from.CrossY;
                     var t = 1.0 / perp.Length;
                     return new Quaterniond(perp.X * t, perp.Y * t, perp.Z * t, 0.0);
                 }
@@ -306,7 +308,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance = SlurMath.ZeroToleranced)
+        public bool IsZero(double tolerance = D.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -315,7 +317,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance = SlurMath.ZeroToleranced)
+        public bool IsUnit(double tolerance = D.ZeroTolerance)
         {
             return SlurMath.ApproxEquals(SquareLength, 1.0, tolerance);
         }
@@ -547,7 +549,7 @@ namespace SpatialSlur
             var ca = Dot(this, other);
 
             // TODO handle antiparallel case
-            if (Math.Abs(ca) > 1.0 - ZeroToleranced)
+            if (Math.Abs(ca) > 1.0 - D.ZeroTolerance)
                 return this;
 
             // ensures interpolation takes shortest path
@@ -638,7 +640,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Quaterniond other, double epsilon = ZeroToleranced)
+        public bool ApproxEquals(Quaterniond other, double epsilon = D.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&

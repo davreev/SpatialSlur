@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Collections
 {
     /// <summary>
@@ -108,7 +110,7 @@ namespace SpatialSlur.Collections
         /// <param name="getPosition"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, double tolerance = D.ZeroTolerance)
         {
             return RemoveCoincident(items, getPosition, new HashGrid2d<Vector2d>(), tolerance);
         }
@@ -123,7 +125,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, HashGrid2d<Vector2d> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, HashGrid2d<Vector2d> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
             
@@ -154,7 +156,7 @@ namespace SpatialSlur.Collections
         /// <param name="getPosition"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, double tolerance = D.ZeroTolerance)
         {
             return RemoveCoincident(items, getPosition, new HashGrid3d<Vector3d>(), tolerance);
         }
@@ -169,7 +171,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, HashGrid3d<Vector3d> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, HashGrid3d<Vector3d> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
 
@@ -202,7 +204,7 @@ namespace SpatialSlur.Collections
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, out List<int> indexMap, double tolerance = SlurMath.ZeroToleranced)
+        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, out List<int> indexMap, double tolerance = D.ZeroTolerance)
         {
             return RemoveCoincident(items, getPosition, new HashGrid2d<int>(), out indexMap, tolerance);
         }
@@ -218,7 +220,7 @@ namespace SpatialSlur.Collections
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, HashGrid2d<int> grid, out List<int> indexMap, double tolerance = SlurMath.ZeroToleranced)
+        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, HashGrid2d<int> grid, out List<int> indexMap, double tolerance = D.ZeroTolerance)
         {
             var result = new List<T>();
             indexMap = new List<int>();
@@ -260,7 +262,7 @@ namespace SpatialSlur.Collections
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, out List<int> indexMap, double tolerance = SlurMath.ZeroToleranced)
+        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, out List<int> indexMap, double tolerance = D.ZeroTolerance)
         {
             return RemoveCoincident(items, getPosition, new HashGrid3d<int>(), out indexMap, tolerance);
         }
@@ -276,7 +278,7 @@ namespace SpatialSlur.Collections
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, HashGrid3d<int> grid, out List<int> indexMap, double tolerance = SlurMath.ZeroToleranced)
+        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector3d> getPosition, HashGrid3d<int> grid, out List<int> indexMap, double tolerance = D.ZeroTolerance)
         {
             var result = new List<T>();
             indexMap = new List<int>();
@@ -315,7 +317,7 @@ namespace SpatialSlur.Collections
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> points, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> points, double tolerance = D.ZeroTolerance)
         {
             return GetFirstCoincident(points, new HashGrid2d<(Vector2d, int)>(), tolerance);
         }
@@ -328,7 +330,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> points, HashGrid2d<(Vector2d, int)> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> points, HashGrid2d<(Vector2d, int)> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
 
@@ -367,7 +369,7 @@ namespace SpatialSlur.Collections
         /// <param name="points"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> points, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> points, double tolerance = D.ZeroTolerance)
         {
             return GetFirstCoincident(points, new HashGrid3d<(Vector3d, int)>(), tolerance);
         }
@@ -380,7 +382,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> points, HashGrid3d<(Vector3d, int)> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> points, HashGrid3d<(Vector3d, int)> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
 
@@ -420,7 +422,7 @@ namespace SpatialSlur.Collections
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, double tolerance = D.ZeroTolerance)
         {
             return GetFirstCoincident(pointsA, pointsB, new HashGrid2d<(Vector2d, int)>(), tolerance);
         }
@@ -434,7 +436,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, HashGrid2d<(Vector2d, int)> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, HashGrid2d<(Vector2d, int)> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
 
@@ -472,7 +474,7 @@ namespace SpatialSlur.Collections
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, double tolerance = D.ZeroTolerance)
         {
             return GetFirstCoincident(pointsA, pointsB, new HashGrid3d<(Vector3d, int)>(), tolerance);
         }
@@ -486,7 +488,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, HashGrid3d<(Vector3d, int)> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<int> GetFirstCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, HashGrid3d<(Vector3d, int)> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
 
@@ -524,7 +526,7 @@ namespace SpatialSlur.Collections
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, double tolerance = D.ZeroTolerance)
         {
             return GetAllCoincident(pointsA, pointsB, new HashGrid2d<(Vector2d, int)>(), tolerance);
         }
@@ -538,7 +540,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, HashGrid2d<(Vector2d, int)> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector2d> pointsA, IEnumerable<Vector2d> pointsB, HashGrid2d<(Vector2d, int)> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
 
@@ -572,7 +574,7 @@ namespace SpatialSlur.Collections
         /// <param name="pointsB"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, double tolerance = D.ZeroTolerance)
         {
             return GetAllCoincident(pointsA, pointsB, new HashGrid3d<(Vector3d, int)>(), tolerance);
         }
@@ -586,7 +588,7 @@ namespace SpatialSlur.Collections
         /// <param name="grid"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, HashGrid3d<(Vector3d, int)> grid, double tolerance = SlurMath.ZeroToleranced)
+        public static IEnumerable<IEnumerable<int>> GetAllCoincident(IEnumerable<Vector3d> pointsA, IEnumerable<Vector3d> pointsB, HashGrid3d<(Vector3d, int)> grid, double tolerance = D.ZeroTolerance)
         {
             grid.Scale = tolerance * _radiusToGridScale;
 
@@ -622,7 +624,7 @@ namespace SpatialSlur.Collections
         /// <param name="tolerance"></param>
         /// <param name="maxSteps"></param>
         /// <returns></returns>
-        public static bool Consolidate(IList<Vector2d> points, double radius, double tolerance = SlurMath.ZeroToleranced, int maxSteps = 4)
+        public static bool Consolidate(IList<Vector2d> points, double radius, double tolerance = D.ZeroTolerance, int maxSteps = 4)
         {
             var grid = new HashGrid2d<Vector2d>(points.Count);
             grid.Scale = radius * _radiusToGridScale;
@@ -672,7 +674,7 @@ namespace SpatialSlur.Collections
         /// <param name="tolerance"></param>
         /// <param name="maxSteps"></param>
         /// <returns></returns>
-        public static bool Consolidate(IList<Vector3d> points, double radius, double tolerance = SlurMath.ZeroToleranced, int maxSteps = 4)
+        public static bool Consolidate(IList<Vector3d> points, double radius, double tolerance = D.ZeroTolerance, int maxSteps = 4)
         {
             var grid = new HashGrid3d<Vector3d>(points.Count);
             grid.Scale = radius * _radiusToGridScale;

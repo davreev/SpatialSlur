@@ -4,6 +4,7 @@
  */
 
 using System;
+using D = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Fields
 {
@@ -144,7 +145,7 @@ namespace SpatialSlur.Fields
         {
             // impl ref
             // http://www.iquilezles.org/www/articles/distance/distance.htm
-            return Create(p => (function.ValueAt(p) - threshold) / (gradient.ValueAt(p).Length + SlurMath.ZeroToleranced));
+            return Create(p => (function.ValueAt(p) - threshold) / (gradient.ValueAt(p).Length + D.ZeroTolerance));
         }
     }
 }

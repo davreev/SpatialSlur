@@ -21,6 +21,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Collections
 {
     /// <summary>
@@ -174,7 +176,7 @@ namespace SpatialSlur.Collections
 
 
         private Node _root;
-        private double _tolerance = SlurMath.ZeroToleranced;
+        private double _tolerance = D.ZeroTolerance;
         private readonly int _dimension;
         private int _count;
 

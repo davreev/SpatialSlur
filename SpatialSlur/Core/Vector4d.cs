@@ -5,6 +5,8 @@
 
 using System;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur
 {
     /// <summary>
@@ -627,7 +629,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance = SlurMath.ZeroToleranced)
+        public bool IsZero(double tolerance = D.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -636,7 +638,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance = SlurMath.ZeroToleranced)
+        public bool IsUnit(double tolerance = D.ZeroTolerance)
         {
             return Math.Abs(SquareLength - 1.0) < tolerance;
         }
@@ -681,7 +683,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vector4d other, double epsilon = SlurMath.ZeroToleranced)
+        public bool ApproxEquals(Vector4d other, double epsilon = D.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&

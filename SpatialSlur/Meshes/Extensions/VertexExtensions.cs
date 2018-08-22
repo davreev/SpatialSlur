@@ -12,6 +12,8 @@ using SpatialSlur.Meshes.Impl;
 
 using static SpatialSlur.Meshes.Delegates;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Meshes
 {
     /// <summary>
@@ -342,7 +344,7 @@ namespace SpatialSlur.Meshes
             foreach (var he in vertex.OutgoingHalfedges)
                 sum += he.GetAngle(getPosition);
 
-            return SlurMath.TwoPId - sum;
+            return D.TwoPi - sum;
         }
 
 

@@ -14,6 +14,10 @@ using SpatialSlur;
 using SpatialSlur.Meshes;
 using SpatialSlur.Meshes.Impl;
 
+using Vec3d = Rhino.Geometry.Vector3d;
+using Vec3f = Rhino.Geometry.Vector3f;
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Rhino
 {
     /// <summary>
@@ -30,7 +34,7 @@ namespace SpatialSlur.Rhino
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, double tolerance = SlurMath.ZeroToleranced, bool allowMultiEdges = false, bool allowLoops = false)
+        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
             where G : HeGraph<V, E>
             where V : HeGraph<V, E>.Vertex, IPosition3d
             where E : HeGraph<V, E>.Halfedge
@@ -52,7 +56,7 @@ namespace SpatialSlur.Rhino
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, Action<V, Vector3d> setPosition, double tolerance = SlurMath.ZeroToleranced, bool allowMultiEdges = false, bool allowLoops = false)
+        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, Action<V, Vector3d> setPosition, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
             where G : HeGraph<V, E>
             where V : HeGraph<V, E>.Vertex
             where E : HeGraph<V, E>.Halfedge
@@ -84,8 +88,8 @@ namespace SpatialSlur.Rhino
         {
             return factory.CreateFromVertexTopology(
                 mesh,
-                (v, p) => v.Position = p,
-                (v, n) => v.Normal = n
+                (v, p) => v.Position = (Vector3f)p,
+                (v, n) => v.Normal = (Vector3f)n
                 );
         }
 
@@ -103,7 +107,7 @@ namespace SpatialSlur.Rhino
         /// <param name="setTexture"></param>
         /// <param name="setColor"></param>
         /// <returns></returns>
-        public static G CreateFromVertexTopology<G, V, E>(this HeGraphFactory<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal = null, Action<V, Point2f> setTexture = null, Action<V, Color> setColor = null)
+        public static G CreateFromVertexTopology<G, V, E>(this HeGraphFactory<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vec3f> setNormal = null, Action<V, Point2f> setTexture = null, Action<V, Color> setColor = null)
             where G : HeGraph<V, E>
             where V : HeGraph<V, E>.Vertex
             where E : HeGraph<V, E>.Halfedge
@@ -129,8 +133,8 @@ namespace SpatialSlur.Rhino
         {
             return factory.CreateFromFaceTopology(
                 mesh,
-                (v, p) => v.Position = p,
-                (v, n) => v.Normal = n
+                (v, p) => v.Position = (Vector3f)p,
+                (v, n) => v.Normal = (Vector3f)n
                 );
         }
 
@@ -148,7 +152,7 @@ namespace SpatialSlur.Rhino
         /// <param name="setTexture"></param>
         /// <param name="setColor"></param>
         /// <returns></returns>
-        public static G CreateFromFaceTopology<G, V, E>(this HeGraphFactory<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vector3f> setNormal = null, Action<V, Point2f> setTexture = null, Action<V, Color> setColor = null)
+        public static G CreateFromFaceTopology<G, V, E>(this HeGraphFactory<G, V, E> factory, Mesh mesh, Action<V, Point3f> setPosition, Action<V, Vec3f> setNormal = null, Action<V, Point2f> setTexture = null, Action<V, Color> setColor = null)
             where G : HeGraph<V, E>
             where V : HeGraph<V, E>.Vertex
             where E : HeGraph<V, E>.Halfedge

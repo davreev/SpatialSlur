@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using SpatialSlur;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Meshes.Impl
 {
     /// <summary>
@@ -276,7 +278,7 @@ namespace SpatialSlur.Meshes.Impl
         /// <param name="setPosition"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public TM CreateFromPolygons<T>(IEnumerable<T> polygons, Action<TV, Vector3d> setPosition, double tolerance = SlurMath.ZeroToleranced)
+        public TM CreateFromPolygons<T>(IEnumerable<T> polygons, Action<TV, Vector3d> setPosition, double tolerance = D.ZeroTolerance)
             where T : IEnumerable<Vector3d>
         {
             var vertices = polygons.SelectMany(p => p).RemoveCoincident(out List<int> indexMap, tolerance);

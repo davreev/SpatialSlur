@@ -6,8 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Math;
-using static SpatialSlur.SlurMath;
+
+using D = SpatialSlur.SlurMath.Constantsd;
+using F = SpatialSlur.SlurMath.Constantsf;
 
 namespace SpatialSlur
 {
@@ -102,7 +103,7 @@ namespace SpatialSlur
         {
             var detA = a00 * a11 - a01 * a01;
 
-            if (Abs(detA) > 0.0)
+            if (Math.Abs(detA) > 0.0)
             {
                 detA = 1.0 / detA;
                 x0 = (a11 * b0 - a01 * b1) * detA;
@@ -162,7 +163,7 @@ namespace SpatialSlur
             
             var c = Vector2d.Cross(u, v);
 
-            if (Abs(c) > 0.0)
+            if (Math.Abs(c) > 0.0)
             {
                 c = 1.0 / c;
                 tu = Vector2d.Cross(w, v) * c;
@@ -247,7 +248,7 @@ namespace SpatialSlur
         /// <param name="yAxis"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static int PrincipalComponentAnalysis(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d xAxis, out Vector3d yAxis, double tolerance = ZeroToleranced)
+        public static int PrincipalComponentAnalysis(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d xAxis, out Vector3d yAxis, double tolerance = D.ZeroTolerance)
         {
             origin = points.Mean();
             var covm = Matrix3d.CreateCovariance(points, origin);
@@ -257,9 +258,9 @@ namespace SpatialSlur
             yAxis = vecs.Column1;
 
             return
-                Abs(vals.X) < tolerance ? 0 :
-                Abs(vals.Y) < tolerance ? 1 :
-                Abs(vals.Z) < tolerance ? 2 : 3;
+                Math.Abs(vals.X) < tolerance ? 0 :
+                Math.Abs(vals.Y) < tolerance ? 1 :
+                Math.Abs(vals.Z) < tolerance ? 2 : 3;
         }
 
         
@@ -271,7 +272,7 @@ namespace SpatialSlur
         /// <param name="normal"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d normal, double tolerance = ZeroToleranced)
+        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d normal, double tolerance = D.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
@@ -290,7 +291,7 @@ namespace SpatialSlur
         /// <param name="normal"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, Vector3d origin, out Vector3d normal, double tolerance = ZeroToleranced)
+        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, Vector3d origin, out Vector3d normal, double tolerance = D.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
@@ -302,7 +303,7 @@ namespace SpatialSlur
             normal = vecs.Column2;
 
             // Check for degeneracy -> if 2nd eigenvalue is 0, the points are colinear at best
-            return Abs(vals.Y) >= tolerance;
+            return Math.Abs(vals.Y) >= tolerance;
         }
 
 
@@ -314,7 +315,7 @@ namespace SpatialSlur
         /// <param name="direction"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static bool FitLineToPoints(IEnumerable<Vector3d> points, out Vector3d start, out Vector3d direction, double tolerance = ZeroToleranced)
+        public static bool FitLineToPoints(IEnumerable<Vector3d> points, out Vector3d start, out Vector3d direction, double tolerance = D.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
@@ -332,7 +333,7 @@ namespace SpatialSlur
         /// <param name="direction"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static bool FitLineToPoints(IEnumerable<Vector3d> points, Vector3d start, out Vector3d direction, double tolerance = ZeroToleranced)
+        public static bool FitLineToPoints(IEnumerable<Vector3d> points, Vector3d start, out Vector3d direction, double tolerance = D.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
@@ -343,7 +344,7 @@ namespace SpatialSlur
             direction = vecs.Column0;
 
             // Check for degeneracy -> if 1st eigenvalue is 0, then points are coincident
-            return Abs(vals.X) >= tolerance;
+            return Math.Abs(vals.X) >= tolerance;
         }
 
 
@@ -608,7 +609,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double GetPolarAngle(Vector3d vector, Vector3d xAxis, Vector3d yAxis)
         {
-            return Atan2(Vector3d.Dot(vector, yAxis), Vector3d.Dot(vector, xAxis));
+            return Math.Atan2(Vector3d.Dot(vector, yAxis), Vector3d.Dot(vector, xAxis));
         }
 
         
@@ -620,8 +621,8 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double GetMinAngleDifference(double a0, double a1)
         {
-            var d0 = Repeat(a0 - a1, TwoPId);
-            return d0 > PI ? d0 - TwoPId : d0;
+            var d0 = SlurMath.Repeat(a0 - a1, D.TwoPi);
+            return d0 > D.Pi ? d0 - D.TwoPi : d0;
         }
 
 
@@ -852,7 +853,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Vector2d GetGradient(Func<Vector2d, double> function, Vector2d vector, double epsilon = SlurMath.ZeroToleranced)
+        public static Vector2d GetGradient(Func<Vector2d, double> function, Vector2d vector, double epsilon = D.ZeroTolerance)
         {
             (var x, var y) = vector;
 
@@ -870,7 +871,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Vector3d GetGradient(Func<Vector3d, double> function, Vector3d vector, double epsilon = SlurMath.ZeroToleranced)
+        public static Vector3d GetGradient(Func<Vector3d, double> function, Vector3d vector, double epsilon = D.ZeroTolerance)
         {
             (var x, var y, var z) = vector;
 
@@ -889,7 +890,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="result"></param>
         /// <param name="epsilon"></param>
-        public static void GetGradient(Func<double[], double> function, double[] vector, double[] result, double epsilon = SlurMath.ZeroToleranced)
+        public static void GetGradient(Func<double[], double> function, double[] vector, double[] result, double epsilon = D.ZeroTolerance)
         {
             double d2 = 1.0 / (epsilon * 2.0);
 

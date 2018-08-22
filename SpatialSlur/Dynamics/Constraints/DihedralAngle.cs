@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using SpatialSlur.Collections;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Dynamics.Constraints
 {
     /// <summary>
@@ -25,8 +27,8 @@ namespace SpatialSlur.Dynamics.Constraints
         /// <returns></returns>
         private static double GetMinAngleDifference(double a0, double a1)
         {
-            var d0 = (a0 < a1) ? a0 - a1 + SlurMath.TwoPId : a0 - a1;
-            return d0 > Math.PI ? d0 - SlurMath.TwoPId : d0;
+            var d0 = (a0 < a1) ? a0 - a1 + D.TwoPi : a0 - a1;
+            return d0 > Math.PI ? d0 - D.TwoPi : d0;
         }
 
         #endregion
@@ -104,7 +106,7 @@ namespace SpatialSlur.Dynamics.Constraints
         public double Target
         {
             get { return _target; }
-            set { _target = SlurMath.Repeat(value, SlurMath.TwoPId); }
+            set { _target = SlurMath.Repeat(value, D.TwoPi); }
         }
 
 

@@ -8,6 +8,8 @@ using System;
 using SpatialSlur;
 using SpatialSlur.Fields;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Fields
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace SpatialSlur.Fields
         internal class Factory : IDWFieldFactory<Vector3d>
         {
             /// <inheritdoc />
-            public override IDWField3d<Vector3d> Create(double power, double epsilon = SlurMath.ZeroToleranced)
+            public override IDWField3d<Vector3d> Create(double power, double epsilon = D.ZeroTolerance)
             {
                 return new IDWField3dVector3d(power, epsilon);
             }
@@ -36,7 +38,7 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        public IDWField3dVector3d(double power, double epsilon = SlurMath.ZeroToleranced)
+        public IDWField3dVector3d(double power, double epsilon = D.ZeroTolerance)
             : base(power, epsilon)
         {
         }

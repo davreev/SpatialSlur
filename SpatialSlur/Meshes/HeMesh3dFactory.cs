@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using SpatialSlur;
 using SpatialSlur.Meshes.Impl;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Meshes
 {
     using M = HeMesh3d;
@@ -43,7 +45,7 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <returns></returns>
-        public M CreateFromPolygons<T>(IEnumerable<T> polygons, double tolerance = SlurMath.ZeroToleranced)
+        public M CreateFromPolygons<T>(IEnumerable<T> polygons, double tolerance = D.ZeroTolerance)
             where T : IEnumerable<Vector3d>
         {
             return CreateFromPolygons(polygons, (v, p) => v.Position = p, tolerance);

@@ -496,7 +496,7 @@ namespace SpatialSlur
         /// </summary>
         public static void Shift<T>(this T[] array, int offset, int from, int to)
         {
-            offset = SlurMath.RepeatPositive(offset, to - from);
+            offset = SlurMath.RepeatPos(offset, to - from);
             Reverse(array, from, from + offset);
             Reverse(array, from + offset, to);
             Reverse(array, from, to);

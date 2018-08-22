@@ -8,6 +8,8 @@ using System.Collections.Generic;
 
 using SpatialSlur;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+
 namespace SpatialSlur.Meshes.Impl
 {
     /// <summary>
@@ -195,7 +197,7 @@ namespace SpatialSlur.Meshes.Impl
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public TG CreateFromLineSegments(IEnumerable<Vector3d> points, Action<TV, Vector3d> setPosition, double tolerance = SlurMath.ZeroToleranced, bool allowMultiEdges = false, bool allowLoops = false)
+        public TG CreateFromLineSegments(IEnumerable<Vector3d> points, Action<TV, Vector3d> setPosition, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
         {
             var positions = points.RemoveCoincident(out List<int> indexMap, tolerance);
             var result = Create(positions.Count, indexMap.Count >> 1);
