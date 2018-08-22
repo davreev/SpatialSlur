@@ -54,7 +54,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static implicit operator Vector3d(Vector3 vector)
         {
-            return new Vector3d(vector.x, vector.y, vector.z);
+            return new Vector3f(vector.x, vector.y, vector.z);
         }
 
 
@@ -66,6 +66,34 @@ namespace SpatialSlur
         public static explicit operator Vector3(Vector3d vector)
         {
             return new Vector3((float)vector.X, (float)vector.Y, (float)vector.Z);
+        }
+    }
+    
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial struct Vector3f
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static implicit operator Vector3f(Vector3 vector)
+        {
+            return new Vector3f(vector.x, vector.y, vector.z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static implicit operator Vector3(Vector3f vector)
+        {
+            return new Vector3(vector.X, vector.Y, vector.Z);
         }
     }
 
@@ -170,7 +198,7 @@ namespace SpatialSlur
         /// <param name="interval"></param>
         public static explicit operator Bounds(Interval3d interval)
         {
-            return new Bounds((Vector3)interval.Mid, (Vector3)interval.Length);
+            return new Bounds((Vector3)interval.Mid, (Vector3)interval.Delta);
         }
     }
 }
