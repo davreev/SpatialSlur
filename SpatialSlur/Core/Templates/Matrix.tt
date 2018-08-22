@@ -38,14 +38,14 @@ var scalarProperties = new Dictionary<string, Dictionary<string, string>>()
         "double", new Dictionary<string, string>()
         {
             {"Suffix", "d"},             
-            {"Epsilon", "SlurMath.ZeroToleranced"}
+            {"Epsilon", "D.ZeroTolerance"}
         }
     },
     {
         "float", new Dictionary<string, string>()
         {              
             {"Suffix", "f"},             
-            {"Epsilon", "SlurMath.ZeroTolerancef"}
+            {"Epsilon", "F.ZeroTolerance"}
         }
     }
 };
@@ -65,6 +65,9 @@ using System.Drawing;
 using SpatialSlur.Collections;
 
 using static System.Threading.Tasks.Parallel;
+
+using D = SpatialSlur.SlurMath.Constantsd;
+using F = SpatialSlur.SlurMath.Constantsf;
 
 namespace SpatialSlur
 {

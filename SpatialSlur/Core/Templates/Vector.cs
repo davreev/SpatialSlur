@@ -14,6 +14,9 @@ using SpatialSlur.Collections;
 
 using static System.Threading.Tasks.Parallel;
 
+using D = SpatialSlur.SlurMath.Constantsd;
+using F = SpatialSlur.SlurMath.Constantsf;
+
 namespace SpatialSlur
 {
 	/// <summary>
@@ -800,7 +803,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, double epsilon = SlurMath.ZeroToleranced)
+        public static bool ApproxEquals(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, double epsilon = D.ZeroTolerance)
         {
             for (int i = 0; i < v0.Count; i++)
                 if (Math.Abs(v1[i] - v0[i]) >= epsilon) return false;
@@ -1287,7 +1290,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, float epsilon = SlurMath.ZeroTolerancef)
+        public static bool ApproxEquals(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, float epsilon = F.ZeroTolerance)
         {
             for (int i = 0; i < v0.Count; i++)
                 if (Math.Abs(v1[i] - v0[i]) >= epsilon) return false;
