@@ -7,10 +7,11 @@
 
 using Rhino.Geometry;
 
-using Vec2f = Rhino.Geometry.Vector2f;
 using Vec2d = Rhino.Geometry.Vector2d;
-using Vec3f = Rhino.Geometry.Vector3f;
+using Vec2f = Rhino.Geometry.Vector2f;
+
 using Vec3d = Rhino.Geometry.Vector3d;
+using Vec3f = Rhino.Geometry.Vector3f;
 
 namespace SpatialSlur
 {
@@ -70,32 +71,6 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static implicit operator Vector2d(Vec2f vector)
-        {
-            return new Vector2d(vector.X, vector.Y);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static explicit operator Vec2f(Vector2d vector)
-        {
-            return new Vec2f()
-            {
-                X = (float)vector.X,
-                Y = (float)vector.Y
-            };
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
         public static implicit operator Vector2d(Point2d point)
@@ -112,6 +87,28 @@ namespace SpatialSlur
         public static implicit operator Point2d(Vector2d vector)
         {
             return new Point2d(vector.X, vector.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static implicit operator Vector2d(Vec2f vector)
+        {
+            return new Vector2d(vector.X, vector.Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static implicit operator Vec2f(Vector2d vector)
+        {
+            return new Vec2f((float)vector.X, (float)vector.Y);
         }
 
 
@@ -168,28 +165,6 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static implicit operator Vector3d(Vec3f vector)
-        {
-            return new Vector3d(vector.X, vector.Y, vector.Z);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static explicit operator Vec3f(Vector3d vector)
-        {
-            return new Vec3f((float)vector.X, (float)vector.Y, (float)vector.Z);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
         public static implicit operator Vector3d(Point3d point)
@@ -212,8 +187,27 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Vector3d(Vec3f vector)
+        {
+            return new Vector3d(vector.X, vector.Y, vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static explicit operator Vec3f(Vector3d vector)
+        {
+            return new Vec3f((float)vector.X, (float)vector.Y, (float)vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="point"></param>
-        /// <returns></returns>
         public static implicit operator Vector3d(Point3f point)
         {
             return new Vector3d(point.X, point.Y, point.Z);
@@ -224,10 +218,95 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="vector"></param>
-        /// <returns></returns>
         public static explicit operator Point3f(Vector3d vector)
         {
             return new Point3f((float)vector.X, (float)vector.Y, (float)vector.Z);
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial struct Vector3f
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Vector3f(Vec3f vector)
+        {
+            return new Vector3f(vector.X, vector.Y, vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Vec3f(Vector3f vector)
+        {
+            return new Vec3f(vector.X, vector.Y, vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        public static implicit operator Vector3f(Point3f point)
+        {
+            return new Vector3f(point.X, point.Y, point.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Point3f(Vector3f vector)
+        {
+            return new Point3f(vector.X, vector.Y, vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static explicit operator Vector3f(Vec3d vector)
+        {
+            return new Vector3f((float)vector.X, (float)vector.Y, (float)vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Vec3d(Vector3f vector)
+        {
+            return new Vec3d(vector.X, vector.Y, vector.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        public static explicit operator Vector3f(Point3d point)
+        {
+            return new Vector3f((float)point.X, (float)point.Y, (float)point.Z);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public static implicit operator Point3d(Vector3f vector)
+        {
+            return new Point3d(vector.X, vector.Y, vector.Z);
         }
     }
 
