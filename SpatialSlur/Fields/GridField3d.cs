@@ -99,7 +99,8 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// 
+        /// Gets or sets the value at the give point in grid space.
+        /// Note that this performs bounds checks for each dimension.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
