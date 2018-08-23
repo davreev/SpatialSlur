@@ -29,19 +29,6 @@ namespace SpatialSlur.Fields
         /// <param name="kernel"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void Convolve(GridField2d<double> field, IKernel2d kernel, double[] result, bool parallel = false)
-        {
-            Convolve(field, kernel.ToArray(), result, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="kernel"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
         public static void Convolve(GridField2d<double> field, Kernel2d kernel, double[] result, bool parallel = false)
         {
             if (parallel)
@@ -69,19 +56,6 @@ namespace SpatialSlur.Fields
                     result[i] = sum;
                 }
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="kernel"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void Convolve(GridField2d<Vector2d> field, IKernel2d kernel, Vector2d[] result, bool parallel = false)
-        {
-            Convolve(field, kernel.ToArray(), result, parallel);
         }
 
 
@@ -129,19 +103,6 @@ namespace SpatialSlur.Fields
         /// <param name="kernel"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void Convolve(GridField3d<double> field, IKernel3d kernel, double[] result, bool parallel = false)
-        {
-            Convolve(field, kernel.ToArray(), result, parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="kernel"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
         public static void Convolve(GridField3d<double> field, Kernel3d kernel, double[] result, bool parallel = false)
         {
             if (parallel)
@@ -171,19 +132,6 @@ namespace SpatialSlur.Fields
                     result[i] = sum;
                 }
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="kernel"></param>
-        /// <param name="result"></param>
-        /// <param name="parallel"></param>
-        public static void Convolve(GridField3d<Vector3d> field, IKernel3d kernel, Vector3d[] result, bool parallel = false)
-        {
-            Convolve(field, kernel.ToArray(), result, parallel);
         }
 
 

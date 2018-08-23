@@ -281,8 +281,6 @@
     <Compile Include="Fields\Interfaces\IField3d.cs" />
     <Compile Include="Fields\Interfaces\IGradient2d.cs" />
     <Compile Include="Fields\Interfaces\IGradient3d.cs" />
-    <Compile Include="Fields\Interfaces\IKernel2d.cs" />
-    <Compile Include="Fields\Interfaces\IKernel3d.cs" />
     <Compile Include="Fields\MeshField3d.cs" />
     <Compile Include="Fields\Noise.cs" />
     <Compile Include="Fields\PerlinNoise2d.cs" />
