@@ -252,7 +252,7 @@ namespace SpatialSlur.Fields
 #endregion
 
 
-        private double[] _partial = Array.Empty<double>(); // buffer for storing partial results
+        private double[] _result = Array.Empty<double>(); // buffer for storing partial results
         private (int, double)[] _parabolas = Array.Empty<(int, double)>(); // buffer for storing parabolas
 
 
@@ -287,34 +287,39 @@ namespace SpatialSlur.Fields
                 return;
             }
 
-            var source = field.Values;
             (var nx, var ny) = field.Count;
-            (var tx, var ty) = field.Scale;
 
             // resize buffers if necessary
             EnsureCapacity(ref _parabolas, Math.Max(nx, ny) + 1);
-            EnsureCapacity(ref _partial, field.CountXY);
-
+            EnsureCapacity(ref _result, field.CountXY);
+            
             var parabolas = View.Create(_parabolas, 0);
-     
-            // compute y direction
+            (var tx, var ty) = field.Scale;
+
+            // y direction
             {
+                var src = field.Values;
+                var dst = _result;
+
                 for (int x = 0; x < nx; x++)
                 {
-                    var src = View.Create(source, x, nx);
-                    var dst = View.Create(_partial, x, nx);
-                    CalculateL2Sqr(src, parabolas, ty, ny, dst);
+                    var srcView = View.Create(src, x, nx);
+                    var dstView = View.Create(dst, x, nx);
+                    CalculateL2Sqr(srcView, parabolas, ty, ny, dstView);
                 }
             }
 
-            // compute x direction
+            // x direction
             {
+                var src = _result;
+                var dst = result;
+
                 for (int y = 0; y < ny; y++)
                 {
                     var start = y * nx;
-                    var src = View.Create(_partial, start);
-                    var dst = View.Create(result, start);
-                    CalculateL2Sqr(src, parabolas, tx, nx, dst);
+                    var srcView = View.Create(src, start);
+                    var dstView = View.Create(dst, start);
+                    CalculateL2Sqr(srcView, parabolas, tx, nx, dstView);
                 }
             }
         }
@@ -327,46 +332,240 @@ namespace SpatialSlur.Fields
         /// <param name="result"></param>
         private void CalculateL2SqrParallel(GridField2d<double> field, double[] result)
         {
-            var source = field.Values;
             (var nx, var ny) = field.Count;
-            (var tx, var ty) = field.Scale;
+
+            var batchSize = Math.Max(nx, ny) + 1;
+            var batchCount = _batchCount;
 
             // resize buffers if necessary
-            var batchSize = Math.Max(nx, ny) + 1;
-            EnsureCapacity(ref _parabolas, batchSize * _batchCount);
-            EnsureCapacity(ref _partial, field.CountXY);
+            EnsureCapacity(ref _parabolas, batchSize * batchCount);
+            EnsureCapacity(ref _result, field.CountXY);
 
-            var batchesX = new UniformPartitioner(0, nx, _batchCount);
-            var batchesY = new UniformPartitioner(0, ny, _batchCount);
+            var batchesX = new UniformPartitioner(0, nx, batchCount);
+            var batchesY = new UniformPartitioner(0, ny, batchCount);
+
+            // y direction
+            Parallel.For(0, batchCount, i =>
+            {
+                (var j0, var j1) = batchesX[i];
+                var parabolas = View.Create(_parabolas, i * batchSize);
+
+                var src = field.Values;
+                var dst = _result;
+                var ty = field.ScaleY;
+
+                for (int j = j0; j < j1; j++)
+                {
+                    var srcView = View.Create(src, j, nx);
+                    var dstView = View.Create(dst, j, nx);
+                    CalculateL2Sqr(srcView, parabolas, ty, ny, dstView);
+                }
+            });
+
+            // x direction
+            Parallel.For(0, batchCount, i =>
+            {
+                (var j0, var j1) = batchesY[i];
+                var parabolas = View.Create(_parabolas, i * batchSize);
+
+                var src = _result;
+                var dst = result;
+                var tx = field.ScaleX;
+
+                for (int j = j0; j < j1; j++)
+                {
+                    var start = j * nx;
+                    var srcView = View.Create(src, start);
+                    var dstView = View.Create(dst, start);
+                    CalculateL2Sqr(srcView, parabolas, tx, nx, dstView);
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void CalculateL2(GridField3d<double> field, double[] result, bool parallel = false)
+        {
+            CalculateL2Sqr(field, result, parallel);
+
+            if (parallel)
+                Vector.Parallel.Sqrt(result, result);
+            else
+                Vector.Sqrt(result, result);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public void CalculateL2Sqr(GridField3d<double> field, double[] result, bool parallel = false)
+        {
+            // TODO test implementation
+
+            if (parallel)
+            {
+                CalculateL2SqrParallel(field, result);
+                return;
+            }
+
+            (var nx, var ny, var nz) = field.Count;
+            var nxy = field.CountXY;
             
-            // compute y direction
-            Parallel.For(0, _batchCount, i =>
-            {
-                (var x0, var x1) = batchesX[i];
-                var parabolas = View.Create(_parabolas, i * batchSize); // buffer for current thread
+            // resize buffers if necessary
+            EnsureCapacity(ref _parabolas, Math.Max(Math.Max(nx, ny), nz) + 1);
+            EnsureCapacity(ref _result, nxy);
+            
+            var parabolas = View.Create(_parabolas, 0);
+            (var tx, var ty, var tz) = field.Scale;
 
-                for (int x = x0; x < x1; x++)
+            // z direction
+            {
+                var src = field.Values;
+                var dst = result;
+
+                for(int y = 0; y < ny; y++)
                 {
-                    var src = View.Create(source, x, nx);
-                    var dst = View.Create(_partial, x, nx);
-                    CalculateL2Sqr(src, parabolas, ty, ny, dst);
+                    for (int x = 0; x < nx; x++)
+                    {
+                        var start = y * nx + x;
+                        var srcView = View.Create(src, start, nxy);
+                        var dstView = View.Create(dst, start, nxy);
+                        CalculateL2Sqr(srcView, parabolas, tz, nz, dstView);
+                    }
+                }
+            }
+
+            // y direction
+            {
+                var src = result;
+                var dst = _result;
+
+                for (int z = 0; z < nz; z++)
+                {
+                    for (int x = 0; x < nx; x++)
+                    {
+                        var start = z * nxy + x;
+                        var srcView = View.Create(src, start, nx);
+                        var dstView = View.Create(dst, start, nx);
+                        CalculateL2Sqr(srcView, parabolas, ty, ny, dstView);
+                    }
+                }
+            }
+
+            // x direction
+            {
+                var src = _result;
+                var dst = result;
+                
+                for (int z = 0; z < nz; z++)
+                {
+                    for (int y = 0; y < ny; y++)
+                    {
+                        var start = z * nxy + y * nx;
+                        var srcView = View.Create(src, start);
+                        var dstView = View.Create(dst, start);
+                        CalculateL2Sqr(srcView, parabolas, tx, nx, dstView);
+                    }
+                }
+            }
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="result"></param>
+        private void CalculateL2SqrParallel(GridField3d<double> field, double[] result)
+        {
+            // TODO test implementation
+
+            (var nx, var ny, var nz) = field.Count;
+            var nxy = field.CountXY;
+
+            var batchSize = Math.Max(Math.Max(nx, ny), nz) + 1;
+            var batchCount = _batchCount;
+
+            // resize buffers if necessary
+            EnsureCapacity(ref _parabolas, batchSize * batchCount);
+            EnsureCapacity(ref _result, nxy);
+
+            var batchesXY = new UniformPartitioner(0, nxy, batchCount);
+            var batchesXZ = new UniformPartitioner(0, nx * nz, batchCount);
+            var batchesYZ = new UniformPartitioner(0, ny * nz, batchCount);
+
+            // z direction
+            Parallel.For(0, batchCount, i =>
+            {
+                (var j0, var j1) = batchesXY[i];
+                var parabolas = View.Create(_parabolas, i * batchSize);
+
+                var src = field.Values;
+                var dst = result;
+                var tz = field.ScaleZ;
+
+                for (int j = j0; j < j1; j++)
+                {
+                    var srcView = View.Create(src, j, nxy);
+                    var dstView = View.Create(dst, j, nxy);
+                    CalculateL2Sqr(srcView, parabolas, tz, nz, dstView);
                 }
             });
 
-            // compute x direction
-            Parallel.For(0, _batchCount, i =>
+            // y direction
+            Parallel.For(0, batchCount, i =>
             {
-                (var y0, var y1) = batchesY[i];
-                var parabolas = View.Create(_parabolas, i * batchSize); // buffer for current thread
+                (var j0, var j1) = batchesXZ[i];
+                var parabolas = View.Create(_parabolas, i * batchSize);
 
-                for (int y = y0; y < y1; y++)
+                var src = result;
+                var dst = _result;
+                var ty = field.ScaleY;
+
+                for (int j = j0; j < j1; j++)
                 {
-                    var start = y * nx;
-                    var src = View.Create(_partial, start);
-                    var dst = View.Create(result, start);
-                    CalculateL2Sqr(src, parabolas, tx, nx, dst);
+                    (var x, var z) = Expand(j, nx);
+                    var start = z * nxy + x;
+                    var srcView = View.Create(src, start, nx);
+                    var dstView = View.Create(dst, start, nx);
+                    CalculateL2Sqr(srcView, parabolas, ty, ny, dstView);
                 }
             });
+
+            // x direction
+            Parallel.For(0, batchCount, i =>
+            {
+                (var j0, var j1) = batchesYZ[i];
+                var parabolas = View.Create(_parabolas, i * batchSize);
+
+                var src = result;
+                var dst = _result;
+                var tx = field.ScaleX;
+
+                for (int j = j0; j < j1; j++)
+                {
+                    (var y, var z) = Expand(j, ny);
+                    var start = z * nxy + y * nx;
+                    var srcView = View.Create(src, start);
+                    var dstView = View.Create(dst, start);
+                    CalculateL2Sqr(srcView, parabolas, tx, nx, dstView);
+                }
+            });
+
+            // Expands a flattened index to 2 dimensions
+            (int, int) Expand(int index, int count)
+            {
+                var y = index / count;
+                return (index - y * count, y);
+            }
         }
     }
 }
