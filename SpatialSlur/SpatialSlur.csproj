@@ -253,7 +253,7 @@
     <Compile Include="Fields\Extensions\MeshFieldExtensions.cs" />
     <Compile Include="Fields\Field2d.cs" />
     <Compile Include="Fields\Field3d.cs" />
-    <Compile Include="Fields\Geodesic.cs" />
+    <Compile Include="Fields\GeodesicDistance.cs" />
     <Compile Include="Fields\Grid.cs" />
     <Compile Include="Fields\Interop.cs" />
     <Compile Include="Fields\FuncField2d.cs" />
@@ -292,6 +292,7 @@
     <Compile Include="Fields\Streamline.cs" />
     <Compile Include="Fields\Filter.cs" />
     <Compile Include="Fields\DistanceFunctions.cs" />
+    <Compile Include="Fields\DistanceTransform.cs" />
     <Compile Include="Meshes\TriMesh.cs" />
     <Compile Include="Meshes\Delegates.cs" />
     <Compile Include="Meshes\Matrix.cs" />

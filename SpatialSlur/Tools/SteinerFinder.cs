@@ -154,7 +154,7 @@ namespace SpatialSlur.Tools
             /// </summary>
             public bool IsConverged
             {
-                get { return _maxDelta < _settings.ToleranceSquared; }
+                get { return _maxDelta < _settings.ToleranceSqr; }
             }
 
 
@@ -483,7 +483,7 @@ namespace SpatialSlur.Tools
             /// <summary>
             /// 
             /// </summary>
-            internal double ToleranceSquared
+            internal double ToleranceSqr
             {
                 get { return _tolerance * _tolerance; }
             }
