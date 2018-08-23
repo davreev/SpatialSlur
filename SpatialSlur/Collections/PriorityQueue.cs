@@ -146,13 +146,12 @@ namespace SpatialSlur.Collections
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void ReplaceMin(K key, V value)
+        public (K Key, V value) ReplaceMin(K key, V value)
         {
-            if (IsEmpty)
-                throw new InvalidOperationException(_emptyMessage);
-
+            var min = Min;
             _items[0] = (key, value);
             Sink(0); // maintain heap invariant
+            return min;
         }
 
 
