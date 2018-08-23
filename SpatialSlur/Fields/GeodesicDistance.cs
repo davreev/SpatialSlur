@@ -13,7 +13,7 @@ namespace SpatialSlur.Fields
     /// <summary>
     /// 
     /// </summary>
-    public static class Geodesic
+    public static class GeodesicDistance
     {
         #region Nested Types
 
@@ -102,7 +102,7 @@ namespace SpatialSlur.Fields
         /// <param name="sources"></param>
         /// <param name="result"></param>
         /// <param name="exclude"></param>
-        public static void GetDistanceL1(Grid2d grid, IEnumerable<int> sources, double[] result, IEnumerable<int> exclude = null)
+        public static void CalculateL1(Grid2d grid, IEnumerable<int> sources, double[] result, IEnumerable<int> exclude = null)
         {
             // impl ref
             // http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
@@ -173,7 +173,7 @@ namespace SpatialSlur.Fields
         /// <param name="sources"></param>
         /// <param name="result"></param>
         /// <param name="exclude"></param>
-        public static void GetDistanceL1(GridField2d<double> cost, IEnumerable<int> sources, double[] result, IEnumerable<int> exclude = null)
+        public static void CalculateL1(GridField2d<double> cost, IEnumerable<int> sources, double[] result, IEnumerable<int> exclude = null)
         {
             // impl ref
             // http://www.numerical-tours.com/matlab/fastmarching_0_implementing/
@@ -245,7 +245,7 @@ namespace SpatialSlur.Fields
         /// <param name="sources"></param>
         /// <param name="result"></param>
         /// <param name="exclude"></param>
-        public static void GetDistanceL2(GridField2d<double> cost, IEnumerable<int> sources, double[] result, IEnumerable<int> exclude = null)
+        public static void CalculateL2(GridField2d<double> cost, IEnumerable<int> sources, double[] result, IEnumerable<int> exclude = null)
         {
             // impl ref
             // http://www.numerical-tours.com/matlab/fastmarching_0_implementing/

@@ -11,6 +11,8 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using SpatialSlur.Fields;
 
+using G = SpatialSlur.Fields.GeodesicDistance;
+
 namespace SpatialSlur.Grasshopper.Components
 {
     /// <summary>
@@ -78,12 +80,12 @@ namespace SpatialSlur.Grasshopper.Components
             {
                 case DistanceMetric.Manhattan:
                     {
-                        Geodesic.GetDistanceL1(cost, sources.Select(x => x.Value), result);
+                        G.CalculateL1(cost, sources.Select(x => x.Value), result);
                         break;
                     }
                 case DistanceMetric.Euclidean:
                     {
-                        Geodesic.GetDistanceL2(cost, sources.Select(x => x.Value), result);
+                        G.CalculateL2(cost, sources.Select(x => x.Value), result);
                         break;
                     }
                 default:
