@@ -7,9 +7,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Linq;
+
+using SpatialSlur.Collections;
 
 namespace SpatialSlur.Fields
 {
+    using Kernel2d = ReadOnlyArrayView<(Vector2i Offset, double Weight)>;
+    using Kernel3d = ReadOnlyArrayView<(Vector3i Offset, double Weight)>;
+
+
     /// <summary>
     /// 
     /// </summary>
@@ -24,6 +31,19 @@ namespace SpatialSlur.Fields
         /// <param name="parallel"></param>
         public static void Convolve(GridField2d<double> field, IKernel2d kernel, double[] result, bool parallel = false)
         {
+            Convolve(field, kernel.ToArray(), result, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="kernel"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void Convolve(GridField2d<double> field, Kernel2d kernel, double[] result, bool parallel = false)
+        {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, field.CountXY), range => Body(range.Item1, range.Item2));
             else
@@ -33,6 +53,7 @@ namespace SpatialSlur.Fields
             {
                 var vals = field.Values;
                 int nx = field.CountX;
+                var k = kernel;
 
                 var p = field.ToGridSpace(from);
 
@@ -41,9 +62,9 @@ namespace SpatialSlur.Fields
                     if (p.X == nx) { p.Y++; p.X = 0; }
 
                     var sum = 0.0;
-
-                    foreach (var e in kernel)
-                        sum += vals[field.ToIndex(p + e.Offset)] * e.Weight;
+                    
+                    foreach((var d, var w) in k)
+                        sum += vals[field.ToIndex(p + d)] * w;
 
                     result[i] = sum;
                 }
@@ -60,6 +81,19 @@ namespace SpatialSlur.Fields
         /// <param name="parallel"></param>
         public static void Convolve(GridField2d<Vector2d> field, IKernel2d kernel, Vector2d[] result, bool parallel = false)
         {
+            Convolve(field, kernel.ToArray(), result, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="kernel"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void Convolve(GridField2d<Vector2d> field, Kernel2d kernel, Vector2d[] result, bool parallel = false)
+        {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, field.CountXY), range => Body(range.Item1, range.Item2));
             else
@@ -69,6 +103,7 @@ namespace SpatialSlur.Fields
             {
                 var vals = field.Values;
                 int nx = field.CountX;
+                var k = kernel;
 
                 var p = field.ToGridSpace(from);
 
@@ -78,8 +113,8 @@ namespace SpatialSlur.Fields
 
                     var sum = Vector2d.Zero;
 
-                    foreach (var e in kernel)
-                        sum += vals[field.ToIndex(p + e.Offset)] * e.Weight;
+                    foreach ((var d, var w) in k)
+                        sum += vals[field.ToIndex(p + d)] * w;
 
                     result[i] = sum;
                 }
@@ -96,6 +131,19 @@ namespace SpatialSlur.Fields
         /// <param name="parallel"></param>
         public static void Convolve(GridField3d<double> field, IKernel3d kernel, double[] result, bool parallel = false)
         {
+            Convolve(field, kernel.ToArray(), result, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="kernel"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void Convolve(GridField3d<double> field, Kernel3d kernel, double[] result, bool parallel = false)
+        {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, field.CountXYZ), range => Body(range.Item1, range.Item2));
             else
@@ -106,6 +154,7 @@ namespace SpatialSlur.Fields
                 var vals = field.Values;
                 int nx = field.CountX;
                 int ny = field.CountY;
+                var k = kernel;
 
                 var p = field.ToGridSpace(from);
 
@@ -116,8 +165,8 @@ namespace SpatialSlur.Fields
 
                     var sum = 0.0;
 
-                    foreach (var e in kernel)
-                        sum += vals[field.ToIndex(p + e.Offset)] * e.Weight;
+                    foreach ((var d, var w) in k)
+                        sum += vals[field.ToIndex(p + d)] * w;
 
                     result[i] = sum;
                 }
@@ -134,6 +183,19 @@ namespace SpatialSlur.Fields
         /// <param name="parallel"></param>
         public static void Convolve(GridField3d<Vector3d> field, IKernel3d kernel, Vector3d[] result, bool parallel = false)
         {
+            Convolve(field, kernel.ToArray(), result, parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="kernel"></param>
+        /// <param name="result"></param>
+        /// <param name="parallel"></param>
+        public static void Convolve(GridField3d<Vector3d> field, Kernel3d kernel, Vector3d[] result, bool parallel = false)
+        {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, field.CountXYZ), range => Body(range.Item1, range.Item2));
             else
@@ -144,6 +206,7 @@ namespace SpatialSlur.Fields
                 var vals = field.Values;
                 int nx = field.CountX;
                 int ny = field.CountY;
+                var k = kernel;
 
                 var p = field.ToGridSpace(from);
 
@@ -154,8 +217,8 @@ namespace SpatialSlur.Fields
 
                     var sum = Vector3d.Zero;
 
-                    foreach (var e in kernel)
-                        sum += vals[field.ToIndex(p + e.Offset)] * e.Weight;
+                    foreach ((var d, var w) in k)
+                        sum += vals[field.ToIndex(p + d)] * w;
 
                     result[i] = sum;
                 }
