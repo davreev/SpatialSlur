@@ -667,7 +667,7 @@ namespace SpatialSlur
         /// <param name="t"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        public static int PingPongPositive(int t, int length)
+        public static int PingPongPos(int t, int length)
         {
             t = RepeatPos(t, length + length);
             return length - Math.Abs(t - length);
@@ -949,6 +949,17 @@ namespace SpatialSlur
         public static float Contour(float t, int steps)
         {
             return Fract(t * steps);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="d"></param>
+        /// <returns></returns>
+        public static double Sqrt(double d)
+        {
+            return Math.Sqrt(d);
         }
 
 

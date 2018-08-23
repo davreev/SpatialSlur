@@ -9,7 +9,6 @@
  */
 
 using System;
-using static SpatialSlur.SlurMath;
 
 using D = SpatialSlur.SlurMath.Constantsd;
 

@@ -6,9 +6,6 @@
 using System;
 using System.Collections.Generic;
 
-using static System.Math;
-using static SpatialSlur.SlurMath;
-
 using D = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
@@ -42,13 +39,13 @@ namespace SpatialSlur
 
                 if (A.SolveCharacteristic(out lambda.X, out lambda.Y, epsilon))
                 {
-                    if (Abs(A.M10) > epsilon)
+                    if (Math.Abs(A.M10) > epsilon)
                     {
                         Q.M00 = lambda.X - A.M11;
                         Q.M01 = lambda.Y - A.M11;
                         Q.M10 = Q.M11 = A.M10;
                     }
-                    else if (Abs(A.M01) > epsilon)
+                    else if (Math.Abs(A.M01) > epsilon)
                     {
                         Q.M00 = Q.M01 = A.M01;
                         Q.M10 = lambda.X - A.M00;
@@ -685,7 +682,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public bool SolveCharacteristic(out double r0, out double r1, double epsilon = D.ZeroTolerance)
         {
-            return SolveQuadratic(1.0, -Trace, Determinant, out r0, out r1, epsilon) > 0;
+            return SlurMath.SolveQuadratic(1.0, -Trace, Determinant, out r0, out r1, epsilon) > 0;
         }
 
 
@@ -702,7 +699,7 @@ namespace SpatialSlur
 
             var det = Determinant;
 
-            if (Abs(det) > 0.0)
+            if (Math.Abs(det) > 0.0)
             {
                 det = 1.0 / det;
                 x.X = (M11 * b.X - M01 * b.Y) * det;

@@ -6,9 +6,6 @@
 using System;
 using System.Collections.Generic;
 
-using static System.Math;
-using static SpatialSlur.SlurMath;
-
 using D = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
@@ -108,9 +105,9 @@ namespace SpatialSlur
 
                 while (maxSteps-- > 0)
                 {
-                    var a01 = Abs(A.M01);
-                    var a02 = Abs(A.M02);
-                    var a12 = Abs(A.M12);
+                    var a01 = Math.Abs(A.M01);
+                    var a02 = Math.Abs(A.M02);
+                    var a12 = Math.Abs(A.M12);
 
                     // Create Jacobi rotation P from max off-diagonal value of A
                     if (a01 > a02 && a01 > a12)
@@ -194,8 +191,8 @@ namespace SpatialSlur
             /// <param name="s"></param>
             private static void GetJacobiTerms(double b, out double c, out double s)
             {
-                var t = Sign(b) / (Abs(b) + Sqrt(b * b + 1.0));
-                c = 1.0 / Sqrt(t * t + 1.0);
+                var t = Math.Sign(b) / (Math.Abs(b) + Math.Sqrt(b * b + 1.0));
+                c = 1.0 / Math.Sqrt(t * t + 1.0);
                 s = c * t;
             }
 
@@ -207,13 +204,13 @@ namespace SpatialSlur
             /// <param name="lambda"></param>
             private static void SortEigenResults(ref Matrix3d Q, ref Vector3d lambda)
             {
-                if (Abs(lambda.Z) > Abs(lambda.Y))
+                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
                     Swap12(ref Q, ref lambda);
 
-                if (Abs(lambda.Y) > Abs(lambda.X))
+                if (Math.Abs(lambda.Y) > Math.Abs(lambda.X))
                     Swap01(ref Q, ref lambda);
 
-                if (Abs(lambda.Z) > Abs(lambda.Y))
+                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
                     Swap12(ref Q, ref lambda);
 
                 void Swap01(ref Matrix3d A, ref Vector3d b)
@@ -1137,7 +1134,7 @@ namespace SpatialSlur
             // impl ref
             // https://math.stackexchange.com/questions/1721765/compute-the-characteristic-equation-3x3-matrix?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 
-            return SolveCubic(-Trace, Minor00 + Minor11 + Minor22, -Determinant, out r0, out r1, out r2, epsilon) > 0;
+            return SlurMath.SolveCubic(-Trace, Minor00 + Minor11 + Minor22, -Determinant, out r0, out r1, out r2, epsilon) > 0;
         }
 
 
