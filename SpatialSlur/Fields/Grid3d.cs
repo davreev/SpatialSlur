@@ -95,8 +95,13 @@ namespace SpatialSlur.Fields
         /// </summary>
         public Vector3d Origin
         {
-            get { return new Vector3d(_dx, _dy, _dz); }
-            set { (_dx, _dy, _dz) = value; }
+            get => new Vector3d(_dx, _dy, _dz);
+            set
+            {
+                _dx = value.X;
+                _dy = value.Y;
+                _dz = value.Z;
+            }
         }
 
 
@@ -105,7 +110,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public Vector3d Scale
         {
-            get { return new Vector3d(_tx, _ty, _tz); }
+            get => new Vector3d(_tx, _ty, _tz);
             set
             {
                 ScaleX = value.X;
@@ -118,8 +123,9 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        private double ScaleX
+        public double ScaleX
         {
+            get => _tx;
             set
             {
                 if (value == 0.0)
@@ -134,8 +140,9 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        private double ScaleY
+        public double ScaleY
         {
+            get => _ty;
             set
             {
                 if (value == 0.0)
@@ -150,8 +157,9 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        private double ScaleZ
+        public double ScaleZ
         {
+            get => _tz;
             set
             {
                 if (value == 0.0)
@@ -191,7 +199,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public Vector3i Count
         {
-            get { return new Vector3i(_nx, _ny, _nz); }
+            get => new Vector3i(_nx, _ny, _nz);
         }
 
 
@@ -200,7 +208,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public int CountX
         {
-            get { return _nx; }
+            get => _nx;
         }
 
 
@@ -209,7 +217,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public int CountY
         {
-            get { return _ny; }
+            get => _ny;
         }
 
 
@@ -218,7 +226,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public int CountZ
         {
-            get { return _nz; }
+            get => _nz;
         }
 
 
@@ -227,7 +235,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public int CountXY
         {
-            get { return _nxy; }
+            get => _nxy;
         }
 
 
@@ -236,7 +244,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public int CountXYZ
         {
-            get { return _nxyz; }
+            get => _nxyz;
         }
 
 
@@ -245,7 +253,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public WrapMode WrapMode
         {
-            set { _wrapX = _wrapY = _wrapZ = value; }
+            set => _wrapX = _wrapY = _wrapZ = value;
         }
 
 
@@ -254,8 +262,8 @@ namespace SpatialSlur.Fields
         /// </summary>
         public WrapMode WrapModeX
         {
-            get { return _wrapX; }
-            set { _wrapX = value; }
+            get => _wrapX;
+            set => _wrapX = value;
         }
 
 
@@ -264,8 +272,8 @@ namespace SpatialSlur.Fields
         /// </summary>
         public WrapMode WrapModeY
         {
-            get { return _wrapY; }
-            set { _wrapY = value; }
+            get => _wrapY;
+            set => _wrapY = value;
         }
 
 
@@ -274,8 +282,8 @@ namespace SpatialSlur.Fields
         /// </summary>
         public WrapMode WrapModeZ
         {
-            get { return _wrapZ; }
-            set { _wrapZ = value; }
+            get => _wrapZ;
+            set => _wrapZ = value;
         }
         
 
