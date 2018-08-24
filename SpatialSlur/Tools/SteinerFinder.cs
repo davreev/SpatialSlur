@@ -163,19 +163,26 @@ namespace SpatialSlur.Tools
             /// </summary>
             public void Step()
             {
-                if (++_stepCount % _settings.RefineFrequency == 0)
-                    Refine();
-
-                ApplyConstantTension();
+                if (++_stepCount % _settings.RefineFrequency == 0) Refine();
+                CalculateForces();
                 UpdateVertices();
                 UpdateAttributes();
             }
 
 
             /// <summary>
+            /// Calculates all forces applied to graph vertices.
+            /// </summary>
+            protected virtual void CalculateForces()
+            {
+                ApplyConstantTension();
+            }
+
+
+            /// <summary>
             /// 
             /// </summary>
-            private void ApplyConstantTension()
+            protected void ApplyConstantTension()
             {
                 var verts = _graph.Vertices;
 
@@ -201,8 +208,7 @@ namespace SpatialSlur.Tools
                                  n++;
                              }
                          }
-
-                         // dmin = Math.Min(0.1, dmin); // TEST set ceiling for dmin to slow convergence
+                         
                          v.ForceSum += fsum * (dmin / n); // scale force by min edge length for stability
                      }
                  });

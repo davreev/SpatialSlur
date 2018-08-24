@@ -333,10 +333,8 @@ namespace SpatialSlur.Tools
             /// <returns></returns>
             public void Step()
             {
-                TangentialSmooth(1.0);
-                PullToFeatures(_settings.FeatureWeight);
+                CalculateProjections();
                 UpdateVertices(_settings.TimeStep, _settings.Damping);
-
                 if (_stepCount++ % _settings.RefineFrequency == 0) Refine();
             }
 
@@ -344,11 +342,21 @@ namespace SpatialSlur.Tools
             #region Dynamics
 
             /// <summary>
+            /// Calculates all projections applied to mesh vertices.
+            /// </summary>
+            protected virtual void CalculateProjections()
+            {
+                TangentialSmooth(1.0);
+                PullToFeatures(_settings.FeatureWeight);
+            }
+
+
+            /// <summary>
             ///
             /// </summary>
             /// <param name="weight"></param>
             /// <returns></returns>
-            private void UniformSmooth(double weight)
+            protected void UniformSmooth(double weight)
             {
                 Parallel.ForEach(Partitioner.Create(0, _mesh.Vertices.Count), range =>
                 {
@@ -379,7 +387,7 @@ namespace SpatialSlur.Tools
             ///
             /// </summary>
             /// <returns></returns>
-            private void TangentialSmooth(double weight)
+            protected void TangentialSmooth(double weight)
             {
                 Parallel.ForEach(Partitioner.Create(0, _mesh.Vertices.Count), range =>
                 {
@@ -421,7 +429,7 @@ namespace SpatialSlur.Tools
             /// </summary>
             /// <param name="weight"></param>
             /// <returns></returns>
-            private void PullToFeatures(double weight)
+            protected void PullToFeatures(double weight)
             {
                 Parallel.ForEach(Partitioner.Create(0, _mesh.Vertices.Count), range =>
                 {

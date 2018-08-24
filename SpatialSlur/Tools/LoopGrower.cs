@@ -225,29 +225,23 @@ namespace SpatialSlur.Tools
             /// <returns></returns>
             public void Step()
             {
-                if (++_stepCount % _settings.RefineFrequency == 0)
-                    Refine();
-
-                CalculateForces();
+                if (++_stepCount % _settings.RefineFrequency == 0) Refine();
+                CalculateProjections();
                 UpdateVertices();
-
-                ProjectToFeatures();
+                ProjectToFeatures(); // hard constraint
             }
 
 
             #region Dynamics
 
             /// <summary>
-            /// Calculates all forces in the system
+            /// Calculates all projections applies to mesh vertices.
             /// </summary>
             /// <returns></returns>
-            private void CalculateForces()
+            protected virtual void CalculateProjections()
             {
                 if (_stepCount % _settings.CollideFrequency == 0)
-                {
-                    //SphereCollide(_settings.CollideRadius);
                     SphereCollideParallel(_settings.CollideRadius, 1.0);
-                }
 
                 LaplacianFair(_settings.SmoothWeight);
                 //LaplacianFair(_settings.SmoothWeight, _settings.SmoothWeight * 2.0);
@@ -258,7 +252,7 @@ namespace SpatialSlur.Tools
             /// 
             /// </summary>
             /// <param name="weight"></param>
-            private void LaplacianFair(double weight)
+            protected void LaplacianFair(double weight)
             {
                 for (int i = 0; i < _verts.Count; i++)
                 {
@@ -361,7 +355,7 @@ namespace SpatialSlur.Tools
             /// </summary>
             /// <param name="radius"></param>
             /// <param name="weight"></param>
-            private void SphereCollideParallel(double radius, double weight)
+            protected void SphereCollideParallel(double radius, double weight)
             {
                 UpdateGrid(radius);
 
@@ -404,6 +398,40 @@ namespace SpatialSlur.Tools
                 });
 
                 _grid.Clear();
+            }
+
+
+            /// <summary>
+            ///
+            /// </summary>
+            /// <param name="weight"></param>
+            /// <returns></returns>
+            protected void PullToFeatures(double weight)
+            {
+                Parallel.ForEach(Partitioner.Create(0, _verts.Count), range =>
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        var v = _verts[i];
+                        if (v.IsUnused || v.FeatureIndex == -1) continue;
+
+                        var p = v.Position;
+                        int fi = v.FeatureIndex;
+
+                        if (fi != 1)
+                            ApplyMove(v, _features[fi]);
+
+                        if (_target != null)
+                            ApplyMove(v, _target);
+                    }
+                });
+
+                void ApplyMove(V vertex, IFeature feature)
+                {
+                    var p = vertex.Position;
+                    vertex.MoveSum += (feature.ClosestPoint(p) - p) * weight;
+                    vertex.WeightSum += weight;
+                }
             }
 
 
@@ -458,62 +486,18 @@ namespace SpatialSlur.Tools
                     for (int i = range.Item1; i < range.Item2; i++)
                     {
                         var v = _verts[i];
-
                         var p = v.Position;
                         int fi = v.FeatureIndex;
 
-                    /*
-                    // snap to feature or target if one exists
-                    if (fi != -1)
-                        v.Position = _features[v.FeatureIndex].ClosestPoint(v.Position);
-                    else if(_target != null)
-                        v.Position = _target.ClosestPoint(v.Position);
-                    */
-
-                    // snap to feature
-                    if (fi != -1)
+                        // project to feature if one exists
+                        if (fi != -1)
                             v.Position = _features[v.FeatureIndex].ClosestPoint(v.Position);
 
-                    // snap to target
-                    if (_target != null)
+                        // project to target if one exists
+                        if (_target != null)
                             v.Position = _target.ClosestPoint(v.Position);
                     }
                 });
-            }
-
-
-            /// <summary>
-            ///
-            /// </summary>
-            /// <param name="weight"></param>
-            /// <returns></returns>
-            private void PullToFeatures(double weight)
-            {
-                Parallel.ForEach(Partitioner.Create(0, _verts.Count), range =>
-                {
-                    for (int i = range.Item1; i < range.Item2; i++)
-                    {
-                        var v = _verts[i];
-                        if (v.IsUnused || v.FeatureIndex == -1) continue;
-
-                        var p = v.Position;
-                        int fi = v.FeatureIndex;
-
-                        if (fi != 1)
-                            ApplyMove(v, _features[fi]);
-
-                        if (_target != null)
-                            ApplyMove(v, _target);
-                    }
-                });
-
-
-                void ApplyMove(V vertex, IFeature feature)
-                {
-                    var p = vertex.Position;
-                    vertex.MoveSum += (feature.ClosestPoint(p) - p) * weight;
-                    vertex.WeightSum += weight;
-                }
             }
 
             #endregion
