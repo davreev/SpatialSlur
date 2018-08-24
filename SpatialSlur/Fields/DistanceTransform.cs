@@ -252,7 +252,7 @@ namespace SpatialSlur.Fields
 #endregion
 
 
-        private double[] _result = Array.Empty<double>(); // buffer for storing partial results
+        private double[] _partial = Array.Empty<double>(); // buffer for storing partial results
         private (int, double)[] _parabolas = Array.Empty<(int, double)>(); // buffer for storing parabolas
 
 
@@ -291,7 +291,7 @@ namespace SpatialSlur.Fields
 
             // resize buffers if necessary
             EnsureCapacity(ref _parabolas, Math.Max(nx, ny) + 1);
-            EnsureCapacity(ref _result, field.CountXY);
+            EnsureCapacity(ref _partial, field.CountXY);
             
             var parabolas = View.Create(_parabolas, 0);
             (var tx, var ty) = field.Scale;
@@ -299,7 +299,7 @@ namespace SpatialSlur.Fields
             // y direction
             {
                 var src = field.Values;
-                var dst = _result;
+                var dst = _partial;
 
                 for (int x = 0; x < nx; x++)
                 {
@@ -311,7 +311,7 @@ namespace SpatialSlur.Fields
 
             // x direction
             {
-                var src = _result;
+                var src = _partial;
                 var dst = result;
 
                 for (int y = 0; y < ny; y++)
@@ -339,7 +339,7 @@ namespace SpatialSlur.Fields
 
             // resize buffers if necessary
             EnsureCapacity(ref _parabolas, batchSize * batchCount);
-            EnsureCapacity(ref _result, field.CountXY);
+            EnsureCapacity(ref _partial, field.CountXY);
 
             var batchesX = new UniformPartitioner(0, nx, batchCount);
             var batchesY = new UniformPartitioner(0, ny, batchCount);
@@ -351,7 +351,7 @@ namespace SpatialSlur.Fields
                 var parabolas = View.Create(_parabolas, i * batchSize);
 
                 var src = field.Values;
-                var dst = _result;
+                var dst = _partial;
                 var ty = field.ScaleY;
 
                 for (int j = j0; j < j1; j++)
@@ -368,7 +368,7 @@ namespace SpatialSlur.Fields
                 (var j0, var j1) = batchesY[i];
                 var parabolas = View.Create(_parabolas, i * batchSize);
 
-                var src = _result;
+                var src = _partial;
                 var dst = result;
                 var tx = field.ScaleX;
 
@@ -421,7 +421,7 @@ namespace SpatialSlur.Fields
             
             // resize buffers if necessary
             EnsureCapacity(ref _parabolas, Math.Max(Math.Max(nx, ny), nz) + 1);
-            EnsureCapacity(ref _result, nxy);
+            EnsureCapacity(ref _partial, nxy * nz);
             
             var parabolas = View.Create(_parabolas, 0);
             (var tx, var ty, var tz) = field.Scale;
@@ -446,7 +446,7 @@ namespace SpatialSlur.Fields
             // y direction
             {
                 var src = result;
-                var dst = _result;
+                var dst = _partial;
 
                 for (int z = 0; z < nz; z++)
                 {
@@ -462,7 +462,7 @@ namespace SpatialSlur.Fields
 
             // x direction
             {
-                var src = _result;
+                var src = _partial;
                 var dst = result;
                 
                 for (int z = 0; z < nz; z++)
@@ -496,7 +496,7 @@ namespace SpatialSlur.Fields
 
             // resize buffers if necessary
             EnsureCapacity(ref _parabolas, batchSize * batchCount);
-            EnsureCapacity(ref _result, nxy);
+            EnsureCapacity(ref _partial, nxy * nz);
 
             var batchesXY = new UniformPartitioner(0, nxy, batchCount);
             var batchesXZ = new UniformPartitioner(0, nx * nz, batchCount);
@@ -527,7 +527,7 @@ namespace SpatialSlur.Fields
                 var parabolas = View.Create(_parabolas, i * batchSize);
 
                 var src = result;
-                var dst = _result;
+                var dst = _partial;
                 var ty = field.ScaleY;
 
                 for (int j = j0; j < j1; j++)
@@ -546,8 +546,8 @@ namespace SpatialSlur.Fields
                 (var j0, var j1) = batchesYZ[i];
                 var parabolas = View.Create(_parabolas, i * batchSize);
 
-                var src = result;
-                var dst = _result;
+                var src = _partial;
+                var dst = result;
                 var tx = field.ScaleX;
 
                 for (int j = j0; j < j1; j++)
