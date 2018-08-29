@@ -408,8 +408,6 @@ namespace SpatialSlur.Fields
         /// <param name="parallel"></param>
         public void CalculateL2Sqr(GridField3d<double> field, double[] result, bool parallel = false)
         {
-            // TODO test implementation
-
             if (parallel)
             {
                 CalculateL2SqrParallel(field, result);
@@ -486,8 +484,6 @@ namespace SpatialSlur.Fields
         /// <param name="result"></param>
         private void CalculateL2SqrParallel(GridField3d<double> field, double[] result)
         {
-            // TODO test implementation
-
             (var nx, var ny, var nz) = field.Count;
             var nxy = field.CountXY;
 
