@@ -18,9 +18,6 @@ namespace SpatialSlur.Collections
     {
         #region Static Members
 
-        private const string _emptyMessage = "The queue is empty.";
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -107,7 +104,7 @@ namespace SpatialSlur.Collections
             get
             {
                 if (IsEmpty)
-                    throw new InvalidOperationException(_emptyMessage);
+                    throw new InvalidOperationException("The queue is empty.");
 
                 return _items[0];
             }
