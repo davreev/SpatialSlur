@@ -665,8 +665,7 @@ namespace SpatialSlur.Fields
                     double d2;
                     double minY = GetMinY(index); // will return infinity if neither neighbor has been visited
                     double minZ = GetMinZ(index); // ''
-
-                    // TODO might need to handle 2d case(s) here...
+                    
                     if (minY > double.MaxValue || minZ > double.MaxValue || !eikonal.Solve(d0, minY, minZ, costVals[index], out d2))
                         d2 = d0 + dx * costVals[index];
 
@@ -687,8 +686,7 @@ namespace SpatialSlur.Fields
                     double d2;
                     double minX = GetMinX(index); // will return infinity if neither neighbor has been visited
                     double minZ = GetMinZ(index); // ''
-
-                    // TODO might need to handle 2d case(s) here...
+                    
                     if (minX > double.MaxValue || minZ > double.MaxValue || !eikonal.Solve(minX, d0, minZ, costVals[index], out d2))
                         d2 = d0 + dy * costVals[index];
 
@@ -709,8 +707,7 @@ namespace SpatialSlur.Fields
                     double d2;
                     double minX = GetMinX(index); // will return infinity if neither neighbor has been visited
                     double minY = GetMinY(index); // ''
-
-                    // TODO might need to handle 2d case(s) here...
+                    
                     if (minX > double.MaxValue || minY > double.MaxValue || !eikonal.Solve(minX, minY, d0, costVals[index], out d2))
                         d2 = d0 + dy * costVals[index];
 
