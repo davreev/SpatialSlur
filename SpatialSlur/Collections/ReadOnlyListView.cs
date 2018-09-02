@@ -96,6 +96,15 @@ namespace SpatialSlur.Collections
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        public bool HasSource
+        {
+            get => _source != null;
+        }
+
+
+        /// <summary>
         /// Returns true if the view is still valid.
         /// Changes to the underlying list might invalidate a view.
         /// </summary>

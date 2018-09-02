@@ -98,6 +98,15 @@ namespace SpatialSlur.Collections
         /// <summary>
         /// 
         /// </summary>
+        public bool HasSource
+        {
+            get => _source != null;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="source"></param>
         /// <param name="start"></param>
         /// <param name="count"></param>

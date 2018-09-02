@@ -54,6 +54,15 @@ namespace SpatialSlur.Collections
         /// <summary>
         /// 
         /// </summary>
+        public bool HasSource
+        {
+            get => _source != null;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
         public bool Contains(T item)
