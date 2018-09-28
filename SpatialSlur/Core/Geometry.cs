@@ -253,7 +253,7 @@ namespace SpatialSlur
             origin = points.Mean();
             var covm = Matrix3d.CreateCovariance(points, origin);
 
-            Matrix3d.Decompose.EigenSymmetric(ref covm, out Matrix3d vecs, out Vector3d vals, tolerance);
+            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, tolerance);
             xAxis = vecs.Column0;
             yAxis = vecs.Column1;
 
@@ -299,7 +299,7 @@ namespace SpatialSlur
 
             var covm = Matrix3d.CreateCovariance(points, origin);
 
-            Matrix3d.Decompose.EigenSymmetric(ref covm, out Matrix3d vecs, out Vector3d vals, tolerance);
+            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, tolerance);
             normal = vecs.Column2;
 
             // Check for degeneracy -> if 2nd eigenvalue is 0, the points are colinear at best
@@ -340,7 +340,7 @@ namespace SpatialSlur
 
             var covm = Matrix3d.CreateCovariance(points, start);
 
-            Matrix3d.Decompose.EigenSymmetric(ref covm, out Matrix3d vecs, out Vector3d vals, tolerance);
+            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, tolerance);
             direction = vecs.Column0;
 
             // Check for degeneracy -> if 1st eigenvalue is 0, then points are coincident
@@ -469,7 +469,7 @@ namespace SpatialSlur
             return false;
         }
 
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -888,6 +888,26 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="function"></param>
         /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Vector4d GetGradient(Func<Vector4d, double> function, Vector4d vector, double epsilon = D.ZeroTolerance)
+        {
+            (var x, var y, var z, var w) = vector;
+
+            double gx = function(new Vector4d(x + epsilon, y, z, w)) - function(new Vector4d(x - epsilon, y, z, w));
+            double gy = function(new Vector4d(x, y + epsilon, z, w)) - function(new Vector4d(x, y - epsilon, z, w));
+            double gz = function(new Vector4d(x, y, z + epsilon, w)) - function(new Vector4d(x, y, z - epsilon, w));
+            double gw = function(new Vector4d(x, y, z, w + epsilon)) - function(new Vector4d(x, y, z, w - epsilon));
+
+            return new Vector4d(gx, gy, gz, gw) / (2.0 * epsilon);
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the gradient of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
         /// <param name="result"></param>
         /// <param name="epsilon"></param>
         public static void GetGradient(Func<double[], double> function, double[] vector, double[] result, double epsilon = D.ZeroTolerance)
@@ -907,6 +927,102 @@ namespace SpatialSlur
                 result[i] = (g0 - g1) * d2;
                 vector[i] = t;
             }
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix2d GetJacobian(Func<Vector2d, Vector2d> function, Vector2d vector, double epsilon = D.ZeroTolerance)
+        {
+            (var x, var y) = vector;
+
+            var col0 = function(new Vector2d(x + epsilon, y)) - function(new Vector2d(x - epsilon, y));
+            var col1 = function(new Vector2d(x, y + epsilon)) - function(new Vector2d(x, y - epsilon));
+
+            return new Matrix2d(col0, col1) / (2.0 * epsilon);
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix3d GetJacobian(Func<Vector3d, Vector3d> function, Vector3d vector, double epsilon = D.ZeroTolerance)
+        {
+            (var x, var y, var z) = vector;
+
+            var col0 = function(new Vector3d(x + epsilon, y, z)) - function(new Vector3d(x - epsilon, y, z));
+            var col1 = function(new Vector3d(x, y + epsilon, z)) - function(new Vector3d(x, y - epsilon, z));
+            var col2 = function(new Vector3d(x, y, z + epsilon)) - function(new Vector3d(x, y, z - epsilon));
+
+            return new Matrix3d(col0, col1, col2) / (2.0 * epsilon);
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix4d GetJacobian(Func<Vector4d, Vector4d> function, Vector4d vector, double epsilon = D.ZeroTolerance)
+        {
+            (var x, var y, var z, var w) = vector;
+
+            var col0 = function(new Vector4d(x + epsilon, y, z, w)) - function(new Vector4d(x - epsilon, y, z, w));
+            var col1 = function(new Vector4d(x, y + epsilon, z, w)) - function(new Vector4d(x, y - epsilon, z, w));
+            var col2 = function(new Vector4d(x, y, z + epsilon, w)) - function(new Vector4d(x, y, z - epsilon, w));
+            var col3 = function(new Vector4d(x, y, z, w + epsilon)) - function(new Vector4d(x, y, z, w - epsilon));
+
+            return new Matrix4d(col0, col1, col2, col3) / (2.0 * epsilon);
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Hessian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix2d GetHessian(Func<Vector2d, double> function, Vector2d vector, double epsilon = D.ZeroTolerance)
+        {
+            return GetJacobian(p => GetGradient(function, vector, epsilon), vector, epsilon);
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Hessian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix3d GetHessian(Func<Vector3d, double> function, Vector3d vector, double epsilon = D.ZeroTolerance)
+        {
+            return GetJacobian(p => GetGradient(function, vector, epsilon), vector, epsilon);
+        }
+
+
+        /// <summary>
+        /// Returns a numerical approximation of the Hessian of the given function with respect to the given vector.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="vector"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Matrix4d GetHessian(Func<Vector4d, double> function, Vector4d vector, double epsilon = D.ZeroTolerance)
+        {
+            return GetJacobian(p => GetGradient(function, vector, epsilon), vector, epsilon);
         }
     }
 }
