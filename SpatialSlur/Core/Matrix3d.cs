@@ -24,70 +24,229 @@ namespace SpatialSlur
         public static class Decompose
         {
             /// <summary>
-            /// Returns the polar decomposition of the given matrix A.
+            /// Returns the eigen decomposition of the given matrix A.
+            /// Note that this is equivalent to a singular value decomposition when A is positive definite.
             /// </summary>
-            /// <param name="A"></param>
-            /// <param name="R"></param>
-            /// <param name="S"></param>
-            public static void Polar(ref Matrix3d A, out Matrix3d R, out Matrix3d S)
+            public static void EigenSymmetric(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance)
             {
-                // TODO
-                throw new NotImplementedException();
+                // impl refs
+                // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
+                // https://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
+                
+                const int maxSteps = 16;
 
-                // R -> rotation (with possible reflection)
-                // S -> deformation
+                Q = Identity;
+                DiagonalizeJacobi(ref A, ref Q, epsilon, maxSteps);
 
-                /*
-                A = RS
-                R = A * P.Inverse
-                S = Sqrt(A.Transpose * A)
-                */
+                lambda = new Vector3d(A.M00, A.M11, A.M22);
+                SortEigenResults(ref Q, ref lambda);
+            }
+
+
+            /// <summary>
+            /// Performs a Jacobi diagonalization of matrix A.
+            /// Returns true if A is successfully diagonalized within the specified number of steps.
+            /// Also returns the concatenation of applied Jacobi rotations in V.
+            /// </summary>
+            private static bool DiagonalizeJacobi(ref Matrix3d A, ref Matrix3d V, double epsilon = D.ZeroTolerance, int maxSteps = 16)
+            {
+                // impl refs
+                // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
+                // https://en.wikipedia.org/wiki/Jacobi_rotation
+
+                while (maxSteps-- > 0)
+                {
+                    var a01 = Math.Abs(A.M01);
+                    var a02 = Math.Abs(A.M02);
+                    var a12 = Math.Abs(A.M12);
+
+                    // Jacobi rotate in plane of max off-diagonal value of A
+                    if (a01 > a02 && a01 > a12)
+                    {
+                        if (a01 < epsilon) return true;
+                        JacobiRotate01(ref A, ref V);
+                    }
+                    else if (a02 > a12)
+                    {
+                        if (a02 < epsilon) return true;
+                        JacobiRotate02(ref A, ref V);
+                    }
+                    else
+                    {
+                        if (a12 < epsilon) return true;
+                        JacobiRotate12(ref A, ref V);
+                    }
+                }
+
+                return false;
             }
 
 
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="A"></param>
-            /// <param name="U"></param>
-            /// <param name="sigma"></param>
-            /// <param name="Vt"></param>
-            public static void SingularValue(ref Matrix3d A, out Matrix3d U, out Vector3d sigma, out Matrix3d Vt)
+            private static void JacobiRotate01(ref Matrix3d A, ref Matrix3d V)
             {
-                // TODO
-                throw new NotImplementedException();
-            }
+                var beta = (A.M11 - A.M00) / (2.0 * A.M01);
+                GetJacobiTerms(beta, out var t, out var c, out var s, out var p);
 
-
-            /// <summary>
-            /// Returns the eigen decomposition of the given matrix A.
-            /// </summary>
-            public static void EigenSymmetric(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance, int maxSteps = 16)
-            {
-                EigenSymmetric(ref A, out Q, out lambda, epsilon, maxSteps);
-            }
-
-
-            /// <summary>
-            /// Returns the eigen decomposition of the given matrix A.
-            /// </summary>
-            public static void EigenSymmetric(ref Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance, int maxSteps = 16)
-            {
-                // impl refs
-                // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
-                // https://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
-
-                var D = A;
-                Q = Identity;
-                DiagonalizeJacobi(ref D, ref Q, epsilon, maxSteps);
+                /*
+                    | c  s  0 |
+                P = |-s  c  0 |
+                    | 0  0  1 |
+                */
                 
-                lambda = new Vector3d(D.M00, D.M11, D.M22);
-                SortEigenResults(ref Q, ref lambda);
+                // A' = Pt A P
+                {
+                    var a20 = A.M20 - s * (A.M21 + p * A.M20);
+                    var a21 = A.M21 + s * (A.M20 - p * A.M21);
+                    A.M20 = A.M02 = a20;
+                    A.M21 = A.M12 = a21;
+
+                    A.M00 -= t * A.M01;
+                    A.M11 += t * A.M01;
+                    A.M01 = A.M10 = 0.0; // eliminated off-diagonal elements
+                }
+
+                // V' = V P
+                {
+                    var col0 = V.Column0;
+                    var col1 = V.Column1;
+                    V.Column0 = c * col0 - s * col1;
+                    V.Column1 = s * col0 + c * col1;
+                }
             }
 
 
             /// <summary>
+            /// 
+            /// </summary>
+            private static void JacobiRotate02(ref Matrix3d A, ref Matrix3d V)
+            {
+                var beta = (A.M22 - A.M00) / (2.0 * A.M02);
+                GetJacobiTerms(beta, out var t, out var c, out var s, out var p);
+
+                /*
+                    | c  0  s |
+                P = | 0  1  0 |
+                    |-s  0  c |
+                */
+
+                // A' = Pt A P
+                {
+                    var a10 = A.M10 - s * (A.M12 + p * A.M10);
+                    var a12 = A.M12 + s * (A.M10 - p * A.M12);
+                    A.M10 = A.M01 = a10;
+                    A.M12 = A.M21 = a12;
+                    
+                    A.M00 -= t * A.M02;
+                    A.M22 += t * A.M02;
+                    A.M02 = A.M20 = 0.0; // eliminated off-diagonal elements
+                }
+
+                // V' = V P
+                {
+                    var col0 = V.Column0;
+                    var col2 = V.Column2;
+                    V.Column0 = c * col0 - s * col2;
+                    V.Column2 = s * col0 + c * col2;
+                }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void JacobiRotate12(ref Matrix3d A, ref Matrix3d V)
+            {
+                var beta = (A.M22 - A.M11) / (2.0 * A.M12);
+                GetJacobiTerms(beta, out var t, out var c, out var s, out var p);
+
+                /*
+                    | 1  0  0 |
+                P = | 0  c  s |
+                    | 0 -s  c |
+                */
+
+                // A' = Pt A P
+                {
+                    var a01 = A.M01 - s * (A.M02 + p * A.M01);
+                    var a02 = A.M02 + s * (A.M01 - p * A.M02);
+                    A.M01 = A.M10 = a01;
+                    A.M02 = A.M20 = a02;
+
+                    A.M11 -= t * A.M12;
+                    A.M22 += t * A.M12;
+                    A.M12 = A.M21 = 0.0; // eliminated off-diagonal elements
+                }
+
+                // V' = V P
+                {
+                    var col1 = V.Column1;
+                    var col2 = V.Column2;
+                    V.Column1 = c * col1 - s * col2;
+                    V.Column2 = s * col1 + c * col2;
+                }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void GetJacobiTerms(double beta, out double t, out double c, out double s, out double p)
+            {
+                t = Math.Sign(beta) / (Math.Abs(beta) + Math.Sqrt(beta * beta + 1.0));
+                c = 1.0 / Math.Sqrt(t * t + 1.0);
+                s = c * t;
+                p = s / (1.0 + c);
+            }
+
+
+            /// <summary>
+            /// Sorts eigen decomposition results by eigenvalue (largest to smallest)
+            /// </summary>
+            /// <param name="Q"></param>
+            /// <param name="lambda"></param>
+            private static void SortEigenResults(ref Matrix3d Q, ref Vector3d lambda)
+            {
+                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
+                    Swap12(ref Q, ref lambda);
+
+                if (Math.Abs(lambda.Y) > Math.Abs(lambda.X))
+                    Swap01(ref Q, ref lambda);
+
+                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
+                    Swap12(ref Q, ref lambda);
+
+                void Swap01(ref Matrix3d A, ref Vector3d b)
+                {
+                    var a0 = A.Column0;
+                    A.Column0 = A.Column1;
+                    A.Column1 = a0;
+
+                    var b0 = b.X;
+                    b.X = b.Y;
+                    b.Y = b0;
+                }
+
+                void Swap12(ref Matrix3d A, ref Vector3d b)
+                {
+                    var a1 = A.Column1;
+                    A.Column1 = A.Column2;
+                    A.Column2 = a1;
+
+                    var b1 = b.Y;
+                    b.Y = b.Z;
+                    b.Z = b1;
+                }
+            }
+
+
+#if OBSOLETE
+            /// <summary>
+            /// Diagonalizes matrix A by iteratively applying Jacobi rotations.
             /// Returns true if A is successfully diagonalized within the specified number of steps.
+            /// Also returns the cumulative Jacobi rotation in V.
             /// </summary>
             /// <param name="A"></param>
             /// <param name="V"></param>
@@ -98,9 +257,8 @@ namespace SpatialSlur
             {
                 // impl ref
                 // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
-                
-                // TODO optimize - no need to build the full 3x3 rotation matrix at each step
 
+                // TODO optimize - no need to build the full 3x3 rotation matrix at each step
                 Matrix3d P;
 
                 while (maxSteps-- > 0)
@@ -181,67 +339,253 @@ namespace SpatialSlur
                 P.M12 = s;
                 P.M21 = -s;
             }
+#endif
 
 
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="b"></param>
-            /// <param name="c"></param>
-            /// <param name="s"></param>
-            private static void GetJacobiTerms(double b, out double c, out double s)
+            /// <param name="A"></param>
+            /// <param name="Q"></param>
+            /// <param name="R"></param>
+            /// <param name="epsilon"></param>
+            public static void QR(ref Matrix3d A, out Matrix3d Q, out Matrix3d R, double epsilon = D.ZeroTolerance)
             {
-                var t = Math.Sign(b) / (Math.Abs(b) + Math.Sqrt(b * b + 1.0));
-                c = 1.0 / Math.Sqrt(t * t + 1.0);
-                s = c * t;
+                // impl ref
+                // http://pages.cs.wisc.edu/~sifakis/papers/SVD_TR1690.pdf
+                // http://davidstutz.de/matrix-decompositions/matrix-decompositions/givens
+
+                // R -> result of successive Givens rotations applied to A (3x3 upper triangular)
+                // Q -> concatenation of all Givens rotations (3x3 orthogonal)
+                
+                R = A;
+                Q = Identity;
+
+                GivensRotate10(ref R, ref Q);
+                GivensRotate20(ref R, ref Q);
+                GivensRotate21(ref R, ref Q);
             }
 
 
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="Q"></param>
-            /// <param name="lambda"></param>
-            private static void SortEigenResults(ref Matrix3d Q, ref Vector3d lambda)
+            private static void GivensRotate10(ref Matrix3d A, ref Matrix3d V)
+            {                
+                GetGivensTerms(A.M00, A.M10, out var c, out var s);
+
+                /*
+                    | c -s  0 |
+                G = | s  c  0 |
+                    | 0  0  1 |
+                */
+                
+                Apply(ref A); // A' = G A
+                Apply(ref V); // V' = G V
+
+                void Apply(ref Matrix3d R)
+                {
+                    var row0 = R.Row0;
+                    var row1 = R.Row1;
+                    R.Row0 = c * row0 - s * row1;
+                    R.Row1 = s * row0 + c * row1;
+                }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void GivensRotate20(ref Matrix3d A, ref Matrix3d V)
             {
-                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
-                    Swap12(ref Q, ref lambda);
+                GetGivensTerms(A.M00, A.M20, out var c, out var s);
 
-                if (Math.Abs(lambda.Y) > Math.Abs(lambda.X))
-                    Swap01(ref Q, ref lambda);
+                /*
+                    | c  0 -s |
+                G = | 0  1  0 |
+                    | s  0  c |
+                */
 
-                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
-                    Swap12(ref Q, ref lambda);
+                Apply(ref A); // A' = G A
+                Apply(ref V); // V' = G V
 
-                void Swap01(ref Matrix3d A, ref Vector3d b)
+                void Apply(ref Matrix3d R)
                 {
-                    var a0 = A.Column0;
-                    A.Column0 = A.Column1;
-                    A.Column1 = a0;
-
-                    var b0 = b.X;
-                    b.X = b.Y;
-                    b.Y = b0;
+                    var row0 = R.Row0;
+                    var row2 = R.Row2;
+                    R.Row0 = c * row0 - s * row2;
+                    R.Row2 = s * row0 + c * row2;
                 }
+            }
 
-                void Swap12(ref Matrix3d A, ref Vector3d b)
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void GivensRotate21(ref Matrix3d A, ref Matrix3d V)
+            {
+                GetGivensTerms(A.M11, A.M21, out var c, out var s);
+
+                /*
+                    | 1  0  0 |
+                G = | 0  c -s |
+                    | 0  s  c |
+                */
+
+                Apply(ref A); // A' = G A
+                Apply(ref V); // V' = G V
+
+                void Apply(ref Matrix3d R)
                 {
-                    var a1 = A.Column1;
-                    A.Column1 = A.Column2;
-                    A.Column2 = a1;
-
-                    var b1 = b.Y;
-                    b.Y = b.Z;
-                    b.Z = b1;
+                    var row1 = R.Row1;
+                    var row2 = R.Row2;
+                    R.Row1 = c * row1 - s * row2;
+                    R.Row2 = s * row1 + c * row2;
                 }
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void GetGivensTerms(double ajj, double aij, out double c, out double s)
+            {
+                var t = Math.Sqrt(ajj * ajj + aij * aij);
+                c = ajj / t;
+                s = -aij / t;
+            }
+
+
+            /// <summary>
+            /// Performs a singular value decomposition of the given matrix A.
+            /// Note that this implementation ensures that U and V are proper rotations (i.e. no reflections).
+            /// </summary>
+            public static void SingularValue(ref Matrix3d A, out Matrix3d U, out Vector3d sigma, out Matrix3d V, double epsilon = D.ZeroTolerance)
+            {
+                // U -> proper rotation (no reflection)
+                // sigma -> singular values
+                // V -> proper rotation (no reflection)
+
+                // impl ref
+                // https://www.math.ucla.edu/~jteran/papers/ITF04.pdf
+
+                var AtA = A.ApplyTranspose(ref A);
+                EigenSymmetric(AtA, out V, out sigma, epsilon);
+                
+                // handle reflection in V
+                if (V.Determinant < 0.0)
+                    V.Column2 *= -1.0;
+
+                // solve for U
+                // depends on the number of valid (non-zero) singular values
+                if (sigma.Z > 0.0)
+                {
+                    // all valid singular values
+
+                    //     | x  -  - |
+                    // Σ = | -  y  - |
+                    //     | -  -  z |
+                    
+                    sigma.X = Math.Sqrt(sigma.X);
+                    sigma.Y = Math.Sqrt(sigma.Y);
+                    sigma.Z = Math.Sqrt(sigma.Z);
+
+                    // U = A V inv(sigma)
+                    U = new Matrix3d(
+                        A.Apply(V.Column0 / sigma.X),
+                        A.Apply(V.Column1 / sigma.Y),
+                        A.Apply(V.Column2 / sigma.Z));
+                    
+                    // handle reflection in U
+                    if (U.Determinant < 0.0)
+                    {
+                        U.Column2 *= -1.0;
+                        sigma.Z *= -1.0;
+                    }
+                }
+                else if(sigma.Y > 0.0)
+                {
+                    // two valid singular values
+
+                    //     | x  -  - |
+                    // Σ = | -  y  - |
+                    //     | -  -  0 |
+                    
+                    sigma.X = Math.Sqrt(sigma.X);
+                    sigma.Y = Math.Sqrt(sigma.Y);
+                    sigma.Z = 0.0;
+
+                    // U = A V inv(sigma)
+                    var u0 = A.Apply(V.Column0 / sigma.X);
+                    var u1 = A.Apply(V.Column1 / sigma.Y);
+                    U = new Matrix3d(u0, u1, Vector3d.Cross(u0, u1));
+                }
+                else if (sigma.X > 0.0)
+                {
+                    // one valid singular value
+
+                    //     | x  -  - |
+                    // Σ = | -  0  - |
+                    //     | -  -  0 |
+                    
+                    sigma.X = Math.Sqrt(sigma.X);
+                    sigma.Y = sigma.Z = 0.0;
+
+                    // U = A V inv(sigma)
+                    var u0 = A.Apply(V.Column0 / sigma.X);
+                    var u1 = u0.Y > 0.0 ? u0.CrossX : u0.CrossY;
+
+                    u1.Unitize();
+                    U = new Matrix3d(u0, u1, Vector3d.Cross(u0, u1));
+                }
+                else
+                {
+                    // no valid singular values
+
+                    //     | 0  -  - |
+                    // Σ = | -  0  - |
+                    //     | -  -  0 |
+                    
+                    sigma.X = sigma.Y = sigma.Z = 0.0;
+                    U = Identity;
+                }
+            }
+
+
+            /// <summary>
+            /// Returns the polar decomposition of the given matrix A.
+            /// </summary>
+            /// <param name="A"></param>
+            /// <param name="R"></param>
+            /// <param name="S"></param>
+            public static void Polar(ref Matrix3d A, out Matrix3d R, out Matrix3d S)
+            {
+                // U -> proper rotation (no reflection)
+                // P -> deformation
+                
+                // Can be reconstructed from SVD of A
+                SingularValue(ref A, out Matrix3d U, out Vector3d s, out Matrix3d V);
+                
+                // S = V s Vt
+                S = new Matrix3d(
+                    V.Apply(s * V.Row0),
+                    V.Apply(s * V.Row1),
+                    V.Apply(s * V.Row2)
+                    );
+
+                // R = U Vt
+                R = new Matrix3d(
+                    U.Apply(V.Row0),
+                    U.Apply(V.Row1),
+                    U.Apply(V.Row2)
+                    );
             }
         }
+        
+#endregion
 
 
-        #endregion
-
-
-        #region Static Members
+#region Static Members
 
         /// <summary></summary>
         public static readonly Matrix3d Identity = new Matrix3d(1.0);
@@ -446,28 +790,28 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
+        /// <param name="points"></param>
         /// <returns></returns>
-        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> vectors)
+        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> points)
         {
-            return CreateCovariance(vectors, vectors.Mean());
+            return CreateCovariance(points, points.Mean());
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="mean"></param>
+        /// <param name="points"></param>
+        /// <param name="centroid"></param>
         /// <returns></returns>
-        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> vectors, Vector3d mean)
+        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> points, Vector3d centroid)
         {
             var result = new Matrix3d();
             int n = 0;
             
-            foreach (var v in vectors)
+            foreach (var v in points)
             {
-                var d = v - mean;
+                var d = v - centroid;
                 result.M00 += d.X * d.X;
                 result.M01 += d.X * d.Y;
                 result.M02 += d.X * d.Z;
@@ -486,38 +830,6 @@ namespace SpatialSlur
             result.M21 = result.M12 *= t;
 
             return result;
-        }
-        
-
-        /// <summary>
-        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <param name="vector"></param>
-        /// <param name="epsilon"></param>
-        /// <returns></returns>
-        public static Matrix3d CreateJacobian(Func<Vector3d, Vector3d> function, Vector3d vector, double epsilon = D.ZeroTolerance)
-        {
-            (var x, var y, var z) = vector;
-
-            var col0 = function(new Vector3d(x + epsilon, y, z)) - function(new Vector3d(x - epsilon, y, z));
-            var col1 = function(new Vector3d(x, y + epsilon, z)) - function(new Vector3d(x, y - epsilon, z));
-            var col2 = function(new Vector3d(x, y, z + epsilon)) - function(new Vector3d(x, y, z - epsilon));
-
-            return new Matrix3d(col0, col1, col2) / (2.0 * epsilon);
-        }
-
-
-        /// <summary>
-        /// Returns a numerical approximation of the Hessian of the given function with respect to the given vector.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <param name="vector"></param>
-        /// <param name="epsilon"></param>
-        /// <returns></returns>
-        public static Matrix3d CreateHessian(Func<Vector3d, double> function, Vector3d vector, double epsilon = D.ZeroTolerance)
-        {
-            return CreateJacobian(p => Geometry.GetGradient(function, vector, epsilon), vector, epsilon);
         }
 
 
@@ -704,6 +1016,21 @@ namespace SpatialSlur
             {
                 M20 = value.X;
                 M21 = value.Y;
+                M22 = value.Z;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector3d Diagonal
+        {
+            get => new Vector3d(M00, M11, M22);
+            set
+            {
+                M00 = value.X;
+                M11 = value.Y;
                 M22 = value.Z;
             }
         }
@@ -905,7 +1232,7 @@ namespace SpatialSlur
                 M00, M01, M02, 0.0,
                 M10, M11, M12, 0.0,
                 M20, M21, M22, 0.0,
-                0.0, 0.0, 0.0, 0.0);
+                0.0, 0.0, 0.0, 1.0);
         }
 
 
