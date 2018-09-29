@@ -25,7 +25,6 @@ namespace SpatialSlur
         {
             /// <summary>
             /// Returns the eigen decomposition of the given matrix A.
-            /// Note that this is equivalent to a singular value decomposition when A is positive definite.
             /// </summary>
             public static void EigenSymmetric(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance)
             {
@@ -33,13 +32,33 @@ namespace SpatialSlur
                 // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
                 // https://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
                 
-                const int maxSteps = 16;
-
                 Q = Identity;
-                DiagonalizeJacobi(ref A, ref Q, epsilon, maxSteps);
+                DiagonalizeJacobi(ref A, ref Q, epsilon);
 
                 lambda = new Vector3d(A.M00, A.M11, A.M22);
                 SortEigenResults(ref Q, ref lambda);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void SwapColumns01(ref Matrix3d A)
+            {
+                Utilities.Swap(ref A.M00, ref A.M01);
+                Utilities.Swap(ref A.M10, ref A.M11);
+                Utilities.Swap(ref A.M20, ref A.M21);
+            }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void SwapColumns12(ref Matrix3d A)
+            {
+                Utilities.Swap(ref A.M01, ref A.M02);
+                Utilities.Swap(ref A.M11, ref A.M12);
+                Utilities.Swap(ref A.M21, ref A.M22);
             }
 
 
@@ -203,41 +222,28 @@ namespace SpatialSlur
 
 
             /// <summary>
-            /// Sorts eigen decomposition results by eigenvalue (largest to smallest)
+            /// Sorts the eigen results in descending order of absolute eigenvalue.
             /// </summary>
             /// <param name="Q"></param>
             /// <param name="lambda"></param>
             private static void SortEigenResults(ref Matrix3d Q, ref Vector3d lambda)
             {
                 if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
-                    Swap12(ref Q, ref lambda);
-
-                if (Math.Abs(lambda.Y) > Math.Abs(lambda.X))
-                    Swap01(ref Q, ref lambda);
-
-                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
-                    Swap12(ref Q, ref lambda);
-
-                void Swap01(ref Matrix3d A, ref Vector3d b)
                 {
-                    var a0 = A.Column0;
-                    A.Column0 = A.Column1;
-                    A.Column1 = a0;
-
-                    var b0 = b.X;
-                    b.X = b.Y;
-                    b.Y = b0;
+                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                    SwapColumns12(ref Q);
                 }
 
-                void Swap12(ref Matrix3d A, ref Vector3d b)
+                if (Math.Abs(lambda.Y) > Math.Abs(lambda.X))
                 {
-                    var a1 = A.Column1;
-                    A.Column1 = A.Column2;
-                    A.Column2 = a1;
+                    Utilities.Swap(ref lambda.X, ref lambda.Y);
+                    SwapColumns01(ref Q);
+                }
 
-                    var b1 = b.Y;
-                    b.Y = b.Z;
-                    b.Z = b1;
+                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
+                {
+                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                    SwapColumns12(ref Q);
                 }
             }
 
@@ -470,8 +476,12 @@ namespace SpatialSlur
                 // https://www.math.ucla.edu/~jteran/papers/ITF04.pdf
 
                 var AtA = A.ApplyTranspose(ref A);
-                EigenSymmetric(AtA, out V, out sigma, epsilon);
-                
+                V = Identity;
+                DiagonalizeJacobi(ref AtA, ref V, epsilon);
+
+                sigma = new Vector3d(AtA.M00, AtA.M11, AtA.M22);
+                SortEigenResultsPositive(ref V, ref sigma);
+
                 // handle reflection in V
                 if (V.Determinant < 0.0)
                     V.Column2 *= -1.0;
@@ -548,6 +558,34 @@ namespace SpatialSlur
                     
                     sigma.X = sigma.Y = sigma.Z = 0.0;
                     U = Identity;
+                }
+            }
+
+
+            /// <summary>
+            /// Sorts the eigen results in descending order of eigenvalue.
+            /// Assumes all eigenvalues are greater than or equal to zero.
+            /// </summary>
+            /// <param name="Q"></param>
+            /// <param name="lambda"></param>
+            private static void SortEigenResultsPositive(ref Matrix3d Q, ref Vector3d lambda)
+            {
+                if (lambda.Z > lambda.Y)
+                {
+                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                    SwapColumns12(ref Q);
+                }
+
+                if (lambda.Y > lambda.X)
+                {
+                    Utilities.Swap(ref lambda.X, ref lambda.Y);
+                    SwapColumns01(ref Q);
+                }
+
+                if (lambda.Z > lambda.Y)
+                {
+                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                    SwapColumns12(ref Q);
                 }
             }
 
