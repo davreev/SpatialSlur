@@ -100,16 +100,16 @@ namespace SpatialSlur.Collections
         /// <summary>
         /// 
         /// </summary>
-        public static void SetRange<T>(this IList<T> list, IReadOnlyList<T> other, int thisIndex, int otherIndex, int count)
+        public static void SetRange<T>(this IList<T> list, IReadOnlyList<T> other, int index, int otherIndex, int count)
         {
             if (list is T[] arr0 && other is T[] arr1)
             {
-                ArrayExtensions.SetRange(arr0, arr1, thisIndex, otherIndex, count);
+                ArrayExtensions.SetRange(arr0, arr1, index, otherIndex, count);
                 return;
             }
 
             for (int i = 0; i < count; i++)
-                list[thisIndex + i] = other[otherIndex + i];
+                list[index + i] = other[otherIndex + i];
         }
 
 
@@ -256,7 +256,7 @@ namespace SpatialSlur.Collections
         /// </summary>
         public static void Shift<T>(this IList<T> list, int offset)
         {
-            Shift(list, offset, 0, list.Count - 1);
+            Shift(list, offset, 0, list.Count);
         }
 
 
@@ -271,7 +271,7 @@ namespace SpatialSlur.Collections
                 return;
             }
 
-            offset = SlurMath.RepeatPos(offset, to - from);
+            offset = SlurMath.RepeatPositive(-offset, to - from);
             Reverse(list, from, from + offset);
             Reverse(list, from + offset, to);
             Reverse(list, from, to);

@@ -135,9 +135,9 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void SetRange<T>(this T[] array, T[] other, int thisIndex, int otherIndex, int count)
+        public static void SetRange<T>(this T[] array, T[] other, int index, int otherIndex, int count)
         {
-            Array.Copy(other, otherIndex, array, thisIndex, count);
+            Array.Copy(other, otherIndex, array, index, count);
         }
 
 
@@ -487,7 +487,7 @@ namespace SpatialSlur
         /// </summary>
         public static void Shift<T>(this T[] array, int offset)
         {
-            array.Shift(offset, 0, array.Length - 1);
+            array.Shift(offset, 0, array.Length);
         }
 
 
@@ -496,7 +496,7 @@ namespace SpatialSlur
         /// </summary>
         public static void Shift<T>(this T[] array, int offset, int from, int to)
         {
-            offset = SlurMath.RepeatPos(offset, to - from);
+            offset = SlurMath.RepeatPositive(-offset, to - from);
             Reverse(array, from, from + offset);
             Reverse(array, from + offset, to);
             Reverse(array, from, to);
