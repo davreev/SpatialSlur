@@ -528,29 +528,15 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static double Sum(this IEnumerable<double> vector)
+        public static double Mean(this IEnumerable<double> values)
         {
-            if (vector is double[] arr)
-                return Vector.Sum(arr);
-
-            double sum = 0.0;
-            foreach (double t in vector) sum += t;
-            return sum;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static double Mean(this IEnumerable<double> vector)
-        {
-            if (vector is double[] arr)
+            if (values is double[] arr)
                 return Vector.Mean(arr);
 
             double sum = 0.0;
             int count = 0;
 
-            foreach (double t in vector)
+            foreach (double t in values)
             {
                 sum += t;
                 count++;
