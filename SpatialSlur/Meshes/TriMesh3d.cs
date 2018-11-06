@@ -8,7 +8,7 @@ namespace SpatialSlur.Meshes
     /// <summary>
     /// 
     /// </summary>
-    public class TriMesh3d : TriMesh<Vector3d>
+    public class TriMesh3d : TriMesh<Vector3d, Vector2d>
     {
         /// <summary>
         /// 
@@ -21,11 +21,10 @@ namespace SpatialSlur.Meshes
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="positionCapacity"></param>
-        /// <param name="normalCapacity"></param>
-        /// <param name="faceCapacity"></param>
-        public TriMesh3d(int positionCapacity, int normalCapacity, int faceCapacity)
-            : base(positionCapacity, normalCapacity, faceCapacity)
+        /// <param name="vertexCount"></param>
+        /// <param name="faceCount"></param>
+        public TriMesh3d(int vertexCount, int faceCount)
+            : base(vertexCount, faceCount)
         {
         }
 

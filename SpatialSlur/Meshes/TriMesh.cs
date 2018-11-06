@@ -11,71 +11,17 @@ namespace SpatialSlur.Meshes
     /// <summary>
     /// Simple face-vertex representation of a triangle mesh.
     /// </summary>
-    public abstract class TriMesh<TVector>
-        where TVector : struct
+    public abstract class TriMesh<TVec3, TVec2>
+        where TVec3 : struct
+        where TVec2 : struct
     {
-        #region Static Members
+        private TVec3[] _positions = Array.Empty<TVec3>();
+        private TVec3[] _normals = null;
+        private TVec3[] _tangents = null;
+        private TVec2[] _textureCoords = null;
+        private int _vertexCount;
 
-        /// <summary>
-        /// Adds the given item to the given buffer
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="buffer"></param>
-        /// <param name="count"></param>
-        /// <param name="item"></param>
-        private static void Add<T>(ref T[] buffer, int count, T item)
-        {
-            const int minCapacity = 4;
-
-            if (buffer.Length == count)
-                Array.Resize(ref buffer, Math.Max(count << 1, minCapacity));
-
-            buffer[count] = item;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="buffer"></param>
-        /// <param name="count"></param>
-        private static void TrimExcess<T>(ref T[] buffer, int count)
-        {
-            int max = count << 1;
-            
-            if (buffer.Length > max)
-                Array.Resize(ref buffer, max);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="b0"></param>
-        /// <param name="n0"></param>
-        /// <param name="b1"></param>
-        /// <param name="n1"></param>
-        private static void Append<T>(ref T[] b0, int n0, T[] b1, int n1)
-        {
-            var n = n0 + n1;
-
-            if(b0.Length <= n)
-                Array.Resize(ref b0, b0.Length + n);
-
-            b0.SetRange(b1, n0, 0, n1);
-        }
-
-        #endregion
-
-
-        private TVector[] _positions = Array.Empty<TVector>();
-        private TVector[] _normals = Array.Empty<TVector>();
         private Vector3i[] _faces = Array.Empty<Vector3i>();
-
-        private int _positionCount;
-        private int _normalCount;
         private int _faceCount;
 
 
@@ -90,11 +36,10 @@ namespace SpatialSlur.Meshes
         /// <summary>
         /// 
         /// </summary>
-        public TriMesh(int positionCapacity, int normalCapacity, int faceCapacity)
+        public TriMesh(int vertexCount, int faceCount)
         {
-            _positions = new TVector[positionCapacity];
-            _normals = new TVector[normalCapacity];
-            _faces = new Vector3i[faceCapacity];
+            _positions = new TVec3[_vertexCount = vertexCount];
+            _faces = new Vector3i[_faceCount = faceCount];
         }
 
 
@@ -102,14 +47,21 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public TriMesh(TriMesh<TVector> other)
+        public TriMesh(TriMesh<TVec3, TVec2> other)
         {
             _positions = other._positions.ShallowCopy();
-            _normals = other._normals.ShallowCopy();
-            _faces = other._faces.ShallowCopy();
+            _vertexCount = other._vertexCount;
 
-            _positionCount = other._positionCount;
-            _normalCount = other._normalCount;
+            if (other.HasNormals)
+                _normals = other._normals.ShallowCopy();
+
+            if (other.HasTangents)
+                _tangents = other._tangents.ShallowCopy();
+
+            if (other.HasTextureCoords)
+                _textureCoords = other._textureCoords.ShallowCopy();
+
+            _faces = other._faces.ShallowCopy();
             _faceCount = other._faceCount;
         }
 
@@ -117,18 +69,36 @@ namespace SpatialSlur.Meshes
         /// <summary>
         /// Returns the array of vertex positions
         /// </summary>
-        public ArrayView<TVector> Positions
+        public ArrayView<TVec3> Positions
         {
-            get { return _positions.AsView(_positionCount); }
+            get { return _positions.AsView(_vertexCount); }
         }
 
 
         /// <summary>
-        /// Returns the array of vertex normals
+        /// Returns the array of vertex normals or null.
         /// </summary>
-        public ArrayView<TVector> Normals
+        public ArrayView<TVec3> Normals
         {
-            get { return _normals.AsView(_normalCount); }
+            get { return _normals.AsView(_vertexCount); }
+        }
+
+
+        /// <summary>
+        /// Returns the array of vertex tangents or null.
+        /// </summary>
+        public ArrayView<TVec3> Tangents
+        {
+            get { return _tangents.AsView(_vertexCount); }
+        }
+
+
+        /// <summary>
+        /// Returns the array of vertex texture coordinates or null.
+        /// </summary>
+        public ArrayView<TVec2> TextureCoords
+        {
+            get {  return _textureCoords.AsView(_vertexCount); }
         }
 
 
@@ -142,22 +112,180 @@ namespace SpatialSlur.Meshes
 
 
         /// <summary>
-        /// 
+        /// Gets or sets whether or not this mesh stores normals.
         /// </summary>
-        /// <param name="position"></param>
-        public void AddPosition(TVector position)
+        public bool HasNormals
         {
-            Add(ref _positions, _positionCount++, position);
+            get { return _normals != null; }
+            set { _normals = value ? InitOptional(_normals) : null; }
+        }
+
+
+        /// <summary>
+        /// Gets or sets whether or not this mesh stores tangents.
+        /// </summary>
+        public bool HasTangents
+        {
+            get { return _tangents != null; }
+            set { _tangents = value ? InitOptional(_tangents) : null; }
+        }
+
+
+        /// <summary>
+        /// Gets or sets whether or not this mesh stores texture coordinates.
+        /// </summary>
+        public bool HasTextureCoords
+        {
+            get { return _textureCoords != null; }
+            set { _textureCoords = value ? InitOptional(_textureCoords) : null; }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="normal"></param>
-        public void AddNormal(TVector normal)
+        public int VertexCount
         {
-            Add(ref _normals, _normalCount++, normal);
+            get { return _vertexCount; }
+            set
+            {
+                if(value > VertexCapacity)
+                {
+                    Array.Resize(ref _positions, value);
+
+                    if (HasNormals)
+                        Array.Resize(ref _normals, value);
+
+                    if (HasTangents)
+                        Array.Resize(ref _tangents, value);
+
+                    if (HasTextureCoords)
+                        Array.Resize(ref _textureCoords, value);
+                }
+
+                _vertexCount = value;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int VertexCapacity
+        {
+            get { return _positions.Length; }
+            set
+            {
+                if (value < _vertexCount)
+                    _vertexCount = value;
+
+                Array.Resize(ref _positions, value);
+
+                if (HasNormals)
+                    Array.Resize(ref _normals, value);
+
+                if (HasTangents)
+                    Array.Resize(ref _tangents, value);
+
+                if (HasTextureCoords)
+                    Array.Resize(ref _textureCoords, value);
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int FaceCount
+        {
+            get { return _faceCount; }
+            set
+            {
+                if (value > FaceCapacity)
+                    Array.Resize(ref _faces, value);
+
+                _faceCount = value;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int FaceCapacity
+        {
+            get { return _faces.Length; }
+            set
+            {
+                if (value < _faceCount)
+                    _faceCount = value;
+
+                Array.Resize(ref _faces, value);
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private T[] InitOptional<T>(T[] buffer)
+        {
+            return buffer ?? (new T[VertexCapacity]);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Clear()
+        {
+            _vertexCount = _faceCount = 0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ClearVertices()
+        {
+            _vertexCount = 0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ClearFaces()
+        {
+            _faceCount = 0;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="normal"></param>
+        /// <param name="tangent"></param>
+        /// <param name="textureCoord"></param>
+        public void AddVertex(TVec3 position, TVec3 normal = default, TVec3 tangent = default, TVec2 textureCoord = default)
+        {
+            const int minCapacity = 4;
+            int index = _vertexCount++;
+
+            if (index == VertexCapacity)
+                ExpandVertexCapacity(Math.Max(index << 1, minCapacity));
+
+            _positions[index] = position;
+
+            if (HasNormals)
+                _normals[index] = normal;
+
+            if (HasTangents)
+                _tangents[index] = tangent;
+
+            if (HasTextureCoords)
+                _textureCoords[index] = textureCoord;
         }
 
 
@@ -167,7 +295,50 @@ namespace SpatialSlur.Meshes
         /// <param name="face"></param>
         public void AddFace(Vector3i face)
         {
-            Add(ref _faces, _faceCount++, face);
+            const int minCapacity = 4;
+            int index = _faceCount++;
+
+            if (index == FaceCapacity)
+                ExpandFaceCapacity(Math.Max(index << 1, minCapacity));
+
+            _faces[index] = face;
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public void Append(TriMesh<TVec3, TVec2> other)
+        {
+            AppendVertices(other);
+            AppendFaces(other);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void AppendVertices(TriMesh<TVec3, TVec2> other)
+        {
+            int nv0 = _vertexCount;
+            int nv1 = other._vertexCount;
+            int sum = nv0 + nv1;
+
+            if (sum > VertexCapacity)
+                ExpandVertexCapacity(nv0 + sum);
+
+            _positions.SetRange(other._positions, nv0, 0, nv1);
+            _vertexCount = sum;
+
+            if (HasNormals && other.HasNormals)
+                _normals.SetRange(other._normals, nv0, 0, nv1);
+
+            if (HasTangents && other.HasTangents)
+                _tangents.SetRange(other._tangents, nv0, 0, nv1);
+
+            if (HasTextureCoords && other.HasTextureCoords)
+                _textureCoords.SetRange(other._textureCoords, nv0, 0, nv1);
         }
 
 
@@ -175,31 +346,45 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public void Append(TriMesh<TVector> other)
+        private void AppendFaces(TriMesh<TVec3, TVec2> other)
         {
-            Append(ref _positions, _positionCount, other._positions, other._positionCount);
-            Append(ref _normals, _normalCount, other._normals, other._normalCount);
-            Append(ref _faces, _faceCount, other._faces, other._faceCount);
+            int nf0 = _faceCount;
+            int nf1 = other._faceCount;
+            int sum = nf0 + nf1;
+
+            if (sum > FaceCapacity)
+                ExpandFaceCapacity(nf0 + sum);
+
+            _faces.SetRange(other._faces, nf0, 0, nf1);
+            _faceCount = sum;
         }
 
 
         /// <summary>
-        /// 
+        /// Assumes that the new capacity is larger than the current.
         /// </summary>
-        public void Clear()
+        private void ExpandVertexCapacity(int newCapacity)
         {
-            _positionCount = _normalCount = _faceCount = 0;
+            Array.Resize(ref _positions, newCapacity);
+
+            if (HasNormals)
+                Array.Resize(ref _normals, newCapacity);
+
+            if (HasTangents)
+                Array.Resize(ref _tangents, newCapacity);
+
+            if (HasTextureCoords)
+                Array.Resize(ref _textureCoords, newCapacity);
         }
 
 
         /// <summary>
-        /// 
+        /// Assumes that the new capacity is larger than the current.
         /// </summary>
-        public void TrimExcess()
+        /// <param name="newCapacity"></param>
+        private void ExpandFaceCapacity(int newCapacity)
         {
-            TrimExcess(ref _positions, _positionCount);
-            TrimExcess(ref _normals, _normalCount);
-            TrimExcess(ref _faces, _faceCount);
+            Array.Resize(ref _faces, newCapacity);
         }
     }
 }
