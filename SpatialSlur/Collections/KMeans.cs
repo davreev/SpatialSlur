@@ -230,6 +230,7 @@ namespace SpatialSlur.Collections
             int count = 0;
             Parallel.ForEach(Partitioner.Create(0, _points.Length), range =>
              {
+                 int localCount = 0;
                  for (int i = range.Item1; i < range.Item2; i++)
                  {
                      var nearest = tree.NearestL2(_points[i]);
@@ -238,9 +239,11 @@ namespace SpatialSlur.Collections
                      if (nearest != _nearestClusters[i])
                      {
                          _nearestClusters[i] = nearest;
-                         Interlocked.Increment(ref count);
+                         localCount++;
                      }
                  }
+
+                 Interlocked.Add(ref count, localCount);
              });
             
             return count;
