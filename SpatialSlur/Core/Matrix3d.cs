@@ -25,6 +25,7 @@ namespace SpatialSlur
         {
             /// <summary>
             /// Returns the eigen decomposition of the given matrix A.
+            /// Assumes A is symmetric.
             /// </summary>
             public static void EigenSymmetric(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance)
             {
@@ -34,31 +35,28 @@ namespace SpatialSlur
                 
                 Q = Identity;
                 DiagonalizeJacobi(ref A, ref Q, epsilon);
-
                 lambda = new Vector3d(A.M00, A.M11, A.M22);
-                SortEigenResults(ref Q, ref lambda);
-            }
 
+                // sort results by descending absolute eigenvalue
+                {
+                    if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
+                    {
+                        Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                        SwapColumns12(ref Q);
+                    }
 
-            /// <summary>
-            /// 
-            /// </summary>
-            private static void SwapColumns01(ref Matrix3d A)
-            {
-                Utilities.Swap(ref A.M00, ref A.M01);
-                Utilities.Swap(ref A.M10, ref A.M11);
-                Utilities.Swap(ref A.M20, ref A.M21);
-            }
+                    if (Math.Abs(lambda.Y) > Math.Abs(lambda.X))
+                    {
+                        Utilities.Swap(ref lambda.X, ref lambda.Y);
+                        SwapColumns01(ref Q);
+                    }
 
-
-            /// <summary>
-            /// 
-            /// </summary>
-            private static void SwapColumns12(ref Matrix3d A)
-            {
-                Utilities.Swap(ref A.M01, ref A.M02);
-                Utilities.Swap(ref A.M11, ref A.M12);
-                Utilities.Swap(ref A.M21, ref A.M22);
+                    if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
+                    {
+                        Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                        SwapColumns12(ref Q);
+                    }
+                }
             }
 
 
@@ -222,29 +220,24 @@ namespace SpatialSlur
 
 
             /// <summary>
-            /// Sorts the eigen results in descending order of absolute eigenvalue.
+            /// 
             /// </summary>
-            /// <param name="Q"></param>
-            /// <param name="lambda"></param>
-            private static void SortEigenResults(ref Matrix3d Q, ref Vector3d lambda)
+            private static void SwapColumns01(ref Matrix3d A)
             {
-                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
-                {
-                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
-                    SwapColumns12(ref Q);
-                }
+                Utilities.Swap(ref A.M00, ref A.M01);
+                Utilities.Swap(ref A.M10, ref A.M11);
+                Utilities.Swap(ref A.M20, ref A.M21);
+            }
 
-                if (Math.Abs(lambda.Y) > Math.Abs(lambda.X))
-                {
-                    Utilities.Swap(ref lambda.X, ref lambda.Y);
-                    SwapColumns01(ref Q);
-                }
 
-                if (Math.Abs(lambda.Z) > Math.Abs(lambda.Y))
-                {
-                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
-                    SwapColumns12(ref Q);
-                }
+            /// <summary>
+            /// 
+            /// </summary>
+            private static void SwapColumns12(ref Matrix3d A)
+            {
+                Utilities.Swap(ref A.M01, ref A.M02);
+                Utilities.Swap(ref A.M11, ref A.M12);
+                Utilities.Swap(ref A.M21, ref A.M22);
             }
 
 
@@ -464,9 +457,10 @@ namespace SpatialSlur
 
             /// <summary>
             /// Performs a singular value decomposition of the given matrix A.
+            /// Returns the rank of A.
             /// Note that this implementation ensures that U and V are proper rotations (i.e. no reflections).
             /// </summary>
-            public static void SingularValue(ref Matrix3d A, out Matrix3d U, out Vector3d sigma, out Matrix3d V, double epsilon = D.ZeroTolerance)
+            public static int SingularValue(ref Matrix3d A, out Matrix3d U, out Vector3d sigma, out Matrix3d V, double epsilon = D.ZeroTolerance)
             {
                 // U -> proper rotation (no reflection)
                 // sigma -> singular values
@@ -476,116 +470,124 @@ namespace SpatialSlur
                 // https://www.math.ucla.edu/~jteran/papers/ITF04.pdf
 
                 var AtA = A.ApplyTranspose(ref A);
-                V = Identity;
-                DiagonalizeJacobi(ref AtA, ref V, epsilon);
-
-                sigma = new Vector3d(AtA.M00, AtA.M11, AtA.M22);
-                SortEigenResultsPositive(ref V, ref sigma);
+                EigenSymmetricPSD(AtA, out V, out sigma, epsilon);
 
                 // handle reflection in V
                 if (V.Determinant < 0.0)
                     V.Column2 *= -1.0;
 
-                // solve for U
-                // depends on the number of valid (non-zero) singular values
-                if (sigma.Z > 0.0)
+                // U = A V inv(sigma)
+                // must handle cases where singular values are zero
+                if (sigma.X < epsilon)
                 {
-                    // all valid singular values
+                    // all zero singular values
 
-                    //     | x  -  - |
-                    // Σ = | -  y  - |
-                    //     | -  -  z |
-                    
-                    sigma.X = Math.Sqrt(sigma.X);
-                    sigma.Y = Math.Sqrt(sigma.Y);
-                    sigma.Z = Math.Sqrt(sigma.Z);
-
-                    // U = A V inv(sigma)
-                    U = new Matrix3d(
-                        A.Apply(V.Column0 / sigma.X),
-                        A.Apply(V.Column1 / sigma.Y),
-                        A.Apply(V.Column2 / sigma.Z));
-                    
-                    // handle reflection in U
-                    if (U.Determinant < 0.0)
-                    {
-                        U.Column2 *= -1.0;
-                        sigma.Z *= -1.0;
-                    }
-                }
-                else if(sigma.Y > 0.0)
-                {
-                    // two valid singular values
-
-                    //     | x  -  - |
-                    // Σ = | -  y  - |
+                    //     | 0  -  - |
+                    // Σ = | -  0  - |
                     //     | -  -  0 |
-                    
-                    sigma.X = Math.Sqrt(sigma.X);
-                    sigma.Y = Math.Sqrt(sigma.Y);
-                    sigma.Z = 0.0;
 
-                    // U = A V inv(sigma)
-                    var u0 = A.Apply(V.Column0 / sigma.X);
-                    var u1 = A.Apply(V.Column1 / sigma.Y);
-                    U = new Matrix3d(u0, u1, Vector3d.Cross(u0, u1));
+                    sigma.X = sigma.Y = sigma.Z = 0.0;
+                    U = Identity;
+
+                    return 0;
                 }
-                else if (sigma.X > 0.0)
+                else if (sigma.Y < epsilon)
                 {
-                    // one valid singular value
+                    // one non-zero singular value
 
                     //     | x  -  - |
                     // Σ = | -  0  - |
                     //     | -  -  0 |
-                    
+
                     sigma.X = Math.Sqrt(sigma.X);
                     sigma.Y = sigma.Z = 0.0;
 
-                    // U = A V inv(sigma)
                     var u0 = A.Apply(V.Column0 / sigma.X);
                     var u1 = u0.Y > 0.0 ? u0.CrossX : u0.CrossY;
 
                     u1.Unitize();
                     U = new Matrix3d(u0, u1, Vector3d.Cross(u0, u1));
-                }
-                else
-                {
-                    // no valid singular values
 
-                    //     | 0  -  - |
-                    // Σ = | -  0  - |
-                    //     | -  -  0 |
-                    
-                    sigma.X = sigma.Y = sigma.Z = 0.0;
-                    U = Identity;
+                    return 1;
                 }
+                else if (sigma.Z < epsilon)
+                {
+                    // two non-zero singular values
+
+                    //     | x  -  - |
+                    // Σ = | -  y  - |
+                    //     | -  -  0 |
+
+                    sigma.X = Math.Sqrt(sigma.X);
+                    sigma.Y = Math.Sqrt(sigma.Y);
+                    sigma.Z = 0.0;
+
+                    var u0 = A.Apply(V.Column0 / sigma.X);
+                    var u1 = A.Apply(V.Column1 / sigma.Y);
+                    U = new Matrix3d(u0, u1, Vector3d.Cross(u0, u1));
+
+                    return 2;
+                }
+
+                // all non-zero singular values
+
+                //     | x  -  - |
+                // Σ = | -  y  - |
+                //     | -  -  z |
+
+                sigma.X = Math.Sqrt(sigma.X);
+                sigma.Y = Math.Sqrt(sigma.Y);
+                sigma.Z = Math.Sqrt(sigma.Z);
+
+                U = new Matrix3d(
+                    A.Apply(V.Column0 / sigma.X),
+                    A.Apply(V.Column1 / sigma.Y),
+                    A.Apply(V.Column2 / sigma.Z));
+
+                // handle reflection in U
+                if (U.Determinant < 0.0)
+                {
+                    U.Column2 *= -1.0;
+                    sigma.Z *= -1.0;
+                }
+
+                return 3;
             }
 
 
             /// <summary>
-            /// Sorts the eigen results in descending order of eigenvalue.
-            /// Assumes all eigenvalues are greater than or equal to zero.
+            /// Returns the eigen decomposition of the given matrix A.
+            /// Assumes that A is symmetric and has non-negative eigenvalues (positive semidefinite).
             /// </summary>
-            /// <param name="Q"></param>
-            /// <param name="lambda"></param>
-            private static void SortEigenResultsPositive(ref Matrix3d Q, ref Vector3d lambda)
+            private static void EigenSymmetricPSD(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance)
             {
-                if (lambda.Z > lambda.Y)
-                {
-                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
-                    SwapColumns12(ref Q);
-                }
+                // impl refs
+                // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
+                // https://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
 
-                if (lambda.Y > lambda.X)
-                {
-                    Utilities.Swap(ref lambda.X, ref lambda.Y);
-                    SwapColumns01(ref Q);
-                }
+                Q = Identity;
+                DiagonalizeJacobi(ref A, ref Q, epsilon);
+                lambda = new Vector3d(A.M00, A.M11, A.M22);
 
-                if (lambda.Z > lambda.Y)
+                // sort results by descending eigenvalue
                 {
-                    Utilities.Swap(ref lambda.Y, ref lambda.Z);
-                    SwapColumns12(ref Q);
+                    if (lambda.Z > lambda.Y)
+                    {
+                        Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                        SwapColumns12(ref Q);
+                    }
+
+                    if (lambda.Y > lambda.X)
+                    {
+                        Utilities.Swap(ref lambda.X, ref lambda.Y);
+                        SwapColumns01(ref Q);
+                    }
+
+                    if (lambda.Z > lambda.Y)
+                    {
+                        Utilities.Swap(ref lambda.Y, ref lambda.Z);
+                        SwapColumns12(ref Q);
+                    }
                 }
             }
 
@@ -918,32 +920,13 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="m00"></param>
-        /// <param name="m01"></param>
-        /// <param name="m02"></param>
-        /// <param name="m10"></param>
-        /// <param name="m11"></param>
-        /// <param name="m12"></param>
-        /// <param name="m20"></param>
-        /// <param name="m21"></param>
-        /// <param name="m22"></param>
-        public Matrix3d(
-            double m00, double m01, double m02,
-            double m10, double m11, double m12,
-            double m20, double m21, double m22
-            )
+        /// <param name="diagonal"></param>
+        public Matrix3d(Vector3d diagonal)
+            : this()
         {
-            M00 = m00;
-            M01 = m01;
-            M02 = m02;
-
-            M10 = m10;
-            M11 = m11;
-            M12 = m12;
-
-            M20 = m20;
-            M21 = m21;
-            M22 = m22;
+            M00 = diagonal.X;
+            M11 = diagonal.Y;
+            M22 = diagonal.Z;
         }
 
 
@@ -966,6 +949,37 @@ namespace SpatialSlur
             M20 = column0.Z;
             M21 = column1.Z;
             M22 = column2.Z;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m00"></param>
+        /// <param name="m01"></param>
+        /// <param name="m02"></param>
+        /// <param name="m10"></param>
+        /// <param name="m11"></param>
+        /// <param name="m12"></param>
+        /// <param name="m20"></param>
+        /// <param name="m21"></param>
+        /// <param name="m22"></param>
+        public Matrix3d(
+            double m00, double m01, double m02,
+            double m10, double m11, double m12,
+            double m20, double m21, double m22)
+        {
+            M00 = m00;
+            M01 = m01;
+            M02 = m02;
+
+            M10 = m10;
+            M11 = m11;
+            M12 = m12;
+
+            M20 = m20;
+            M21 = m21;
+            M22 = m22;
         }
 
 
