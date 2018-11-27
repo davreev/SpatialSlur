@@ -87,7 +87,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="RhinoCommon">
-      <HintPath>..\..\..\..\..\..\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Rhino 6\System\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -111,6 +111,7 @@
     <Compile Include="Collections\Extensions\ArrayViewExtensions.cs" />
     <Compile Include="Collections\Extensions\ReadOnlyArrayViewExtensions.cs" />
     <Compile Include="Collections\Proximity.cs" />
+    <Compile Include="Core\Atomic.cs" />
     <Compile Include="Core\Matrix.cs" />
     <Compile Include="Core\Templates\Matrix.cs">
       <AutoGen>True</AutoGen>
@@ -122,62 +123,8 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Core\Vector2f.cs" />
     <Compile Include="Core\Vector3f.cs" />
-    <Compile Include="Dynamics\Body.cs" />
-    <Compile Include="Dynamics\BodyPosition.cs" />
-    <Compile Include="Dynamics\BodyRotation.cs" />
-    <Compile Include="Dynamics\ConstraintSolver.cs" />
-    <Compile Include="Dynamics\ConstraintSolverSettings.cs" />
-    <Compile Include="Dynamics\Constraints\AbovePlane.cs" />
-    <Compile Include="Dynamics\Constraints\AlignPair.cs" />
-    <Compile Include="Dynamics\Constraints\Angle.cs" />
-    <Compile Include="Dynamics\Constraints\Cocircular.cs" />
-    <Compile Include="Dynamics\Constraints\Coincident.cs" />
-    <Compile Include="Dynamics\Constraints\Colinear.cs" />
-    <Compile Include="Dynamics\Constraints\Coplanar.cs" />
-    <Compile Include="Dynamics\Constraints\Cospherical.cs" />
-    <Compile Include="Dynamics\Constraints\CyclicQuad.cs" />
-    <Compile Include="Dynamics\Constraints\DihedralAngle.cs" />
-    <Compile Include="Dynamics\Constraints\Distance.cs" />
-    <Compile Include="Dynamics\Constraints\EqualizeLengths.cs" />
-    <Compile Include="Dynamics\Constraints\Constraint.cs" />
-    <Compile Include="Dynamics\Constraints\PositionGroup.cs" />
-    <Compile Include="Dynamics\Constraints\PositionPair.cs" />
-    <Compile Include="Dynamics\Constraints\InsideBounds.cs" />
-    <Compile Include="Dynamics\Constraints\LaplacianSmooth.cs" />
-    <Compile Include="Dynamics\Constraints\MinimizeArea.cs" />
-    <Compile Include="Dynamics\Constraints\MinimizeDistance.cs" />
-    <Compile Include="Dynamics\Constraints\OnCircle.cs" />
-    <Compile Include="Dynamics\Constraints\OnCurve.cs" />
-    <Compile Include="Dynamics\Constraints\OnExtendedMesh.cs" />
-    <Compile Include="Dynamics\Constraints\OnExtendedSurface.cs" />
-    <Compile Include="Dynamics\Constraints\OnLine.cs" />
-    <Compile Include="Dynamics\Constraints\OnMesh.cs" />
-    <Compile Include="Dynamics\Constraints\OnPlane.cs" />
-    <Compile Include="Dynamics\Constraints\OnPosition.cs" />
-    <Compile Include="Dynamics\Constraints\OnRotation.cs" />
-    <Compile Include="Dynamics\Constraints\OnSphere.cs" />
-    <Compile Include="Dynamics\Constraints\OnSurface.cs" />
-    <Compile Include="Dynamics\Constraints\OnTarget.cs" />
-    <Compile Include="Dynamics\Constraints\OutsideSphere.cs" />
-    <Compile Include="Dynamics\Constraints\PlanarQuad.cs" />
-    <Compile Include="Dynamics\Constraints\RelativeRotation.cs" />
-    <Compile Include="Dynamics\Constraints\RelativePosition.cs" />
-    <Compile Include="Dynamics\Constraints\TangentialQuad.cs" />
-    <Compile Include="Dynamics\Constraints\TangentialSmooth.cs" />
-    <Compile Include="Dynamics\Constraints\Translation.cs" />
-    <Compile Include="Dynamics\Constraints\Trapezoid.cs" />
-    <Compile Include="Dynamics\Extensions\IEnumerableExtensions.cs" />
-    <Compile Include="Dynamics\Forces\AreaWeight.cs" />
-    <Compile Include="Dynamics\Forces\FalseWeight.cs" />
-    <Compile Include="Dynamics\Forces\ForceField.cs" />
-    <Compile Include="Dynamics\Forces\Force.cs" />
-    <Compile Include="Dynamics\Forces\PositionGroup.cs" />
-    <Compile Include="Dynamics\Forces\LinearWeight.cs" />
-    <Compile Include="Dynamics\Forces\Pressure.cs" />
-    <Compile Include="Dynamics\Forces\SphereCollide.cs" />
-    <Compile Include="Dynamics\Forces\Weight.cs" />
-    <Compile Include="Dynamics\Interfaces\IConstraint.cs" />
     <Compile Include="Collections\QueueSet.cs" />
     <Compile Include="Collections\ReadOnlySet.cs" />
     <Compile Include="Collections\StackSet.cs" />
@@ -230,16 +177,16 @@
     <Compile Include="Collections\ReadOnlyArrayView.cs" />
     <Compile Include="Collections\ReadOnlyListView.cs" />
     <Compile Include="Collections\UniformPartitioner.cs" />
-    <Compile Include="Fields\Derived\GridField2dDouble.cs" />
-    <Compile Include="Fields\Derived\GridField2dVector2d.cs" />
-    <Compile Include="Fields\Derived\GridField2dVector3d.cs" />
-    <Compile Include="Fields\Derived\GridField3dDouble.cs" />
-    <Compile Include="Fields\Derived\GridField3dMatrix3d.cs" />
-    <Compile Include="Fields\Derived\GridField3dVector3d.cs" />
-    <Compile Include="Fields\Derived\IDWField3dDouble.cs" />
-    <Compile Include="Fields\Derived\IDWField3dVector3d.cs" />
-    <Compile Include="Fields\Derived\MeshField3dDouble.cs" />
-    <Compile Include="Fields\Derived\MeshField3dVector3d.cs" />
+    <Compile Include="Fields\Impl\GridField2dDouble.cs" />
+    <Compile Include="Fields\Impl\GridField2dVector2d.cs" />
+    <Compile Include="Fields\Impl\GridField2dVector3d.cs" />
+    <Compile Include="Fields\Impl\GridField3dDouble.cs" />
+    <Compile Include="Fields\Impl\GridField3dMatrix3d.cs" />
+    <Compile Include="Fields\Impl\GridField3dVector3d.cs" />
+    <Compile Include="Fields\Impl\IDWField3dDouble.cs" />
+    <Compile Include="Fields\Impl\IDWField3dVector3d.cs" />
+    <Compile Include="Fields\Impl\MeshField3dDouble.cs" />
+    <Compile Include="Fields\Impl\MeshField3dVector3d.cs" />
     <Compile Include="Fields\Enums\IntegrationMode.cs" />
     <Compile Include="Fields\Enums\SampleMode.cs" />
     <Compile Include="Fields\Enums\WrapMode.cs" />
@@ -294,7 +241,6 @@
     <Compile Include="Meshes\TriMesh.cs" />
     <Compile Include="Meshes\Delegates.cs" />
     <Compile Include="Meshes\Matrix.cs" />
-    <Compile Include="Meshes\TriMesh2d.cs" />
     <Compile Include="Meshes\TriMesh3d.cs" />
     <Compile Include="Meshes\TriMesh3f.cs" />
     <Compile Include="Rhino\Extensions\ArrayViewExtensions.cs" />
@@ -374,9 +320,7 @@
     <Compile Include="Unity\Extensions\IReadOnlyListExtensions.cs" />
     <Compile Include="Unity\Extensions\Matrix4x4Extensions.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tools\Extensions\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
