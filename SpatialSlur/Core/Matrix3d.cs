@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -27,7 +27,7 @@ namespace SpatialSlur
             /// Returns the eigen decomposition of the given matrix A.
             /// Assumes A is symmetric.
             /// </summary>
-            public static void EigenSymmetric(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance)
+            public static void EigenSymmetric(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = Constd.ZeroTolerance)
             {
                 // impl refs
                 // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
@@ -65,7 +65,7 @@ namespace SpatialSlur
             /// Returns true if A is successfully diagonalized within the specified number of steps.
             /// Also returns the concatenation of applied Jacobi rotations in V.
             /// </summary>
-            private static bool DiagonalizeJacobi(ref Matrix3d A, ref Matrix3d V, double epsilon = D.ZeroTolerance, int maxSteps = 16)
+            private static bool DiagonalizeJacobi(ref Matrix3d A, ref Matrix3d V, double epsilon = Constd.ZeroTolerance, int maxSteps = 16)
             {
                 // impl refs
                 // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
@@ -348,7 +348,7 @@ namespace SpatialSlur
             /// <param name="Q"></param>
             /// <param name="R"></param>
             /// <param name="epsilon"></param>
-            public static void QR(ref Matrix3d A, out Matrix3d Q, out Matrix3d R, double epsilon = D.ZeroTolerance)
+            public static void QR(ref Matrix3d A, out Matrix3d Q, out Matrix3d R, double epsilon = Constd.ZeroTolerance)
             {
                 // impl ref
                 // http://pages.cs.wisc.edu/~sifakis/papers/SVD_TR1690.pdf
@@ -460,7 +460,7 @@ namespace SpatialSlur
             /// Returns the rank of A.
             /// Note that this implementation ensures that U and V are proper rotations (i.e. no reflections).
             /// </summary>
-            public static int SingularValue(ref Matrix3d A, out Matrix3d U, out Vector3d sigma, out Matrix3d V, double epsilon = D.ZeroTolerance)
+            public static int SingularValue(ref Matrix3d A, out Matrix3d U, out Vector3d sigma, out Matrix3d V, double epsilon = Constd.ZeroTolerance)
             {
                 // U -> proper rotation (no reflection)
                 // sigma -> singular values
@@ -559,7 +559,7 @@ namespace SpatialSlur
             /// Returns the eigen decomposition of the given matrix A.
             /// Assumes that A is symmetric and has non-negative eigenvalues (positive semidefinite).
             /// </summary>
-            private static void EigenSymmetricPSD(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = D.ZeroTolerance)
+            private static void EigenSymmetricPSD(Matrix3d A, out Matrix3d Q, out Vector3d lambda, double epsilon = Constd.ZeroTolerance)
             {
                 // impl refs
                 // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
@@ -594,23 +594,27 @@ namespace SpatialSlur
 
             /// <summary>
             /// Returns the polar decomposition of the given matrix A.
+            /// Also returns the rank of A.
             /// </summary>
             /// <param name="A"></param>
             /// <param name="R"></param>
             /// <param name="S"></param>
-            public static void Polar(ref Matrix3d A, out Matrix3d R, out Matrix3d S)
+            public static int Polar(ref Matrix3d A, out Matrix3d R, out Matrix3d S)
             {
-                // U -> proper rotation (no reflection)
-                // P -> deformation
-                
+                // impl ref
+                // https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
+
+                // R -> proper rotation (no reflection)
+                // S -> deformation
+
                 // Can be reconstructed from SVD of A
-                SingularValue(ref A, out Matrix3d U, out Vector3d s, out Matrix3d V);
+                int rank = SingularValue(ref A, out Matrix3d U, out Vector3d sigma, out Matrix3d V);
                 
-                // S = V s Vt
+                // S = V sigma Vt
                 S = new Matrix3d(
-                    V.Apply(s * V.Row0),
-                    V.Apply(s * V.Row1),
-                    V.Apply(s * V.Row2)
+                    V.Apply(sigma * V.Row0),
+                    V.Apply(sigma * V.Row1),
+                    V.Apply(sigma * V.Row2)
                     );
 
                 // R = U Vt
@@ -619,6 +623,8 @@ namespace SpatialSlur
                     U.Apply(V.Row1),
                     U.Apply(V.Row2)
                     );
+
+                return rank;
             }
         }
         
@@ -1293,7 +1299,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool IsSymmetric(double epsilon = D.ZeroTolerance)
+        public bool IsSymmetric(double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(M01, M10) &&
@@ -1475,7 +1481,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Matrix3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Matrix3d other, double epsilon = Constd.ZeroTolerance)
         {
             return ApproxEquals(ref other, epsilon);
         }
@@ -1487,7 +1493,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(ref Matrix3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(ref Matrix3d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(M00, other.M00, epsilon) &&
@@ -1508,7 +1514,7 @@ namespace SpatialSlur
         /// Returns the roots of the characteristic polynomial of this matrix.
         /// These are also the eigenvalues of this matrix.
         /// </summary>
-        public bool SolveCharacteristic(out double r0, out double r1, out double r2, double epsilon = D.ZeroTolerance)
+        public bool SolveCharacteristic(out double r0, out double r1, out double r2, double epsilon = Constd.ZeroTolerance)
         {
             // impl ref
             // https://math.stackexchange.com/questions/1721765/compute-the-characteristic-equation-3x3-matrix?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa

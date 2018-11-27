@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -31,7 +31,7 @@ namespace SpatialSlur
             /// <param name="lambda"></param>
             /// <param name="epsilon"></param>
             /// <returns></returns>
-            public static bool EigenSymmetric(Matrix2d A, out Matrix2d Q, out Vector2d lambda, double epsilon = D.ZeroTolerance)
+            public static bool EigenSymmetric(Matrix2d A, out Matrix2d Q, out Vector2d lambda, double epsilon = Constd.ZeroTolerance)
             {
                 // impl ref
                 // https://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
@@ -230,28 +230,28 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
+        /// <param name="points"></param>
         /// <returns></returns>
-        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> vectors)
+        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> points)
         {
-            return CreateCovariance(vectors, vectors.Mean());
+            return CreateCovariance(points, points.Mean());
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="mean"></param>
+        /// <param name="points"></param>
+        /// <param name="centroid"></param>
         /// <returns></returns>
-        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> vectors, Vector2d mean)
+        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> points, Vector2d centroid)
         {
             var result = new Matrix2d();
             int n = 0;
             
-            foreach (var v in vectors)
+            foreach (var v in points)
             {
-                var d = v - mean;
+                var d = v - centroid;
                 result.M00 += d.X * d.X;
                 result.M01 += d.X * d.Y;
                 result.M11 += d.Y * d.Y;
@@ -264,37 +264,6 @@ namespace SpatialSlur
             result.M10 =  result.M01 *= t;
 
             return result;
-        }
-
-        
-        /// <summary>
-        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <param name="vector"></param>
-        /// <param name="epsilon"></param>
-        /// <returns></returns>
-        public static Matrix2d CreateJacobian(Func<Vector2d, Vector2d> function, Vector2d vector, double epsilon = D.ZeroTolerance)
-        {
-            (var x, var y) = vector;
-            
-            var col0 = function(new Vector2d(x + epsilon, y)) - function(new Vector2d(x - epsilon, y));
-            var col1 = function(new Vector2d(x, y + epsilon)) - function(new Vector2d(x, y - epsilon));
-            
-            return new Matrix2d(col0, col1) / (2.0 * epsilon);
-        }
-
-
-        /// <summary>
-        /// Returns a numerical approximation of the Hessian of the given function with respect to the given vector.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <param name="vector"></param>
-        /// <param name="epsilon"></param>
-        /// <returns></returns>
-        public static Matrix2d CreateHessian(Func<Vector2d, double> function, Vector2d vector, double epsilon = D.ZeroTolerance)
-        {
-            return CreateJacobian(p => Geometry.GetGradient(function, vector, epsilon), vector, epsilon);
         }
 
 #endregion
@@ -325,16 +294,12 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="m00"></param>
-        /// <param name="m01"></param>
-        /// <param name="m10"></param>
-        /// <param name="m11"></param>
-        public Matrix2d(double m00, double m01, double m10, double m11)
+        /// <param name="diagonal"></param>
+        public Matrix2d(Vector2d diagonal)
+            : this()
         {
-            M00 = m00;
-            M01 = m01;
-            M10 = m10;
-            M11 = m11;
+            M00 = diagonal.X;
+            M11 = diagonal.Y;
         }
 
 
@@ -349,6 +314,24 @@ namespace SpatialSlur
             M01 = column1.X;
             M10 = column0.Y;
             M11 = column1.Y;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m00"></param>
+        /// <param name="m01"></param>
+        /// <param name="m10"></param>
+        /// <param name="m11"></param>
+        public Matrix2d(
+            double m00, double m01, 
+            double m10, double m11)
+        {
+            M00 = m00;
+            M01 = m01;
+            M10 = m10;
+            M11 = m11;
         }
 
 
@@ -403,6 +386,20 @@ namespace SpatialSlur
             set
             {
                 M10 = value.X;
+                M11 = value.Y;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector2d Diagonal
+        {
+            get => new Vector2d(M00, M11);
+            set
+            {
+                M00 = value.X;
                 M11 = value.Y;
             }
         }
@@ -520,7 +517,7 @@ namespace SpatialSlur
             get => new Matrix3d(
                 M00, M01, 0.0,
                 M10, M11, 0.0,
-                0.0, 0.0, 0.0);
+                0.0, 0.0, 1.0);
         }
 
 
@@ -533,8 +530,8 @@ namespace SpatialSlur
             get => new Matrix4d(
                 M00, M01, 0.0, 0.0,
                 M10, M11, 0.0, 0.0,
-                0.0, 0.0, 0.0, 0.0,
-                0.0, 0.0, 0.0, 0.0);
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0);
         }
 
 
@@ -543,7 +540,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool IsSymmetric(double epsilon = D.ZeroTolerance)
+        public bool IsSymmetric(double epsilon = Constd.ZeroTolerance)
         {
             return SlurMath.ApproxEquals(M01, M10);
         }
@@ -661,7 +658,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Matrix2d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Matrix2d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(M00, other.M00, epsilon) &&
@@ -680,7 +677,7 @@ namespace SpatialSlur
         /// <param name="r1"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool SolveCharacteristic(out double r0, out double r1, double epsilon = D.ZeroTolerance)
+        public bool SolveCharacteristic(out double r0, out double r1, double epsilon = Constd.ZeroTolerance)
         {
             return SlurMath.SolveQuadratic(1.0, -Trace, Determinant, out r0, out r1, epsilon) > 0;
         }

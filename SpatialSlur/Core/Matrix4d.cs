@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -236,26 +236,6 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Returns a numerical approximation of the Jacobian of the given function with respect to the given vector.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <param name="vector"></param>
-        /// <param name="epsilon"></param>
-        /// <returns></returns>
-        public static Matrix4d CreateJacobian(Func<Vector4d, Vector4d> function, Vector4d vector, double epsilon = D.ZeroTolerance)
-        {
-            (var x, var y, var z, var w) = vector;
-
-            var col0 = function(new Vector4d(x + epsilon, y, z, w)) - function(new Vector4d(x - epsilon, y, z, w));
-            var col1 = function(new Vector4d(x, y + epsilon, z, w)) - function(new Vector4d(x, y - epsilon, z, w));
-            var col2 = function(new Vector4d(x, y, z + epsilon, w)) - function(new Vector4d(x, y, z - epsilon, w));
-            var col3 = function(new Vector4d(x, y, z, w + epsilon)) - function(new Vector4d(x, y, z, w - epsilon));
-
-            return new Matrix4d(col0, col1, col2, col3) / (2.0 * epsilon);
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         private static double GetDeterminant(
@@ -324,48 +304,14 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="m00"></param>
-        /// <param name="m01"></param>
-        /// <param name="m02"></param>
-        /// <param name="m03"></param>
-        /// <param name="m10"></param>
-        /// <param name="m11"></param>
-        /// <param name="m12"></param>
-        /// <param name="m13"></param>
-        /// <param name="m20"></param>
-        /// <param name="m21"></param>
-        /// <param name="m22"></param>
-        /// <param name="m23"></param>
-        /// <param name="m30"></param>
-        /// <param name="m31"></param>
-        /// <param name="m32"></param>
-        /// <param name="m33"></param>
-        public Matrix4d(
-            double m00, double m01, double m02, double m03,
-            double m10, double m11, double m12, double m13,
-            double m20, double m21, double m22, double m23,
-            double m30, double m31, double m32, double m33
-            )
+        /// <param name="diagonal"></param>
+        public Matrix4d(Vector4d diagonal)
+            : this()
         {
-            M00 = m00;
-            M01 = m01;
-            M02 = m02;
-            M03 = m03;
-
-            M10 = m10;
-            M11 = m11;
-            M12 = m12;
-            M13 = m13;
-
-            M20 = m20;
-            M21 = m21;
-            M22 = m22;
-            M23 = m23;
-
-            M30 = m30;
-            M31 = m31;
-            M32 = m32;
-            M33 = m33;
+            M00 = diagonal.X;
+            M11 = diagonal.Y;
+            M22 = diagonal.Z;
+            M33 = diagonal.W;
         }
 
 
@@ -397,6 +343,53 @@ namespace SpatialSlur
             M31 = column1.W;
             M32 = column2.W;
             M33 = column3.W;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m00"></param>
+        /// <param name="m01"></param>
+        /// <param name="m02"></param>
+        /// <param name="m03"></param>
+        /// <param name="m10"></param>
+        /// <param name="m11"></param>
+        /// <param name="m12"></param>
+        /// <param name="m13"></param>
+        /// <param name="m20"></param>
+        /// <param name="m21"></param>
+        /// <param name="m22"></param>
+        /// <param name="m23"></param>
+        /// <param name="m30"></param>
+        /// <param name="m31"></param>
+        /// <param name="m32"></param>
+        /// <param name="m33"></param>
+        public Matrix4d(
+            double m00, double m01, double m02, double m03,
+            double m10, double m11, double m12, double m13,
+            double m20, double m21, double m22, double m23,
+            double m30, double m31, double m32, double m33)
+        {
+            M00 = m00;
+            M01 = m01;
+            M02 = m02;
+            M03 = m03;
+
+            M10 = m10;
+            M11 = m11;
+            M12 = m12;
+            M13 = m13;
+
+            M20 = m20;
+            M21 = m21;
+            M22 = m22;
+            M23 = m23;
+
+            M30 = m30;
+            M31 = m31;
+            M32 = m32;
+            M33 = m33;
         }
 
 
@@ -523,6 +516,22 @@ namespace SpatialSlur
                 M30 = value.X;
                 M31 = value.Y;
                 M32 = value.Z;
+                M33 = value.W;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector4d Diagonal
+        {
+            get => new Vector4d(M00, M11, M22, M33);
+            set
+            {
+                M00 = value.X;
+                M11 = value.Y;
+                M22 = value.Z;
                 M33 = value.W;
             }
         }
@@ -888,7 +897,7 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool IsSymmetric(double epsilon = D.ZeroTolerance)
+        public bool IsSymmetric(double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(M01, M10) &&
@@ -1074,7 +1083,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Matrix4d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Matrix4d other, double epsilon = Constd.ZeroTolerance)
         {
             return ApproxEquals(ref other, epsilon);
         }
@@ -1086,7 +1095,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(ref Matrix4d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(ref Matrix4d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(M00, other.M00, epsilon) &&
