@@ -16,7 +16,7 @@ using SpatialSlur.Meshes.Impl;
 
 using Vec3d = Rhino.Geometry.Vector3d;
 using Vec3f = Rhino.Geometry.Vector3f;
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Rhino
 {
@@ -34,7 +34,7 @@ namespace SpatialSlur.Rhino
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
+        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, double tolerance = Constd.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
             where G : HeGraph<V, E>
             where V : HeGraph<V, E>.Vertex, IPosition3d
             where E : HeGraph<V, E>.Halfedge
@@ -56,7 +56,7 @@ namespace SpatialSlur.Rhino
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, Action<V, Vector3d> setPosition, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
+        public static G CreateFromLineSegments<G, V, E>(this HeGraphFactory<G, V, E> factory, IEnumerable<Line> lines, Action<V, Vector3d> setPosition, double tolerance = Constd.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
             where G : HeGraph<V, E>
             where V : HeGraph<V, E>.Vertex
             where E : HeGraph<V, E>.Halfedge

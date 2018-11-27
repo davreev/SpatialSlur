@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -74,7 +74,7 @@ namespace SpatialSlur
             var ct = Vector3d.Dot(from, to);
 
             // parallel check
-            if (1.0 - Math.Abs(ct) < D.ZeroTolerance)
+            if (1.0 - Math.Abs(ct) < Constd.ZeroTolerance)
             {
                 // opposite check
                 if (ct < 0.0)
@@ -353,7 +353,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(AxisAngle3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(AxisAngle3d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(_angle, other._angle, epsilon) &&

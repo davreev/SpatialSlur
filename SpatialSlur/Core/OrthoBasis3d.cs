@@ -6,7 +6,7 @@
 using System;
 using static SpatialSlur.Utilities;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -104,17 +104,17 @@ namespace SpatialSlur
         /// <summary>
         /// The y axis of the returned basis is aligned with the given direction.
         /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="forward"></param>
         /// <param name="up"></param>
         /// <returns></returns>
-        public static OrthoBasis3d CreateLookAt(Vector3d direction, Vector3d up)
+        public static OrthoBasis3d CreateLookAt(Vector3d forward, Vector3d up)
         {
-            Geometry.Orthonormalize(ref direction, ref up, out Vector3d right);
+            Geometry.Orthonormalize(ref forward, ref up, out Vector3d right);
 
             return new OrthoBasis3d
             {
                 _x = right,
-                _y = direction,
+                _y = forward,
                 _z = up
             };
         }
@@ -763,7 +763,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(OrthoBasis3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(OrthoBasis3d other, double epsilon = Constd.ZeroTolerance)
         {
             return ApproxEquals(ref other, epsilon);
         }
@@ -775,7 +775,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(ref OrthoBasis3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(ref OrthoBasis3d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 _x.ApproxEquals(other._x, epsilon) &&

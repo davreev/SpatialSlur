@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -210,7 +210,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(OrthoBasis2d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(OrthoBasis2d other, double epsilon = Constd.ZeroTolerance)
         {
             return _x.ApproxEquals(other._x, epsilon);
         }

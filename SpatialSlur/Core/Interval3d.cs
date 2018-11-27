@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -233,9 +233,9 @@ namespace SpatialSlur
 
             foreach (var p in points.Skip(1))
             {
-                X.IncludePos(p.X);
-                Y.IncludePos(p.Y);
-                Z.IncludePos(p.Z);
+                X.IncludePositive(p.X);
+                Y.IncludePositive(p.Y);
+                Z.IncludePositive(p.Z);
             }
         }
 
@@ -374,7 +374,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Interval3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Interval3d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 X.ApproxEquals(other.X, epsilon) && 

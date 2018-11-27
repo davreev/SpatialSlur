@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using F = SpatialSlur.SlurMath.Constantsf;
+using Constf = SpatialSlur.SlurMath.Constantsf;
 
 namespace SpatialSlur
 {
@@ -182,7 +182,7 @@ namespace SpatialSlur
             A = B = values.First();
 
             foreach (var t in values.Skip(1))
-                IncludePos(t);
+                IncludePositive(t);
         }
 
 
@@ -295,7 +295,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Intervalf other, float epsilon = F.ZeroTolerance)
+        public bool ApproxEquals(Intervalf other, float epsilon = Constf.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(A, other.A, epsilon) &&
@@ -469,9 +469,9 @@ namespace SpatialSlur
         public void Include(float t)
         {
             if (IsDecreasing)
-                IncludeNeg(t);
+                IncludeNegative(t);
             else
-                IncludePos(t);
+                IncludePositive(t);
         }
 
 
@@ -483,13 +483,13 @@ namespace SpatialSlur
         {
             if (IsDecreasing)
             {
-                IncludeNeg(other.A);
-                IncludeNeg(other.B);
+                IncludeNegative(other.A);
+                IncludeNegative(other.B);
             }
             else
             {
-                IncludePos(other.A);
-                IncludePos(other.B);
+                IncludePositive(other.A);
+                IncludePositive(other.B);
             }
         }
 
@@ -498,7 +498,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="t"></param>
-        internal void IncludeNeg(float t)
+        internal void IncludeNegative(float t)
         {
             if (t > A) A = t;
             else if (t < B) B = t;
@@ -509,7 +509,7 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="t"></param>
-        internal void IncludePos(float t)
+        internal void IncludePositive(float t)
         {
             if (t > B) B = t;
             else if (t < A) A = t;

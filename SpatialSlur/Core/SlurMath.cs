@@ -5,8 +5,8 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
-using F = SpatialSlur.SlurMath.Constantsf;
+using Constd = SpatialSlur.SlurMath.Constantsd;
+using Constf = SpatialSlur.SlurMath.Constantsf;
 
 namespace SpatialSlur
 {
@@ -45,15 +45,15 @@ namespace SpatialSlur
             /// <summary></summary>
             public const float ZeroTolerance = 1.0e-6f;
             /// <summary></summary>
-            public const float Pi = (float)D.Pi;
+            public const float Pi = (float)Constd.Pi;
             /// <summary></summary>
-            public const float TwoPi = (float)D.TwoPi;
+            public const float TwoPi = (float)Constd.TwoPi;
             /// <summary></summary>
-            public const float HalfPi = (float)D.HalfPi;
+            public const float HalfPi = (float)Constd.HalfPi;
             /// <summary></summary>
-            public const float InvPi = (float)D.InvPi;
+            public const float InvPi = (float)Constd.InvPi;
             /// <summary></summary>
-            public const float Sqrt2 = (float)D.Sqrt2;
+            public const float Sqrt2 = (float)Constd.Sqrt2;
         }
 
         #endregion
@@ -66,7 +66,7 @@ namespace SpatialSlur
         /// <param name="y"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static bool ApproxEquals(double x, double y, double epsilon = D.ZeroTolerance)
+        public static bool ApproxEquals(double x, double y, double epsilon = Constd.ZeroTolerance)
         {
             return Math.Abs(x - y) < epsilon;
         }
@@ -79,7 +79,7 @@ namespace SpatialSlur
         /// <param name="y"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static bool ApproxEquals(float x, float y, float epsilon = F.ZeroTolerance)
+        public static bool ApproxEquals(float x, float y, float epsilon = Constf.ZeroTolerance)
         {
             return Math.Abs(x - y) < epsilon;
         }
@@ -576,7 +576,7 @@ namespace SpatialSlur
         /// <param name="t"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        public static int RepeatPos(int t, int length)
+        public static int RepeatPositive(int t, int length)
         {
             t %= length;
             return (t < 0) ? t + length : t;
@@ -669,7 +669,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static int PingPongPos(int t, int length)
         {
-            t = RepeatPos(t, length + length);
+            t = RepeatPositive(t, length + length);
             return length - Math.Abs(t - length);
         }
 
@@ -1224,7 +1224,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double ToDegrees(double radians)
         {
-            const double toDeg = 180.0 / D.Pi;
+            const double toDeg = 180.0 / Constd.Pi;
             return radians * toDeg;
         }
 
@@ -1236,7 +1236,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static float ToDegrees(float radians)
         {
-            const float toDeg = 180.0f / F.Pi;
+            const float toDeg = 180.0f / Constf.Pi;
             return radians * toDeg;
         }
  
@@ -1248,7 +1248,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double ToRadians(double degrees)
         {
-            const double toRad = D.Pi / 180.0;
+            const double toRad = Constd.Pi / 180.0;
             return degrees * toRad;
         }
 
@@ -1260,7 +1260,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static float ToRadians(float degrees)
         {
-            const float toRad = F.Pi / 180.0f;
+            const float toRad = Constf.Pi / 180.0f;
             return degrees * toRad;
         }
         
@@ -1274,7 +1274,7 @@ namespace SpatialSlur
         /// <param name="root"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        private static int SolveLinear(double a, double b, out double root, double epsilon = D.ZeroTolerance)
+        private static int SolveLinear(double a, double b, out double root, double epsilon = Constd.ZeroTolerance)
         {
             if (Math.Abs(a) < epsilon)
             {
@@ -1298,7 +1298,7 @@ namespace SpatialSlur
         /// <param name="r1"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static int SolveQuadratic(double a, double b, double c, out double r0, out double r1, double epsilon = D.ZeroTolerance)
+        public static int SolveQuadratic(double a, double b, double c, out double r0, out double r1, double epsilon = Constd.ZeroTolerance)
         {
             // impl ref
             // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (5.6)
@@ -1329,7 +1329,7 @@ namespace SpatialSlur
         /// Solves for the roots of ax^3 + bx^2 + cx + d = 0.
         /// Returns the number of real solutions found (0, 1, 2, or 3).
         /// </summary>
-        public static int SolveCubic(double a, double b, double c, double d, out double r0, out double r1, out double r2, double epsilon = D.ZeroTolerance)
+        public static int SolveCubic(double a, double b, double c, double d, out double r0, out double r1, out double r2, double epsilon = Constd.ZeroTolerance)
         {
             // impl ref
             // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (5.6)
@@ -1350,7 +1350,7 @@ namespace SpatialSlur
         /// Solves for the roots of x^3 + ax^2 + bx + c = 0.
         /// Returns the number of real solutions found (0, 1, 2, or 3).
         /// </summary>
-        public static int SolveCubic(double a, double b, double c, out double r0, out double r1, out double r2, double epsilon = D.ZeroTolerance)
+        public static int SolveCubic(double a, double b, double c, out double r0, out double r1, out double r2, double epsilon = Constd.ZeroTolerance)
         {
             // impl ref
             // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (5.6)
@@ -1374,8 +1374,8 @@ namespace SpatialSlur
                 var d = a * inv3;
 
                 r0 = k * Math.Cos(t * inv3) - d;
-                r1 = k * Math.Cos((t + D.TwoPi) * inv3) - d;
-                r2 = k * Math.Cos((t - D.TwoPi) * inv3) - d;
+                r1 = k * Math.Cos((t + Constd.TwoPi) * inv3) - d;
+                r2 = k * Math.Cos((t - Constd.TwoPi) * inv3) - d;
                 return 3;
             }
 

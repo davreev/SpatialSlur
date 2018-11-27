@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -97,6 +97,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Transform3d CreateReflection(Vector3d point, Vector3d normal)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
@@ -250,7 +251,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Transform3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Transform3d other, double epsilon = Constd.ZeroTolerance)
         {
             return ApproxEquals(ref other, epsilon);
         }
@@ -262,7 +263,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(ref Transform3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(ref Transform3d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 Translation.ApproxEquals(other.Translation, epsilon) &&

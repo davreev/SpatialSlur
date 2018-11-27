@@ -17,7 +17,7 @@ using SpatialSlur.Meshes.Impl;
 
 using static SpatialSlur.Meshes.Delegates;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Meshes
 {
@@ -1239,7 +1239,7 @@ namespace SpatialSlur.Meshes
         /// <param name="getPosition"></param>
         /// <param name="angleTolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<E> GetCornerHalfedges<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vector3d> getPosition, double angleTolerance = D.ZeroTolerance)
+        public static IEnumerable<E> GetCornerHalfedges<V, E, F>(this HeStructure<V, E, F> mesh, Func<V, Vector3d> getPosition, double angleTolerance = Constd.ZeroTolerance)
             where V : HeStructure<V, E, F>.Vertex
             where E : HeStructure<V, E, F>.Halfedge
             where F : HeStructure<V, E, F>.Face

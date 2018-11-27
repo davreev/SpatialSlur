@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using SpatialSlur;
 using SpatialSlur.Meshes.Impl;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Meshes
 {
@@ -37,7 +37,7 @@ namespace SpatialSlur.Meshes
         /// <param name="allowMultiEdges"></param>
         /// <param name="allowLoops"></param>
         /// <returns></returns>
-        public G CreateFromLineSegments(IReadOnlyList<Vector3d> endPoints, double tolerance = D.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
+        public G CreateFromLineSegments(IReadOnlyList<Vector3d> endPoints, double tolerance = Constd.ZeroTolerance, bool allowMultiEdges = false, bool allowLoops = false)
         {
             return CreateFromLineSegments(endPoints, (v, p) => v.Position = p, tolerance, allowMultiEdges, allowLoops);
         }

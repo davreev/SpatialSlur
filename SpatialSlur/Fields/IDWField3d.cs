@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using SpatialSlur;
 using SpatialSlur.Fields;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Fields
 {
@@ -36,13 +36,13 @@ namespace SpatialSlur.Fields
         private List<IDWObject3d<T>> _objects = new List<IDWObject3d<T>>();
        
         private double _power;
-        private double _epsilon = D.ZeroTolerance;
+        private double _epsilon = Constd.ZeroTolerance;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public IDWField3d(double power, double epsilon = D.ZeroTolerance)
+        public IDWField3d(double power, double epsilon = Constd.ZeroTolerance)
         {
             Power = power;
             Epsilon = epsilon;

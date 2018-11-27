@@ -23,20 +23,20 @@ namespace SpatialSlur.Collections
         /// Returns the index of the first element larger than the given value.
         /// If all elements are smaller than the given value, returns the length of the array.
         /// </summary>
-        /// <param name="values"></param>
-        /// <param name="x"></param>
+        /// <param name="source"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        private static int BinarySearch(double[] values, double x)
+        private static int BinarySearch(double[] source, double value)
         {
             int lo = 0;
-            int hi = values.Length;
+            int hi = source.Length;
             int rng = hi - lo;
 
             while (rng > 1)
             {
                 var mid = lo + (rng >> 1);
 
-                if (x < values[mid])
+                if (value < source[mid])
                     hi = mid;
                 else
                     lo = mid;
@@ -44,7 +44,7 @@ namespace SpatialSlur.Collections
                 rng = hi - lo;
             }
 
-            return (x < values[lo]) ? lo : hi;
+            return (value < source[lo]) ? lo : hi;
         }
 
         #endregion

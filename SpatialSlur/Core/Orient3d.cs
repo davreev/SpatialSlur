@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -115,6 +115,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Orient3d CreateRotationAboutPoint(AxisAngle3d rotation, Vector3d point)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
@@ -248,7 +249,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Orient3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Orient3d other, double epsilon = Constd.ZeroTolerance)
         {
             return ApproxEquals(ref other, epsilon);
         }
@@ -260,7 +261,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(ref Orient3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(ref Orient3d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 Translation.ApproxEquals(other.Translation, epsilon) &&

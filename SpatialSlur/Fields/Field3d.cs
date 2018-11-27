@@ -4,7 +4,7 @@
  */
 
 using System;
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Fields
 {
@@ -135,7 +135,7 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// 
+        /// Returns a linear approximation of the signed distance to a given threshold in a given function.
         /// </summary>
         /// <param name="function"></param>
         /// <param name="gradient"></param>
@@ -145,7 +145,7 @@ namespace SpatialSlur.Fields
         {
             // impl ref
             // http://www.iquilezles.org/www/articles/distance/distance.htm
-            return Create(p => (function.ValueAt(p) - threshold) / (gradient.ValueAt(p).Length + D.ZeroTolerance));
+            return Create(p => (function.ValueAt(p) - threshold) / (gradient.ValueAt(p).Length + Constd.ZeroTolerance));
         }
     }
 }

@@ -17,7 +17,7 @@ using SpatialSlur.Meshes.Impl;
 
 using Vec3d = Rhino.Geometry.Vector3d;
 using Vec3f = Rhino.Geometry.Vector3f;
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Rhino
 {
@@ -128,7 +128,7 @@ namespace SpatialSlur.Rhino
         /// <param name="polylines"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static M CreateFromPolylines<M, V, E, F>(this HeMeshFactory<M, V, E, F> factory, IEnumerable<Polyline> polylines, double tolerance = D.ZeroTolerance)
+        public static M CreateFromPolylines<M, V, E, F>(this HeMeshFactory<M, V, E, F> factory, IEnumerable<Polyline> polylines, double tolerance = Constd.ZeroTolerance)
             where M : HeMesh<V, E, F>
             where V : HeMesh<V, E, F>.Vertex, IPosition3d
             where E : HeMesh<V, E, F>.Halfedge
@@ -150,7 +150,7 @@ namespace SpatialSlur.Rhino
         /// <param name="setPosition"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static M CreateFromPolylines<M, V, E, F>(this HeMeshFactory<M, V, E, F> factory, IEnumerable<Polyline> polylines, Action<V, Vector3d> setPosition, double tolerance = D.ZeroTolerance)
+        public static M CreateFromPolylines<M, V, E, F>(this HeMeshFactory<M, V, E, F> factory, IEnumerable<Polyline> polylines, Action<V, Vector3d> setPosition, double tolerance = Constd.ZeroTolerance)
             where M : HeMesh<V, E, F>
             where V : HeMesh<V, E, F>.Vertex
             where E : HeMesh<V, E, F>.Halfedge

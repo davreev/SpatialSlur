@@ -10,7 +10,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -118,12 +118,12 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="r0"></param>
-        /// <param name="r1"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         /// <returns></returns>
-        public static Quaterniond CreateFromTo(Quaterniond r0, Quaterniond r1)
+        public static Quaterniond CreateFromTo(Quaterniond from, Quaterniond to)
         {
-            return r1.Apply(r0.Inverse);
+            return to.Apply(from.Inverse);
         }
 
 
@@ -170,15 +170,15 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="forward"></param>
         /// <param name="up"></param>
         /// <returns></returns>
-        public static Quaterniond CreateLookAt(Vector3d direction, Vector3d up)
+        public static Quaterniond CreateLookAt(Vector3d forward, Vector3d up)
         {
             // impl ref
             // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
 
-            return new Quaterniond(OrthoBasis3d.CreateLookAt(direction, up));
+            return new Quaterniond(OrthoBasis3d.CreateLookAt(forward, up));
         }
 
         #endregion
@@ -307,7 +307,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance = D.ZeroTolerance)
+        public bool IsZero(double tolerance = Constd.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -316,7 +316,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance = D.ZeroTolerance)
+        public bool IsUnit(double tolerance = Constd.ZeroTolerance)
         {
             return SlurMath.ApproxEquals(SquareLength, 1.0, tolerance);
         }
@@ -548,7 +548,7 @@ namespace SpatialSlur
             var ca = Dot(this, other);
 
             // TODO handle antiparallel case
-            if (Math.Abs(ca) > 1.0 - D.ZeroTolerance)
+            if (Math.Abs(ca) > 1.0 - Constd.ZeroTolerance)
                 return this;
 
             // ensures interpolation takes shortest path
@@ -639,7 +639,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Quaterniond other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Quaterniond other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&

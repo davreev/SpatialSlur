@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using SpatialSlur.Collections;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur.Fields
 {
@@ -150,7 +150,7 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(this ISampledField<double> f0, ISampledField<double> f1, double epsilon = D.ZeroTolerance)
+        public static bool ApproxEquals(this ISampledField<double> f0, ISampledField<double> f1, double epsilon = Constd.ZeroTolerance)
         {
             return Vector.ApproxEquals(f0.Values, f1.Values, epsilon);
         }
@@ -427,7 +427,7 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(this ISampledField<Vector2d> f0, ISampledField<Vector2d> f1, double epsilon = D.ZeroTolerance)
+        public static bool ApproxEquals(this ISampledField<Vector2d> f0, ISampledField<Vector2d> f1, double epsilon = Constd.ZeroTolerance)
         {
             return Matrix.ApproxEquals(f0.Values, f1.Values, epsilon);
         }
@@ -692,7 +692,7 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(this ISampledField<Vector3d> f0, ISampledField<Vector3d> f1, double epsilon = D.ZeroTolerance)
+        public static bool ApproxEquals(this ISampledField<Vector3d> f0, ISampledField<Vector3d> f1, double epsilon = Constd.ZeroTolerance)
         {
             return Matrix.ApproxEquals(f0.Values, f1.Values, epsilon);
         }

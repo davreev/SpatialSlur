@@ -354,7 +354,7 @@ namespace SpatialSlur.Tools
                     if (deg < (v.IsTerminal ? 2 : 4)) continue;
 
                     // zip if found pair
-                    if (FindZipPair(v, out HeGraph.Halfedge he0, out HeGraph.Halfedge he1))
+                    if (FindZipPair(v, out E he0, out E he1))
                     {
                         var he2 = _graph.ZipEdges(he0, he1);
                         he2.Start.Position = v.Position;
