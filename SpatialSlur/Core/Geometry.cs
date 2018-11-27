@@ -7,8 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using D = SpatialSlur.SlurMath.Constantsd;
-using F = SpatialSlur.SlurMath.Constantsf;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -37,14 +36,14 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="startA"></param>
-        /// <param name="directionA"></param>
+        /// <param name="deltaA"></param>
         /// <param name="startB"></param>
-        /// <param name="directionB"></param>
+        /// <param name="deltaB"></param>
         /// <param name="ta"></param>
         /// <param name="tb"></param>
-        public static bool LineLineClosestPoints2(Vector3d startA, Vector3d directionA, Vector3d startB, Vector3d directionB, out double ta, out double tb)
+        public static bool LineLineClosestPoints2(Vector3d startA, Vector3d deltaA, Vector3d startB, Vector3d deltaB, out double ta, out double tb)
         {
-            return LineLineClosestPoints(directionA, directionB, startA - startB, out ta, out tb);
+            return LineLineClosestPoints(deltaA, deltaB, startA - startB, out ta, out tb);
         }
 
 
@@ -71,16 +70,16 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="startA"></param>
-        /// <param name="directionA"></param>
+        /// <param name="deltaA"></param>
         /// <param name="startB"></param>
-        /// <param name="directionB"></param>
+        /// <param name="deltaB"></param>
         /// <returns></returns>
-        public static Vector3d LineLineShortestVector2(Vector3d startA, Vector3d directionA, Vector3d startB, Vector3d directionB)
+        public static Vector3d LineLineShortestVector2(Vector3d startA, Vector3d deltaA, Vector3d startB, Vector3d deltaB)
         {
             Vector3d w = startA - startB;
 
-            LineLineClosestPoints(directionA, directionB, w, out double tu, out double tv);
-            return directionB * tv - directionA * tu - w;
+            LineLineClosestPoints(deltaA, deltaB, w, out double tu, out double tv);
+            return deltaB * tv - deltaA * tu - w;
         }
 
 
@@ -137,14 +136,14 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="startA"></param>
-        /// <param name="directionA"></param>
+        /// <param name="deltaA"></param>
         /// <param name="startB"></param>
-        /// <param name="directionB"></param>
+        /// <param name="deltaB"></param>
         /// <param name="ta"></param>
         /// <param name="tb"></param>
-        public static bool LineLineIntersection2(Vector2d startA, Vector2d directionA, Vector2d startB, Vector2d directionB, out double ta, out double tb)
+        public static bool LineLineIntersection2(Vector2d startA, Vector2d deltaA, Vector2d startB, Vector2d deltaB, out double ta, out double tb)
         {
-            return LineLineIntersection(directionA, directionB, startB - startA, out ta, out tb);
+            return LineLineIntersection(deltaA, deltaB, startB - startA, out ta, out tb);
         }
 
 
@@ -246,21 +245,21 @@ namespace SpatialSlur
         /// <param name="origin"></param>
         /// <param name="xAxis"></param>
         /// <param name="yAxis"></param>
-        /// <param name="tolerance"></param>
+        /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static int PrincipalComponentAnalysis(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d xAxis, out Vector3d yAxis, double tolerance = D.ZeroTolerance)
+        public static int PrincipalComponentAnalysis(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d xAxis, out Vector3d yAxis, double epsilon = Constd.ZeroTolerance)
         {
             origin = points.Mean();
             var covm = Matrix3d.CreateCovariance(points, origin);
 
-            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, tolerance);
+            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
             xAxis = vecs.Column0;
             yAxis = vecs.Column1;
 
             return
-                Math.Abs(vals.X) < tolerance ? 0 :
-                Math.Abs(vals.Y) < tolerance ? 1 :
-                Math.Abs(vals.Z) < tolerance ? 2 : 3;
+                Math.Abs(vals.X) < epsilon ? 0 :
+                Math.Abs(vals.Y) < epsilon ? 1 :
+                Math.Abs(vals.Z) < epsilon ? 2 : 3;
         }
 
         
@@ -270,16 +269,16 @@ namespace SpatialSlur
         /// <param name="points"></param>
         /// <param name="origin"></param>
         /// <param name="normal"></param>
-        /// <param name="tolerance"></param>
+        /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d normal, double tolerance = D.ZeroTolerance)
+        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d normal, double epsilon = Constd.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
             // http://www.ilikebigbits.com/blog/2017/9/24/fitting-a-plane-to-noisy-points-in-3d
 
             origin = points.Mean();
-            return FitPlaneToPoints(points, origin, out normal, tolerance);
+            return FitPlaneToPoints(points, origin, out normal, epsilon);
         }
 
 
@@ -289,9 +288,9 @@ namespace SpatialSlur
         /// <param name="points"></param>
         /// <param name="origin"></param>
         /// <param name="normal"></param>
-        /// <param name="tolerance"></param>
+        /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, Vector3d origin, out Vector3d normal, double tolerance = D.ZeroTolerance)
+        public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, Vector3d origin, out Vector3d normal, double epsilon = Constd.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
@@ -299,11 +298,11 @@ namespace SpatialSlur
 
             var covm = Matrix3d.CreateCovariance(points, origin);
 
-            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, tolerance);
+            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
             normal = vecs.Column2;
 
             // Check for degeneracy -> if 2nd eigenvalue is 0, the points are colinear at best
-            return Math.Abs(vals.Y) >= tolerance;
+            return Math.Abs(vals.Y) >= epsilon;
         }
 
 
@@ -313,15 +312,15 @@ namespace SpatialSlur
         /// <param name="points"></param>
         /// <param name="start"></param>
         /// <param name="direction"></param>
-        /// <param name="tolerance"></param>
+        /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static bool FitLineToPoints(IEnumerable<Vector3d> points, out Vector3d start, out Vector3d direction, double tolerance = D.ZeroTolerance)
+        public static bool FitLineToPoints(IEnumerable<Vector3d> points, out Vector3d start, out Vector3d direction, double epsilon = Constd.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
 
             start = points.Mean();
-            return FitLineToPoints(points, start, out direction, tolerance);
+            return FitLineToPoints(points, start, out direction, epsilon);
         }
 
 
@@ -331,20 +330,20 @@ namespace SpatialSlur
         /// <param name="points"></param>
         /// <param name="start"></param>
         /// <param name="direction"></param>
-        /// <param name="tolerance"></param>
+        /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static bool FitLineToPoints(IEnumerable<Vector3d> points, Vector3d start, out Vector3d direction, double tolerance = D.ZeroTolerance)
+        public static bool FitLineToPoints(IEnumerable<Vector3d> points, Vector3d start, out Vector3d direction, double epsilon = Constd.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
 
             var covm = Matrix3d.CreateCovariance(points, start);
 
-            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, tolerance);
+            Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
             direction = vecs.Column0;
 
             // Check for degeneracy -> if 1st eigenvalue is 0, then points are coincident
-            return Math.Abs(vals.X) >= tolerance;
+            return Math.Abs(vals.X) >= epsilon;
         }
 
 
@@ -594,6 +593,7 @@ namespace SpatialSlur
             double d01 = p0.DistanceTo(p1);
             double d12 = p1.DistanceTo(p2);
             double d20 = p2.DistanceTo(p0);
+
             double perimInv = 1.0 / (d01 + d12 + d20); // inverse perimeter
             return p0 * (d12 * perimInv) + p1 * (d20 * perimInv) + p2 * (d01 * perimInv);
         }
@@ -621,8 +621,8 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double GetMinAngleDifference(double a0, double a1)
         {
-            var d0 = SlurMath.Repeat(a0 - a1, D.TwoPi);
-            return d0 > D.Pi ? d0 - D.TwoPi : d0;
+            var d0 = SlurMath.Repeat(a0 - a1, Constd.TwoPi);
+            return d0 > Constd.Pi ? d0 - Constd.TwoPi : d0;
         }
 
 
@@ -638,7 +638,7 @@ namespace SpatialSlur
         public static bool GetBarycentric(Vector3d point, Vector3d a, Vector3d b, Vector3d c, out Vector3d result)
         {
             // impl ref
-            // http://realtimecollisiondetection.net/
+            // http://realtimecollisiondetection.net/ (3.1.4, 3.4)
 
             var u = b - a;
             var v = c - a;
@@ -698,7 +698,7 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Returns the area gradient of the given trianglue with respect to p0.
+        /// Returns the area gradient of the given triangle with respect to p0.
         /// </summary>
         /// <param name="p0"></param>
         /// <param name="p1"></param>
@@ -853,7 +853,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Vector2d GetGradient(Func<Vector2d, double> function, Vector2d vector, double epsilon = D.ZeroTolerance)
+        public static Vector2d GetGradient(Func<Vector2d, double> function, Vector2d vector, double epsilon = Constd.ZeroTolerance)
         {
             (var x, var y) = vector;
 
@@ -871,7 +871,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Vector3d GetGradient(Func<Vector3d, double> function, Vector3d vector, double epsilon = D.ZeroTolerance)
+        public static Vector3d GetGradient(Func<Vector3d, double> function, Vector3d vector, double epsilon = Constd.ZeroTolerance)
         {
             (var x, var y, var z) = vector;
 
@@ -890,7 +890,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Vector4d GetGradient(Func<Vector4d, double> function, Vector4d vector, double epsilon = D.ZeroTolerance)
+        public static Vector4d GetGradient(Func<Vector4d, double> function, Vector4d vector, double epsilon = Constd.ZeroTolerance)
         {
             (var x, var y, var z, var w) = vector;
 
@@ -910,7 +910,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="result"></param>
         /// <param name="epsilon"></param>
-        public static void GetGradient(Func<double[], double> function, double[] vector, double[] result, double epsilon = D.ZeroTolerance)
+        public static void GetGradient(Func<double[], double> function, double[] vector, double[] result, double epsilon = Constd.ZeroTolerance)
         {
             double d2 = 1.0 / (epsilon * 2.0);
 
@@ -937,13 +937,13 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Matrix2d GetJacobian(Func<Vector2d, Vector2d> function, Vector2d vector, double epsilon = D.ZeroTolerance)
+        public static Matrix2d GetJacobian(Func<Vector2d, Vector2d> function, Vector2d vector, double epsilon = Constd.ZeroTolerance)
         {
             (var x, var y) = vector;
 
             var col0 = function(new Vector2d(x + epsilon, y)) - function(new Vector2d(x - epsilon, y));
             var col1 = function(new Vector2d(x, y + epsilon)) - function(new Vector2d(x, y - epsilon));
-
+            
             return new Matrix2d(col0, col1) / (2.0 * epsilon);
         }
 
@@ -955,7 +955,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Matrix3d GetJacobian(Func<Vector3d, Vector3d> function, Vector3d vector, double epsilon = D.ZeroTolerance)
+        public static Matrix3d GetJacobian(Func<Vector3d, Vector3d> function, Vector3d vector, double epsilon = Constd.ZeroTolerance)
         {
             (var x, var y, var z) = vector;
 
@@ -974,7 +974,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Matrix4d GetJacobian(Func<Vector4d, Vector4d> function, Vector4d vector, double epsilon = D.ZeroTolerance)
+        public static Matrix4d GetJacobian(Func<Vector4d, Vector4d> function, Vector4d vector, double epsilon = Constd.ZeroTolerance)
         {
             (var x, var y, var z, var w) = vector;
 
@@ -994,7 +994,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Matrix2d GetHessian(Func<Vector2d, double> function, Vector2d vector, double epsilon = D.ZeroTolerance)
+        public static Matrix2d GetHessian(Func<Vector2d, double> function, Vector2d vector, double epsilon = Constd.ZeroTolerance)
         {
             return GetJacobian(p => GetGradient(function, vector, epsilon), vector, epsilon);
         }
@@ -1007,7 +1007,7 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Matrix3d GetHessian(Func<Vector3d, double> function, Vector3d vector, double epsilon = D.ZeroTolerance)
+        public static Matrix3d GetHessian(Func<Vector3d, double> function, Vector3d vector, double epsilon = Constd.ZeroTolerance)
         {
             return GetJacobian(p => GetGradient(function, vector, epsilon), vector, epsilon);
         }
@@ -1020,9 +1020,92 @@ namespace SpatialSlur
         /// <param name="vector"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public static Matrix4d GetHessian(Func<Vector4d, double> function, Vector4d vector, double epsilon = D.ZeroTolerance)
+        public static Matrix4d GetHessian(Func<Vector4d, double> function, Vector4d vector, double epsilon = Constd.ZeroTolerance)
         {
             return GetJacobian(p => GetGradient(function, vector, epsilon), vector, epsilon);
+        }
+
+
+        /// <summary>
+        /// Returns a linear approximation of the signed distance to the nearest root of the given function.
+        /// Note that if the given function is itself linear, the result will be exact.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="point"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static double DistanceToRoot(Func<Vector2d, double> function, Vector2d point, double epsilon = Constd.ZeroTolerance)
+        {
+            var e = function(point);
+            var m = GetGradient(function, point, epsilon).SquareLength;
+
+            if (m > 0.0)
+                return e / Math.Sqrt(m);
+
+            return e < 0.0 ? double.NegativeInfinity : double.PositiveInfinity;
+        }
+
+
+        /// <summary>
+        /// Returns a linear approximation of the nearest root of the given function.
+        /// Note that if the given function is itself linear, the result will be exact.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="point"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Vector2d ProjectToRoot(Func<Vector2d, double> function, Vector2d point, double epsilon = Constd.ZeroTolerance)
+        {
+            var e = function(point);
+            var g = GetGradient(function, point, epsilon);
+
+            // e * gInv
+            return new Vector2d(
+                point.X - Math.Abs(g.X) > 0.0 ? e / g.X : 0.0,
+                point.Y - Math.Abs(g.Y) > 0.0 ? e / g.Y : 0.0
+                );
+        }
+
+
+        /// <summary>
+        /// Returns a linear approximation of the signed distance to the nearest root of the given function.
+        /// Note that if the given function is itself linear, the result will be exact.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="point"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static double DistanceToRoot(Func<Vector3d, double> function, Vector3d point, double epsilon = Constd.ZeroTolerance)
+        {
+            var e = function(point);
+            var m = GetGradient(function, point, epsilon).SquareLength;
+            
+            if (m > 0.0)
+                return e / Math.Sqrt(m);
+
+            return e < 0.0 ? double.NegativeInfinity : double.PositiveInfinity;
+        }
+
+
+        /// <summary>
+        /// Returns a linear approximation of the nearest root of the given function.
+        /// Note that if the given function is itself linear, the result will be exact.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="point"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static Vector3d ProjectToRoot(Func<Vector3d, double> function, Vector3d point, double epsilon = Constd.ZeroTolerance)
+        {
+            var e = function(point);
+            var g = GetGradient(function, point, epsilon);
+
+            // e * gInv
+            return new Vector3d(
+                point.X - Math.Abs(g.X) > 0.0 ? e / g.X : 0.0,
+                point.Y - Math.Abs(g.Y) > 0.0 ? e / g.Y : 0.0,
+                point.Z - Math.Abs(g.Z) > 0.0 ? e / g.Z : 0.0
+                );
         }
     }
 }
