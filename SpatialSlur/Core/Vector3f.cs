@@ -5,7 +5,7 @@
 
 using System;
 
-using F = SpatialSlur.SlurMath.Constantsf;
+using Constf = SpatialSlur.SlurMath.Constantsf;
 
 namespace SpatialSlur
 {
@@ -553,21 +553,7 @@ namespace SpatialSlur
             Z = z;
         }
 
-
-#if false
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <param name="z"></param>
-        public Vector3f(Vector2f other, float z)
-        {
-            X = other.X;
-            Y = other.Y;
-            Z = z;
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -575,7 +561,36 @@ namespace SpatialSlur
         {
             get { return new Vector2f(X, Y); }
         }
-#endif
+
+        
+        /// <summary>
+        /// Returns the cross product of this vector vector with the x Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f CrossX
+        {
+            get => new Vector3f(0.0f, Z, -Y);
+        }
+
+
+        /// <summary>
+        /// Returns the cross product of this vector with the Y Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f CrossY
+        {
+            get => new Vector3f(-Z, 0.0f, X);
+        }
+
+
+        /// <summary>
+        /// Returns the cross product of this vector with the Y Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f CrossZ
+        {
+            get => new Vector3f(Y, -X, 0.0f);
+        }
 
 
         /// <summary>
@@ -668,18 +683,18 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public Vector3d As3d
+        public Vector3i As3i
         {
-            get => new Vector3d(X, Y, Z);
+            get => new Vector3i((int)X, (int)Y, (int)Z);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public Vector3i As3i
+        public Vector3d As3d
         {
-            get => new Vector3i((int)X, (int)Y, (int)Z);
+            get => new Vector3d(X, Y, Z);
         }
 
 
@@ -696,7 +711,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(float tolerance = F.ZeroTolerance)
+        public bool IsZero(float tolerance = Constf.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -705,7 +720,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(float tolerance = F.ZeroTolerance)
+        public bool IsUnit(float tolerance = Constf.ZeroTolerance)
         {
             return SlurMath.ApproxEquals(SquareLength, 1.0f, tolerance);
         }
@@ -772,7 +787,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vector3f other, float epsilon = F.ZeroTolerance)
+        public bool ApproxEquals(Vector3f other, float epsilon = Constf.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&
@@ -902,36 +917,6 @@ namespace SpatialSlur
             }
 
             return this;
-        }
-
-
-        /// <summary>
-        /// Returns the cross product of this vector vector with the x Axis
-        /// </summary>
-        /// <returns></returns>
-        public Vector3f CrossX()
-        {
-            return new Vector3f(0.0f, Z, -Y);
-        }
-
-
-        /// <summary>
-        /// Returns the cross product of this vector with the Y Axis
-        /// </summary>
-        /// <returns></returns>
-        public Vector3f CrossY()
-        {
-            return new Vector3f(-Z, 0.0f, X);
-        }
-
-
-        /// <summary>
-        /// Returns the cross product of this vector with the Y Axis
-        /// </summary>
-        /// <returns></returns>
-        public Vector3f CrossZ()
-        {
-            return new Vector3f(Y, -X, 0.0f);
         }
 
 

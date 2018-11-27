@@ -315,6 +315,36 @@ namespace SpatialSlur
 
 
         /// <summary>
+        /// Returns the cross product of this vector vector with the x Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3i CrossX
+        {
+            get => new Vector3i(0, Z, -Y);
+        }
+
+
+        /// <summary>
+        /// Returns the cross product of this vector with the Y Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3i CrossY
+        {
+            get => new Vector3i(-Z, 0, X);
+        }
+
+
+        /// <summary>
+        /// Returns the cross product of this vector with the Y Axis
+        /// </summary>
+        /// <returns></returns>
+        public Vector3i CrossZ
+        {
+            get => new Vector3i(Y, -X, 0);
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>

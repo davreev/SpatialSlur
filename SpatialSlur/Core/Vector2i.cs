@@ -351,6 +351,16 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <returns></returns>
+        public Vector2f As2f
+        {
+            get => new Vector2f(X, Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public Vector2d As2d
         {
             get => new Vector2d(X, Y);
@@ -366,7 +376,37 @@ namespace SpatialSlur
             get => new Vector3i(X, Y, 0);
         }
 
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f As3f
+        {
+            get => new Vector3f(X, Y, 0.0f);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vector3d As3d
+        {
+            get => new Vector3d(X, Y, 0.0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vector4d As4d
+        {
+            get => new Vector4d(X, Y, 0.0, 0.0);
+        }
+
+
         /// <inheritdoc />
         public override string ToString()
         {
