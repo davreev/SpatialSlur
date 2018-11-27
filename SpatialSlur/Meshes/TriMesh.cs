@@ -230,7 +230,7 @@ namespace SpatialSlur.Meshes
         /// </summary>
         private T[] InitOptional<T>(T[] buffer)
         {
-            return buffer ?? (new T[VertexCapacity]);
+            return buffer ?? new T[VertexCapacity];
         }
 
 
@@ -265,10 +265,7 @@ namespace SpatialSlur.Meshes
         /// 
         /// </summary>
         /// <param name="position"></param>
-        /// <param name="normal"></param>
-        /// <param name="tangent"></param>
-        /// <param name="textureCoord"></param>
-        public void AddVertex(TVec3 position, TVec3 normal = default, TVec3 tangent = default, TVec2 textureCoord = default)
+        public void AddVertex(TVec3 position)
         {
             const int minCapacity = 4;
             int index = _vertexCount++;
@@ -277,15 +274,6 @@ namespace SpatialSlur.Meshes
                 ExpandVertexCapacity(Math.Max(index << 1, minCapacity));
 
             _positions[index] = position;
-
-            if (HasNormals)
-                _normals[index] = normal;
-
-            if (HasTangents)
-                _tangents[index] = tangent;
-
-            if (HasTextureCoords)
-                _textureCoords[index] = textureCoord;
         }
 
 
