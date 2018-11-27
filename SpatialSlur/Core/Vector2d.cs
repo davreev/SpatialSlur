@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -328,6 +328,21 @@ namespace SpatialSlur
             return v0.X * v1.Y - v0.Y * v1.X;
         }
 
+        
+        /// <summary>
+        /// Returns the outer product of the given vectors
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Matrix2d Outer(Vector2d v0, Vector2d v1)
+        {
+            return new Matrix2d(
+                v0.X * v1.X, v0.X * v1.Y,
+                v0.Y * v1.X, v0.Y * v1.Y
+                );
+        }
+
 
         /// <summary>
         /// Returns the angle between two vectors.
@@ -595,7 +610,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance = D.ZeroTolerance)
+        public bool IsZero(double tolerance = Constd.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -604,7 +619,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance = D.ZeroTolerance)
+        public bool IsUnit(double tolerance = Constd.ZeroTolerance)
         {
             return Math.Abs(SquareLength - 1.0) < tolerance;
         }
@@ -617,6 +632,36 @@ namespace SpatialSlur
         public Vector2i As2i
         {
             get => new Vector2i((int)X, (int)Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vector2f As2f
+        {
+            get => new Vector2f((float)X, (float)Y);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vector3i As3i
+        {
+            get => new Vector3i((int)X, (int)Y, 0);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Vector3f As3f
+        {
+            get => new Vector3f((float)X, (float)Y, 0.0f);
         }
 
 
@@ -697,7 +742,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vector2d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Vector2d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&

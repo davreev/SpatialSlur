@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -359,6 +359,22 @@ namespace SpatialSlur
                 v0.Y * v1.Z - v0.Z * v1.Y,
                 v0.Z * v1.X - v0.X * v1.Z,
                 v0.X * v1.Y - v0.Y * v1.X);
+        }
+
+
+        /// <summary>
+        /// Returns the outer product of the given vectors
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Matrix3d Outer(Vector3d v0, Vector3d v1)
+        {
+            return new Matrix3d(
+                v0.X * v1.X, v0.X * v1.Y, v0.X * v1.Z,
+                v0.Y * v1.X, v0.Y * v1.Y, v0.Y * v1.Z,
+                v0.Z * v1.X, v0.Z * v1.Y, v0.Z * v1.Z
+                );
         }
         
 
@@ -734,7 +750,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance = D.ZeroTolerance)
+        public bool IsZero(double tolerance = Constd.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -743,7 +759,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance = D.ZeroTolerance)
+        public bool IsUnit(double tolerance = Constd.ZeroTolerance)
         {
             return SlurMath.ApproxEquals(SquareLength, 1.0, tolerance);
         }
@@ -810,7 +826,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vector3d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Vector3d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&

@@ -5,7 +5,7 @@
 
 using System;
 
-using D = SpatialSlur.SlurMath.Constantsd;
+using Constd = SpatialSlur.SlurMath.Constantsd;
 
 namespace SpatialSlur
 {
@@ -344,6 +344,23 @@ namespace SpatialSlur
 
 
         /// <summary>
+        /// Returns the outer product of the given vectors
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        /// <returns></returns>
+        public static Matrix4d Outer(Vector4d v0, Vector4d v1)
+        {
+            return new Matrix4d(
+                v0.X * v1.X, v0.X * v1.Y, v0.X * v1.Z, v0.X * v1.W,
+                v0.Y * v1.X, v0.Y * v1.Y, v0.Y * v1.Z, v0.Y * v1.W,
+                v0.Z * v1.X, v0.Z * v1.Y, v0.Z * v1.Z, v0.Z * v1.W,
+                v0.W * v1.X, v0.W * v1.Y, v0.W * v1.Z, v0.W * v1.W
+                );
+        }
+
+
+        /// <summary>
         /// Returns the angle between two vectors.
         /// </summary>
         /// <param name="v0"></param>
@@ -629,7 +646,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsZero(double tolerance = D.ZeroTolerance)
+        public bool IsZero(double tolerance = Constd.ZeroTolerance)
         {
             return SquareLength < tolerance;
         }
@@ -638,7 +655,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public bool IsUnit(double tolerance = D.ZeroTolerance)
+        public bool IsUnit(double tolerance = Constd.ZeroTolerance)
         {
             return Math.Abs(SquareLength - 1.0) < tolerance;
         }
@@ -683,7 +700,7 @@ namespace SpatialSlur
         /// <param name="other"></param>
         /// <param name="epsilon"></param>
         /// <returns></returns>
-        public bool ApproxEquals(Vector4d other, double epsilon = D.ZeroTolerance)
+        public bool ApproxEquals(Vector4d other, double epsilon = Constd.ZeroTolerance)
         {
             return
                 SlurMath.ApproxEquals(X, other.X, epsilon) &&
