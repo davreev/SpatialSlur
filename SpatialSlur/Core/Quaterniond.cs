@@ -309,7 +309,7 @@ namespace SpatialSlur
         /// </summary>
         public bool IsZero(double tolerance = Constd.ZeroTolerance)
         {
-            return SquareLength < tolerance;
+            return SquareLength <= tolerance;
         }
 
 
@@ -548,7 +548,7 @@ namespace SpatialSlur
             var ca = Dot(this, other);
 
             // TODO handle antiparallel case
-            if (Math.Abs(ca) > 1.0 - Constd.ZeroTolerance)
+            if (Math.Abs(ca) >= 1.0 - Constd.ZeroTolerance)
                 return this;
 
             // ensures interpolation takes shortest path

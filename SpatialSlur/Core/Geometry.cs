@@ -257,9 +257,9 @@ namespace SpatialSlur
             yAxis = vecs.Column1;
 
             return
-                Math.Abs(vals.X) < epsilon ? 0 :
-                Math.Abs(vals.Y) < epsilon ? 1 :
-                Math.Abs(vals.Z) < epsilon ? 2 : 3;
+                Math.Abs(vals.X) <= epsilon ? 0 :
+                Math.Abs(vals.Y) <= epsilon ? 1 :
+                Math.Abs(vals.Z) <= epsilon ? 2 : 3;
         }
 
         
@@ -302,7 +302,7 @@ namespace SpatialSlur
             normal = vecs.Column2;
 
             // Check for degeneracy -> if 2nd eigenvalue is 0, the points are colinear at best
-            return Math.Abs(vals.Y) >= epsilon;
+            return Math.Abs(vals.Y) > epsilon;
         }
 
 
@@ -343,7 +343,7 @@ namespace SpatialSlur
             direction = vecs.Column0;
 
             // Check for degeneracy -> if 1st eigenvalue is 0, then points are coincident
-            return Math.Abs(vals.X) >= epsilon;
+            return Math.Abs(vals.X) > epsilon;
         }
 
 

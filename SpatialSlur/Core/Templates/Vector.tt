@@ -527,7 +527,7 @@ foreach(string t in types)
         public static bool ApproxEquals(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> epsilon = <#= e #>)
         {
             for (int i = 0; i < v0.Count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon) return false;
+                if (Math.Abs(v1[i] - v0[i]) > epsilon) return false;
 
             return true;
         }
@@ -539,7 +539,7 @@ foreach(string t in types)
         public static bool ApproxEquals(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #>  epsilon)
         {
             for (int i = 0; i < v0.Count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon[i]) return false;
+                if (Math.Abs(v1[i] - v0[i]) > epsilon[i]) return false;
 
             return true;
         }

@@ -68,7 +68,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static bool ApproxEquals(double x, double y, double epsilon = Constd.ZeroTolerance)
         {
-            return Math.Abs(x - y) < epsilon;
+            return Math.Abs(x - y) <= epsilon;
         }
 
 
@@ -81,7 +81,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static bool ApproxEquals(float x, float y, float epsilon = Constf.ZeroTolerance)
         {
-            return Math.Abs(x - y) < epsilon;
+            return Math.Abs(x - y) <= epsilon;
         }
 
 
@@ -1276,7 +1276,7 @@ namespace SpatialSlur
         /// <returns></returns>
         private static int SolveLinear(double a, double b, out double root, double epsilon = Constd.ZeroTolerance)
         {
-            if (Math.Abs(a) < epsilon)
+            if (Math.Abs(a) <= epsilon)
             {
                 root = 0.0;
                 return 0;
@@ -1304,7 +1304,7 @@ namespace SpatialSlur
             // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (5.6)
 
             // check if actually linear
-            if (Math.Abs(a) < epsilon)
+            if (Math.Abs(a) <= epsilon)
             {
                 r1 = 0.0;
                 return SolveLinear(b, c, out r0, epsilon);
@@ -1335,7 +1335,7 @@ namespace SpatialSlur
             // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (5.6)
 
             // check if actually quadratic
-            if(Math.Abs(a) < epsilon)
+            if(Math.Abs(a) <= epsilon)
             {
                 r2 = 0.0;
                 return SolveQuadratic(b, c, d, out r0, out r1, epsilon);
@@ -1381,7 +1381,7 @@ namespace SpatialSlur
 
             // only 1 real root exists
             var x = -Math.Sign(r) * Math.Pow(Math.Abs(r) + Math.Sqrt(rr - qqq), inv3);
-            var y = Math.Abs(x) < epsilon ? 0.0 : q / x;
+            var y = Math.Abs(x) <= epsilon ? 0.0 : q / x;
 
             r0 = x + y - a * inv3;
             r1 = r2 = 0.0;

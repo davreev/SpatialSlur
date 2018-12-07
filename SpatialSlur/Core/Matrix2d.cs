@@ -542,7 +542,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public bool IsSymmetric(double epsilon = Constd.ZeroTolerance)
         {
-            return SlurMath.ApproxEquals(M01, M10);
+            return SlurMath.ApproxEquals(M01, M10, epsilon);
         }
         
 

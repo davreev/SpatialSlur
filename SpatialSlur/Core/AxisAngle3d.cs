@@ -74,7 +74,7 @@ namespace SpatialSlur
             var ct = Vector3d.Dot(from, to);
 
             // parallel check
-            if (1.0 - Math.Abs(ct) < Constd.ZeroTolerance)
+            if (1.0 - Math.Abs(ct) <= Constd.ZeroTolerance)
             {
                 // opposite check
                 if (ct < 0.0)

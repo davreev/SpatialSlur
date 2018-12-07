@@ -80,17 +80,17 @@ namespace SpatialSlur
                     // Jacobi rotate in plane of max off-diagonal value of A
                     if (a01 > a02 && a01 > a12)
                     {
-                        if (a01 < epsilon) return true;
+                        if (a01 <= epsilon) return true;
                         JacobiRotate01(ref A, ref V);
                     }
                     else if (a02 > a12)
                     {
-                        if (a02 < epsilon) return true;
+                        if (a02 <= epsilon) return true;
                         JacobiRotate02(ref A, ref V);
                     }
                     else
                     {
-                        if (a12 < epsilon) return true;
+                        if (a12 <= epsilon) return true;
                         JacobiRotate12(ref A, ref V);
                     }
                 }
@@ -347,8 +347,7 @@ namespace SpatialSlur
             /// <param name="A"></param>
             /// <param name="Q"></param>
             /// <param name="R"></param>
-            /// <param name="epsilon"></param>
-            public static void QR(ref Matrix3d A, out Matrix3d Q, out Matrix3d R, double epsilon = Constd.ZeroTolerance)
+            public static void QR(ref Matrix3d A, out Matrix3d Q, out Matrix3d R)
             {
                 // impl ref
                 // http://pages.cs.wisc.edu/~sifakis/papers/SVD_TR1690.pdf
@@ -478,7 +477,7 @@ namespace SpatialSlur
 
                 // U = A V inv(sigma)
                 // must handle cases where singular values are zero
-                if (sigma.X < epsilon)
+                if (sigma.X <= epsilon)
                 {
                     // all zero singular values
 
@@ -491,7 +490,7 @@ namespace SpatialSlur
 
                     return 0;
                 }
-                else if (sigma.Y < epsilon)
+                else if (sigma.Y <= epsilon)
                 {
                     // one non-zero singular value
 
@@ -510,7 +509,7 @@ namespace SpatialSlur
 
                     return 1;
                 }
-                else if (sigma.Z < epsilon)
+                else if (sigma.Z <= epsilon)
                 {
                     // two non-zero singular values
 
@@ -1302,9 +1301,9 @@ namespace SpatialSlur
         public bool IsSymmetric(double epsilon = Constd.ZeroTolerance)
         {
             return
-                SlurMath.ApproxEquals(M01, M10) &&
-                SlurMath.ApproxEquals(M01, M10) &&
-                SlurMath.ApproxEquals(M12, M21);
+                SlurMath.ApproxEquals(M01, M10, epsilon) &&
+                SlurMath.ApproxEquals(M01, M10, epsilon) &&
+                SlurMath.ApproxEquals(M12, M21, epsilon);
         }
 
 

@@ -1259,7 +1259,7 @@ namespace SpatialSlur.Meshes
 
                 if (m > 0.0)
                 {
-                    if (Vector3d.Dot(d0, d1) / Math.Sqrt(m) < ct)
+                    if (Vector3d.Dot(d0, d1) / Math.Sqrt(m) <= ct)
                         yield return he;
                 }
             }

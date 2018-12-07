@@ -832,7 +832,7 @@ namespace SpatialSlur
         public static bool ApproxEquals(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, double epsilon = Constd.ZeroTolerance)
         {
             for (int i = 0; i < v0.Count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon) return false;
+                if (Math.Abs(v1[i] - v0[i]) > epsilon) return false;
 
             return true;
         }
@@ -844,7 +844,7 @@ namespace SpatialSlur
         public static bool ApproxEquals(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ReadOnlyArrayView<double>  epsilon)
         {
             for (int i = 0; i < v0.Count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon[i]) return false;
+                if (Math.Abs(v1[i] - v0[i]) > epsilon[i]) return false;
 
             return true;
         }
@@ -1329,7 +1329,7 @@ namespace SpatialSlur
         public static bool ApproxEquals(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, float epsilon = Constf.ZeroTolerance)
         {
             for (int i = 0; i < v0.Count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon) return false;
+                if (Math.Abs(v1[i] - v0[i]) > epsilon) return false;
 
             return true;
         }
@@ -1341,7 +1341,7 @@ namespace SpatialSlur
         public static bool ApproxEquals(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ReadOnlyArrayView<float>  epsilon)
         {
             for (int i = 0; i < v0.Count; i++)
-                if (Math.Abs(v1[i] - v0[i]) >= epsilon[i]) return false;
+                if (Math.Abs(v1[i] - v0[i]) > epsilon[i]) return false;
 
             return true;
         }

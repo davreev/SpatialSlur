@@ -713,7 +713,7 @@ namespace SpatialSlur
         /// </summary>
         public bool IsZero(float tolerance = Constf.ZeroTolerance)
         {
-            return SquareLength < tolerance;
+            return SquareLength <= tolerance;
         }
 
 
