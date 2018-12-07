@@ -900,12 +900,12 @@ namespace SpatialSlur
         public bool IsSymmetric(double epsilon = Constd.ZeroTolerance)
         {
             return
-                SlurMath.ApproxEquals(M01, M10) &&
-                SlurMath.ApproxEquals(M02, M20) &&
-                SlurMath.ApproxEquals(M03, M30) &&
-                SlurMath.ApproxEquals(M12, M21) &&
-                SlurMath.ApproxEquals(M13, M31) &&
-                SlurMath.ApproxEquals(M23, M32);
+                SlurMath.ApproxEquals(M01, M10, epsilon) &&
+                SlurMath.ApproxEquals(M02, M20, epsilon) &&
+                SlurMath.ApproxEquals(M03, M30, epsilon) &&
+                SlurMath.ApproxEquals(M12, M21, epsilon) &&
+                SlurMath.ApproxEquals(M13, M31, epsilon) &&
+                SlurMath.ApproxEquals(M23, M32, epsilon);
         }
 
 

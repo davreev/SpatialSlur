@@ -752,7 +752,7 @@ namespace SpatialSlur
         /// </summary>
         public bool IsZero(double tolerance = Constd.ZeroTolerance)
         {
-            return SquareLength < tolerance;
+            return SquareLength <= tolerance;
         }
 
 

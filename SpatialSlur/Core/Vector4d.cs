@@ -648,7 +648,7 @@ namespace SpatialSlur
         /// </summary>
         public bool IsZero(double tolerance = Constd.ZeroTolerance)
         {
-            return SquareLength < tolerance;
+            return SquareLength <= tolerance;
         }
 
 
@@ -657,7 +657,7 @@ namespace SpatialSlur
         /// </summary>
         public bool IsUnit(double tolerance = Constd.ZeroTolerance)
         {
-            return Math.Abs(SquareLength - 1.0) < tolerance;
+            return SlurMath.ApproxEquals(SquareLength, 1.0, tolerance);
         }
 
 
