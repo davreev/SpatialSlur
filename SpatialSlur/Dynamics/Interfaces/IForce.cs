@@ -8,11 +8,11 @@ namespace SpatialSlur.Dynamics
     /// <summary>
     /// 
     /// </summary>
-    public interface IConstraint : IInfluence
+    public interface IForce : IInfluence
     {
         /// <summary>
         /// 
         /// </summary>
-        double Weight { get; set; }
+        double Strength { get; set; }
     }
 }
