@@ -27,7 +27,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public double LinearDamping
         {
-            get { return _linearDamping; }
+            get => _linearDamping;
             set
             {
                 if (value < 0.0 || value > 1.0)
@@ -43,7 +43,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public double AngularDamping
         {
-            get { return _angularDamping; }
+            get => _angularDamping;
             set
             {
                 if (value < 0.0 || value > 1.0)
@@ -59,7 +59,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public double LinearTolerance
         {
-            get { return _linearTolerance; }
+            get => _linearTolerance;
             set
             {
                 if (value < 0.0)
@@ -75,7 +75,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public double AngularTolerance
         {
-            get { return _angularTolerance; }
+            get => _angularTolerance;
             set
             {
                 if (value < 0.0)
@@ -91,11 +91,11 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public double TimeStep
         {
-            get { return _timeStep; }
+            get => _timeStep;
             set
             {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
+                if (value <= 0.0)
+                    throw new ArgumentOutOfRangeException("The value must be greater than zero.");
 
                 _timeStep = value;
             }
