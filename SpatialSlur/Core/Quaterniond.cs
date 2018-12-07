@@ -222,7 +222,7 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// The axis and angle of rotation are taken from the direction and length of the given vector respectively.
+        /// The axis and angle of rotation are taken from the direction and length of the given vector.
         /// </summary>
         /// <param name="rotation"></param>
         public Quaterniond(Vector3d rotation)
