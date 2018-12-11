@@ -82,7 +82,7 @@ namespace SpatialSlur.Dynamics.Impl
                     influences[i].Calculate(particles);
             }
             
-            // Must apply influences serially to avoid race conditions
+            // Must apply serially to avoid race conditions
             foreach (var infl in influences)
                 infl.Apply(particles);
         }
