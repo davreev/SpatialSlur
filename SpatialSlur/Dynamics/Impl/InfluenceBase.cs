@@ -13,7 +13,7 @@ using SpatialSlur.Collections;
 namespace SpatialSlur.Dynamics.Impl
 {
     /// <summary>
-    /// Base class for an influence that acts on a dynamic collection of particles.
+    /// Base class for an influence that acts on a collection of particles.
     /// </summary>
     [Serializable]
     public abstract class InfluenceBase<TDelta> : IInfluence
@@ -54,16 +54,7 @@ namespace SpatialSlur.Dynamics.Impl
         /// <summary>
         /// 
         /// </summary>
-        public ReadOnlyArrayView<TDelta> Deltas
-        {
-            get { return _deltas.AsView(_count); }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void SetIndices(IEnumerable<int> indices)
+        public virtual void SetIndices(IEnumerable<int> indices)
         {
             _count = indices.ToArray(ref _indices);
 
@@ -74,6 +65,14 @@ namespace SpatialSlur.Dynamics.Impl
 
 
         /// <inheritdoc />
+        /// 
+        public virtual void Initialize(ReadOnlyArrayView<Particle> particles)
+        {
+        }
+
+
+        /// <inheritdoc />
+        /// 
         public void Calculate(ReadOnlyArrayView<Particle> particles)
         {
             Calculate(particles, _indices.AsView(_count), _deltas.AsView(_count));
@@ -90,6 +89,7 @@ namespace SpatialSlur.Dynamics.Impl
 
 
         /// <inheritdoc />
+        /// 
         public void Apply(ReadOnlyArrayView<Particle> particles)
         {
             Apply(particles, _indices.AsView(_count), _deltas.AsView(_count));
