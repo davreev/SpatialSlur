@@ -30,12 +30,14 @@ namespace SpatialSlur.Dynamics
         /// <summary></summary>
         private Vector3d _inertiaInv = new Vector3d(1.0);
 
+
         /// <summary>
         /// 
         /// </summary>
         public ParticleRotation()
         {
         }
+
 
         /// <summary>
         /// 
@@ -45,6 +47,7 @@ namespace SpatialSlur.Dynamics
         {
             Current = current;
         }
+
 
         /// <summary>
         /// 
@@ -57,6 +60,7 @@ namespace SpatialSlur.Dynamics
             _inertiaInv = other._inertiaInv;
         }
 
+
         /// <summary>
         /// Returns a deep copy of this object.
         /// </summary>
@@ -65,6 +69,7 @@ namespace SpatialSlur.Dynamics
         {
             return new ParticleRotation(this);
         }
+
 
         /// <summary>
         /// Gets/sets the rotational mass of the body.
@@ -81,6 +86,7 @@ namespace SpatialSlur.Dynamics
             }
         }
 
+
         /// <summary>
         /// 
         /// </summary>
@@ -89,13 +95,14 @@ namespace SpatialSlur.Dynamics
             get => _inertiaInv;
             set
             {
-                if (value.ComponentMin < 0.0)
-                    throw new ArgumentException("The value cannot be negative");
-
-                _inertiaInv = value;
+                if (value.ComponentMin > 0.0)
+                    _inertiaInv = value;
+                else
+                    throw new ArgumentException("The value must be greater than zero.");
             }
         }
         
+
         /// <summary>
         /// 
         /// </summary>
@@ -104,6 +111,7 @@ namespace SpatialSlur.Dynamics
         {
             TorqueSum += torque;
         }
+
 
         /// <summary>
         /// 
@@ -116,6 +124,7 @@ namespace SpatialSlur.Dynamics
             WeightSum += weight;
         }
 
+
         /// <summary>
         /// 
         /// </summary>
@@ -123,6 +132,7 @@ namespace SpatialSlur.Dynamics
         {
             TorqueSum = Vector3d.Zero;
         }
+
 
         /// <summary>
         /// 

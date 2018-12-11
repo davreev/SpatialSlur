@@ -30,12 +30,14 @@ namespace SpatialSlur.Dynamics
         /// <summary></summary>
         private double _massInv = 1.0;
 
+
         /// <summary>
         /// 
         /// </summary>
         public ParticlePosition()
         {
         }
+
 
         /// <summary>
         /// 
@@ -45,6 +47,7 @@ namespace SpatialSlur.Dynamics
         {
             Current = current;
         }
+
 
         /// <summary>
         /// 
@@ -57,6 +60,7 @@ namespace SpatialSlur.Dynamics
             _massInv = other._massInv;
         }
 
+
         /// <summary>
         /// Returns a deep copy of this object.
         /// </summary>
@@ -65,6 +69,7 @@ namespace SpatialSlur.Dynamics
         {
             return new ParticlePosition(this);
         }
+
 
         /// <summary>
         /// 
@@ -80,6 +85,7 @@ namespace SpatialSlur.Dynamics
             }
         }
 
+
         /// <summary>
         /// 
         /// </summary>
@@ -88,12 +94,13 @@ namespace SpatialSlur.Dynamics
             get => _massInv;
             set
             {
-                if (value < 0.0)
-                    throw new ArgumentException("The value cannot be negative.");
-
-                _massInv = value;
+                if (value > 0.0)
+                    _massInv = value;
+                else
+                    throw new ArgumentException("The value must be greater than zero.");
             }
         }
+
 
         /// <summary>
         /// 
@@ -103,6 +110,7 @@ namespace SpatialSlur.Dynamics
         {
             ForceSum += force;
         }
+
 
         /// <summary>
         /// 
@@ -115,6 +123,7 @@ namespace SpatialSlur.Dynamics
             WeightSum += weight;
         }
 
+
         /// <summary>
         /// 
         /// </summary>
@@ -122,6 +131,7 @@ namespace SpatialSlur.Dynamics
         {
             ForceSum = Vector3d.Zero;
         }
+
 
         /// <summary>
         /// 
