@@ -63,7 +63,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// 
+        /// Calculates and accumulates all constraints in this group
         /// </summary>
         /// <param name="particles"></param>
         public void Apply(ParticleBuffer particles, ArrayView<(Vector3d, double)> linearDeltaSum, ArrayView<(Vector3d, double)> angularDeltaSum)
@@ -78,16 +78,16 @@ namespace SpatialSlur.Dynamics
                         _constraints[i].Calculate(particles);
                 }
 
-                // Must apply serially to avoid race conditions
+                // Must accumulate serially to avoid race conditions
                 foreach (var c in _constraints)
-                    c.Apply(linearDeltaSum, angularDeltaSum);
+                    c.Accumulate(linearDeltaSum, angularDeltaSum);
             }
             else
             {
                 foreach (var c in _constraints)
                 {
                     c.Calculate(particles);
-                    c.Apply(linearDeltaSum, angularDeltaSum);
+                    c.Accumulate(linearDeltaSum, angularDeltaSum);
                 }
             }
         }

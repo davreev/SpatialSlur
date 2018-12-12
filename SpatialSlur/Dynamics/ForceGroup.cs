@@ -63,7 +63,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// 
+        /// Calculates and accumulates all forces in this group
         /// </summary>
         /// <param name="particles"></param>
         public void Apply(ParticleBuffer particles, ArrayView<Vector3d> forceSum, ArrayView<Vector3d> torqueSum)
@@ -78,16 +78,16 @@ namespace SpatialSlur.Dynamics
                         _forces[i].Calculate(particles);
                 }
 
-                // Must apply serially to avoid race conditions
+                // Must accumulate serially to avoid race conditions
                 foreach (var f in _forces)
-                    f.Apply(forceSum, torqueSum);
+                    f.Accumulate(forceSum, torqueSum);
             }
             else
             {
                 foreach (var f in _forces)
                 {
                     f.Calculate(particles);
-                    f.Apply(forceSum, torqueSum);
+                    f.Accumulate(forceSum, torqueSum);
                 }
             }
         }
