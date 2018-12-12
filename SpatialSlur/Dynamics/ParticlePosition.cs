@@ -10,33 +10,29 @@ namespace SpatialSlur.Dynamics
     /// <summary>
     /// 
     /// </summary>
-    public class ParticlePosition
+    public struct ParticlePosition
     {
-        /// <summary>Current position</summary>
+        #region Static
+
+        /// <summary></summary>
+        public static readonly ParticlePosition Default = new ParticlePosition
+        {
+            Current = Vector3d.Zero,
+            Velocity = Vector3d.Zero,
+            MassInv = 1.0
+        };
+
+        #endregion
+
+
+        /// <summary>Current position of the particle</summary>
         public Vector3d Current;
 
-        /// <summary>Linear velocity</summary>
+        /// <summary>Current velocity of the particle</summary>
         public Vector3d Velocity;
-
-        /// <summary></summary>
-        internal Vector3d ForceSum;
-
-        /// <summary></summary>
-        internal Vector3d DeltaSum;
-
-        /// <summary></summary>
-        internal double WeightSum;
         
-        /// <summary></summary>
-        private double _massInv = 1.0;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ParticlePosition()
-        {
-        }
+        /// <summary>Inverse mass of the particle</summary>
+        public double MassInv;
 
 
         /// <summary>
@@ -46,28 +42,8 @@ namespace SpatialSlur.Dynamics
         public ParticlePosition(Vector3d current)
         {
             Current = current;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        private ParticlePosition(ParticlePosition other)
-        {
-            Current = other.Current;
-            Velocity = other.Velocity;
-            _massInv = other._massInv;
-        }
-
-
-        /// <summary>
-        /// Returns a deep copy of this object.
-        /// </summary>
-        /// <returns></returns>
-        public ParticlePosition Duplicate()
-        {
-            return new ParticlePosition(this);
+            Velocity = Vector3d.Zero;
+            MassInv = 1.0;
         }
 
 
@@ -79,67 +55,10 @@ namespace SpatialSlur.Dynamics
             set
             {
                 if (value > 0.0)
-                    _massInv = 1.0 / value;
+                    MassInv = 1.0 / value;
                 else
                     throw new ArgumentException("The value must be greater than zero.");
             }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double MassInv
-        {
-            get => _massInv;
-            set
-            {
-                if (value > 0.0)
-                    _massInv = value;
-                else
-                    throw new ArgumentException("The value must be greater than zero.");
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="force"></param>
-        public void AddForce(Vector3d force)
-        {
-            ForceSum += force;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="delta"></param>
-        /// <param name="weight"></param>
-        public void AddDelta(Vector3d delta, double weight)
-        {
-            DeltaSum += delta * weight;
-            WeightSum += weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void ClearForces()
-        {
-            ForceSum = Vector3d.Zero;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void ClearDeltas()
-        {
-            DeltaSum = Vector3d.Zero;
-            WeightSum = 0.0;
         }
     }
 }
