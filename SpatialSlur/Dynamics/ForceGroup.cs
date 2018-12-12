@@ -6,17 +6,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics
 {
     /// <summary>
     /// 
     /// </summary>
-    public class ForceGroup : Impl.InfluenceGroup, IEnumerable<IForce>
+    public class ForceGroup
     {
         private List<IForce> _forces;
+        private bool _parallel;
+
 
         /// <summary>
         /// 
@@ -49,35 +55,41 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Apply(ReadOnlyArrayView<Particle> particles)
+        public bool Parallel
         {
-            Apply(_forces, particles);
+            get => _parallel;
+            set => _parallel = value;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public List<IForce>.Enumerator GetEnumerator()
+        /// <param name="particles"></param>
+        public void Apply(ParticleBuffer particles, ArrayView<Vector3d> forceSum, ArrayView<Vector3d> torqueSum)
         {
-            return _forces.GetEnumerator();
+            if (_parallel)
+            {
+                ForEach(Partitioner.Create(0, _forces.Count), range => Calculate(range.Item1, range.Item2));
+
+                void Calculate(int from, int to)
+                {
+                    for (int i = from; i < to; i++)
+                        _forces[i].Calculate(particles);
+                }
+
+                // Must apply serially to avoid race conditions
+                foreach (var f in _forces)
+                    f.Apply(forceSum, torqueSum);
+            }
+            else
+            {
+                foreach (var f in _forces)
+                {
+                    f.Calculate(particles);
+                    f.Apply(forceSum, torqueSum);
+                }
+            }
         }
-
-
-        #region Explicit interface implementations
-
-        IEnumerator<IForce> IEnumerable<IForce>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
     }
 }

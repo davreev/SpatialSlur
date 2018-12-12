@@ -5,6 +5,8 @@
  * Impl refs
  * https://www.youtube.com/watch?v=fH3VW9SaQ_c&index=6&list=PL_a9tY9IhJuPuw5nu-WU7mG8T8MiX4JnY
  * https://drive.google.com/file/d/1BX8as-MEemWBgDrViegejsLLJKIiVRU-/view?usp=sharing
+ * 
+ * 
  */
 
 using System;
@@ -24,6 +26,11 @@ namespace SpatialSlur.Dynamics.WIP
     [Serializable]
     public class ConstraintSolver
     {
+        private (Vector3d, double)[] _linearDeltaSum;
+        private (Vector3d, double)[] _angularDeltaSum;
+        private Vector3d[] _forceSum;
+        private Vector3d[] _torqueSum;
+
         private ConstraintSolverSettings _settings = new ConstraintSolverSettings();
         private int _stepCount = 0;
 
@@ -70,27 +77,39 @@ namespace SpatialSlur.Dynamics.WIP
         /// <param name="particles"></param>
         /// <param name="constraints"></param>
         /// <param name="parallel"></param>
-        public void Step(ReadOnlyArrayView<Particle> particles, ConstraintGroup constraints, bool parallel = false)
+        public void Step(
+            ParticleBuffer particles,
+            ConstraintGroup constraints,
+            bool parallel = false)
         {
             Step(particles, constraints.Yield(), parallel);
         }
 
 
         /// <summary>
-        /// Updates the given particles while attempting to preserve the given constraints.
+        /// 
         /// </summary>
         /// <param name="particles"></param>
-        /// <param name="constraintGroups"></param>
+        /// <param name="constraints"></param>
         /// <param name="parallel"></param>
-        public void Step(ReadOnlyArrayView<Particle> particles, IEnumerable<ConstraintGroup> constraintGroups, bool parallel = false)
+        public void Step(
+            ParticleBuffer particles,
+            IEnumerable<ConstraintGroup> constraints,
+            bool parallel = false)
         {
-            UpdateNoForce(particles, parallel);
+            // TODO
+            // Ensure delta/force buffers are large enough
+            
+            Update(particles.Positions, _settings.TimeStep, _settings.LinearDamping, parallel);
+            Update(particles.Rotations, _settings.TimeStep, _settings.AngularDamping, parallel);
 
             // Apply constraints
-            foreach (var grp in constraintGroups)
-                grp.Apply(particles);
+            foreach (var grp in constraints)
+                grp.Apply(particles, _linearDeltaSum, _angularDeltaSum);
 
-            Correct(particles, parallel);
+            Correct(particles.Positions, _linearDeltaSum, _settings.TimeStep, parallel);
+            Correct(particles.Rotations, _angularDeltaSum, _settings.TimeStep, parallel);
+
             _stepCount++;
         }
 
@@ -102,197 +121,289 @@ namespace SpatialSlur.Dynamics.WIP
         /// <param name="constraints"></param>
         /// <param name="forces"></param>
         /// <param name="parallel"></param>
-        public void Step(ReadOnlyArrayView<Particle> particles, ConstraintGroup constraints, ForceGroup forces, bool parallel = false)
+        public void Step(
+            ParticleBuffer particles, 
+            ConstraintGroup constraints, 
+            ForceGroup forces, 
+            bool parallel = false)
         {
             Step(particles, constraints.Yield(), forces.Yield(), parallel);
         }
 
 
         /// <summary>
-        /// Updates the given particles while attempting to preserve the given constraints.
-        /// Also considers the application of external forces.
+        /// 
         /// </summary>
         /// <param name="particles"></param>
-        /// <param name="constraintGroups"></param>
-        /// <param name="forceGroups"></param>
+        /// <param name="constraints"></param>
+        /// <param name="forces"></param>
         /// <param name="parallel"></param>
-        public void Step(ReadOnlyArrayView<Particle> particles, IEnumerable<ConstraintGroup> constraintGroups, IEnumerable<ForceGroup> forceGroups, bool parallel = false)
+        public void Step(
+            ParticleBuffer particles, 
+            IEnumerable<ConstraintGroup> constraints, 
+            IEnumerable<ForceGroup> forces, 
+            bool parallel = false)
         {
-            // Apply external forces
-            foreach (var grp in forceGroups)
-                grp.Apply(particles);
+            // TODO
+            // Ensure delta/force buffers are large enough
 
-            Update(particles, parallel);
+            // Apply external forces
+            foreach (var grp in forces)
+                grp.Apply(particles, _forceSum, _torqueSum);
+
+            Update(particles.Positions, _forceSum, _settings.TimeStep, _settings.LinearDamping, parallel);
+            Update(particles.Rotations, _torqueSum, _settings.TimeStep, _settings.AngularDamping, parallel);
 
             // Apply constraints
-            foreach (var grp in constraintGroups)
-                grp.Apply(particles);
+            foreach (var grp in constraints)
+                grp.Apply(particles, _linearDeltaSum, _angularDeltaSum);
 
-            Correct(particles, parallel);
+            Correct(particles.Positions, _linearDeltaSum, _settings.TimeStep, parallel);
+            Correct(particles.Rotations, _angularDeltaSum, _settings.TimeStep, parallel);
+
             _stepCount++;
         }
 
 
         /// <summary>
-        /// 
+        /// Updates via explicit integration for an approximation of the future state
         /// </summary>
-        private void UpdateNoForce(ReadOnlyArrayView<Particle> particles, bool parallel)
+        private static void Update(
+            ArrayView<ParticlePosition> positions,
+            double timeStep,
+            double damping,
+            bool parallel)
         {
-            var dt = Settings.TimeStep;
-            var linScale = 1.0 - Settings.LinearDamping;
-            var angScale = 1.0 - Settings.AngularDamping;
-
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, particles.Count), range => Update(range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, positions.Count), range => Update(range.Item1, range.Item2));
             else
-                Update(0, particles.Count);
+                Update(0, positions.Count);
 
-            // Update via explicit integration to get predicted future state
             void Update(int from, int to)
             {
+                var k = 1.0 - damping;
+
                 for (int i = from; i < to; i++)
                 {
-                    (var p, var r) = particles[i];
-
-                    // position update
-                    if (p != null)
-                    {
-                        var v = p.Velocity * linScale;
-                        p.Current += v * dt;
-                        p.Velocity = v;
-                        p.ForceSum = Vector3d.Zero;
-                    }
-
-                    // rotation update
-                    if (r != null)
-                    {
-                        var v = r.Velocity * angScale;
-                        r.Current = new Quaterniond(v * dt) * r.Current;
-                        r.Velocity = v;
-                        r.TorqueSum = Vector3d.Zero;
-                    }
+                    ref var p = ref positions[i];
+                    p.Velocity *= k;
+                    p.Current += p.Velocity * timeStep;
                 }
             }
         }
 
 
         /// <summary>
-        /// 
+        /// Updates via explicit integration for an approximation of the future state
         /// </summary>
-        private void Update(ReadOnlyArrayView<Particle> particles, bool parallel)
+        private static void Update(
+            ArrayView<ParticleRotation> rotations,
+            double timeStep,
+            double damping,
+            bool parallel)
         {
-            var dt = Settings.TimeStep;
-            var linScale = 1.0 - Settings.LinearDamping;
-            var angScale = 1.0 - Settings.AngularDamping;
-
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, particles.Count), range => Update(range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, rotations.Count), range => Update(range.Item1, range.Item2));
             else
-                Update(0, particles.Count);
+                Update(0, rotations.Count);
 
-            // Update via explicit integration to get predicted future state
             void Update(int from, int to)
             {
+                var k = 1.0 - damping;
+
                 for (int i = from; i < to; i++)
                 {
-                    (var p, var r) = particles[i];
-
-                    // position update
-                    if (p != null)
-                    {
-                        var v = p.Velocity * linScale + p.ForceSum * (p.MassInv * dt);
-                        p.Current += v * dt;
-                        p.Velocity = v;
-                        p.ForceSum = Vector3d.Zero;
-                    }
-
-                    // rotation update
-                    if (r != null)
-                    {
-                        var m = r.Current.ToMatrix();
-                        var v = r.Velocity * angScale + m.Apply(r.InertiaInv * m.ApplyTranspose(r.TorqueSum)) * dt;
-                        r.Current = new Quaterniond(v * dt) * r.Current;
-                        r.Velocity = v;
-                        r.TorqueSum = Vector3d.Zero;
-                    }
+                    ref var r = ref rotations[i];
+                    r.Velocity *= k;
+                    r.Current = new Quaterniond(r.Velocity * timeStep) * r.Current;
                 }
             }
         }
 
 
         /// <summary>
-        /// 
+        /// Updates via explicit integration for an approximation of the future state
         /// </summary>
-        private void Correct(ReadOnlyArrayView<Particle> particles, bool parallel)
+        /// <param name="positions"></param>
+        /// <param name="forceSum"></param>
+        /// <param name="timeStep"></param>
+        /// <param name="damping"></param>
+        /// <param name="parallel"></param>
+        private static void Update(
+            ArrayView<ParticlePosition> positions,
+            Vector3d[] forceSum,
+            double timeStep,
+            double damping,
+            bool parallel
+            )
         {
-            var dtInv = 1.0 / Settings.TimeStep;
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, positions.Count), range => Update(range.Item1, range.Item2));
+            else
+                Update(0, positions.Count);
+
+            void Update(int from, int to)
+            {
+                var k = 1.0 - damping;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var p = ref positions[i];
+                    p.Velocity = p.Velocity * k + forceSum[i] * (p.MassInv * timeStep);
+                    p.Current += p.Velocity * timeStep;
+                    forceSum[i] = Vector3d.Zero;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Updates via explicit integration for an approximation of the future state
+        /// </summary>
+        private static void Update(
+            ArrayView<ParticleRotation> rotations,
+            Vector3d[] torqueSum,
+            double timeStep,
+            double damping,
+            bool parallel)
+        {
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, rotations.Count), range => Update(range.Item1, range.Item2));
+            else
+                Update(0, rotations.Count);
+
+            void Update(int from, int to)
+            {
+                var k = 1.0 - damping;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var r = ref rotations[i];
+                    var m = r.Current.ToMatrix();
+                    r.Velocity = r.Velocity * k + m.Apply(r.InertiaInv * m.ApplyTranspose(torqueSum[i])) * timeStep;
+                    r.Current = new Quaterniond(r.Velocity * timeStep) * r.Current;
+                    torqueSum[i] = Vector3d.Zero;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Corrects the predicted future state via a regularized Jacobi scheme
+        /// </summary>
+        private static void Correct(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<(Vector3d, double)> deltaSum,
+            double timeStep,
+            bool parallel)
+        {
+            var dtInv = 1.0 / timeStep;
 
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, particles.Count), range => Correct(range.Item1, range.Item2));
+                Parallel.ForEach(Partitioner.Create(0, positions.Count), range => Correct(range.Item1, range.Item2));
             else
-                Correct(0, particles.Count);
-
-            // Correct predicted state via regularized Jacobi scheme
+                Correct(0, positions.Count);
+            
             void Correct(int from, int to)
             {
                 for (int i = from; i < to; i++)
                 {
-                    (var p, var r) = particles[i];
+                    (var d, var w) = deltaSum[i];
 
-                    // position correction
-                    if (p != null)
+                    if (w > 0.0)
                     {
-                        var w = p.WeightSum;
-
-                        if (w > 0.0)
-                        {
-                            var d = p.DeltaSum / w;
-                            p.Current += d;
-                            p.Velocity += d * dtInv;
-                        }
-
-                        p.DeltaSum = Vector3d.Zero;
-                        p.WeightSum = 0.0;
+                        d /= w;
+                        ref var p = ref positions[i];
+                        p.Current += d;
+                        p.Velocity += d * dtInv;
                     }
 
-                    // rotation correction
-                    if (r != null)
-                    {
-                        var w = r.WeightSum;
-
-                        if (w > 0.0)
-                        {
-                            var d = r.DeltaSum / w;
-                            r.Current = new Quaterniond(d) * r.Current;
-                            r.Velocity += d * dtInv;
-                        }
-
-                        r.DeltaSum = Vector3d.Zero;
-                        r.WeightSum = 0.0;
-                    }
+                    deltaSum[i] = (Vector3d.Zero, 0.0);
                 }
             }
         }
 
 
         /// <summary>
-        /// Returns true if the given particles have converged within tolerance.
+        /// Corrects the predicted future state via a regularized Jacobi scheme
         /// </summary>
-        /// <returns></returns>
-        public bool HaveConverged(IEnumerable<Particle> particles)
+        private static void Correct(
+            ArrayView<ParticleRotation> rotations, 
+            ArrayView<(Vector3d, double)> deltaSum, 
+            double timeStep, 
+            bool parallel)
+        {
+            var dtInv = 1.0 / timeStep;
+
+            if (parallel)
+                Parallel.ForEach(Partitioner.Create(0, rotations.Count), range => Correct(range.Item1, range.Item2));
+            else
+                Correct(0, rotations.Count);
+            
+            void Correct(int from, int to)
+            {
+                for (int i = from; i < to; i++)
+                {
+                    (var d, var w) = deltaSum[i];
+
+                    if (w > 0.0)
+                    {
+                        d /= w;
+                        ref var r = ref rotations[i];
+                        r.Current = new Quaterniond(d) * r.Current;
+                        r.Velocity += d * dtInv;
+                    }
+
+                    deltaSum[i] = (Vector3d.Zero, 0.0);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Returns true if the velocities of all given particles are within the current tolerance threshold
+        /// </summary>
+        public bool HasConverged(ParticleBuffer particles)
         {
             var dtInv = 1.0 / _settings.TimeStep;
-            var linTolSqr = Square(_settings.LinearTolerance * dtInv);
-            var angTolSqr = Square(_settings.AngularTolerance * dtInv);
 
-            double Square(double x) { return x * x; }
+            return
+                HasConverged(particles.Positions, _settings.LinearTolerance * dtInv) &&
+                HasConverged(particles.Rotations, _settings.AngularTolerance * dtInv);
+        }
 
-            foreach ((var p, var r) in particles)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static bool HasConverged(
+            ArrayView<ParticlePosition> positions, 
+            double tolerance)
+        {
+            var tolSqr = tolerance * tolerance;
+
+            for(int i = 0; i < positions.Count; i++)
             {
-                if (p != null && p.Velocity.SquareLength > linTolSqr)
+                if (positions[i].Velocity.SquareLength > tolSqr)
                     return false;
+            }
 
-                if (r != null && r.Velocity.SquareLength > angTolSqr)
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static bool HasConverged(
+            ArrayView<ParticleRotation> rotations, 
+            double tolerance)
+        {
+            var tolSqr = tolerance * tolerance;
+
+            for (int i = 0; i < rotations.Count; i++)
+            {
+                if (rotations[i].Velocity.SquareLength > tolSqr)
                     return false;
             }
 

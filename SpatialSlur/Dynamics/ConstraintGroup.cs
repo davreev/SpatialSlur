@@ -6,17 +6,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics
 {
     /// <summary>
     /// 
     /// </summary>
-    public class ConstraintGroup : Impl.InfluenceGroup, IEnumerable<IConstraint>
+    public class ConstraintGroup
     {
         private List<IConstraint> _constraints;
+        private bool _parallel;
+
 
         /// <summary>
         /// 
@@ -49,35 +55,41 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="particles"></param>
-        public void Apply(ReadOnlyArrayView<Particle> particles)
+        public bool Parallel
         {
-            Apply(_constraints, particles);
+            get => _parallel;
+            set => _parallel = value;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public List<IConstraint>.Enumerator GetEnumerator()
+        /// <param name="particles"></param>
+        public void Apply(ParticleBuffer particles, ArrayView<(Vector3d, double)> linearDeltaSum, ArrayView<(Vector3d, double)> angularDeltaSum)
         {
-            return _constraints.GetEnumerator();
+            if(_parallel)
+            {
+                ForEach(Partitioner.Create(0, _constraints.Count), range => Calculate(range.Item1, range.Item2));
+                
+                void Calculate(int from, int to)
+                {
+                    for (int i = from; i < to; i++)
+                        _constraints[i].Calculate(particles);
+                }
+
+                // Must apply serially to avoid race conditions
+                foreach (var c in _constraints)
+                    c.Apply(linearDeltaSum, angularDeltaSum);
+            }
+            else
+            {
+                foreach (var c in _constraints)
+                {
+                    c.Calculate(particles);
+                    c.Apply(linearDeltaSum, angularDeltaSum);
+                }
+            }
         }
-
-
-        #region Explicit interface implementations
-
-        IEnumerator<IConstraint> IEnumerable<IConstraint>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
     }
 }
