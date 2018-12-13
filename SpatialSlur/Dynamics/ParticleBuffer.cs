@@ -16,6 +16,7 @@ namespace SpatialSlur.Dynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ParticleBuffer
     {
         private ParticleHandle[] _handles = Array.Empty<ParticleHandle>();
@@ -136,9 +137,9 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        public void Remove(int particleIndex)
+        public void RemoveAt(int index)
         {
-            _handles[particleIndex] = ParticleHandle.Removed;
+            _handles[index] = ParticleHandle.Removed;
         }
 
 
@@ -154,27 +155,49 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        public ParticleHandle HandleAt(int particleIndex)
+        public ParticleHandle HandleAt(int index)
         {
-            return _handles[particleIndex];
+            return _handles[index];
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public ParticlePosition PositionAt(int particleIndex)
+        public ParticlePosition PositionAt(int index)
         {
-            return _positions[_handles[particleIndex].PositionIndex];
+            return _positions[_handles[index].PositionIndex];
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public ParticlePosition RotationAt(int particleIndex)
+        public ParticlePosition RotationAt(int index)
         {
-            return _positions[_handles[particleIndex].PositionIndex];
+            return _positions[_handles[index].PositionIndex];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <returns></returns>
+        public ref ParticlePosition Position(ParticleHandle handle)
+        {
+            return ref _positions[handle.PositionIndex];
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <returns></returns>
+        public ref ParticleRotation Rotation(ParticleHandle handle)
+        {
+            return ref _rotations[handle.RotationIndex];
         }
     }
 }

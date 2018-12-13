@@ -2,11 +2,14 @@
  * Notes
  */
 
+using System;
+
 namespace SpatialSlur.Dynamics
 {
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public readonly struct ParticleHandle
     {
         #region Static
@@ -38,6 +41,18 @@ namespace SpatialSlur.Dynamics
         public bool IsRemoved
         {
             get => PositionIndex == -1 && RotationIndex == -1;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="positionIndex"></param>
+        /// <param name="rotationIndex"></param>
+        public void Deconstruct(out int positionIndex, out int rotationIndex)
+        {
+            positionIndex = PositionIndex;
+            rotationIndex = RotationIndex;
         }
     }
 }
