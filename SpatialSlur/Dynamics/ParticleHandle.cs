@@ -24,6 +24,10 @@ namespace SpatialSlur.Dynamics
         /// <summary>Index of this particle's rotation in the buffer</summary>
         public readonly int RotationIndex;
 
+        /*
+        /// <summary>Index of this particle in the buffer</summary>
+        public readonly int Index;
+        */
 
         /// <summary>
         /// 
