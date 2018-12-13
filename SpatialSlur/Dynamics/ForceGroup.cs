@@ -67,7 +67,12 @@ namespace SpatialSlur.Dynamics
         /// Calculates and accumulates all forces in this group
         /// </summary>
         /// <param name="particles"></param>
-        public void Apply(ParticleBuffer particles, ArrayView<Vector3d> forceSum, ArrayView<Vector3d> torqueSum)
+        /// <param name="forceSum"></param>
+        /// <param name="torqueSum"></param>
+        public void Apply(
+            ParticleBuffer particles, 
+            ArrayView<Vector3d> forceSum, 
+            ArrayView<Vector3d> torqueSum)
         {
             if (_parallel)
             {
