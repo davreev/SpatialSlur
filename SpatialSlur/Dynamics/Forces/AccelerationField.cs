@@ -18,22 +18,16 @@ namespace SpatialSlur.Dynamics.Forces
     /// Applies a force to each particle proportional to its mass
     /// </summary>
     [Serializable]
-    public class AccelerationField : Impl.PositionForce
+    public class AccelerationField : ForceField
     {
-        private IField3d<Vector3d> _field;
-        private double _strength;
-        private bool _parallel;
-
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="field"></param>
         /// <param name="strength"></param>
         public AccelerationField(IField3d<Vector3d> field, double strength = 1.0)
+            :base(field, strength)
         {
-            Field = field;
-            _strength = strength;
         }
 
 
@@ -44,40 +38,8 @@ namespace SpatialSlur.Dynamics.Forces
         /// <param name="field"></param>
         /// <param name="strength"></param>
         public AccelerationField(IEnumerable<ParticleHandle> handles, IField3d<Vector3d> field, double strength = 1.0)
-            : base(handles)
+            : base(handles, field, strength)
         {
-            Field = field;
-            _strength = strength;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public IField3d<Vector3d> Field
-        {
-            get => _field;
-            set => _field = value ?? throw new ArgumentNullException();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Strength
-        {
-            get => _strength;
-            set => _strength = value;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool Parallel
-        {
-            get => _parallel;
-            set => _parallel = value;
         }
 
 
@@ -92,9 +54,9 @@ namespace SpatialSlur.Dynamics.Forces
             var deltas = Deltas;
 
             var field = Field;
-            var strength = _strength;
+            var strength = Strength;
 
-            if (_parallel)
+            if (Parallel)
                 ForEach(Partitioner.Create(0, handles.Count), range => Calculate(range.Item1, range.Item2));
             else
                 Calculate(0, handles.Count);
