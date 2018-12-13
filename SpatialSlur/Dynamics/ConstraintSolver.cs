@@ -26,8 +26,8 @@ namespace SpatialSlur.Dynamics.WIP
     [Serializable]
     public class ConstraintSolver
     {
-        private (Vector3d, double)[] _linearDeltaSum;
-        private (Vector3d, double)[] _angularDeltaSum;
+        private (Vector3d Delta, double Weight)[] _linearSum;
+        private (Vector3d Delta, double Weight)[] _angularSum;
         private Vector3d[] _forceSum;
         private Vector3d[] _torqueSum;
 
@@ -105,10 +105,10 @@ namespace SpatialSlur.Dynamics.WIP
 
             // Apply constraints
             foreach (var grp in constraints)
-                grp.Apply(particles, _linearDeltaSum, _angularDeltaSum);
+                grp.Apply(particles, _linearSum, _angularSum);
 
-            Correct(particles.Positions, _linearDeltaSum, _settings.TimeStep, parallel);
-            Correct(particles.Rotations, _angularDeltaSum, _settings.TimeStep, parallel);
+            Correct(particles.Positions, _linearSum, _settings.TimeStep, parallel);
+            Correct(particles.Rotations, _angularSum, _settings.TimeStep, parallel);
 
             _stepCount++;
         }
@@ -156,10 +156,10 @@ namespace SpatialSlur.Dynamics.WIP
 
             // Apply constraints
             foreach (var grp in constraints)
-                grp.Apply(particles, _linearDeltaSum, _angularDeltaSum);
+                grp.Apply(particles, _linearSum, _angularSum);
 
-            Correct(particles.Positions, _linearDeltaSum, _settings.TimeStep, parallel);
-            Correct(particles.Rotations, _angularDeltaSum, _settings.TimeStep, parallel);
+            Correct(particles.Positions, _linearSum, _settings.TimeStep, parallel);
+            Correct(particles.Rotations, _angularSum, _settings.TimeStep, parallel);
 
             _stepCount++;
         }
