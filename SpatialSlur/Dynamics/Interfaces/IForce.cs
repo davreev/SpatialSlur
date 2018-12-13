@@ -16,6 +16,8 @@ namespace SpatialSlur.Dynamics
         /// Accumulates the calculated forces onto the affected particles.
         /// </summary>
         /// <param name="particles"></param>
-        void Accumulate(ArrayView<Vector3d> forceSum, ArrayView<Vector3d> torqueSum);
+        void Accumulate(
+            ArrayView<Vector3d> forceSum, 
+            ArrayView<Vector3d> torqueSum);
     }
 }
