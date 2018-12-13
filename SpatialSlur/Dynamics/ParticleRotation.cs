@@ -10,6 +10,7 @@ namespace SpatialSlur.Dynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public struct ParticleRotation
     {
         #region Static

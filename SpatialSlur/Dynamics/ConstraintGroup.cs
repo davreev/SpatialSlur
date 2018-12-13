@@ -18,6 +18,7 @@ namespace SpatialSlur.Dynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ConstraintGroup
     {
         private List<IConstraint> _constraints;

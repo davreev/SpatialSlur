@@ -18,6 +18,7 @@ namespace SpatialSlur.Dynamics
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ForceGroup
     {
         private List<IForce> _forces;
