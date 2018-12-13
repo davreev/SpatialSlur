@@ -19,7 +19,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// Accumulates the calculated deltas with respect to the affected particles.
+        /// Accumulates the calculated deltas onto the affected particles.
         /// </summary>
         /// <param name="particles"></param>
         void Accumulate(ArrayView<(Vector3d, double)> linearDeltaSum, ArrayView<(Vector3d, double)> angularDeltaSum);
