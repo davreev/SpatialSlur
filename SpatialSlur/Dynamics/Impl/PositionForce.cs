@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using SpatialSlur.Collections;
 
 namespace SpatialSlur.Dynamics.Impl
@@ -13,8 +14,24 @@ namespace SpatialSlur.Dynamics.Impl
     /// </summary>
     public abstract class PositionForce : InfluenceBase<Vector3d>, IForce
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public PositionForce() { }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="handles"></param>
+        public PositionForce(IEnumerable<ParticleHandle> handles)
+            : base(handles) { }
+
+
         /// <inheritdoc />
-        public virtual void Accumulate(ArrayView<Vector3d> forceSum, ArrayView<Vector3d> torqueSum)
+        public virtual void Accumulate(
+            ArrayView<Vector3d> forceSum, 
+            ArrayView<Vector3d> torqueSum)
         {
             var handles = Handles;
             var deltas = Deltas;
