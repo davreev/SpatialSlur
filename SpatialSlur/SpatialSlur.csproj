@@ -113,6 +113,7 @@
     <Compile Include="Collections\Proximity.cs" />
     <Compile Include="Core\Atomic.cs" />
     <Compile Include="Core\Matrix.cs" />
+    <Compile Include="Core\Numerical.cs" />
     <Compile Include="Core\Templates\Matrix.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

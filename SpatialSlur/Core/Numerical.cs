@@ -233,14 +233,22 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector2d FindRoot(Func<Vector2d, double> function, Func<Vector2d, Vector2d> gradient, Vector2d point, double epsilon = Constd.ZeroTolerance, int maxSteps = 100)
         {
-            while(maxSteps-- > 0)
+            while (maxSteps-- > 0)
             {
                 var d = function(point);
-                if (d < epsilon) return point;
+
+                // Bail if within tolerance
+                if (d < epsilon)
+                    return point;
 
                 var g = gradient(point);
-                if (Math.Abs(g.X) > 0.0) point.X -= d / g.X;
-                if (Math.Abs(g.Y) > 0.0) point.Y -= d / g.Y;
+                var m = g.SquareLength;
+
+                // Bail if zero gradient
+                if (m > 0.0)
+                    point -= g * (d / m);
+                else
+                    return point;
             }
 
             return point;
@@ -256,12 +264,19 @@ namespace SpatialSlur
             while (maxSteps-- > 0)
             {
                 var d = function(point);
-                if (d < epsilon) return point;
+
+                // Bail if within tolerance
+                if (d < epsilon)
+                    return point;
 
                 var g = gradient(point);
-                if (Math.Abs(g.X) > 0.0) point.X -= d / g.X;
-                if (Math.Abs(g.Y) > 0.0) point.Y -= d / g.Y;
-                if (Math.Abs(g.Z) > 0.0) point.Z -= d / g.Z;
+                var m = g.SquareLength;
+
+                // Bail if zero gradient
+                if (m > 0.0)
+                    point -= g * (d / m);
+                else
+                    return point;
             }
 
             return point;
@@ -277,13 +292,19 @@ namespace SpatialSlur
             while (maxSteps-- > 0)
             {
                 var d = function(point);
-                if (d < epsilon) return point;
+
+                // Bail if within tolerance
+                if (d < epsilon)
+                    return point;
 
                 var g = gradient(point);
-                if (Math.Abs(g.X) > 0.0) point.X -= d / g.X;
-                if (Math.Abs(g.Y) > 0.0) point.Y -= d / g.Y;
-                if (Math.Abs(g.Z) > 0.0) point.Z -= d / g.Z;
-                if (Math.Abs(g.W) > 0.0) point.W -= d / g.W;
+                var m = g.SquareLength;
+
+                // Bail if zero gradient
+                if (m > 0.0)
+                    point -= g * (d / m);
+                else
+                    return point;
             }
 
             return point;
