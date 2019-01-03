@@ -26,9 +26,10 @@ namespace SpatialSlur.Dynamics
     [Serializable]
     public class ConstraintSolver
     {
-        private (Vector3d Delta, double Weight)[] _linearCorrectSums = Array.Empty<(Vector3d, double)>();
-        private (Vector3d Delta, double Weight)[] _angularCorrectSums = Array.Empty<(Vector3d, double)>();
+        private Vector4d[] _linearCorrectSums = Array.Empty<Vector4d>(); // (x,y,z) = delta, (w) = weight
         private Vector3d[] _forceSums = Array.Empty<Vector3d>();
+
+        private Vector4d[] _angularCorrectSums = Array.Empty<Vector4d>(); // (x,y,z) = delta, (w) = weight
         private Vector3d[] _torqueSums = Array.Empty<Vector3d>();
 
         private ConstraintSolverSettings _settings = new ConstraintSolverSettings();
@@ -179,7 +180,7 @@ namespace SpatialSlur.Dynamics
             if (positions.Count > _linearCorrectSums.Length)
             {
                 int newSize = positions.Source.Length;
-                _linearCorrectSums = new(Vector3d, double)[newSize];
+                _linearCorrectSums = new Vector4d[newSize];
                 _forceSums = new Vector3d[newSize];
             }
         }
@@ -193,7 +194,7 @@ namespace SpatialSlur.Dynamics
             if (rotations.Count > _angularCorrectSums.Length)
             {
                 int newSize = rotations.Source.Length;
-                _angularCorrectSums = new(Vector3d, double)[newSize];
+                _angularCorrectSums = new Vector4d [newSize];
                 _torqueSums = new Vector3d[newSize];
             }
         }
@@ -322,7 +323,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         private static void Correct(
             ArrayView<ParticlePosition> positions,
-            ArrayView<(Vector3d, double)> correctSums,
+            ArrayView<Vector4d> correctSums,
             double timeStep,
             bool parallel)
         {
@@ -337,17 +338,17 @@ namespace SpatialSlur.Dynamics
             {
                 for (int i = from; i < to; i++)
                 {
-                    (var d, var w) = correctSums[i];
+                    ref var c = ref correctSums[i];
 
-                    if (w > 0.0)
+                    if (c.W > 0.0)
                     {
-                        d /= w;
                         ref var p = ref positions[i];
+                        var d = c.XYZ / c.W;
                         p.Current += d;
                         p.Velocity += d * dtInv;
                     }
 
-                    correctSums[i] = (Vector3d.Zero, 0.0);
+                    correctSums[i] = Vector4d.Zero;
                 }
             }
         }
@@ -358,7 +359,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         private static void Correct(
             ArrayView<ParticleRotation> rotations, 
-            ArrayView<(Vector3d, double)> correctSums, 
+            ArrayView<Vector4d> correctSums, 
             double timeStep, 
             bool parallel)
         {
@@ -373,17 +374,17 @@ namespace SpatialSlur.Dynamics
             {
                 for (int i = from; i < to; i++)
                 {
-                    (var d, var w) = correctSums[i];
+                    ref var c = ref correctSums[i];
 
-                    if (w > 0.0)
+                    if (c.W > 0.0)
                     {
-                        d /= w;
                         ref var r = ref rotations[i];
+                        var d = c.XYZ / c.W;
                         r.Current = new Quaterniond(d) * r.Current;
                         r.Velocity += d * dtInv;
                     }
 
-                    correctSums[i] = (Vector3d.Zero, 0.0);
+                    correctSums[i] = Vector4d.Zero;
                 }
             }
         }
