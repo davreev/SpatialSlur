@@ -12,22 +12,8 @@ namespace SpatialSlur.Dynamics.Impl
     /// <summary>
     /// Base class for a force that acts on the positions of a dynamic collection of particles.
     /// </summary>
-    public abstract class PositionForce : InfluenceBase<Vector3d>, IForce
+    public abstract class PositionForce : Influence<Vector3d>, IForce
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public PositionForce() { }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        public PositionForce(IEnumerable<ParticleHandle> handles)
-            : base(handles) { }
-
-
         /// <inheritdoc />
         public virtual void Accumulate(
             ArrayView<Vector3d> forceSum, 
