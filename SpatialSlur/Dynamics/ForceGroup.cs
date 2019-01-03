@@ -99,7 +99,7 @@ namespace SpatialSlur.Dynamics
                         forces[i].Calculate(positions, rotations);
                 }
 
-                // Must accumulate serially to avoid race conditions
+                // Accumulate serially to avoid race conditions
                 foreach (var f in forces)
                     f.Accumulate(forceSums, torqueSums);
             }
