@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Linq;
 
 using SpatialSlur.Collections;
 
@@ -47,6 +48,16 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="forces"></param>
+        public ForceGroup(IEnumerable<IForce> forces)
+        {
+            _forces = forces.ToList();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public List<IForce> Forces
         {
             get => _forces;
@@ -66,34 +77,38 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// Calculates and accumulates all forces in this group
         /// </summary>
-        /// <param name="particles"></param>
-        /// <param name="forceSum"></param>
-        /// <param name="torqueSum"></param>
+        /// <param name="positions"></param>
+        /// <param name="rotations"></param>
+        /// <param name="forceSums"></param>
+        /// <param name="torqueSums"></param>
         public void Apply(
-            ParticleBuffer particles, 
-            ArrayView<Vector3d> forceSum, 
-            ArrayView<Vector3d> torqueSum)
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations,
+            ArrayView<Vector3d> forceSums, 
+            ArrayView<Vector3d> torqueSums)
         {
+            var forces = _forces;
+
             if (_parallel)
             {
-                ForEach(Partitioner.Create(0, _forces.Count), range => Calculate(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, forces.Count), range => Calculate(range.Item1, range.Item2));
 
                 void Calculate(int from, int to)
                 {
                     for (int i = from; i < to; i++)
-                        _forces[i].Calculate(particles);
+                        forces[i].Calculate(positions, rotations);
                 }
 
                 // Must accumulate serially to avoid race conditions
-                foreach (var f in _forces)
-                    f.Accumulate(forceSum, torqueSum);
+                foreach (var f in forces)
+                    f.Accumulate(forceSums, torqueSums);
             }
             else
             {
-                foreach (var f in _forces)
+                foreach (var f in forces)
                 {
-                    f.Calculate(particles);
-                    f.Accumulate(forceSum, torqueSum);
+                    f.Calculate(positions, rotations);
+                    f.Accumulate(forceSums, torqueSums);
                 }
             }
         }
