@@ -84,8 +84,8 @@ namespace SpatialSlur.Dynamics
         public void Apply(
             ArrayView<ParticlePosition> positions,
             ArrayView<ParticleRotation> rotations,
-            ArrayView<(Vector3d, double)> linearCorrectSums, 
-            ArrayView<(Vector3d, double)> angularCorrectSums)
+            ArrayView<Vector4d> linearCorrectSums, 
+            ArrayView<Vector4d> angularCorrectSums)
         {
             var constraints = _constraints;
 
@@ -99,7 +99,7 @@ namespace SpatialSlur.Dynamics
                         constraints[i].Calculate(positions, rotations);
                 }
 
-                // Must accumulate serially to avoid race conditions
+                // Accumulate serially to avoid race conditions
                 foreach (var c in constraints)
                     c.Accumulate(linearCorrectSums, angularCorrectSums);
             }

@@ -14,19 +14,15 @@ namespace SpatialSlur.Dynamics.Impl
     {
         /// <inheritdoc />
         public virtual void Accumulate(
-            ArrayView<(Vector3d Delta, double Weight)> linearSum, 
-            ArrayView<(Vector3d Delta, double Weight)> angularSum)
+            ArrayView<Vector4d> linearCorrectSums,
+            ArrayView<Vector4d> angularCorrectSums)
         {
             var handles = Handles;
             var deltas = Deltas;
-            var weight = Weight;
+            var w = Weight;
 
             for (int i = 0; i < handles.Count; i++)
-            {
-                ref var dr = ref angularSum[handles[i].RotationIndex];
-                dr.Delta += deltas[i] * weight;
-                dr.Weight += weight;
-            }
+                angularCorrectSums[handles[i].RotationIndex] += new Vector4d(deltas[i] * w, w);
         }
     }
 }
