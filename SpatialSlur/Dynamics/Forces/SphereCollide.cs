@@ -53,8 +53,8 @@ namespace SpatialSlur.Dynamics.Forces
         /// <param name="strength"></param>
         /// <param name="parallel"></param>
         public SphereCollide(IEnumerable<ParticleHandle> handles, double radius, double strength = 1.0, bool parallel = false)
-            : base(handles)
         {
+            SetHandles(handles);
             Radius = radius;
             _strength = 1.0;
             _parallel = parallel;
@@ -98,26 +98,26 @@ namespace SpatialSlur.Dynamics.Forces
         
 
         /// <inheritdoc />
-        public override void Calculate(ParticleBuffer particles)
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-            var positions = particles.Positions;
             var handles = Handles;
-            var deltas = Deltas;
 
             if (_grid == null)
                 _grid = new HashGrid3d<Vector3d>(handles.Count);
 
-            // update grid parameters
+            // Update grid parameters
             _grid.Scale = Radius * _radiusToGridScale;
 
-            // insert particle positions into grid
+            // Insert particle positions into grid
             foreach (var h in handles)
             {
                 var p = positions[h.PositionIndex].Current;
                 _grid.Insert(p, p);
             }
 
-            // perform radial search from each particle position
+            // Range search from each particle position
             if (_parallel)
                 ForEach(Partitioner.Create(0, handles.Count), range => Calculate(range.Item1, range.Item2));
             else
@@ -125,6 +125,7 @@ namespace SpatialSlur.Dynamics.Forces
             
             void Calculate(int from, int to)
             {
+                var deltas = Deltas;
                 var diam = _radius * 2.0;
                 var diamSqr = diam * diam;
 
@@ -146,7 +147,7 @@ namespace SpatialSlur.Dynamics.Forces
                         }
                     }
 
-                    deltas[i] = count > 0 ? sum * (_strength / count) : Vector3d.Zero; // average for stability
+                    deltas[i] = count > 0 ? sum * (_strength / count) : Vector3d.Zero; // Average for stability
                 }
             }
 

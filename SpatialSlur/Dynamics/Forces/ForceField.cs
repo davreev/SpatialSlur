@@ -44,8 +44,8 @@ namespace SpatialSlur.Dynamics.Forces
         /// <param name="field"></param>
         /// <param name="strength"></param>
         public ForceField(IEnumerable<ParticleHandle> handles, IField3d<Vector3d> field, double strength = 1.0)
-            : base(handles)
         {
+            SetHandles(handles);
             Field = field;
             _strength = strength;
         }
@@ -81,18 +81,12 @@ namespace SpatialSlur.Dynamics.Forces
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="particles"></param>
-        public override void Calculate(ParticleBuffer particles)
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-            var positions = particles.Positions;
             var handles = Handles;
-            var deltas = Deltas;
-
-            var field = Field;
-            var strength = _strength;
 
             if (_parallel)
                 ForEach(Partitioner.Create(0, handles.Count), range => Calculate(range.Item1, range.Item2));
@@ -101,6 +95,10 @@ namespace SpatialSlur.Dynamics.Forces
 
             void Calculate(int from, int to)
             {
+                var deltas = Deltas;
+                var field = Field;
+                var strength = _strength;
+
                 for (int i = from; i < to; i++)
                     deltas[i] = field.ValueAt(positions[handles[i].PositionIndex].Current) * strength;
             }

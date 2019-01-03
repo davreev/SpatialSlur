@@ -70,27 +70,31 @@ namespace SpatialSlur.Dynamics.Forces
 
 
         /// <inheritdoc />
-        public void Calculate(ParticleBuffer particles)
+        public void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-            var pp = particles.Positions;
-            var d = pp[_h1.PositionIndex].Current - pp[_h0.PositionIndex].Current;
+            var d = positions[_h1.PositionIndex].Current - positions[_h0.PositionIndex].Current;
             _d0 = _loadForce * (d.Length * 0.5);
         }
 
 
         /// <inheritdoc />
         public void Accumulate(
-            ArrayView<Vector3d> forceSum, 
-            ArrayView<Vector3d> torqueSum)
+            ArrayView<Vector3d> forceSums, 
+            ArrayView<Vector3d> torqueSums)
         {
-            forceSum[_h0.PositionIndex] += _d0;
-            forceSum[_h1.PositionIndex] += _d0;
+            forceSums[_h0.PositionIndex] += _d0;
+            forceSums[_h1.PositionIndex] += _d0;
         }
 
 
         #region Explicit interface implementations
-        
-        void IInfluence.Initialize(ParticleBuffer particles) { }
+
+        void IInfluence.Initialize(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        { }
 
         #endregion
     }
