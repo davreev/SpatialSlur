@@ -1,9 +1,6 @@
 ﻿
 /*
  * Notes
- * 
- * TODO 
- * Make IInfluences hold ParticleHandles directly
  */ 
 
 using SpatialSlur.Collections;
@@ -18,14 +15,20 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// Sets any parameters that require the initial state of particles. 
         /// </summary>
-        /// <param name="particles"></param>
-        void Initialize(ParticleBuffer particles);
+        /// <param name="positions"></param>
+        /// <param name="rotations"></param>
+        void Initialize(
+            ArrayView<ParticlePosition> positions, 
+            ArrayView<ParticleRotation> rotations);
 
 
         /// <summary>
         /// Calculates all deltas applied by this influence.
         /// </summary>
-        /// <param name="particles"></param>
-        void Calculate(ParticleBuffer particles);
+        /// <param name="positions"></param>
+        /// <param name="rotations"></param>
+        void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations);
     }
 }
