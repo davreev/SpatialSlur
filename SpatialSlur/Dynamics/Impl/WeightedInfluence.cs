@@ -11,12 +11,11 @@ namespace SpatialSlur.Dynamics.Impl
     /// 
     /// </summary>
     /// <typeparam name="TDelta"></typeparam>
-    public abstract class WeightedInfluence<TDelta> : InfluenceBase<TDelta>
+    public abstract class WeightedInfluence<TDelta> : Influence<TDelta>
     {
-        private double _weight;
+        private double _weight = 1.0;
 
-
-        /// <inheritdoc/>
+        
         /// <summary>
         /// 
         /// </summary>
