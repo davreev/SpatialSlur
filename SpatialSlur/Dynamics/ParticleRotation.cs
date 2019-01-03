@@ -20,7 +20,7 @@ namespace SpatialSlur.Dynamics
         {
             Current = Quaterniond.Identity,
             Velocity = Vector3d.Zero,
-            InertiaInv = new Vector3d(1.0)
+            InverseInertia = new Vector3d(1.0)
         };
 
         #endregion
@@ -33,34 +33,26 @@ namespace SpatialSlur.Dynamics
         public Vector3d Velocity;
         
         /// <summary>Inverse rotational mass of the particle</summary>
-        public Vector3d InertiaInv;
+        public Vector3d InverseInertia;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="current"></param>
         public ParticleRotation(Quaterniond current)
+            :this(current, new Vector3d(1.0))
         {
-            Current = current;
-            Velocity = Vector3d.Zero;
-            InertiaInv = new Vector3d(1.0);
         }
 
 
         /// <summary>
-        /// Sets the rotational mass of the particle.
-        /// Assumes the current rotation is aligned with the particle's principal axes of inertia.
+        /// 
         /// </summary>
-        public Vector3d Inertia
+        public ParticleRotation(Quaterniond current, Vector3d inverseInertia)
         {
-            set
-            {
-                if (value.ComponentMin > 0.0)
-                    InertiaInv = 1.0 / value;
-                else
-                    throw new ArgumentException("The value must be greater than zero.");
-            }
+            Current = current;
+            Velocity = Vector3d.Zero;
+            InverseInertia = inverseInertia;
         }
 
 
