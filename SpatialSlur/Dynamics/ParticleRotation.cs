@@ -54,14 +54,5 @@ namespace SpatialSlur.Dynamics
             Velocity = Vector3d.Zero;
             InverseInertia = inverseInertia;
         }
-
-
-        /// <summary>
-        /// Returns true if the current rotation quaternion is unit length i.e. it represents a valid rotation
-        /// </summary>
-        public bool IsValid(double epsilon = SlurMath.Constantsd.ZeroTolerance)
-        {
-            return Current.IsUnit(epsilon);
-        }
     }
 }
