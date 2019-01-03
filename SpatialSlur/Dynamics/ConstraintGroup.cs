@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Linq;
 
 using SpatialSlur.Collections;
 
@@ -47,6 +48,16 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="constraints"></param>
+        public ConstraintGroup(IEnumerable<IConstraint> constraints)
+        {
+            _constraints = constraints.ToList();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public List<IConstraint> Constraints
         {
             get => _constraints;
@@ -66,34 +77,38 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// Calculates and accumulates all constraints in this group
         /// </summary>
-        /// <param name="particles"></param>
-        /// <param name="linearSum"></param>
-        /// <param name="angularSum"></param>
+        /// <param name="positions"></param>
+        /// <param name="rotations"></param>
+        /// <param name="linearCorrectSums"></param>
+        /// <param name="angularCorrectSums"></param>
         public void Apply(
-            ParticleBuffer particles, 
-            ArrayView<(Vector3d Delta, double Weight)> linearSum, 
-            ArrayView<(Vector3d Delta, double Weight)> angularSum)
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations,
+            ArrayView<(Vector3d, double)> linearCorrectSums, 
+            ArrayView<(Vector3d, double)> angularCorrectSums)
         {
-            if(_parallel)
+            var constraints = _constraints;
+
+            if (_parallel)
             {
-                ForEach(Partitioner.Create(0, _constraints.Count), range => Calculate(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, constraints.Count), range => Calculate(range.Item1, range.Item2));
                 
                 void Calculate(int from, int to)
                 {
                     for (int i = from; i < to; i++)
-                        _constraints[i].Calculate(particles);
+                        constraints[i].Calculate(positions, rotations);
                 }
 
                 // Must accumulate serially to avoid race conditions
-                foreach (var c in _constraints)
-                    c.Accumulate(linearSum, angularSum);
+                foreach (var c in constraints)
+                    c.Accumulate(linearCorrectSums, angularCorrectSums);
             }
             else
             {
-                foreach (var c in _constraints)
+                foreach (var c in constraints)
                 {
-                    c.Calculate(particles);
-                    c.Accumulate(linearSum, angularSum);
+                    c.Calculate(positions, rotations);
+                    c.Accumulate(linearCorrectSums, angularCorrectSums);
                 }
             }
         }
