@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
  * Notes
  */
 
@@ -14,7 +15,7 @@ namespace SpatialSlur.Dynamics
     {
         #region Static
 
-        public static readonly ParticleHandle Removed = new ParticleHandle(-1, -1); 
+        internal static readonly ParticleHandle Removed = new ParticleHandle(-1, -1); 
 
         #endregion
 
@@ -24,18 +25,32 @@ namespace SpatialSlur.Dynamics
         /// <summary>Index of this particle's rotation in the buffer</summary>
         public readonly int RotationIndex;
 
-        /*
-        /// <summary>Index of this particle in the buffer</summary>
-        public readonly int Index;
-        */
 
         /// <summary>
         /// 
         /// </summary>
-        public ParticleHandle(int positionIndex, int rotationIndex)
+        internal ParticleHandle(int positionIndex, int rotationIndex)
         {
             PositionIndex = positionIndex;
             RotationIndex = rotationIndex;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool HasPosition
+        {
+            get => PositionIndex != -1;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool HasRotation
+        {
+            get => RotationIndex != -1;
         }
 
 
