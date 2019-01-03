@@ -20,7 +20,7 @@ namespace SpatialSlur.Dynamics
         {
             Current = Vector3d.Zero,
             Velocity = Vector3d.Zero,
-            MassInv = 1.0
+            InverseMass = 1.0
         };
 
         #endregion
@@ -33,33 +33,26 @@ namespace SpatialSlur.Dynamics
         public Vector3d Velocity;
         
         /// <summary>Inverse mass of the particle</summary>
-        public double MassInv;
+        public double InverseMass;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="current"></param>
         public ParticlePosition(Vector3d current)
+            : this(current, 1.0)
         {
-            Current = current;
-            Velocity = Vector3d.Zero;
-            MassInv = 1.0;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public double Mass
+        public ParticlePosition(Vector3d current, double inverseMass)
         {
-            set
-            {
-                if (value > 0.0)
-                    MassInv = 1.0 / value;
-                else
-                    throw new ArgumentException("The value must be greater than zero.");
-            }
+            Current = current;
+            Velocity = Vector3d.Zero;
+            InverseMass = inverseMass;
         }
     }
 }
