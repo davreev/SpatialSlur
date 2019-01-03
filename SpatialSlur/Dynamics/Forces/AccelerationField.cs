@@ -43,18 +43,12 @@ namespace SpatialSlur.Dynamics.Forces
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="particles"></param>
-        public override void Calculate(ParticleBuffer particles)
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-            var positions = particles.Positions;
             var handles = Handles;
-            var deltas = Deltas;
-
-            var field = Field;
-            var strength = Strength;
 
             if (Parallel)
                 ForEach(Partitioner.Create(0, handles.Count), range => Calculate(range.Item1, range.Item2));
@@ -63,10 +57,14 @@ namespace SpatialSlur.Dynamics.Forces
 
             void Calculate(int from, int to)
             {
+                var deltas = Deltas;
+                var field = Field;
+                var strength = Strength;
+
                 for (int i = from; i < to; i++)
                 {
                     ref var p = ref positions[handles[i].PositionIndex];
-                    deltas[i] = field.ValueAt(p.Current) * (strength / p.MassInv);
+                    deltas[i] = field.ValueAt(p.Current) * (strength / p.InverseMass);
                 }
             }
         }

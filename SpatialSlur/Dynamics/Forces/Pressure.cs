@@ -82,12 +82,13 @@ namespace SpatialSlur.Dynamics.Forces
 
 
         /// <inheritdoc />
-        public void Calculate(ParticleBuffer particles)
+        public void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-            var pp = particles.Positions;
-            Vector3d p0 = pp[_h0.PositionIndex].Current;
-            Vector3d p1 = pp[_h1.PositionIndex].Current;
-            Vector3d p2 = pp[_h2.PositionIndex].Current;
+            Vector3d p0 = positions[_h0.PositionIndex].Current;
+            Vector3d p1 = positions[_h1.PositionIndex].Current;
+            Vector3d p2 = positions[_h2.PositionIndex].Current;
 
             const double inv6 = 1.0 / 6.0;
             _d0 = Vector3d.Cross(p1 - p0, p2 - p1) * (inv6 * _strength); // force is proportional to 1/3 area of tri
@@ -96,18 +97,21 @@ namespace SpatialSlur.Dynamics.Forces
 
         /// <inheritdoc />
         public void Accumulate(
-            ArrayView<Vector3d> forceSum,
-            ArrayView<Vector3d> torqueSum)
+            ArrayView<Vector3d> forceSums,
+            ArrayView<Vector3d> torqueSums)
         {
-            forceSum[_h0.PositionIndex] += _d0;
-            forceSum[_h1.PositionIndex] += _d0;
-            forceSum[_h2.PositionIndex] += _d0;
+            forceSums[_h0.PositionIndex] += _d0;
+            forceSums[_h1.PositionIndex] += _d0;
+            forceSums[_h2.PositionIndex] += _d0;
         }
 
 
         #region Explicit interface implementations
 
-        void IInfluence.Initialize(ParticleBuffer particles) { }
+        void IInfluence.Initialize(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        { }
 
         #endregion
     }
