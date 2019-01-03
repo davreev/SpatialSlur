@@ -18,7 +18,7 @@ using System.Linq;
 using SpatialSlur;
 using SpatialSlur.Collections;
 
-namespace SpatialSlur.Dynamics.WIP
+namespace SpatialSlur.Dynamics
 {
     /// <summary>
     /// Position-based constraint solver for shape optimization and exploration.
@@ -26,10 +26,10 @@ namespace SpatialSlur.Dynamics.WIP
     [Serializable]
     public class ConstraintSolver
     {
-        private (Vector3d Delta, double Weight)[] _linearSum;
-        private (Vector3d Delta, double Weight)[] _angularSum;
-        private Vector3d[] _forceSum;
-        private Vector3d[] _torqueSum;
+        private (Vector3d Delta, double Weight)[] _linearCorrectSums = Array.Empty<(Vector3d, double)>();
+        private (Vector3d Delta, double Weight)[] _angularCorrectSums = Array.Empty<(Vector3d, double)>();
+        private Vector3d[] _forceSums = Array.Empty<Vector3d>();
+        private Vector3d[] _torqueSums = Array.Empty<Vector3d>();
 
         private ConstraintSolverSettings _settings = new ConstraintSolverSettings();
         private int _stepCount = 0;
@@ -97,18 +97,21 @@ namespace SpatialSlur.Dynamics.WIP
             IEnumerable<ConstraintGroup> constraints,
             bool parallel = false)
         {
-            // TODO
-            // Ensure delta/force buffers are large enough
-            
-            Update(particles.Positions, _settings.TimeStep, _settings.LinearDamping, parallel);
-            Update(particles.Rotations, _settings.TimeStep, _settings.AngularDamping, parallel);
+            var positions = particles.Positions;
+            var rotations = particles.Rotations;
+
+            EnsureCapacity(positions);
+            EnsureCapacity(rotations);
+
+            Predict(positions, _settings.TimeStep, _settings.LinearDamping, parallel);
+            Predict(rotations, _settings.TimeStep, _settings.AngularDamping, parallel);
 
             // Apply constraints
             foreach (var grp in constraints)
-                grp.Apply(particles, _linearSum, _angularSum);
+                grp.Apply(positions, rotations, _linearCorrectSums, _angularCorrectSums);
 
-            Correct(particles.Positions, _linearSum, _settings.TimeStep, parallel);
-            Correct(particles.Rotations, _angularSum, _settings.TimeStep, parallel);
+            Correct(positions, _linearCorrectSums, _settings.TimeStep, parallel);
+            Correct(rotations, _angularCorrectSums, _settings.TimeStep, parallel);
 
             _stepCount++;
         }
@@ -144,31 +147,62 @@ namespace SpatialSlur.Dynamics.WIP
             IEnumerable<ForceGroup> forces, 
             bool parallel = false)
         {
-            // TODO
-            // Ensure delta/force buffers are large enough
+            var positions = particles.Positions;
+            var rotations = particles.Rotations;
+
+            EnsureCapacity(positions);
+            EnsureCapacity(rotations);
 
             // Apply external forces
             foreach (var grp in forces)
-                grp.Apply(particles, _forceSum, _torqueSum);
+                grp.Apply(positions, rotations, _forceSums, _torqueSums);
 
-            Update(particles.Positions, _forceSum, _settings.TimeStep, _settings.LinearDamping, parallel);
-            Update(particles.Rotations, _torqueSum, _settings.TimeStep, _settings.AngularDamping, parallel);
+            Predict(positions, _forceSums, _settings.TimeStep, _settings.LinearDamping, parallel);
+            Predict(rotations, _torqueSums, _settings.TimeStep, _settings.AngularDamping, parallel);
 
             // Apply constraints
             foreach (var grp in constraints)
-                grp.Apply(particles, _linearSum, _angularSum);
+                grp.Apply(positions, rotations, _linearCorrectSums, _angularCorrectSums);
 
-            Correct(particles.Positions, _linearSum, _settings.TimeStep, parallel);
-            Correct(particles.Rotations, _angularSum, _settings.TimeStep, parallel);
+            Correct(positions, _linearCorrectSums, _settings.TimeStep, parallel);
+            Correct(rotations, _angularCorrectSums, _settings.TimeStep, parallel);
 
             _stepCount++;
         }
 
 
         /// <summary>
-        /// Updates via explicit integration for an approximation of the future state
+        /// Resizes buffers if necessary
         /// </summary>
-        private static void Update(
+        private void EnsureCapacity(ArrayView<ParticlePosition> positions)
+        {
+            if (positions.Count > _linearCorrectSums.Length)
+            {
+                int newSize = positions.Source.Length;
+                _linearCorrectSums = new(Vector3d, double)[newSize];
+                _forceSums = new Vector3d[newSize];
+            }
+        }
+
+
+        /// <summary>
+        /// Resizes buffers if necessary
+        /// </summary>
+        private void EnsureCapacity(ArrayView<ParticleRotation> rotations)
+        {
+            if (rotations.Count > _angularCorrectSums.Length)
+            {
+                int newSize = rotations.Source.Length;
+                _angularCorrectSums = new(Vector3d, double)[newSize];
+                _torqueSums = new Vector3d[newSize];
+            }
+        }
+
+
+        /// <summary>
+        /// Updates via explicit integration to get an approximate prediction of the future state
+        /// </summary>
+        private static void Predict(
             ArrayView<ParticlePosition> positions,
             double timeStep,
             double damping,
@@ -194,9 +228,9 @@ namespace SpatialSlur.Dynamics.WIP
 
 
         /// <summary>
-        /// Updates via explicit integration for an approximation of the future state
+        /// Updates via explicit integration to get an approximate prediction of the future state
         /// </summary>
-        private static void Update(
+        private static void Predict(
             ArrayView<ParticleRotation> rotations,
             double timeStep,
             double damping,
@@ -222,16 +256,11 @@ namespace SpatialSlur.Dynamics.WIP
 
 
         /// <summary>
-        /// Updates via explicit integration for an approximation of the future state
+        /// Updates via explicit integration to get an approximate prediction of the future state
         /// </summary>
-        /// <param name="positions"></param>
-        /// <param name="forceSum"></param>
-        /// <param name="timeStep"></param>
-        /// <param name="damping"></param>
-        /// <param name="parallel"></param>
-        private static void Update(
+        private static void Predict(
             ArrayView<ParticlePosition> positions,
-            Vector3d[] forceSum,
+            ArrayView<Vector3d> forceSums,
             double timeStep,
             double damping,
             bool parallel
@@ -249,20 +278,20 @@ namespace SpatialSlur.Dynamics.WIP
                 for (int i = from; i < to; i++)
                 {
                     ref var p = ref positions[i];
-                    p.Velocity = p.Velocity * k + forceSum[i] * (p.MassInv * timeStep);
+                    p.Velocity = p.Velocity * k + forceSums[i] * (p.InverseMass * timeStep);
                     p.Current += p.Velocity * timeStep;
-                    forceSum[i] = Vector3d.Zero;
+                    forceSums[i] = Vector3d.Zero;
                 }
             }
         }
 
 
         /// <summary>
-        /// Updates via explicit integration for an approximation of the future state
+        /// Updates via explicit integration to get an approximate prediction of the future state
         /// </summary>
-        private static void Update(
+        private static void Predict(
             ArrayView<ParticleRotation> rotations,
-            Vector3d[] torqueSum,
+            ArrayView<Vector3d> torqueSums,
             double timeStep,
             double damping,
             bool parallel)
@@ -280,9 +309,9 @@ namespace SpatialSlur.Dynamics.WIP
                 {
                     ref var r = ref rotations[i];
                     var m = r.Current.ToMatrix();
-                    r.Velocity = r.Velocity * k + m.Apply(r.InertiaInv * m.ApplyTranspose(torqueSum[i])) * timeStep;
+                    r.Velocity = r.Velocity * k + m.Apply(r.InverseInertia * m.ApplyTranspose(torqueSums[i])) * timeStep;
                     r.Current = new Quaterniond(r.Velocity * timeStep) * r.Current;
-                    torqueSum[i] = Vector3d.Zero;
+                    torqueSums[i] = Vector3d.Zero;
                 }
             }
         }
@@ -293,7 +322,7 @@ namespace SpatialSlur.Dynamics.WIP
         /// </summary>
         private static void Correct(
             ArrayView<ParticlePosition> positions,
-            ArrayView<(Vector3d, double)> deltaSum,
+            ArrayView<(Vector3d, double)> correctSums,
             double timeStep,
             bool parallel)
         {
@@ -308,7 +337,7 @@ namespace SpatialSlur.Dynamics.WIP
             {
                 for (int i = from; i < to; i++)
                 {
-                    (var d, var w) = deltaSum[i];
+                    (var d, var w) = correctSums[i];
 
                     if (w > 0.0)
                     {
@@ -318,7 +347,7 @@ namespace SpatialSlur.Dynamics.WIP
                         p.Velocity += d * dtInv;
                     }
 
-                    deltaSum[i] = (Vector3d.Zero, 0.0);
+                    correctSums[i] = (Vector3d.Zero, 0.0);
                 }
             }
         }
@@ -329,7 +358,7 @@ namespace SpatialSlur.Dynamics.WIP
         /// </summary>
         private static void Correct(
             ArrayView<ParticleRotation> rotations, 
-            ArrayView<(Vector3d, double)> deltaSum, 
+            ArrayView<(Vector3d, double)> correctSums, 
             double timeStep, 
             bool parallel)
         {
@@ -344,7 +373,7 @@ namespace SpatialSlur.Dynamics.WIP
             {
                 for (int i = from; i < to; i++)
                 {
-                    (var d, var w) = deltaSum[i];
+                    (var d, var w) = correctSums[i];
 
                     if (w > 0.0)
                     {
@@ -354,7 +383,7 @@ namespace SpatialSlur.Dynamics.WIP
                         r.Velocity += d * dtInv;
                     }
 
-                    deltaSum[i] = (Vector3d.Zero, 0.0);
+                    correctSums[i] = (Vector3d.Zero, 0.0);
                 }
             }
         }
