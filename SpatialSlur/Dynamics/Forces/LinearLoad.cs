@@ -5,8 +5,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
+using static SpatialSlur.Collections.Buffer;
+
 
 namespace SpatialSlur.Dynamics.Forces
 {
@@ -14,88 +19,48 @@ namespace SpatialSlur.Dynamics.Forces
     /// Applies a force proportional to the distance between 2 particles.
     /// </summary>
     [Serializable]
-    public class LinearLoad : IForce
+    public class LinearLoad : Impl.PositionForce
     {
-        private ParticleHandle _h0, _h1;
-        private Vector3d _d0;
-
-        private Vector3d _loadForce;
+        private RefList<Vector3d> _loadForces;
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="handle0"></param>
-        /// <param name="handle1"></param>
-        /// <param name="loadForce"></param>
-        public LinearLoad(
-            ParticleHandle handle0, 
-            ParticleHandle handle1, 
-            Vector3d loadForce)
+        public RefList<Vector3d> LoadForces
         {
-            _h0 = handle0;
-            _h1 = handle1;
-            _loadForce = loadForce;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ParticleHandle Handle0
-        {
-            get { return _h0; }
-            set { _h0 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ParticleHandle Handle1
-        {
-            get { return _h1; }
-            set { _h1 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d LoadForce
-        {
-            get { return _loadForce; }
-            set { _loadForce = value; }
+            get { return _loadForces; }
         }
 
 
         /// <inheritdoc />
-        public void Calculate(
+        public override void Calculate(
             ArrayView<ParticlePosition> positions,
             ArrayView<ParticleRotation> rotations)
         {
-            var d = positions[_h1.PositionIndex].Current - positions[_h0.PositionIndex].Current;
-            _d0 = _loadForce * (d.Length * 0.5);
+            base.Calculate(positions, rotations);
+            var loadForces = _loadForces;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, loadForces.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, loadForces.Count);
+
+            void Calculate(int from, int to)
+            {
+                var handles = Handles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    int j = i << 1;
+                    ref var h0 = ref handles[j];
+                    ref var h1 = ref handles[j + 1];
+
+                    var d = positions[h1.PositionIndex].Current - positions[h0.PositionIndex].Current;
+                    deltas[j] = deltas[j + 1] = loadForces[i] * (d.Length * 0.5);
+                }
+            }
         }
-
-
-        /// <inheritdoc />
-        public void Accumulate(
-            ArrayView<Vector3d> forceSums, 
-            ArrayView<Vector3d> torqueSums)
-        {
-            forceSums[_h0.PositionIndex] += _d0;
-            forceSums[_h1.PositionIndex] += _d0;
-        }
-
-
-        #region Explicit interface implementations
-
-        void IInfluence.Initialize(
-            ArrayView<ParticlePosition> positions,
-            ArrayView<ParticleRotation> rotations)
-        { }
-
-        #endregion
     }
 }

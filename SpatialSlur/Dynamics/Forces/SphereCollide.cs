@@ -52,7 +52,7 @@ namespace SpatialSlur.Dynamics.Forces
         /// <param name="radius"></param>
         /// <param name="strength"></param>
         /// <param name="parallel"></param>
-        public SphereCollide(IEnumerable<ParticleHandle> handles, double radius, double strength = 1.0, bool parallel = false)
+        public SphereCollide(IEnumerable<Particle> handles, double radius, double strength = 1.0, bool parallel = false)
         {
             SetHandles(handles);
             Radius = radius;

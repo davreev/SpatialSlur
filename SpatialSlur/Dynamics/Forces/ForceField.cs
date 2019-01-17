@@ -22,7 +22,6 @@ namespace SpatialSlur.Dynamics.Forces
     {
         private IField3d<Vector3d> _field;
         private double _strength;
-        private bool _parallel;
 
 
         /// <summary>
@@ -32,20 +31,6 @@ namespace SpatialSlur.Dynamics.Forces
         /// <param name="strength"></param>
         public ForceField(IField3d<Vector3d> field, double strength = 1.0)
         {
-            Field = field;
-            _strength = strength;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="field"></param>
-        /// <param name="strength"></param>
-        public ForceField(IEnumerable<ParticleHandle> handles, IField3d<Vector3d> field, double strength = 1.0)
-        {
-            SetHandles(handles);
             Field = field;
             _strength = strength;
         }
@@ -71,16 +56,6 @@ namespace SpatialSlur.Dynamics.Forces
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool Parallel
-        {
-            get => _parallel;
-            set => _parallel = value;
-        }
-
-
         /// <inheritdoc />
         public override void Calculate(
             ArrayView<ParticlePosition> positions,
@@ -88,7 +63,7 @@ namespace SpatialSlur.Dynamics.Forces
         {
             var handles = Handles;
 
-            if (_parallel)
+            if (Parallel)
                 ForEach(Partitioner.Create(0, handles.Count), range => Calculate(range.Item1, range.Item2));
             else
                 Calculate(0, handles.Count);

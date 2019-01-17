@@ -15,7 +15,7 @@ namespace SpatialSlur.Dynamics.Forces
     [Serializable]
     public class Pressure : IForce
     {
-        ParticleHandle _h0, _h1, _h2;
+        Particle _h0, _h1, _h2;
         private Vector3d _d0;
 
         private double _strength;
@@ -29,9 +29,9 @@ namespace SpatialSlur.Dynamics.Forces
         /// <param name="handle2"></param>
         /// <param name="strength"></param>
         public Pressure(
-            ParticleHandle handle0,
-            ParticleHandle handle1,
-            ParticleHandle handle2,
+            Particle handle0,
+            Particle handle1,
+            Particle handle2,
             double strength)
         {
             _h0 = handle0;
@@ -44,7 +44,7 @@ namespace SpatialSlur.Dynamics.Forces
         /// <summary>
         /// 
         /// </summary>
-        public ParticleHandle Handle0
+        public Particle Handle0
         {
             get { return _h0; }
             set { _h0 = value; }
@@ -54,7 +54,7 @@ namespace SpatialSlur.Dynamics.Forces
         /// <summary>
         /// 
         /// </summary>
-        public ParticleHandle Handle1
+        public Particle Handle1
         {
             get { return _h1; }
             set { _h1 = value; }
@@ -64,7 +64,7 @@ namespace SpatialSlur.Dynamics.Forces
         /// <summary>
         /// 
         /// </summary>
-        public ParticleHandle Handle2
+        public Particle Handle2
         {
             get { return _h2; }
             set { _h2 = value; }
