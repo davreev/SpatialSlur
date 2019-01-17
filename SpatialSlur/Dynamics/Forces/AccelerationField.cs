@@ -31,18 +31,6 @@ namespace SpatialSlur.Dynamics.Forces
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="field"></param>
-        /// <param name="strength"></param>
-        public AccelerationField(IEnumerable<ParticleHandle> handles, IField3d<Vector3d> field, double strength = 1.0)
-            : base(handles, field, strength)
-        {
-        }
-
-
         /// <inheritdoc />
         public override void Calculate(
             ArrayView<ParticlePosition> positions,

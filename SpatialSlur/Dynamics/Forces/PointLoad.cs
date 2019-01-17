@@ -16,7 +16,7 @@ namespace SpatialSlur.Dynamics.Forces
     [Serializable]
     public class PointLoad : IForce
     {
-        private ParticleHandle _h0;
+        private Particle _h0;
         private Vector3d _d0;
         
         
@@ -25,7 +25,7 @@ namespace SpatialSlur.Dynamics.Forces
         /// </summary>
         /// <param name="handle"></param>
         /// <param name="loadForce"></param>
-        public PointLoad(ParticleHandle handle, Vector3d loadForce)
+        public PointLoad(Particle handle, Vector3d loadForce)
         {
             _h0 = handle;
             _d0 = loadForce;
@@ -35,7 +35,7 @@ namespace SpatialSlur.Dynamics.Forces
         /// <summary>
         /// 
         /// </summary>
-        public ParticleHandle Handle
+        public Particle Handle
         {
             get { return _h0; }
             set { _h0 = value; }
