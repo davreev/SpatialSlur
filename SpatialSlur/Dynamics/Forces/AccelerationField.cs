@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
@@ -36,12 +35,12 @@ namespace SpatialSlur.Dynamics.Forces
             ArrayView<ParticlePosition> positions,
             ArrayView<ParticleRotation> rotations)
         {
-            var handles = Handles;
+            var particles = Particles;
 
             if (Parallel)
-                ForEach(Partitioner.Create(0, handles.Count), range => Calculate(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, particles.Count), range => Calculate(range.Item1, range.Item2));
             else
-                Calculate(0, handles.Count);
+                Calculate(0, particles.Count);
 
             void Calculate(int from, int to)
             {
@@ -51,7 +50,7 @@ namespace SpatialSlur.Dynamics.Forces
 
                 for (int i = from; i < to; i++)
                 {
-                    ref var p = ref positions[handles[i].PositionIndex];
+                    ref var p = ref positions[particles[i].PositionIndex];
                     deltas[i] = field.ValueAt(p.Current) * (strength / p.InverseMass);
                 }
             }

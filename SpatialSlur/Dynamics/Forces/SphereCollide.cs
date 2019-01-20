@@ -1,12 +1,10 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
 using SpatialSlur.Collections;
 
 using static System.Threading.Tasks.Parallel;
@@ -27,38 +25,8 @@ namespace SpatialSlur.Dynamics.Forces
         
         private HashGrid3d<Vector3d> _grid;
         private double _radius = 1.0;
-        private double _strength;
+        private double _strength = 1.0;
         private bool _parallel;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="strength"></param>
-        /// <param name="parallel"></param>
-        public SphereCollide(double radius, double strength = 1.0, bool parallel = false)
-        {
-            Radius = radius;
-            _strength = strength;
-            _parallel = parallel;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="radius"></param>
-        /// <param name="strength"></param>
-        /// <param name="parallel"></param>
-        public SphereCollide(IEnumerable<Particle> handles, double radius, double strength = 1.0, bool parallel = false)
-        {
-            SetHandles(handles);
-            Radius = radius;
-            _strength = 1.0;
-            _parallel = parallel;
-        }
 
 
         /// <summary>
@@ -87,62 +55,52 @@ namespace SpatialSlur.Dynamics.Forces
         }
 
 
-        /// <summary>
-        /// If true, this constraint is calculated in parallel.
-        /// </summary>
-        public bool Parallel
-        {
-            get { return _parallel; }
-            set { _parallel = value; }
-        }
-        
-
         /// <inheritdoc />
         public override void Calculate(
             ArrayView<ParticlePosition> positions,
             ArrayView<ParticleRotation> rotations)
         {
-            var handles = Handles;
+            var particles = Particles;
 
             if (_grid == null)
-                _grid = new HashGrid3d<Vector3d>(handles.Count);
+                _grid = new HashGrid3d<Vector3d>(particles.Count);
 
             // Update grid parameters
             _grid.Scale = Radius * _radiusToGridScale;
 
             // Insert particle positions into grid
-            foreach (var h in handles)
+            foreach (var p in particles)
             {
-                var p = positions[h.PositionIndex].Current;
-                _grid.Insert(p, p);
+                var pp = positions[p.PositionIndex].Current;
+                _grid.Insert(pp, pp);
             }
 
             // Range search from each particle position
             if (_parallel)
-                ForEach(Partitioner.Create(0, handles.Count), range => Calculate(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, particles.Count), range => Calculate(range.Item1, range.Item2));
             else
-                Calculate(0, handles.Count);
+                Calculate(0, particles.Count);
             
             void Calculate(int from, int to)
             {
                 var deltas = Deltas;
-                var diam = _radius * 2.0;
-                var diamSqr = diam * diam;
+                var dia = _radius * 2.0;
+                var diaSqr = dia * dia;
 
                 for (int i = from; i < to; i++)
                 {
-                    var p0 = positions[handles[i].PositionIndex].Current;
+                    var pp0 = positions[particles[i].PositionIndex].Current;
                     var sum = Vector3d.Zero;
                     var count = 0;
 
-                    foreach (var p1 in _grid.Search(new Interval3d(p0, diam)))
+                    foreach (var pp1 in _grid.Search(new Interval3d(pp0, dia)))
                     {
-                        var d = p1 - p0;
+                        var d = pp1 - pp0;
                         var m = d.SquareLength;
 
-                        if (m < diamSqr && m > 0.0)
+                        if (m < diaSqr && m > 0.0)
                         {
-                            sum += d * (1.0 - diam / Math.Sqrt(m));
+                            sum += d * (1.0 - dia / Math.Sqrt(m));
                             count++;
                         }
                     }
