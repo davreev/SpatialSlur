@@ -2,9 +2,13 @@
  * Notes
  */
 
+#if USING_RHINO
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+
+using Rhino.Geometry;
 
 using SpatialSlur.Collections;
 
@@ -16,8 +20,34 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class AbovePlane : Impl.OnTarget<OnPlane.Target>
+    public class OnCurve : Impl.OnTarget<OnCurve.Target>
     {
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public struct Target
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
+            {
+                Weight = 1.0
+            };
+
+            /// <summary></summary>
+            public Curve Curve;
+
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
+        }
+
+        #endregion
+
+
         /// <inheritdoc />
         public override void Calculate(
             ArrayView<ParticlePosition> positions,
@@ -40,12 +70,16 @@ namespace SpatialSlur.Dynamics.Constraints
                 for (int i = from; i < to; i++)
                 {
                     ref var t = ref targets[indices[i]];
-                    var d = Vector3d.Dot(t.Origin - positions[particles[i].PositionIndex].Current, t.Normal);
+                    ref var p = ref positions[particles[i].PositionIndex].Current;
 
-                    deltas[i] = d > 0.0 ?
-                        new Vector4d(t.Normal * (d / t.Normal.SquareLength), 1.0) * t.Weight : Vector4d.Zero;
+                    t.Curve.ClosestPoint(p, out var u);
+                    var d = (Vector3d)t.Curve.PointAt(u) - p;
+
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
                 }
             }
         }
     }
 }
+
+#endif
