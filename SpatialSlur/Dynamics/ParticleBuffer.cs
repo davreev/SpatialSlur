@@ -4,9 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SpatialSlur;
 using SpatialSlur.Collections;
@@ -15,71 +12,16 @@ using static SpatialSlur.Utilities;
 
 namespace SpatialSlur.Dynamics
 {
+    using Buffer = SpatialSlur.Collections.Buffer;
+
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
     public class ParticleBuffer
     {
-        #region Static members
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void Add<T>(ref T[] target, int size, in T value)
-        {
-            const int minCapacity = 4;
-
-            // Reserve enough space to avoid repeated allocations over multiple calls
-            if (size == target.Length)
-                Array.Resize(ref target, Math.Max(size << 1, minCapacity));
-
-            target[size] = value;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static int Append<T>(ref T[] target, int size, int count)
-        {
-            const int minCapacity = 4;
-            var newSize = size + count;
-
-            // Reserve enough space to avoid repeated allocations over multiple calls
-            if (newSize > target.Length)
-                Array.Resize(ref target, Math.Max(newSize << 1, minCapacity));
-            
-            return newSize;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static int Append<T>(ref T[] target, int size, T value, int count)
-        {
-            var newSize = Append(ref target, size, count);
-            target.SetRange(value, size, count);
-            return newSize;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private static int Append<T>(ref T[] target, int size, T[] values, int count)
-        {
-            var newSize = Append(ref target, size, count);
-            target.SetRange(size, values, 0, count);
-            return newSize;
-        }
-
-        #endregion
-
-
-        private ParticleHandle[] _handles = Array.Empty<ParticleHandle>();
-        private int _handleCount;
+        private Particle[] _particles = Array.Empty<Particle>();
+        private int _count;
 
         private ParticlePosition[] _positions = Array.Empty<ParticlePosition>();
         private int _positionCount;
@@ -102,8 +44,8 @@ namespace SpatialSlur.Dynamics
         /// <param name="other"></param>
         public ParticleBuffer(ParticleBuffer other)
         {
-            _handles = other._handles.ShallowCopy();
-            _handleCount = other._handleCount;
+            _particles = other._particles.ShallowCopy();
+            _count = other._count;
 
             _positions = other._positions.ShallowCopy();
             _positionCount = other._positionCount;
@@ -116,9 +58,9 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        public ReadOnlyArrayView<ParticleHandle> Handles
+        public ReadOnlyArrayView<Particle> Particles
         {
-            get { return _handles.AsView(_handleCount); }
+            get { return _particles.AsView(_count); }
         }
 
 
@@ -145,7 +87,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public int Count
         {
-            get => _handleCount;
+            get => _count;
         }
 
 
@@ -154,7 +96,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public int Capacity
         {
-            get => _handles.Length;
+            get => _particles.Length;
         }
 
 
@@ -163,7 +105,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="position"></param>
         /// <returns></returns>
-        public ParticleHandle Add(Vector3d position)
+        public Particle Add(Vector3d position)
         {
             return Add(new ParticlePosition(position));
         }
@@ -174,7 +116,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="rotation"></param>
         /// <returns></returns>
-        public ParticleHandle Add(Quaterniond rotation)
+        public Particle Add(Quaterniond rotation)
         {
             return Add(new ParticleRotation(rotation));
         }
@@ -186,7 +128,7 @@ namespace SpatialSlur.Dynamics
         /// <param name="position"></param>
         /// <param name="rotation"></param>
         /// <returns></returns>
-        public ParticleHandle Add(Vector3d position, Quaterniond rotation)
+        public Particle Add(Vector3d position, Quaterniond rotation)
         {
             return Add(
                 new ParticlePosition(position),
@@ -199,14 +141,18 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="position"></param>
         /// <returns></returns>
-        public ParticleHandle Add(ParticlePosition position)
+        public Particle Add(ParticlePosition position)
         {
-            var handle = new ParticleHandle(_positionCount, -1);
+            var p = new Particle()
+            {
+                PositionIndex = _positionCount,
+                RotationIndex = -1
+            };
 
-            Add(ref _handles, _handleCount++, handle);
-            Add(ref _positions, _positionCount++, position);
+            Buffer.Append(ref _particles, _count++, p);
+            Buffer.Append(ref _positions, _positionCount++, position);
 
-            return handle;
+            return p;
         }
 
 
@@ -215,14 +161,19 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="rotation"></param>
         /// <returns></returns>
-        public ParticleHandle Add(ParticleRotation rotation)
+        public Particle Add(ParticleRotation rotation)
         {
-            var handle = new ParticleHandle(-1, _rotationCount);
+            var p = new Particle()
+            {
+                PositionIndex = -1,
+                RotationIndex = _rotationCount
+            };
 
-            Add(ref _handles, _handleCount++, handle);
-            Add(ref _rotations, _rotationCount++, rotation);
+            Buffer.Append(ref _particles, _count++, p);
+            Buffer.Append(ref _particles, _count++, p);
+            Buffer.Append(ref _rotations, _rotationCount++, rotation);
 
-            return handle;
+            return p;
         }
 
 
@@ -232,15 +183,19 @@ namespace SpatialSlur.Dynamics
         /// <param name="position"></param>
         /// <param name="rotation"></param>
         /// <returns></returns>
-        public ParticleHandle Add(ParticlePosition position, ParticleRotation rotation)
+        public Particle Add(ParticlePosition position, ParticleRotation rotation)
         {
-            var handle = new ParticleHandle(_positionCount, _rotationCount);
+            var p = new Particle()
+            {
+                PositionIndex = _positionCount,
+                RotationIndex = _rotationCount
+            };
 
-            Add(ref _handles, _handleCount++, handle);
-            Add(ref _positions, _positionCount++, position);
-            Add(ref _rotations, _rotationCount++, rotation);
+            Buffer.Append(ref _particles, _count++, p);
+            Buffer.Append(ref _positions, _positionCount++, position);
+            Buffer.Append(ref _rotations, _rotationCount++, rotation);
 
-            return handle;
+            return p;
         }
 
 
@@ -252,39 +207,39 @@ namespace SpatialSlur.Dynamics
         /// <param name="hasRotation"></param>
         public void Add(int count, bool hasPosition, bool hasRotation)
         {
-            // Add handles
+            // Add particles
             {
-                int offset = _handleCount;
-                _handleCount = Append(ref _handles, offset, ParticleHandle.Default, count);
+                int offset = _count;
+                _count = Buffer.Append(ref _particles, offset, Particle.Default, count);
 
                 // Set position indices
                 if (hasPosition)
                 {
-                    var handles = _handles;
+                    var particles = _particles;
                     int index = _positionCount;
 
                     for (int i = 0; i < count; i++)
-                        handles[i + offset].PositionIndex = index++;
+                        particles[i + offset].PositionIndex = index++;
                 }
 
                 // Set rotation indices
                 if (hasRotation)
                 {
-                    var handles = _handles;
+                    var particles = _particles;
                     int index = _rotationCount;
 
                     for (int i = 0; i < count; i++)
-                        handles[i + offset].RotationIndex = index++;
+                        particles[i + offset].RotationIndex = index++;
                 }
             }
 
             // Add components
             {
                 if (hasPosition)
-                    _positionCount = Append(ref _positions, _positionCount, ParticlePosition.Default, count);
+                    _positionCount = Buffer.Append(ref _positions, _positionCount, ParticlePosition.Default, count);
 
                 if (hasRotation)
-                    _rotationCount = Append(ref _rotations, _rotationCount, ParticleRotation.Default, count);
+                    _rotationCount = Buffer.Append(ref _rotations, _rotationCount, ParticleRotation.Default, count);
             }
         }
 
@@ -295,34 +250,36 @@ namespace SpatialSlur.Dynamics
         /// <param name="other"></param>
         public void Append(ParticleBuffer other)
         {
-            // Append handles
+            // Append particles
             {
-                int offset = _handleCount;
-                int count = other._handleCount;
-                _handleCount = Append(ref _handles, offset, count);
+                int offset = _count;
+                int count = other._count;
 
-                // Assign new handles
+                _count = offset + count;
+                Buffer.ExpandToFit(ref _particles, _count);
+
+                // Set particle indices
                 {
-                    var handles = _handles;
-                    var otherHandles = other._handles;
+                    var particles = _particles;
+                    var otherParticles = other._particles;
 
                     var posIndex = _positionCount;
                     var rotIndex = _rotationCount;
 
                     for (int i = 0; i < count; i++)
                     {
-                        ref var h0 = ref handles[i + offset];
-                        ref var h1 = ref otherHandles[i];
-                        h0.PositionIndex = h1.HasPosition ? posIndex++ : -1;
-                        h0.RotationIndex = h1.HasRotation ? rotIndex++ : -1;
+                        ref var p0 = ref particles[i + offset];
+                        ref var p1 = ref otherParticles[i];
+                        p0.PositionIndex = p1.HasPosition ? posIndex++ : -1;
+                        p0.RotationIndex = p1.HasRotation ? rotIndex++ : -1;
                     }
                 }
             }
 
             // Append components
             {
-                _positionCount = Append(ref _positions, _positionCount, other._positions, other._positionCount);
-                _rotationCount = Append(ref _rotations, _rotationCount, other._rotations, other._rotationCount);
+                _positionCount = Buffer.Append(ref _positions, _positionCount, other._positions, other._positionCount);
+                _rotationCount = Buffer.Append(ref _rotations, _rotationCount, other._rotations, other._rotationCount);
             }
         }
 
@@ -338,32 +295,35 @@ namespace SpatialSlur.Dynamics
             var rotations = _rotations;
             int rotCount = 0;
 
-            var handles = _handles.AsView();
+            var particles = _particles.AsView();
             int j = 0;
 
-            for (int i = 0; i < handles.Count; i++)
+            for (int i = 0; i < particles.Count; i++)
             {
-                ref var h0 = ref handles[i];
-                ref var h1 = ref handles[j];
+                ref var p0 = ref particles[i];
+                ref var p1 = ref particles[j];
 
-                if(h0.HasPosition)
+                if(p0.HasPosition)
                 {
-                    positions[posCount] = positions[h0.PositionIndex];
-                    h0.PositionIndex = -1;
-                    h1.PositionIndex = posCount++;
+                    positions[posCount] = positions[p0.PositionIndex];
+                    p0.PositionIndex = -1;
+                    p1.PositionIndex = posCount++;
                 }
 
-                if(h0.HasRotation)
+                if(p0.HasRotation)
                 {
-                    rotations[rotCount] = rotations[h0.RotationIndex];
-                    h0.RotationIndex = -1;
-                    h1.RotationIndex = rotCount++;
+                    rotations[rotCount] = rotations[p0.RotationIndex];
+                    p0.RotationIndex = -1;
+                    p1.RotationIndex = rotCount++;
                 }
 
-                if (!h1.IsRemoved) j++;
+                if (!p1.IsRemoved) j++;
             }
 
-            _handleCount = j;
+            // Clean up remaining handles
+            particles.Sub(j, _count - j).Set(Particle.Default);
+
+            _count = j;
             _positionCount = posCount;
             _rotationCount = rotCount;
         }
@@ -374,7 +334,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public void Clear()
         {
-            _handleCount = 0;
+            _count = 0;
             _positionCount = _rotationCount = 0;
         }
 
@@ -385,18 +345,22 @@ namespace SpatialSlur.Dynamics
         /// <param name="index"></param>
         public void RemoveAt(int index)
         {
-            BoundsCheck(index, _handleCount);
-            _handles[index] = ParticleHandle.Default;
+            if (index >= _count)
+                throw new IndexOutOfRangeException();
+            
+            _particles[index] = Particle.Default;
         }
 
 
         /// <summary>
         /// Returns the handle of the particle at the given index.
         /// </summary>
-        public ParticleHandle HandleAt(int index)
+        public Particle ParticleAt(int index)
         {
-            BoundsCheck(index, _handleCount);
-            return _handles[index];
+            if (index >= _count)
+                throw new IndexOutOfRangeException();
+
+            return _particles[index];
         }
 
 
@@ -405,10 +369,14 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="handle"></param>
         /// <returns></returns>
-        public ref ParticlePosition Position(in ParticleHandle handle)
+        public ref ParticlePosition Position(in Particle handle)
         {
-            BoundsCheck(handle.PositionIndex, _positionCount);
-            return ref _positions[handle.PositionIndex];
+            int index = handle.PositionIndex;
+
+            if (index >= _positionCount)
+                throw new IndexOutOfRangeException();
+            
+            return ref _positions[index];
         }
 
 
@@ -417,10 +385,14 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="handle"></param>
         /// <returns></returns>
-        public ref ParticleRotation Rotation(in ParticleHandle handle)
+        public ref ParticleRotation Rotation(in Particle handle)
         {
-            BoundsCheck(handle.RotationIndex, _rotationCount);
-            return ref _rotations[handle.RotationIndex];
+            int index = handle.RotationIndex;
+
+            if (index >= _rotationCount)
+                throw new IndexOutOfRangeException();
+            
+            return ref _rotations[index];
         }
     }
 }
