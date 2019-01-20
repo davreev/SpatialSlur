@@ -66,9 +66,9 @@ namespace SpatialSlur.Dynamics.Constraints
 
                 for (int i = from; i < to; i++)
                 {
-                    ref var t = ref targets[indices[i]];
-                    var d = Quaterniond.CreateFromTo(rotations[particles[i].RotationIndex].Current, t.Rotation);
-                    deltas[i] = new Vector4d(d.ToAxisAngle(), 1.0) * t.Weight;
+                    ref var tg = ref targets[indices[i]];
+                    var d = Quaterniond.CreateFromTo(rotations[particles[i].RotationIndex].Current, tg.Rotation);
+                    deltas[i] = new Vector4d(d.ToAxisAngle(), 1.0) * tg.Weight;
                 }
             }
         }

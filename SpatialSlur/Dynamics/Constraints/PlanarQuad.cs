@@ -36,7 +36,7 @@ namespace SpatialSlur.Dynamics.Constraints
             };
 
             /// <summary>Number of particles used by this element</summary>
-            public const int Size = 4;
+            public const int Count = 4;
 
             /// <summary>Relative influence of this element</summary>
             public double Weight;

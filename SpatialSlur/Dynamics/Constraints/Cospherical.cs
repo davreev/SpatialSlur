@@ -18,7 +18,7 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class Coincident : Impl.PositionConstraint
+    public class Cospherical : Impl.PositionConstraint
     {
         #region Nested types
 
@@ -84,7 +84,7 @@ namespace SpatialSlur.Dynamics.Constraints
                 {
                     var e = elements[i];
 
-                    if (e.Count < 2)
+                    if (e.Count < 5 || Geometry.FitSphere(particles.AsView(e.First, e.Count), positions, out var origin, out var radius))
                     {
                         // Zero out deltas if not enough particles
                         for (int j = 0; j < e.Count; j++)
@@ -92,11 +92,10 @@ namespace SpatialSlur.Dynamics.Constraints
                     }
                     else
                     {
-                        var center = Geometry.GetMassCenter(particles.AsView(e.First, e.Count), positions);
-
                         for (int j = 0; j < e.Count; j++)
                         {
-                            var d = center - positions[particles[e.First + j].PositionIndex].Current;
+                            var d = origin - positions[particles[e.First + j].PositionIndex].Current;
+                            d *= 1.0 - radius / d.Length;
                             deltas[e.First + j] = new Vector4d(d, 1.0) * e.Weight;
                         }
                     }
@@ -105,3 +104,4 @@ namespace SpatialSlur.Dynamics.Constraints
         }
     }
 }
+
