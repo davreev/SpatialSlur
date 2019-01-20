@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
@@ -31,7 +30,7 @@ namespace SpatialSlur.Dynamics
             set
             {
                 if (value < 0.0 || value > 1.0)
-                    throw new ArgumentOutOfRangeException("The value must be between 0.0 and 1.0.");
+                    throw new ArgumentOutOfRangeException("The value must be in [0, 1]");
 
                 _linearDamping = value;
             }
@@ -47,7 +46,7 @@ namespace SpatialSlur.Dynamics
             set
             {
                 if (value < 0.0 || value > 1.0)
-                    throw new ArgumentOutOfRangeException("The value must be between 0.0 and 1.0.");
+                    throw new ArgumentOutOfRangeException("The value must be in [0, 1]");
 
                 _angularDamping = value;
             }
