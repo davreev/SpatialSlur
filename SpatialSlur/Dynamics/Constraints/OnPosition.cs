@@ -16,11 +16,37 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class AbovePlane : Impl.OnTarget<OnPlane.Target>
+    public class OnPosition : Impl.OnTarget<OnPosition.Target>
     {
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public struct Target
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
+            {
+                Weight = 1.0
+            };
+
+            /// <summary></summary>
+            public Vector3d Position;
+
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
+        }
+
+        #endregion
+
+
         /// <inheritdoc />
         public override void Calculate(
-            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticlePosition> positions, 
             ArrayView<ParticleRotation> rotations)
         {
             base.Calculate(positions, rotations);
@@ -37,13 +63,11 @@ namespace SpatialSlur.Dynamics.Constraints
                 var deltas = Deltas;
                 var targets = Targets;
 
-                for (int i = from; i < to; i++)
+                for(int i = from; i < to; i++)
                 {
                     ref var t = ref targets[indices[i]];
-                    var d = Vector3d.Dot(t.Origin - positions[particles[i].PositionIndex].Current, t.Normal);
-
-                    deltas[i] = d > 0.0 ?
-                        new Vector4d(t.Normal * (d / t.Normal.SquareLength), 1.0) * t.Weight : Vector4d.Zero;
+                    var d = t.Position - positions[particles[i].PositionIndex].Current;
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
                 }
             }
         }

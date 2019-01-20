@@ -15,8 +15,7 @@ namespace SpatialSlur.Dynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    public class AbovePlane : Impl.OnTarget<OnPlane.Target>
+    public class OutsideSphere: Impl.OnTarget<OnSphere.Target>
     {
         /// <inheritdoc />
         public override void Calculate(
@@ -40,10 +39,20 @@ namespace SpatialSlur.Dynamics.Constraints
                 for (int i = from; i < to; i++)
                 {
                     ref var t = ref targets[indices[i]];
-                    var d = Vector3d.Dot(t.Origin - positions[particles[i].PositionIndex].Current, t.Normal);
+                    var r = t.Radius;
 
-                    deltas[i] = d > 0.0 ?
-                        new Vector4d(t.Normal * (d / t.Normal.SquareLength), 1.0) * t.Weight : Vector4d.Zero;
+                    var d = t.Origin - positions[particles[i].PositionIndex].Current;
+                    var m = d.SquareLength;
+                    
+                    if (m < r * r)
+                    {
+                        d *= 1.0 - r / Math.Sqrt(m);
+                        deltas[i] = new Vector4d(d, 1.0) * t.Weight;
+                    }
+                    else
+                    {
+                        deltas[i] = Vector4d.Zero;
+                    }
                 }
             }
         }

@@ -15,9 +15,38 @@ namespace SpatialSlur.Dynamics.Constraints
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    public class AbovePlane : Impl.OnTarget<OnPlane.Target>
+    public class OnSphere : Impl.OnTarget<OnSphere.Target>
     {
+        #region Nested types
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public struct Target
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
+            {
+                Radius = 1.0,
+                Weight = 1.0
+            };
+
+            /// <summary></summary>
+            public Vector3d Origin;
+
+            /// <summary></summary>
+            public double Radius;
+
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
+        }
+
+        #endregion
+
+
         /// <inheritdoc />
         public override void Calculate(
             ArrayView<ParticlePosition> positions,
@@ -40,10 +69,11 @@ namespace SpatialSlur.Dynamics.Constraints
                 for (int i = from; i < to; i++)
                 {
                     ref var t = ref targets[indices[i]];
-                    var d = Vector3d.Dot(t.Origin - positions[particles[i].PositionIndex].Current, t.Normal);
 
-                    deltas[i] = d > 0.0 ?
-                        new Vector4d(t.Normal * (d / t.Normal.SquareLength), 1.0) * t.Weight : Vector4d.Zero;
+                    var d = t.Origin - positions[particles[i].PositionIndex].Current;
+                    d *= 1.0 - t.Radius / d.Length;
+
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
                 }
             }
         }

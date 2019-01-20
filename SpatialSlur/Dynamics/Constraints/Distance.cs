@@ -1,133 +1,133 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Collections.Concurrent;
 
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
     /// <summary>
     /// 
     /// </summary>
-    public class Distance : IConstraint
+    public class Distance : Impl.PositionConstraint
     {
-        private ParticleHandle _h0, _h1;
-        private Vector3d _d0, _d1;
-        private double _target;
-        private double _weight;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        public Distance(ParticleHandle handle0, ParticleHandle handle1, double target, double weight = 1.0)
+        [Serializable]
+        public struct Element
         {
-            _h0 = handle0;
-            _h1 = handle1;
-            Target = target;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ParticleHandle Handle0
-        {
-            get { return _h0; }
-            set { _h0 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ParticleHandle Handle1
-        {
-            get { return _h1; }
-            set { _h1 = value; }
-        }
-
-
-        /// <summary>
-        /// Target distance
-        /// </summary>
-        public double Target
-        {
-            get { return _target; }
-            set
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Element Default = new Element()
             {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
+                RestDistance = 0.0,
+                Weight = 1.0
+            };
 
-                _target = value;
-            }
-        }
+            /// <summary>The number of particles used by this element</summary>
+            public const int Size = 2;
 
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Weight
-        {
-            get { return _weight; }
-            set
-            {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
+            /// <summary></summary>
+            public double RestDistance;
 
-                _weight = value;
-            }
-        }
-
-        
-        /// <inheritdoc />
-        public void Calculate(
-            ArrayView<ParticlePosition> positions,
-            ArrayView<ParticleRotation> rotations)
-        {
-            ref var p0 = ref positions[_h0.PositionIndex];
-            ref var p1 = ref positions[_h0.PositionIndex];
-
-            var d = p1.Current - p0.Current;
-            d *= 1.0 - _target / d.Length;
-
-            var w0 = p0.InverseMass;
-            var w1 = p1.InverseMass;
-            var invSum = 1.0 / (w0 + w1);
-
-            _d0 = d * (w0 * invSum);
-            _d1 = d * (-w1 * invSum);
-        }
-
-
-        /// <inheritdoc />
-        public void Accumulate(
-            ArrayView<Vector4d> linearCorrectSums,
-            ArrayView<Vector4d> angularCorrectSums)
-        {
-            var w = Weight;
-            linearCorrectSums[_h0.PositionIndex] += new Vector4d(_d0 * w, w);
-            linearCorrectSums[_h1.PositionIndex] += new Vector4d(_d1 * w, w);
-        }
-
-
-        #region Explicit interface implementations
-
-        void IInfluence.Initialize(
-            ArrayView<ParticlePosition> positions,
-            ArrayView<ParticleRotation> rotations)
-        {
-            ref var p0 = ref positions[_h0.PositionIndex];
-            ref var p1 = ref positions[_h1.PositionIndex];
-            _target = p0.Current.DistanceTo(p1.Current);
+            /// <summary>Relative influence of this element</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        private SlurList<Element> _elements = new SlurList<Element>();
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SlurList<Element> Elements
+        {
+            get => _elements;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="positions"></param>
+        /// <param name="rotations"></param>
+        public override void Initialize(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            var elements = _elements;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Initialize(range.Item1, range.Item2));
+            else
+                Initialize(0, elements.Count);
+
+            void Initialize(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    int j = i << 1;
+                    ref var p0 = ref positions[particles[j].PositionIndex];
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
+                    elements[i].RestDistance = p0.Current.DistanceTo(p1.Current);
+                }
+            }
+        }
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var elements = _elements;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, elements.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var e = ref elements[i];
+
+                    int j = i << 1;
+                    ref var p0 = ref positions[particles[j].PositionIndex];
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
+
+                    var d = p1.Current - p0.Current;
+                    d *= 1.0 - e.RestDistance / d.Length;
+
+                    var w0 = p0.InverseMass;
+                    var w1 = p1.InverseMass;
+                    var t = e.Weight / (w0 + w1);
+
+                    deltas[j] = new Vector4d(d * (w0 * t), e.Weight);
+                    deltas[j + 1] = new Vector4d(d * -(w1 * t), e.Weight);
+                }
+            }
+        }
     }
 }
