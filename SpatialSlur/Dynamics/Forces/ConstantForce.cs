@@ -1,11 +1,11 @@
 ﻿/*
  * Notes
- */
-
+ */ 
+ 
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
+
 using SpatialSlur.Collections;
 
 using static System.Threading.Tasks.Parallel;
@@ -15,11 +15,10 @@ namespace SpatialSlur.Dynamics.Forces
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    public class PointLoad : IForce
+    public class ConstantForce : IForce
     {
         private SlurList<Particle> _particles = new SlurList<Particle>();
-        private SlurList<Vector3d> _loadForces;
+        private Vector3d _force;
 
 
         /// <summary>
@@ -32,11 +31,12 @@ namespace SpatialSlur.Dynamics.Forces
 
 
         /// <summary>
-        /// Per-particle load forces
+        /// 
         /// </summary>
-        public SlurList<Vector3d> LoadForces
+        public Vector3d Force
         {
-            get => _loadForces;
+            get => _force;
+            set => _force = value;
         }
 
 
@@ -46,14 +46,14 @@ namespace SpatialSlur.Dynamics.Forces
         /// <param name="forceSums"></param>
         /// <param name="torqueSums"></param>
         public void Accumulate(
-            ArrayView<Vector3d> forceSums,
+            ArrayView<Vector3d> forceSums, 
             ArrayView<Vector3d> torqueSums)
         {
-            var particles = Particles;
-            var loadForces = _loadForces;
+            var handles = Particles;
+            var force = _force;
 
-            for (int i = 0; i < particles.Count; i++)
-                forceSums[particles[i].PositionIndex] += loadForces[i];
+            for (int i = 0; i < handles.Count; i++)
+                forceSums[handles[i].PositionIndex] += force;
         }
 
 

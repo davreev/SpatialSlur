@@ -1,17 +1,14 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
+
 using SpatialSlur.Collections;
 
 using static System.Threading.Tasks.Parallel;
-using static SpatialSlur.Collections.Buffer;
-
 
 namespace SpatialSlur.Dynamics.Forces
 {
@@ -21,15 +18,15 @@ namespace SpatialSlur.Dynamics.Forces
     [Serializable]
     public class LinearLoad : Impl.PositionForce
     {
-        private RefList<Vector3d> _loadForces;
+        private SlurList<Vector3d> _loadForces;
 
 
         /// <summary>
-        /// 
+        /// Per-segment load forces
         /// </summary>
-        public RefList<Vector3d> LoadForces
+        public SlurList<Vector3d> LoadForces
         {
-            get { return _loadForces; }
+            get => _loadForces;
         }
 
 
@@ -48,17 +45,16 @@ namespace SpatialSlur.Dynamics.Forces
 
             void Calculate(int from, int to)
             {
-                var handles = Handles;
+                var particles = Particles;
                 var deltas = Deltas;
 
                 for (int i = from; i < to; i++)
                 {
                     int j = i << 1;
-                    ref var h0 = ref handles[j];
-                    ref var h1 = ref handles[j + 1];
+                    ref var p0 = ref positions[particles[j].PositionIndex].Current;
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex].Current;
 
-                    var d = positions[h1.PositionIndex].Current - positions[h0.PositionIndex].Current;
-                    deltas[j] = deltas[j + 1] = loadForces[i] * (d.Length * 0.5);
+                    deltas[j] = deltas[j + 1] = loadForces[i] * (p0.DistanceTo(p1) * 0.5);
                 }
             }
         }
