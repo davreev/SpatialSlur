@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
@@ -15,12 +14,14 @@ namespace SpatialSlur.Dynamics
     {
         #region Static
 
-        /// <summary></summary>
+        /// <summary>
+        /// 
+        /// </summary>
         public static readonly ParticleRotation Default = new ParticleRotation
         {
             Current = Quaterniond.Identity,
             Velocity = Vector3d.Zero,
-            InverseInertia = new Vector3d(1.0)
+            InverseMass = new Vector3d(1.0)
         };
 
         #endregion
@@ -29,11 +30,14 @@ namespace SpatialSlur.Dynamics
         /// <summary>Current rotation of the particle</summary>
         public Quaterniond Current;
 
-        /// <summary>Current angular velocity of the particle</summary>
+        /// <summary>Current rotational velocity of the particle</summary>
         public Vector3d Velocity;
         
-        /// <summary>Inverse rotational mass of the particle</summary>
-        public Vector3d InverseInertia;
+        /// <summary>
+        /// Inverse rotational mass of the particle (i.e. the diagonal elements of the inverse inertia tensor)
+        /// Note that this assumes that the current rotation represents the particle's principle axes of inertia
+        /// </summary>
+        public Vector3d InverseMass;
 
 
         /// <summary>
@@ -48,11 +52,11 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        public ParticleRotation(Quaterniond current, Vector3d inverseInertia)
+        public ParticleRotation(Quaterniond current, Vector3d inverseMass)
         {
             Current = current;
             Velocity = Vector3d.Zero;
-            InverseInertia = inverseInertia;
+            InverseMass = inverseMass;
         }
     }
 }

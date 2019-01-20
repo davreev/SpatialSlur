@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
@@ -11,29 +10,26 @@ namespace SpatialSlur.Dynamics
     /// 
     /// </summary>
     [Serializable]
-    public readonly struct ParticleHandle
+    public struct Particle
     {
         #region Static
-
-        internal static readonly ParticleHandle Removed = new ParticleHandle(-1, -1); 
-
-        #endregion
-
-        /// <summary>Index of this particle's position in the buffer</summary>
-        public readonly int PositionIndex;
-
-        /// <summary>Index of this particle's rotation in the buffer</summary>
-        public readonly int RotationIndex;
-
 
         /// <summary>
         /// 
         /// </summary>
-        internal ParticleHandle(int positionIndex, int rotationIndex)
+        public static readonly Particle Default = new Particle()
         {
-            PositionIndex = positionIndex;
-            RotationIndex = rotationIndex;
-        }
+            PositionIndex = -1,
+            RotationIndex = -1
+        };
+
+        #endregion
+
+        /// <summary>Index of this particle's position in the buffer</summary>
+        public int PositionIndex;
+
+        /// <summary>Index of this particle's rotation in the buffer</summary>
+        public int RotationIndex;
 
 
         /// <summary>
