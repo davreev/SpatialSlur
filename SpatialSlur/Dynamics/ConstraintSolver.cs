@@ -1,12 +1,9 @@
-﻿
-/*
+﻿/*
  * Notes
  * 
  * Impl refs
  * https://www.youtube.com/watch?v=fH3VW9SaQ_c&index=6&list=PL_a9tY9IhJuPuw5nu-WU7mG8T8MiX4JnY
  * https://drive.google.com/file/d/1BX8as-MEemWBgDrViegejsLLJKIiVRU-/view?usp=sharing
- * 
- * 
  */
 
 using System;
@@ -18,6 +15,9 @@ using System.Linq;
 using SpatialSlur;
 using SpatialSlur.Collections;
 
+using static System.Threading.Tasks.Parallel;
+using static SpatialSlur.Collections.Buffer;
+
 namespace SpatialSlur.Dynamics
 {
     /// <summary>
@@ -26,14 +26,14 @@ namespace SpatialSlur.Dynamics
     [Serializable]
     public class ConstraintSolver
     {
-        private Vector4d[] _linearCorrectSums = Array.Empty<Vector4d>(); // (x,y,z) = delta, (w) = weight
-        private Vector3d[] _forceSums = Array.Empty<Vector3d>();
+        private Vector4d[] _linearCorrectSums = Array.Empty<Vector4d>(); // x,y,z = delta, w = weight
+        private Vector4d[] _angularCorrectSums = Array.Empty<Vector4d>();
 
-        private Vector4d[] _angularCorrectSums = Array.Empty<Vector4d>(); // (x,y,z) = delta, (w) = weight
+        private Vector3d[] _forceSums = Array.Empty<Vector3d>(); // x,y,z = delta, w = unused
         private Vector3d[] _torqueSums = Array.Empty<Vector3d>();
 
         private ConstraintSolverSettings _settings = new ConstraintSolverSettings();
-        private int _stepCount = 0;
+        private bool _parallel;
 
 
         /// <summary>
@@ -41,15 +41,6 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public ConstraintSolver()
         {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ConstraintSolver(ConstraintSolverSettings settings)
-        {
-            Settings = settings;
         }
 
 
@@ -66,9 +57,10 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        public int StepCount
+        public bool Parallel
         {
-            get { return _stepCount; }
+            get => _parallel;
+            set => _parallel = value;
         }
 
 
@@ -76,14 +68,10 @@ namespace SpatialSlur.Dynamics
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        /// <param name="constraints"></param>
-        /// <param name="parallel"></param>
-        public void Step(
-            ParticleBuffer particles,
-            ConstraintGroup constraints,
-            bool parallel = false)
+        public void Predict(ParticleBuffer particles)
         {
-            Step(particles, constraints.Yield(), parallel);
+            Predict(particles.Positions, _settings.TimeStep, _settings.LinearDamping, _parallel);
+            Predict(particles.Rotations, _settings.TimeStep, _settings.AngularDamping, _parallel);
         }
 
 
@@ -91,117 +79,44 @@ namespace SpatialSlur.Dynamics
         /// 
         /// </summary>
         /// <param name="particles"></param>
-        /// <param name="constraints"></param>
-        /// <param name="parallel"></param>
-        public void Step(
-            ParticleBuffer particles,
-            IEnumerable<ConstraintGroup> constraints,
-            bool parallel = false)
+        /// <param name="forces"></param>
+        public void Predict(ParticleBuffer particles, ForceGroup forces)
         {
             var positions = particles.Positions;
             var rotations = particles.Rotations;
-
-            EnsureCapacity(positions);
-            EnsureCapacity(rotations);
-
-            Predict(positions, _settings.TimeStep, _settings.LinearDamping, parallel);
-            Predict(rotations, _settings.TimeStep, _settings.AngularDamping, parallel);
-
-            // Apply constraints
-            foreach (var grp in constraints)
-                grp.Apply(positions, rotations, _linearCorrectSums, _angularCorrectSums);
-
-            Correct(positions, _linearCorrectSums, _settings.TimeStep, parallel);
-            Correct(rotations, _angularCorrectSums, _settings.TimeStep, parallel);
-
-            _stepCount++;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="particles"></param>
-        /// <param name="constraints"></param>
-        /// <param name="forces"></param>
-        /// <param name="parallel"></param>
-        public void Step(
-            ParticleBuffer particles, 
-            ConstraintGroup constraints, 
-            ForceGroup forces, 
-            bool parallel = false)
-        {
-            Step(particles, constraints.Yield(), forces.Yield(), parallel);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="particles"></param>
-        /// <param name="constraints"></param>
-        /// <param name="forces"></param>
-        /// <param name="parallel"></param>
-        public void Step(
-            ParticleBuffer particles, 
-            IEnumerable<ConstraintGroup> constraints, 
-            IEnumerable<ForceGroup> forces, 
-            bool parallel = false)
-        {
-            var positions = particles.Positions;
-            var rotations = particles.Rotations;
-
-            EnsureCapacity(positions);
-            EnsureCapacity(rotations);
 
             // Apply external forces
-            foreach (var grp in forces)
-                grp.Apply(positions, rotations, _forceSums, _torqueSums);
+            ExpandToFit(ref _forceSums, positions.Count);
+            ExpandToFit(ref _torqueSums, rotations.Count);
+            forces.Apply(positions, rotations, _forceSums, _torqueSums);
 
-            Predict(positions, _forceSums, _settings.TimeStep, _settings.LinearDamping, parallel);
-            Predict(rotations, _torqueSums, _settings.TimeStep, _settings.AngularDamping, parallel);
+            Predict(positions, _forceSums, _settings.TimeStep, _settings.LinearDamping, _parallel);
+            Predict(rotations, _torqueSums, _settings.TimeStep, _settings.AngularDamping, _parallel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="particles"></param>
+        /// <param name="constraints"></param>
+        public void Correct(ParticleBuffer particles, ConstraintGroup constraints)
+        {
+            var positions = particles.Positions;
+            var rotations = particles.Rotations;
 
             // Apply constraints
-            foreach (var grp in constraints)
-                grp.Apply(positions, rotations, _linearCorrectSums, _angularCorrectSums);
+            ExpandToFit(ref _linearCorrectSums, positions.Count);
+            ExpandToFit(ref _angularCorrectSums, rotations.Count);
+            constraints.Apply(positions, rotations, _linearCorrectSums, _angularCorrectSums);
 
-            Correct(positions, _linearCorrectSums, _settings.TimeStep, parallel);
-            Correct(rotations, _angularCorrectSums, _settings.TimeStep, parallel);
-
-            _stepCount++;
+            Correct(positions, _linearCorrectSums, _settings.TimeStep, _parallel);
+            Correct(rotations, _angularCorrectSums, _settings.TimeStep, _parallel);
         }
 
 
         /// <summary>
-        /// Resizes buffers if necessary
-        /// </summary>
-        private void EnsureCapacity(ArrayView<ParticlePosition> positions)
-        {
-            if (positions.Count > _linearCorrectSums.Length)
-            {
-                int newSize = positions.Source.Length;
-                _linearCorrectSums = new Vector4d[newSize];
-                _forceSums = new Vector3d[newSize];
-            }
-        }
-
-
-        /// <summary>
-        /// Resizes buffers if necessary
-        /// </summary>
-        private void EnsureCapacity(ArrayView<ParticleRotation> rotations)
-        {
-            if (rotations.Count > _angularCorrectSums.Length)
-            {
-                int newSize = rotations.Source.Length;
-                _angularCorrectSums = new Vector4d [newSize];
-                _torqueSums = new Vector3d[newSize];
-            }
-        }
-
-
-        /// <summary>
-        /// Updates via explicit integration to get an approximate prediction of the future state
+        /// Predicts future positions via simple explicit integration
         /// </summary>
         private static void Predict(
             ArrayView<ParticlePosition> positions,
@@ -210,7 +125,7 @@ namespace SpatialSlur.Dynamics
             bool parallel)
         {
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, positions.Count), range => Update(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, positions.Count), range => Update(range.Item1, range.Item2));
             else
                 Update(0, positions.Count);
 
@@ -221,6 +136,7 @@ namespace SpatialSlur.Dynamics
                 for (int i = from; i < to; i++)
                 {
                     ref var p = ref positions[i];
+
                     p.Velocity *= k;
                     p.Current += p.Velocity * timeStep;
                 }
@@ -229,7 +145,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// Updates via explicit integration to get an approximate prediction of the future state
+        /// Predicts future rotations via simple explicit integration
         /// </summary>
         private static void Predict(
             ArrayView<ParticleRotation> rotations,
@@ -238,7 +154,7 @@ namespace SpatialSlur.Dynamics
             bool parallel)
         {
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, rotations.Count), range => Update(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, rotations.Count), range => Update(range.Item1, range.Item2));
             else
                 Update(0, rotations.Count);
 
@@ -249,6 +165,7 @@ namespace SpatialSlur.Dynamics
                 for (int i = from; i < to; i++)
                 {
                     ref var r = ref rotations[i];
+
                     r.Velocity *= k;
                     r.Current = new Quaterniond(r.Velocity * timeStep) * r.Current;
                 }
@@ -257,7 +174,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// Updates via explicit integration to get an approximate prediction of the future state
+        /// Predicts future positions via simple explicit integration
         /// </summary>
         private static void Predict(
             ArrayView<ParticlePosition> positions,
@@ -268,7 +185,7 @@ namespace SpatialSlur.Dynamics
             )
         {
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, positions.Count), range => Update(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, positions.Count), range => Update(range.Item1, range.Item2));
             else
                 Update(0, positions.Count);
 
@@ -279,8 +196,10 @@ namespace SpatialSlur.Dynamics
                 for (int i = from; i < to; i++)
                 {
                     ref var p = ref positions[i];
+
                     p.Velocity = p.Velocity * k + forceSums[i] * (p.InverseMass * timeStep);
                     p.Current += p.Velocity * timeStep;
+
                     forceSums[i] = Vector3d.Zero;
                 }
             }
@@ -288,7 +207,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// Updates via explicit integration to get an approximate prediction of the future state
+        /// Predicts future rotations via simple explicit integration
         /// </summary>
         private static void Predict(
             ArrayView<ParticleRotation> rotations,
@@ -298,7 +217,7 @@ namespace SpatialSlur.Dynamics
             bool parallel)
         {
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, rotations.Count), range => Update(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, rotations.Count), range => Update(range.Item1, range.Item2));
             else
                 Update(0, rotations.Count);
 
@@ -309,9 +228,11 @@ namespace SpatialSlur.Dynamics
                 for (int i = from; i < to; i++)
                 {
                     ref var r = ref rotations[i];
+
                     var m = r.Current.ToMatrix();
-                    r.Velocity = r.Velocity * k + m.Apply(r.InverseInertia * m.ApplyTranspose(torqueSums[i])) * timeStep;
+                    r.Velocity = r.Velocity * k + m.Apply(r.InverseMass * m.ApplyTranspose(torqueSums[i])) * timeStep;
                     r.Current = new Quaterniond(r.Velocity * timeStep) * r.Current;
+
                     torqueSums[i] = Vector3d.Zero;
                 }
             }
@@ -319,7 +240,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// Corrects the predicted future state via a regularized Jacobi scheme
+        /// Corrects the predicted positions via a regularized Jacobi scheme
         /// </summary>
         private static void Correct(
             ArrayView<ParticlePosition> positions,
@@ -327,23 +248,24 @@ namespace SpatialSlur.Dynamics
             double timeStep,
             bool parallel)
         {
-            var dtInv = 1.0 / timeStep;
-
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, positions.Count), range => Correct(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, positions.Count), range => Correct(range.Item1, range.Item2));
             else
                 Correct(0, positions.Count);
             
             void Correct(int from, int to)
             {
+                var dtInv = 1.0 / timeStep;
+
                 for (int i = from; i < to; i++)
                 {
                     ref var c = ref correctSums[i];
 
                     if (c.W > 0.0)
                     {
-                        ref var p = ref positions[i];
                         var d = c.XYZ / c.W;
+
+                        ref var p = ref positions[i];
                         p.Current += d;
                         p.Velocity += d * dtInv;
                     }
@@ -355,7 +277,7 @@ namespace SpatialSlur.Dynamics
 
 
         /// <summary>
-        /// Corrects the predicted future state via a regularized Jacobi scheme
+        /// Corrects the predicted rotations via a regularized Jacobi scheme
         /// </summary>
         private static void Correct(
             ArrayView<ParticleRotation> rotations, 
@@ -363,23 +285,24 @@ namespace SpatialSlur.Dynamics
             double timeStep, 
             bool parallel)
         {
-            var dtInv = 1.0 / timeStep;
-
             if (parallel)
-                Parallel.ForEach(Partitioner.Create(0, rotations.Count), range => Correct(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, rotations.Count), range => Correct(range.Item1, range.Item2));
             else
                 Correct(0, rotations.Count);
             
             void Correct(int from, int to)
             {
+                var dtInv = 1.0 / timeStep;
+
                 for (int i = from; i < to; i++)
                 {
                     ref var c = ref correctSums[i];
 
                     if (c.W > 0.0)
                     {
-                        ref var r = ref rotations[i];
                         var d = c.XYZ / c.W;
+
+                        ref var r = ref rotations[i];
                         r.Current = new Quaterniond(d) * r.Current;
                         r.Velocity += d * dtInv;
                     }
