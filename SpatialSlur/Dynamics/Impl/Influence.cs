@@ -1,53 +1,49 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
-using System.Collections.Generic;
 using SpatialSlur.Collections;
 
 namespace SpatialSlur.Dynamics
 {
     /// <summary>
-    /// Base class for an influence that acts on a dynamic collection of particles.
+    /// Base class for forces and constraints that act on a group of particles
     /// </summary>
     [Serializable]
     public abstract class Influence<TDelta> : IInfluence
+        where TDelta : struct
     {
-        private ParticleHandle[] _handles = Array.Empty<ParticleHandle>();
+        private SlurList<Particle> _particles = new SlurList<Particle>();
         private TDelta[] _deltas = Array.Empty<TDelta>();
-        private int _count;
+        private bool _parallel;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public ArrayView<ParticleHandle> Handles
+        public SlurList<Particle> Particles
         {
-            get { return _handles.AsView(_count); }
+            get => _particles;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        protected ArrayView<TDelta> Deltas
+        public ArrayView<TDelta> Deltas
         {
-            get { return _deltas.AsView(_count); }
+            get { return _deltas.AsView(_particles.Count); }
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public virtual void SetHandles(IEnumerable<ParticleHandle> handles)
+        public bool Parallel
         {
-            _count = handles.ToArray(ref _handles);
-
-            // resize other buffer(s) if necessary
-            if (_deltas.Length < _count)
-                _deltas = new TDelta[_handles.Length];
+            get => _parallel;
+            set => _parallel = value;
         }
 
 
@@ -59,8 +55,12 @@ namespace SpatialSlur.Dynamics
 
 
         /// <inheritdoc />
-        public abstract void Calculate(
+        public virtual void Calculate(
             ArrayView<ParticlePosition> positions,
-            ArrayView<ParticleRotation> rotations);
+            ArrayView<ParticleRotation> rotations)
+        {
+            if (_deltas.Length < _particles.Count)
+                _deltas = new TDelta[_particles.Capacity];
+        }
     }
 }
