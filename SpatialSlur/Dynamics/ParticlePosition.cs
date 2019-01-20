@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
@@ -15,7 +14,9 @@ namespace SpatialSlur.Dynamics
     {
         #region Static
 
-        /// <summary></summary>
+        /// <summary>
+        /// 
+        /// </summary>
         public static readonly ParticlePosition Default = new ParticlePosition
         {
             Current = Vector3d.Zero,
