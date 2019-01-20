@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
@@ -22,43 +21,14 @@ namespace SpatialSlur.Dynamics
     [Serializable]
     public class ForceGroup
     {
-        private List<IForce> _forces;
+        private SlurList<IForce> _forces = new SlurList<IForce>();
         private bool _parallel;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public ForceGroup()
-        {
-            _forces = new List<IForce>();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="capacity"></param>
-        public ForceGroup(int capacity)
-        {
-            _forces = new List<IForce>(capacity);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="forces"></param>
-        public ForceGroup(IEnumerable<IForce> forces)
-        {
-            _forces = forces.ToList();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<IForce> Forces
+        public SlurList<IForce> Forces
         {
             get => _forces;
         }

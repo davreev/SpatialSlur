@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
@@ -22,43 +21,14 @@ namespace SpatialSlur.Dynamics
     [Serializable]
     public class ConstraintGroup
     {
-        private List<IConstraint> _constraints;
+        private SlurList<IConstraint> _constraints = new SlurList<IConstraint>();
         private bool _parallel;
-
-
+        
+        
         /// <summary>
         /// 
         /// </summary>
-        public ConstraintGroup()
-        {
-            _constraints = new List<IConstraint>();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="capacity"></param>
-        public ConstraintGroup(int capacity)
-        {
-            _constraints = new List<IConstraint>(capacity);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="constraints"></param>
-        public ConstraintGroup(IEnumerable<IConstraint> constraints)
-        {
-            _constraints = constraints.ToList();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<IConstraint> Constraints
+        public SlurList<IConstraint> Constraints
         {
             get => _constraints;
         }
