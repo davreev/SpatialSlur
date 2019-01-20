@@ -33,7 +33,7 @@ namespace SpatialSlur.Dynamics.Constraints
             public static Element Default = new Element()
             {
                 First = -1,
-                Size = 0,
+                Count = 0,
                 Weight = 1.0
             };
 
@@ -41,7 +41,7 @@ namespace SpatialSlur.Dynamics.Constraints
             public int First;
 
             /// <summary>Number of particles used by this element</summary>
-            public int Size;
+            public int Count;
 
             /// <summary>Relative influence of this element</summary>
             public double Weight;
@@ -85,10 +85,10 @@ namespace SpatialSlur.Dynamics.Constraints
                 {
                     var e = elements[i];
                     
-                    if(e.Size < 3)
+                    if(e.Count < 3)
                     {
-                        // Zero out deltas if not enough particles in the element
-                        for(int j = 0; j < e.Size; j++)
+                        // Zero out deltas if not enough particles
+                        for(int j = 0; j < e.Count; j++)
                             deltas[j + e.First] = Vector4d.Zero;
                     }
                     else
@@ -96,10 +96,10 @@ namespace SpatialSlur.Dynamics.Constraints
                         // Calculate projection delta
                         var sum = Vector3d.Zero;
 
-                        for (int j = 1; j < e.Size; j++)
-                            sum += positions[particles[j + e.First].PositionIndex].Current;
+                        for (int j = 1; j < e.Count; j++)
+                            sum += positions[particles[e.First + j].PositionIndex].Current;
 
-                        var t = 1.0 / (e.Size - 1);
+                        var t = 1.0 / (e.Count - 1);
                         var d = (sum * t - positions[particles[e.First].PositionIndex].Current) * (0.5 * e.Weight);
 
                         // Apply projection to centre
@@ -108,8 +108,8 @@ namespace SpatialSlur.Dynamics.Constraints
                         // Distribute reverse projection among 1 ring
                         {
                             d *= -t;
-                            for (int j = 1; j < e.Size; j++)
-                                deltas[j + e.First] = new Vector4d(d, e.Weight);
+                            for (int j = 1; j < e.Count; j++)
+                                deltas[e.First + j] = new Vector4d(d, e.Weight);
                         }
                     }
                 }

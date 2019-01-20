@@ -1,12 +1,15 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -16,28 +19,45 @@ namespace SpatialSlur.Dynamics.Constraints
     [Serializable]
     public class Cocircular : Impl.PositionConstraint
     {
-        private bool _accumulate;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="weight"></param>
-        public Cocircular(double weight = 1.0)
+        [Serializable]
+        public struct Element
         {
-            Weight = weight;
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Element Default = new Element()
+            {
+                First = -1,
+                Count = 0,
+                Weight = 1.0
+            };
+
+            /// <summary>Index of the first particle used by this element</summary>
+            public int First;
+
+            /// <summary>Number of particles used by this element</summary>
+            public int Count;
+
+            /// <summary>Relative influence of this element</summary>
+            public double Weight;
         }
 
+        #endregion
+
+        private SlurList<Element> _elements = new SlurList<Element>();
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="handles"></param>
-        /// <param name="weight"></param>
-        public Cocircular(IEnumerable<ParticleHandle> handles, double weight = 1.0)
+        public SlurList<Element> Elements
         {
-            SetHandles(handles);
-            Weight = weight;
+            get => _elements;
         }
 
 
@@ -46,37 +66,40 @@ namespace SpatialSlur.Dynamics.Constraints
             ArrayView<ParticlePosition> positions,
             ArrayView<ParticleRotation> rotations)
         {
-            var handles = Handles;
-            var deltas = Deltas;
+            base.Calculate(positions, rotations);
+            var elements = _elements;
 
-            // TODO consider particle masses
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, elements.Count);
 
-            if (handles.Count < 4 || !Geometry.FitCircleToPoints(handles.Select(h => positions[h.PositionIndex].Current), out Vector3d p, out Vector3d z, out double r))
+            void Calculate(int from, int to)
             {
-                deltas.Clear();
-                _accumulate = false;
-                return;
+                var particles = Particles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    var e = elements[i];
+
+                    if (e.Count < 4 || Geometry.FitCircle(particles.AsView(e.First, e.Count), positions, out var origin, out var normal, out var radius))
+                    {
+                        // Zero out deltas if not enough particles
+                        for (int j = 0; j < e.Count; j++)
+                            deltas[e.First + j] = Vector4d.Zero;
+                    }
+                    else
+                    {
+                        for(int j = 0;  j < e.Count; j++)
+                        {
+                            var d0 = positions[particles[e.First + j].PositionIndex].Current - origin;
+                            var d1 = Vector3d.Reject(d0, normal);
+                            deltas[e.First + j] = new Vector4d(d1 * (radius / d1.Length) - d0, 1.0) * e.Weight;
+                        }
+                    }
+                }
             }
-
-            for (int i = 0; i < handles.Count; i++)
-            {
-                var d = p - positions[handles[i].PositionIndex].Current;
-                var dz = Vector3d.Project(d, z);
-                var dxy = d - dz;
-                deltas[i] = dz + dxy * (1.0 - r / dxy.Length);
-            }
-
-            _accumulate = true;
-        }
-
-
-        /// <inheritdoc />
-        public override void Accumulate(
-            ArrayView<Vector4d> linearCorrectSums,
-            ArrayView<Vector4d> angularCorrectSums)
-        {
-            if (_accumulate)
-                base.Accumulate(linearCorrectSums, angularCorrectSums);
         }
     }
 }

@@ -5,7 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -13,113 +17,72 @@ namespace SpatialSlur.Dynamics.Constraints
     ///
     /// </summary>
     [Serializable]
-    public class AlignPair : IConstraint
+    public class AlignPair : Impl.OnTarget<AlignPair.Target>
     {
-        private ParticleHandle _h0, _h1;
-        private Vector3d _d0, _d1;
-        private Vector3d _target;
-        private double _weight;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="handle0"></param>
-        /// <param name="handle1"></param>
-        /// <param name="target"></param>
-        /// <param name="weight"></param>
-        public AlignPair(ParticleHandle handle0, ParticleHandle handle1, Vector3d target, double weight = 1.0)
+        [Serializable]
+        public struct Target
         {
-            _h0 = handle0;
-            _h1 = handle1;
-            _target = target;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ParticleHandle Handle0
-        {
-            get { return _h0; }
-            set { _h0 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ParticleHandle Handle1
-        {
-            get { return _h1; }
-            set { _h1 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Target
-        {
-            get { return _target; }
-            set { _target = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Weight
-        {
-            get { return _weight; }
-            set
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
             {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
+                Direction = Vector3d.UnitX,
+                Weight = 1.0
+            };
 
-                _weight = value;
-            }
+            /// <summary></summary>
+            public Vector3d Direction;
+
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
         }
-
-
-        /// <inheritdoc />
-        public void Calculate(
-            ArrayView<ParticlePosition> positions,
-            ArrayView<ParticleRotation> rotations)
-        {
-            ref var p0 = ref positions[_h0.PositionIndex];
-            ref var p1 = ref positions[_h1.PositionIndex];
-
-            var d = Vector3d.Reject(p1.Current - p0.Current, _target);
-
-            var w0 = p0.InverseMass;
-            var w1 = p1.InverseMass;
-            var invSum = 1.0 / (w0 + w1);
-
-            _d0 = d * (w0 * invSum);
-            _d1 = d * (-w1 * invSum);
-        }
-
-
-        /// <inheritdoc />
-        public void Accumulate(
-            ArrayView<Vector4d> linearCorrectSums,
-            ArrayView<Vector4d> angularCorrectSums)
-        {
-            var w = Weight;
-            linearCorrectSums[_h0.PositionIndex] += new Vector4d(_d0 * w, w);
-            linearCorrectSums[_h1.PositionIndex] += new Vector4d(_d1 * w, w);
-        }
-
-
-        #region Explicit interface implementations
-
-        void IInfluence.Initialize(
-            ArrayView<ParticlePosition> positions,
-            ArrayView<ParticleRotation> rotations)
-        { }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var tg = ref targets[indices[i]];
+
+                    int j = i << 1;
+                    ref var p0 = ref positions[particles[j].PositionIndex];
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
+
+                    var d = Vector3d.Reject(p1.Current - p0.Current, tg.Direction);
+
+                    var w0 = p0.InverseMass;
+                    var w1 = p1.InverseMass;
+                    var t = tg.Weight / (w0 + w1);
+
+                    deltas[j] = new Vector4d(d * (w0 * t), 1.0) * tg.Weight;
+                    deltas[j+1] = new Vector4d(d * -(w1 * t), 1.0) * tg.Weight;
+                }
+            }
+        }
     }
 }

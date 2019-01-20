@@ -2,13 +2,9 @@
  * Notes
  */
 
-#if USING_RHINO
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-
-using Rhino.Geometry;
 
 using SpatialSlur.Collections;
 
@@ -20,7 +16,7 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class OnMesh : Impl.OnTarget<OnMesh.Target>
+    public class InsideBounds : Impl.OnTarget<InsideBounds.Target>
     {
         #region Nested types
 
@@ -35,11 +31,12 @@ namespace SpatialSlur.Dynamics.Constraints
             /// </summary>
             public static Target Default = new Target()
             {
+                Bounds = Interval3d.Unit,
                 Weight = 1.0
             };
 
             /// <summary></summary>
-            public Mesh Mesh;
+            public Interval3d Bounds;
 
             /// <summary>Relative influence of this target</summary>
             public double Weight;
@@ -71,12 +68,12 @@ namespace SpatialSlur.Dynamics.Constraints
                 {
                     ref var tg = ref targets[indices[i]];
                     ref var p = ref positions[particles[i].PositionIndex].Current;
-                    var d = (Vector3d)tg.Mesh.ClosestPoint(p) - p;
-                    deltas[i] = new Vector4d(d, 1.0) * tg.Weight;
+
+                    deltas[i] = tg.Bounds.Contains(p) ?
+                        Vector4d.Zero :
+                        new Vector4d(tg.Bounds.Clamp(p) - p, 1.0) * tg.Weight;
                 }
             }
         }
     }
 }
-
-#endif
