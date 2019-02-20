@@ -39,11 +39,11 @@ namespace SpatialSlur.Dynamics.Constraints
 
                 for (int i = from; i < to; i++)
                 {
-                    ref var tg = ref targets[indices[i]];
-                    var d = Vector3d.Dot(tg.Origin - positions[particles[i].PositionIndex].Current, tg.Normal);
+                    ref var t = ref targets[indices[i]];
+                    var d = Vector3d.Dot(t.Origin - positions[particles[i].PositionIndex].Current, t.Normal);
 
                     deltas[i] = d > 0.0 ?
-                        new Vector4d(tg.Normal * (d / tg.Normal.SquareLength), 1.0) * tg.Weight : Vector4d.Zero;
+                        new Vector4d(t.Normal * (d / t.Normal.SquareLength), 1.0) * t.Weight : Vector4d.Zero;
                 }
             }
         }

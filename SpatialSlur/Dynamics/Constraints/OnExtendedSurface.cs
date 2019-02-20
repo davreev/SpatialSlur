@@ -43,8 +43,8 @@ namespace SpatialSlur.Dynamics.Constraints
 
                 for (int i = from; i < to; i++)
                 {
-                    ref var tg = ref targets[indices[i]];
-                    var srf = tg.Surface;
+                    ref var t = ref targets[indices[i]];
+                    var srf = t.Surface;
 
                     ref var p = ref positions[particles[i].PositionIndex].Current;
                     srf.ClosestPoint(p, out var u, out var v);
@@ -53,7 +53,7 @@ namespace SpatialSlur.Dynamics.Constraints
                         (Vector3d)srf.PointAt(u, v) - p,
                         srf.NormalAt(u, v));
 
-                    deltas[i] = new Vector4d(d, 1.0) * tg.Weight;
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
                 }
             }
         }

@@ -320,9 +320,6 @@ namespace SpatialSlur.Dynamics
                 if (!p1.IsRemoved) j++;
             }
 
-            // Clean up remaining handles
-            particles.Sub(j, _count - j).Set(Particle.Default);
-
             _count = j;
             _positionCount = posCount;
             _rotationCount = rotCount;

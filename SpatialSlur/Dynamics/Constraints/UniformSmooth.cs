@@ -79,7 +79,7 @@ namespace SpatialSlur.Dynamics.Constraints
                 var particles = Particles;
                 var deltas = Deltas;
 
-                // TODO Consider particle masses
+                // TODO Consider particle masses?
 
                 for (int i = from; i < to; i++)
                 {
@@ -93,16 +93,16 @@ namespace SpatialSlur.Dynamics.Constraints
                     }
                     else
                     {
-                        // Calculate projection delta
+                        // Calculate centroid of the 1 ring
                         var sum = Vector3d.Zero;
 
                         for (int j = 1; j < e.Count; j++)
                             sum += positions[particles[e.First + j].PositionIndex].Current;
 
-                        var t = 1.0 / (e.Count - 1);
+                        double t = 1.0 / (e.Count - 1);
                         var d = (sum * t - positions[particles[e.First].PositionIndex].Current) * (0.5 * e.Weight);
 
-                        // Apply projection to centre
+                        // Apply projection to central particle
                         deltas[e.First] = new Vector4d(d, e.Weight);
 
                         // Distribute reverse projection among 1 ring

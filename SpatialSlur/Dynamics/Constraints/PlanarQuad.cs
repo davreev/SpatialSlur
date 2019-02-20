@@ -75,22 +75,22 @@ namespace SpatialSlur.Dynamics.Constraints
                 var particles = Particles;
                 var deltas = Deltas;
 
-                // TODO Consider particle masses
+                // TODO Consider particle masses?
 
                 for (int i = from; i < to; i++)
                 {
                     ref var e = ref elements[i];
 
                     int j = i << 2;
-                    ref var p0 = ref positions[particles[j].PositionIndex];
-                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
-                    ref var p2 = ref positions[particles[j + 2].PositionIndex];
-                    ref var p3 = ref positions[particles[j + 3].PositionIndex];
-                    
-                    var d = LineLineShortestVector(p0.Current, p2.Current, p1.Current, p3.Current) * 0.5;
+                    ref var p0 = ref positions[particles[j].PositionIndex].Current;
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex].Current;
+                    ref var p2 = ref positions[particles[j + 2].PositionIndex].Current;
+                    ref var p3 = ref positions[particles[j + 3].PositionIndex].Current;
+
+                    var d = LineLineShortestVector(p0, p2, p1, p3) * 0.5;
 
                     deltas[j] = deltas[j + 2] = new Vector4d(d, 1.0) * e.Weight;
-                    deltas[j+1] = deltas[j + 3] = new Vector4d(-d, 1.0) * e.Weight;
+                    deltas[j + 1] = deltas[j + 3] = new Vector4d(-d, 1.0) * e.Weight;
                 }
             }
         }

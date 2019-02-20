@@ -35,7 +35,7 @@ namespace SpatialSlur.Dynamics.Constraints
             };
 
             /// <summary>The number of particles used by this element</summary>
-            public const int Size = 2;
+            public const int Count = 2;
 
             /// <summary></summary>
             public double RestDistance;
@@ -122,10 +122,10 @@ namespace SpatialSlur.Dynamics.Constraints
 
                     var w0 = p0.InverseMass;
                     var w1 = p1.InverseMass;
-                    var t = e.Weight / (w0 + w1);
+                    var invSum = e.Weight / (w0 + w1);
 
-                    deltas[j] = new Vector4d(d * (w0 * t), e.Weight);
-                    deltas[j + 1] = new Vector4d(d * -(w1 * t), e.Weight);
+                    deltas[j] = new Vector4d(d * (w0 * invSum), e.Weight);
+                    deltas[j + 1] = new Vector4d(d * -(w1 * invSum), e.Weight);
                 }
             }
         }

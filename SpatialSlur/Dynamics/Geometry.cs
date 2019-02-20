@@ -26,16 +26,17 @@ namespace SpatialSlur
         /// </summary>
         public static bool FitPlane(
             ArrayView<Particle> particles,
-            ArrayView<ParticlePosition> positions, 
-            out Vector3d origin, 
-            out Vector3d normal, 
+            ArrayView<ParticlePosition> positions,
+            out Vector3d origin,
+            out Vector3d normal,
             double epsilon = Constd.ZeroTolerance)
         {
             // impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
             // http://www.ilikebigbits.com/blog/2017/9/24/fitting-a-plane-to-noisy-points-in-3d
-            
-            Matrix3d covm = CreateCovariance(particles, positions, out origin);
+
+            origin = GetMassCenter(particles, positions);
+            Matrix3d covm = CreateCovariance(particles, positions, origin);
             Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
             normal = vecs.Column2;
 
@@ -57,10 +58,8 @@ namespace SpatialSlur
             // Impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
             // http://www.ilikebigbits.com/blog/2017/9/24/fitting-a-plane-to-noisy-points-in-3d
-
-            start = GetMassCenter(particles, positions);
-            Matrix3d covm = CreateCovariance(particles, positions, start);
-
+            
+            Matrix3d covm = CreateCovariance(particles, positions, out start);
             Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
             direction = vecs.Column0;
 
@@ -107,27 +106,41 @@ namespace SpatialSlur
             ArrayView<Particle> particles,
             ArrayView<ParticlePosition> positions)
         {
-            var result = Vector3d.Zero;
-            double invWeightSum = 0.0;
+            var sum = Vector3d.Zero;
+            double weightSum = 0.0;
 
             for (int i = 0; i < particles.Count; i++)
             {
                 ref var p = ref positions[particles[i].PositionIndex];
-                result += p.Current / p.InverseMass;
-                invWeightSum += p.InverseMass;
+                var w = 1.0 / p.InverseMass;
+                sum += p.Current * w;
+                weightSum += w;
             }
 
-            return result * invWeightSum;
+            return sum / weightSum;
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        private static Matrix3d CreateCovariance(
-        ArrayView<Particle> particles,
-        ArrayView<ParticlePosition> positions,
-        Vector3d origin)
+        public static Matrix3d CreateCovariance(
+            ArrayView<Particle> particles,
+            ArrayView<ParticlePosition> positions,
+            out Vector3d massCenter)
+        {
+            massCenter = GetMassCenter(particles, positions);
+            return CreateCovariance(particles, positions, GetMassCenter(particles, positions));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Matrix3d CreateCovariance(
+            ArrayView<Particle> particles,
+            ArrayView<ParticlePosition> positions,
+            Vector3d massCenter)
         {
             var result = new Matrix3d();
             double weightSum = 0.0;
@@ -135,7 +148,7 @@ namespace SpatialSlur
             for (int i = 0; i < particles.Count; i++)
             {
                 ref var p = ref positions[particles[i].PositionIndex];
-                var d = p.Current - origin;
+                var d = p.Current - massCenter;
                 var w = 1.0 / p.InverseMass;
 
                 result.M00 += d.X * d.X * w;

@@ -1,126 +1,132 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
     /// <summary>
     /// 
     /// </summary>
-    public class Translation : Constraint, IConstraint
+    public class Translation : Impl.PositionConstraint
     {
-        private Vector3d _delta;
-        private int _i0, _i1;
-
-        private Vector3d _target; // target delta from body0 to body1
-        
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index0"></param>
-        /// <param name="index1"></param>
-        /// <param name="weight"></param>
-        public Translation(int index0, int index1, double weight = 1.0)
-        {
-            _i0 = index0;
-            _i1 = index1;
-            Weight = weight;
-        }
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        public int Index0
+        [Serializable]
+        public struct Element
         {
-            get { return _i0; }
-            set { _i0 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index1
-        {
-            get { return _i1; }
-            set { _i1 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="p0"></param>
-        /// <param name="p1"></param>
-        public void SetTargets(Vector3d p0, Vector3d p1)
-        {
-            _target = p1 - p0;
-        }
-
-
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            var d = (bodies[_i1].Position.Current - bodies[_i0].Position.Current - _target) * 0.5;
-            _delta = d;
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            bodies[_i0].Position.AddProjection(_delta, Weight);
-            bodies[_i1].Position.AddProjection(-_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length * 2.0;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Element Default = new Element()
             {
-                yield return _i0;
-                yield return _i1;
-            }
-            set
-            {
-                var itr = value.GetEnumerator();
+                RestDelta = Vector3d.Zero,
+                Weight = 1.0
+            };
 
-                itr.MoveNext();
-                _i0 = itr.Current;
+            /// <summary>The number of particles used by this element</summary>
+            public const int Count = 2;
 
-                itr.MoveNext();
-                _i1 = itr.Current;
-            }
+            /// <summary></summary>
+            public Vector3d RestDelta;
+
+            /// <summary>Relative influence of this element</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        private SlurList<Element> _elements = new SlurList<Element>();
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SlurList<Element> Elements
+        {
+            get => _elements;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="positions"></param>
+        /// <param name="rotations"></param>
+        public override void Initialize(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            var elements = _elements;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Initialize(range.Item1, range.Item2));
+            else
+                Initialize(0, elements.Count);
+
+            void Initialize(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    int j = i << 1;
+                    ref var p0 = ref positions[particles[j].PositionIndex];
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
+                    elements[i].RestDelta = p1.Current - p0.Current;
+                }
+            }
+        }
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var elements = _elements;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, elements.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var e = ref elements[i];
+
+                    int j = i << 1;
+                    ref var p0 = ref positions[particles[j].PositionIndex];
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
+
+                    var d = p1.Current - p0.Current - e.RestDelta;
+
+                    var w0 = p0.InverseMass;
+                    var w1 = p1.InverseMass;
+                    var invSum = e.Weight / (w0 + w1);
+
+                    deltas[j] = new Vector4d(d * (w0 * invSum), e.Weight);
+                    deltas[j + 1] = new Vector4d(d * -(w1 * invSum), e.Weight);
+                }
+            }
+        }
     }
 }

@@ -118,10 +118,10 @@ namespace SpatialSlur.Dynamics.Constraints
 
                             var w0 = p0.InverseMass;
                             var w1 = p1.InverseMass;
-                            var t = e.Weight / (w0 + w1);
+                            var invSum = e.Weight / (w0 + w1);
 
-                            deltas[e.First + j] = new Vector4d(d * (w0 * t), e.Weight);
-                            deltas[e.First + j + 1] = new Vector4d(d * -(w1 * t), e.Weight);
+                            deltas[e.First + j] = new Vector4d(d * (w0 * invSum), e.Weight);
+                            deltas[e.First + j + 1] = new Vector4d(d * -(w1 * invSum), e.Weight);
                         }
                     }
                 }

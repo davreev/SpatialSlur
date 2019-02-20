@@ -69,10 +69,10 @@ namespace SpatialSlur.Dynamics.Constraints
 
                 for (int i = from; i < to; i++)
                 {
-                    ref var tg = ref targets[indices[i]];
+                    ref var t = ref targets[indices[i]];
                     ref var p = ref positions[particles[i].PositionIndex].Current;
-                    var d = (Vector3d)tg.Mesh.ClosestPoint(p) - p;
-                    deltas[i] = new Vector4d(d, 1.0) * tg.Weight;
+                    var d = (Vector3d)t.Mesh.ClosestPoint(p) - p;
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
                 }
             }
         }

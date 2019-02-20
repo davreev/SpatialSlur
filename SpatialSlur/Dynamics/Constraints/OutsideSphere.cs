@@ -38,16 +38,16 @@ namespace SpatialSlur.Dynamics.Constraints
 
                 for (int i = from; i < to; i++)
                 {
-                    ref var tg = ref targets[indices[i]];
-                    var r = tg.Radius;
+                    ref var t = ref targets[indices[i]];
+                    var r = t.Radius;
 
-                    var d = tg.Origin - positions[particles[i].PositionIndex].Current;
+                    var d = t.Origin - positions[particles[i].PositionIndex].Current;
                     var m = d.SquareLength;
                     
                     if (m < r * r)
                     {
                         d *= 1.0 - r / Math.Sqrt(m);
-                        deltas[i] = new Vector4d(d, 1.0) * tg.Weight;
+                        deltas[i] = new Vector4d(d, 1.0) * t.Weight;
                     }
                     else
                     {

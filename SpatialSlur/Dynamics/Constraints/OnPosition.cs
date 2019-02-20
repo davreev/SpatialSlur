@@ -65,9 +65,9 @@ namespace SpatialSlur.Dynamics.Constraints
 
                 for(int i = from; i < to; i++)
                 {
-                    ref var tg = ref targets[indices[i]];
-                    var d = tg.Position - positions[particles[i].PositionIndex].Current;
-                    deltas[i] = new Vector4d(d, 1.0) * tg.Weight;
+                    ref var t = ref targets[indices[i]];
+                    var d = t.Position - positions[particles[i].PositionIndex].Current;
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
                 }
             }
         }
