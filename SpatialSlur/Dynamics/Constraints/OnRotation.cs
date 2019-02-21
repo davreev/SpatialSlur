@@ -1,12 +1,14 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,90 +16,61 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class OnRotation : Constraint, IConstraint
+    public class OnRotation : Impl.OnTarget<OnRotation.Target>
     {
-        private Vector3d _delta;
-        private int _index;
-
-        private Quaterniond _target;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="target"></param>
-        /// <param name="weight"></param>
-        public OnRotation(int index, Quaterniond target, double weight = 1.0)
+        [Serializable]
+        public struct Target
         {
-            _index = index;
-            _target = target;
-            Weight = weight;
-        }
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
+            {
+                Rotation = Quaterniond.Identity,
+                Weight = 1.0
+            };
 
+            /// <summary></summary>
+            public Quaterniond Rotation;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            set { _index = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Quaterniond Target
-        {
-            get { return _target; }
-            set { _target = value; }
-        }
-
-
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            _delta = Quaterniond.CreateFromTo(bodies[_index].Rotation.Current, _target).ToAxisAngle();
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            bodies[_index].Rotation.AddDelta(_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = 0.0;
-            angular = _delta.Length;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return false; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return true; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get { yield return _index; }
-            set { _index = value.First(); }
+            /// <summary>Relative influence of this element</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+                    var d = Quaterniond.CreateFromTo(rotations[particles[i].RotationIndex].Current, t.Rotation);
+                    deltas[i] = new Vector4d(d.ToAxisAngle(), 1.0) * t.Weight;
+                }
+            }
+        }
     }
 }

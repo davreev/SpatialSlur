@@ -1,104 +1,75 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
-
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class OnPosition : Constraint, IConstraint
+    public class OnPosition : Impl.OnTarget<OnPosition.Target>
     {
-        private Vector3d _delta;
-        private int _index;
-
-        private Vector3d _target;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="position"></param>
-        /// <param name="weight"></param>
-        public OnPosition(int index, Vector3d position, double weight = 1.0)
+        [Serializable]
+        public struct Target
         {
-            _index = index;
-            _target = position;
-            Weight = weight;
-        }
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
+            {
+                Weight = 1.0
+            };
 
+            /// <summary></summary>
+            public Vector3d Position;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            set { _index = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Target
-        {
-            get { return _target; }
-            set { _target = value; }
-        }
-
-
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            _delta = _target - bodies[_index].Position.Current;
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            bodies[_index].Position.AddDelta(_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get { yield return _index; }
-            set { _index = value.First(); }
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions, 
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for(int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+                    var d = t.Position - positions[particles[i].PositionIndex].Current;
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
+                }
+            }
+        }
     }
 }

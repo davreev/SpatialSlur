@@ -1,134 +1,133 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
-    [Serializable]
-    public class Distance : Constraint, IConstraint
+    public class Distance : Impl.PositionConstraint
     {
-        private Vector3d _delta;
-        private int _i0, _i1;
-        private double _target;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index0"></param>
-        /// <param name="index1"></param>
-        /// <param name="target"></param>
-        /// <param name="weight"></param>
-        public Distance(int index0, int index1, double target, double weight = 1.0)
+        [Serializable]
+        public struct Element
         {
-            _i0 = index0;
-            _i1 = index1;
-            Target = target;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index0
-        {
-            get { return _i0; }
-            set { _i0 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index1
-        {
-            get { return _i1; }
-            set { _i1 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Target
-        {
-            get { return _target; }
-            set
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Element Default = new Element()
             {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
+                RestDistance = 0.0,
+                Weight = 1.0
+            };
 
-                _target = value;
-            }
-        }
+            /// <summary>The number of particles used by this element</summary>
+            public const int Count = 2;
 
+            /// <summary></summary>
+            public double RestDistance;
 
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            var d = bodies[_i1].Position.Current - bodies[_i0].Position.Current;
-            _delta = d * ((1.0 - _target / d.Length) * 0.5);
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            bodies[_i0].Position.AddDelta(_delta, Weight);
-            bodies[_i1].Position.AddDelta(-_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length * 2.0;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get
-            {
-                yield return _i0;
-                yield return _i1;
-            }
-            set
-            {
-                var itr = value.GetEnumerator();
-
-                itr.MoveNext();
-                _i0 = itr.Current;
-
-                itr.MoveNext();
-                _i1 = itr.Current;
-            }
+            /// <summary>Relative influence of this element</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        private SlurList<Element> _elements = new SlurList<Element>();
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SlurList<Element> Elements
+        {
+            get => _elements;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="positions"></param>
+        /// <param name="rotations"></param>
+        public override void Initialize(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            var elements = _elements;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Initialize(range.Item1, range.Item2));
+            else
+                Initialize(0, elements.Count);
+
+            void Initialize(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    int j = i << 1;
+                    ref var p0 = ref positions[particles[j].PositionIndex];
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
+                    elements[i].RestDistance = p0.Current.DistanceTo(p1.Current);
+                }
+            }
+        }
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var elements = _elements;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, elements.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var e = ref elements[i];
+
+                    int j = i << 1;
+                    ref var p0 = ref positions[particles[j].PositionIndex];
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex];
+
+                    var d = p1.Current - p0.Current;
+                    d *= 1.0 - e.RestDistance / d.Length;
+
+                    var w0 = p0.InverseMass;
+                    var w1 = p1.InverseMass;
+                    var invSum = e.Weight / (w0 + w1);
+
+                    deltas[j] = new Vector4d(d * (w0 * invSum), e.Weight);
+                    deltas[j + 1] = new Vector4d(d * -(w1 * invSum), e.Weight);
+                }
+            }
+        }
     }
 }

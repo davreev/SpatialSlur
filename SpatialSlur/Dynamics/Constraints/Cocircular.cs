@@ -1,12 +1,15 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,47 +17,89 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class Cocircular : PositionGroup
+    public class Cocircular : Impl.PositionConstraint
     {
+        #region Nested types
+
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="weight"></param>
-        public Cocircular(double weight = 1.0)
-            : base(weight)
+        [Serializable]
+        public struct Element
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Element Default = new Element()
+            {
+                First = -1,
+                Count = 0,
+                Weight = 1.0
+            };
+
+            /// <summary>Index of the first particle used by this element</summary>
+            public int First;
+
+            /// <summary>Number of particles used by this element</summary>
+            public int Count;
+
+            /// <summary>Relative influence of this element</summary>
+            public double Weight;
         }
 
+        #endregion
+
+        private SlurList<Element> _elements = new SlurList<Element>();
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="weight"></param>
-        public Cocircular(IEnumerable<int> indices, double weight = 1.0)
-            : base(indices, weight)
+        public SlurList<Element> Elements
         {
+            get => _elements;
         }
 
 
         /// <inheritdoc />
-        protected override bool Calculate(ReadOnlyArrayView<Body> bodies, ReadOnlyArrayView<int> indices, ArrayView<Vector3d> deltas)
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-            int n = indices.Count;
+            base.Calculate(positions, rotations);
+            var elements = _elements;
 
-            if (n < 4 || !Geometry.FitCircleToPoints(Indices.Select(i => bodies[i].Position.Current), out Vector3d p, out Vector3d z, out double r))
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, elements.Count);
+
+            void Calculate(int from, int to)
             {
-                deltas.Clear();
-                return false;
-            }
+                var particles = Particles;
+                var deltas = Deltas;
 
-            for (int i = 0; i < n; i++)
-            {
-                var d = Vector3d.Project(p - bodies[indices[i]].Position.Current, z);
-                deltas[i] = d * (1.0 - r / d.Length);
-            }
+                for (int i = from; i < to; i++)
+                {
+                    var e = elements[i];
 
-            return true;
+                    if (e.Count < 4 || Geometry.FitCircle(particles.AsView(e.First, e.Count), positions, out var origin, out var normal, out var radius))
+                    {
+                        // Zero out deltas if not enough particles
+                        for (int j = 0; j < e.Count; j++)
+                            deltas[e.First + j] = Vector4d.Zero;
+                    }
+                    else
+                    {
+                        for(int j = 0;  j < e.Count; j++)
+                        {
+                            var d0 = positions[particles[e.First + j].PositionIndex].Current - origin;
+                            var d1 = Vector3d.Reject(d0, normal);
+                            deltas[e.First + j] = new Vector4d(d1 * (radius / d1.Length) - d0, 1.0) * e.Weight;
+                        }
+                    }
+                }
+            }
         }
     }
 }

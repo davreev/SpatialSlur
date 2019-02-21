@@ -13,21 +13,20 @@ using static System.Threading.Tasks.Parallel;
 namespace SpatialSlur.Dynamics.Forces
 {
     /// <summary>
-    /// 
+    /// Applies a force proportional to the area of the triangle defined by 3 particles.
     /// </summary>
     [Serializable]
-    public class Pressure : Impl.PositionForce
+    public class AreaLoad : Impl.PositionForce
     {
-        private double _strength;
-        
-        
+        private SlurList<Vector3d> _loadForces;
+
+
         /// <summary>
-        /// 
+        /// Per-segment load forces
         /// </summary>
-        public double Strength
+        public SlurList<Vector3d> LoadForces
         {
-            get { return _strength; }
-            set { _strength = value; }
+            get => _loadForces;
         }
 
 
@@ -37,20 +36,17 @@ namespace SpatialSlur.Dynamics.Forces
             ArrayView<ParticleRotation> rotations)
         {
             base.Calculate(positions, rotations);
-            int count = Particles.Count / 3;
+            var loadForces = _loadForces;
 
             if (Parallel)
-                ForEach(Partitioner.Create(0, count), range => Calculate(range.Item1, range.Item2));
+                ForEach(Partitioner.Create(0, loadForces.Count), range => Calculate(range.Item1, range.Item2));
             else
-                Calculate(0, count);
+                Calculate(0, loadForces.Count);
 
             void Calculate(int from, int to)
             {
                 var particles = Particles;
                 var deltas = Deltas;
-
-                const double inv6 = 1.0 / 6.0;
-                var strength = _strength * inv6;
 
                 for (int i = from; i < to; i++)
                 {
@@ -58,8 +54,9 @@ namespace SpatialSlur.Dynamics.Forces
                     ref var p0 = ref positions[particles[j].PositionIndex].Current;
                     ref var p1 = ref positions[particles[j + 1].PositionIndex].Current;
                     ref var p2 = ref positions[particles[j + 2].PositionIndex].Current;
-
-                    deltas[j] = deltas[j + 1] = deltas[j + 2] = Vector3d.Cross(p1 - p0, p2 - p1) * strength;
+                    
+                    const double inv6 = 1.0 / 6.0;
+                    deltas[j] = deltas[j + 1] = deltas[j + 2] = loadForces[i] * (Vector3d.Cross(p1 - p0, p2 - p1).Length * inv6);
                 }
             }
         }

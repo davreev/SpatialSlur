@@ -1,12 +1,14 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,115 +16,36 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class AbovePlane : Constraint, IConstraint
+    public class AbovePlane : Impl.OnTarget<OnPlane.Target>
     {
-        private Vector3d _delta;
-        private int _index;
-
-        private Vector3d _origin;
-        private Vector3d _normal;
-        private bool _apply;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
-        /// <param name="weight"></param>
-        public AbovePlane(int index, Vector3d origin, Vector3d normal, double weight = 1.0)
-        {
-            _index = index;
-            _origin = origin;
-            _normal = normal;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            set { _index = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Origin
-        {
-            get { return _origin; }
-            set { _origin = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Normal
-        {
-            get { return _normal; }
-            set { _normal = value; }
-        }
-
-
         /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-            double d = Vector3d.Dot(_origin - bodies[_index].Position.Current, _normal);
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
 
-            if (d <= 0.0)
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
             {
-                _delta = Vector3d.Zero;
-                _apply = false;
-                return;
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+                    var d = Vector3d.Dot(t.Origin - positions[particles[i].PositionIndex].Current, t.Normal);
+
+                    deltas[i] = d > 0.0 ?
+                        new Vector4d(t.Normal * (d / t.Normal.SquareLength), 1.0) * t.Weight : Vector4d.Zero;
+                }
             }
-
-            _delta = (d / _normal.SquareLength * _normal);
-            _apply = true;
         }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            if (_apply)
-                bodies[_index].Position.AddDelta(_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get { yield return _index; }
-            set { _index = value.First(); }
-        }
-
-        #endregion
     }
 }

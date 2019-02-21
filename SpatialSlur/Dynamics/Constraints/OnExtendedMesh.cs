@@ -1,12 +1,18 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 #if USING_RHINO
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+
 using Rhino.Geometry;
+
+using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,33 +20,42 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class OnExtendedMesh : OnTarget<Mesh>
+    public class OnExtendedMesh : Impl.OnTarget<OnMesh.Target>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="mesh"></param>
-        /// <param name="weight"></param>
-        public OnExtendedMesh(int index, Mesh mesh, double weight = 1.0)
-            : base(index, mesh, weight)
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
         {
-        }
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
 
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        protected override Vector3d GetClosestPoint(Vector3d point)
-        {
-            var mesh = Target;
-            var mp = mesh.ClosestMeshPoint(point, 0.0);
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
 
-            Vector3d cp = mesh.PointAt(mp);
-            Vector3d cn = mesh.NormalAt(mp);
-            return point + Vector3d.Project(cp - point, cn);
+                for (int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+                    var mesh = t.Mesh;
+
+                    ref var p = ref positions[particles[i].PositionIndex].Current;
+                    var mp = mesh.ClosestMeshPoint(p, 0.0);
+
+                    var d = Vector3d.Project(
+                        (Vector3d)mesh.PointAt(mp) - p, 
+                        mesh.NormalAt(mp));
+            
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
+                }
+            }
         }
     }
 }

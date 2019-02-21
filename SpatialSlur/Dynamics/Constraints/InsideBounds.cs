@@ -1,12 +1,14 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,102 +16,64 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class InsideBounds : Constraint, IConstraint
+    public class InsideBounds : Impl.OnTarget<InsideBounds.Target>
     {
-        private Vector3d _delta;
-        private int _index;
-
-        private Interval3d _bounds;
-        private bool _apply;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="bounds"></param>
-        /// <param name="weight"></param>
-        public InsideBounds(int index, Interval3d bounds, double weight = 1.0)
+        [Serializable]
+        public struct Target
         {
-            _index = index;
-            _bounds = bounds;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            set { _index = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Interval3d Bounds
-        {
-            get { return _bounds; }
-            set { _bounds = value; }
-        }
-
-
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            var p = bodies[_index].Position.Current;
-
-            if (_bounds.Contains(p))
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
             {
-                _delta = Vector3d.Zero;
-                _apply = false;
-                return;
-            }
+                Bounds = Interval3d.Unit,
+                Weight = 1.0
+            };
 
-            _delta = _bounds.Clamp(p) - p;
-            _apply = true;
-        }
+            /// <summary></summary>
+            public Interval3d Bounds;
 
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            if (_apply)
-                bodies[_index].Position.AddDelta(_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get { yield return _index; }
-            set { _index = value.First(); }
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+                    ref var p = ref positions[particles[i].PositionIndex].Current;
+
+                    deltas[i] = t.Bounds.Contains(p) ?
+                        Vector4d.Zero :
+                        new Vector4d(t.Bounds.Clamp(p) - p, 1.0) * t.Weight;
+                }
+            }
+        }
     }
 }

@@ -1,13 +1,12 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
 using SpatialSlur.Collections;
+
 using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Forces
@@ -16,47 +15,18 @@ namespace SpatialSlur.Dynamics.Forces
     /// 
     /// </summary>
     [Serializable]
-    public class SphereCollide : PositionGroup
+    public class SphereCollide : Impl.PositionForce
     {
-        #region Static Members
+        #region Static
 
         private const double _radiusToGridScale = 5.0;
 
         #endregion
         
-
         private HashGrid3d<Vector3d> _grid;
         private double _radius = 1.0;
+        private double _strength = 1.0;
         private bool _parallel;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="strength"></param>
-        /// <param name="parallel"></param>
-        public SphereCollide(double radius, double strength = 1.0, bool parallel = false)
-            : base(strength)
-        {
-            Radius = radius;
-            _parallel = parallel;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="radius"></param>
-        /// <param name="strength"></param>
-        /// <param name="parallel"></param>
-        public SphereCollide(IEnumerable<int> indices, double radius, double strength = 1.0, bool parallel = false)
-            : base(indices, strength)
-        {
-            Radius = radius;
-            _parallel = parallel;
-        }
 
 
         /// <summary>
@@ -76,78 +46,70 @@ namespace SpatialSlur.Dynamics.Forces
 
 
         /// <summary>
-        /// If true, this constraint is calculated in parallel.
+        /// 
         /// </summary>
-        public bool Parallel
+        public double Strength
         {
-            get { return _parallel; }
-            set { _parallel = value; }
+            get { return _strength; }
+            set { _strength = value; }
         }
 
-        
-        /// <inheritdoc />
-        protected override void Calculate(ReadOnlyArrayView<Body> bodies, ReadOnlyArrayView<int> indices, ArrayView<Vector3d> deltas)
-        {
-            if (_grid == null)
-                _grid = new HashGrid3d<Vector3d>(indices.Count);
 
-            // update grid
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            var particles = Particles;
+
+            if (_grid == null)
+                _grid = new HashGrid3d<Vector3d>(particles.Count);
+
+            // Update grid parameters
             _grid.Scale = Radius * _radiusToGridScale;
 
-            // insert body positions
-            for (int i = 0; i < indices.Count; i++)
+            // Insert particle positions into grid
+            foreach (var p in particles)
             {
-                var p = bodies[indices[i]].Position.Current;
-                _grid.Insert(p, p);
+                var pp = positions[p.PositionIndex].Current;
+                _grid.Insert(pp, pp);
             }
 
-            // search from each body position
+            // Range search from each particle position
             if (_parallel)
-            {
-                ForEach(Partitioner.Create(0, indices.Count), range =>
-                {
-                    var i = range.Item1;
-                    var n = range.Item2 - i;
-                    CalculateImpl(bodies, indices.Subview(i, n), deltas.Subview(i, n));
-                });
-            }
+                ForEach(Partitioner.Create(0, particles.Count), range => Calculate(range.Item1, range.Item2));
             else
+                Calculate(0, particles.Count);
+            
+            void Calculate(int from, int to)
             {
-                CalculateImpl(bodies, indices, deltas);
+                var deltas = Deltas;
+                var dia = _radius * 2.0;
+                var diaSqr = dia * dia;
+
+                for (int i = from; i < to; i++)
+                {
+                    var pp0 = positions[particles[i].PositionIndex].Current;
+                    var sum = Vector3d.Zero;
+                    var count = 0;
+
+                    foreach (var pp1 in _grid.Search(new Interval3d(pp0, dia)))
+                    {
+                        var d = pp1 - pp0;
+                        var m = d.SquareLength;
+
+                        if (m < diaSqr && m > 0.0)
+                        {
+                            sum += d * (1.0 - dia / Math.Sqrt(m));
+                            count++;
+                        }
+                    }
+
+                    deltas[i] = count > 0 ? sum * (_strength / count) : Vector3d.Zero; // Average for stability
+                }
             }
 
             _grid.Clear();
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void CalculateImpl(ReadOnlyArrayView<Body> bodies, ReadOnlyArrayView<int> indices, ArrayView<Vector3d> deltas)
-        {
-            var diam = _radius * 2.0;
-            var diamSqr = diam * diam;
-
-            for (int i = 0; i < indices.Count; i++)
-            {
-                var p0 = bodies[indices[i]].Position.Current;
-                var sum = Vector3d.Zero;
-                var count = 0;
-
-                foreach (var p1 in _grid.Search(new Interval3d(p0, diam)))
-                {
-                    var d = p1 - p0;
-                    var m = d.SquareLength;
-
-                    if (m < diamSqr && m > 0.0)
-                    {
-                        sum += d * (1.0 - diam / Math.Sqrt(m));
-                        count++;
-                    }
-                }
-
-                deltas[i] = count > 0 ? sum * (Strength / count) : Vector3d.Zero; // average for stability
-            }
         }
     }
 }

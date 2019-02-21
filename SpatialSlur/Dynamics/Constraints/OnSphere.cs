@@ -1,122 +1,81 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
     /// <summary>
     /// 
     /// </summary>
-    public class OnSphere : Constraint, IConstraint
+    public class OnSphere : Impl.OnTarget<OnSphere.Target>
     {
-        private Vector3d _delta;
-        private int _index;
-
-        private Vector3d _origin;
-        private double _radius;
-
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="origin"></param>
-        /// <param name="radius"></param>
-        /// <param name="weight"></param>
-        public OnSphere(int index, Vector3d origin, double radius, double weight = 1.0)
-        {
-            _index = index;
-            _origin = origin;
-            Radius = radius;
-            Weight = weight;
-        }
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        public int Index
+        [Serializable]
+        public struct Target
         {
-            get { return _index; }
-            set { _index = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Origin
-        {
-            get { return _origin; }
-            set { _origin = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Radius
-        {
-            get { return _radius; }
-            set
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
             {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value cannot be less than zero.");
+                Radius = 1.0,
+                Weight = 1.0
+            };
 
-                _radius = value;
-            }
-        }
+            /// <summary></summary>
+            public Vector3d Origin;
 
+            /// <summary></summary>
+            public double Radius;
 
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            var d = _origin - bodies[_index].Position.Current;
-            _delta = d * (1.0 - _radius / d.Length);
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            bodies[_index].Position.AddDelta(_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get { yield return _index; }
-            set { _index = value.First(); }
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+
+                    var d = t.Origin - positions[particles[i].PositionIndex].Current;
+                    d *= 1.0 - t.Radius / d.Length;
+
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
+                }
+            }
+        }
     }
 }

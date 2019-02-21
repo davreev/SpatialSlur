@@ -1,12 +1,15 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
 using static SpatialSlur.Geometry;
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,145 +17,82 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class PlanarQuad : Constraint, IConstraint
+    public class PlanarQuad : Impl.PositionConstraint
     {
-        private Vector3d _delta;
-        private int _i0, _i1, _i2, _i3;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index0"></param>
-        /// <param name="index1"></param>
-        /// <param name="index2"></param>
-        /// <param name="index3"></param>
-        /// <param name="weight"></param>
-        public PlanarQuad(int index0, int index1, int index2, int index3, double weight = 1.0)
+        [Serializable]
+        public struct Element
         {
-            _i0 = index0;
-            _i1 = index1;
-            _i2 = index2;
-            _i3 = index3;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index0
-        {
-            get { return _i0; }
-            set { _i0 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index1
-        {
-            get { return _i1; }
-            set { _i1 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index2
-        {
-            get { return _i2; }
-            set { _i2 = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index3
-        {
-            get { return _i3; }
-            set { _i3 = value; }
-        }
-
-
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            _delta = LineLineShortestVector(
-                bodies[_i0].Position.Current,
-                bodies[_i2].Position.Current,
-                bodies[_i1].Position.Current,
-                bodies[_i3].Position.Current) * 0.5;
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            var d = _delta;
-
-            bodies[_i0].Position.AddDelta(d, Weight);
-            bodies[_i2].Position.AddDelta(d, Weight);
-
-            d.Negate();
-
-            bodies[_i1].Position.AddDelta(d, Weight);
-            bodies[_i3].Position.AddDelta(d, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length * 4.0;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Element Default = new Element()
             {
-                yield return _i0;
-                yield return _i1;
-                yield return _i2;
-                yield return _i3;
-            }
-            set
-            {
-                var itr = value.GetEnumerator();
+                Weight = 1.0
+            };
 
-                itr.MoveNext();
-                _i0 = itr.Current;
+            /// <summary>Number of particles used by this element</summary>
+            public const int Count = 4;
 
-                itr.MoveNext();
-                _i1 = itr.Current;
-
-                itr.MoveNext();
-                _i2 = itr.Current;
-
-                itr.MoveNext();
-                _i3 = itr.Current;
-            }
+            /// <summary>Relative influence of this element</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        private SlurList<Element> _elements = new SlurList<Element>();
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SlurList<Element> Elements
+        {
+            get => _elements;
+        }
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var elements = _elements;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, elements.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, elements.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+
+                // TODO Consider particle masses?
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var e = ref elements[i];
+
+                    int j = i << 2;
+                    ref var p0 = ref positions[particles[j].PositionIndex].Current;
+                    ref var p1 = ref positions[particles[j + 1].PositionIndex].Current;
+                    ref var p2 = ref positions[particles[j + 2].PositionIndex].Current;
+                    ref var p3 = ref positions[particles[j + 3].PositionIndex].Current;
+
+                    var d = LineLineShortestVector(p0, p2, p1, p3) * 0.5;
+
+                    deltas[j] = deltas[j + 2] = new Vector4d(d, 1.0) * e.Weight;
+                    deltas[j + 1] = deltas[j + 3] = new Vector4d(-d, 1.0) * e.Weight;
+                }
+            }
+        }
     }
 }

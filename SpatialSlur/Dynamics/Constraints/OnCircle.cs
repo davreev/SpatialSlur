@@ -1,12 +1,14 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,127 +16,71 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class OnCircle : Constraint, IConstraint
+    public class OnCircle : Impl.OnTarget<OnCircle.Target>
     {
-        private Vector3d _delta;
-        private int _index;
-
-        private Vector3d _origin;
-        private Vector3d _normal;
-        private double _radius;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="origin"></param>
-        /// <param name="normal"></param>
-        /// <param name="radius"></param>
-        /// <param name="weight"></param>
-        public OnCircle(int index, Vector3d origin, Vector3d normal, double radius, double weight = 1.0)
+        [Serializable]
+        public struct Target
         {
-            _index = index;
-            _origin = origin;
-            _normal = normal;
-            Radius = radius;
-            Weight = weight;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            set { _index = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Origin
-        {
-            get { return _origin; }
-            set { _origin = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Normal
-        {
-            get { return _normal; }
-            set { _normal = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double Radius
-        {
-            get { return _radius; }
-            set
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
             {
-                if (value < 0.0)
-                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
+                Normal = Vector3d.UnitZ,
+                Radius = 1.0,
+                Weight = 1.0
+            };
 
-                _radius = value;
-            }
-        }
+            /// <summary></summary>
+            public Vector3d Origin;
 
+            /// <summary></summary>
+            public Vector3d Normal;
 
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            Vector3d p = bodies[_index].Position.Current;
+            /// <summary></summary>
+            public double Radius;
 
-            Vector3d d = Vector3d.Reject(p - _origin, _normal);
-            d *= _radius / d.Length;
-
-            _delta = ((_origin + d) - p);
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            bodies[_index].Position.AddDelta(_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get { yield return _index; }
-            set { _index = value.First(); }
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+
+                    var d0 = positions[particles[i].PositionIndex].Current - t.Origin;
+                    var d1 = Vector3d.Reject(d0, t.Normal);
+
+                    deltas[i] = new Vector4d(d1 * (t.Radius / d1.Length) - d0, 1.0) * t.Weight;
+                }
+            }
+        }
     }
 }

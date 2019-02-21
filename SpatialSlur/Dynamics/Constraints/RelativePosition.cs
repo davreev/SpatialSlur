@@ -86,8 +86,8 @@ namespace SpatialSlur.Dynamics.Constraints
         /// <inheritdoc />
         public void Apply(ReadOnlyArrayView<Body> bodies)
         {
-            bodies[_i0].Position.AddDelta(_dp0, Weight);
-            bodies[_i1].Position.AddDelta(_dp1, Weight);
+            bodies[_i0].Position.AddProjection(_dp0, Weight);
+            bodies[_i1].Position.AddProjection(_dp1, Weight);
         }
 
 

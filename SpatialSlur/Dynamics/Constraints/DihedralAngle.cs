@@ -139,10 +139,10 @@ namespace SpatialSlur.Dynamics.Constraints
         /// <inheritdoc />
         public void Apply(ReadOnlyArrayView<Body> bodies)
         {
-            bodies[_i0].Position.AddDelta(_d0, Weight);
-            bodies[_i1].Position.AddDelta(_d1, Weight);
-            bodies[_i2].Position.AddDelta(_d2, Weight);
-            bodies[_i3].Position.AddDelta(_d3, Weight);
+            bodies[_i0].Position.AddProjection(_d0, Weight);
+            bodies[_i1].Position.AddProjection(_d1, Weight);
+            bodies[_i2].Position.AddProjection(_d2, Weight);
+            bodies[_i3].Position.AddProjection(_d3, Weight);
         }
 
 

@@ -1,12 +1,14 @@
-﻿
-/*
+﻿/*
  * Notes
  */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
+
 using SpatialSlur.Collections;
+
+using static System.Threading.Tasks.Parallel;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -14,103 +16,64 @@ namespace SpatialSlur.Dynamics.Constraints
     /// 
     /// </summary>
     [Serializable]
-    public class OnLine : Constraint, IConstraint
+    public class OnLine : Impl.OnTarget<OnLine.Target>
     {
-        private Vector3d _delta;
-        private int _index;
-
-        private Vector3d _start;
-        private Vector3d _direction;
-
+        #region Nested types
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="start"></param>
-        /// <param name="direction"></param>
-        /// <param name="weight"></param>
-        public OnLine(int index, Vector3d start, Vector3d direction, double weight = 1.0)
+        [Serializable]
+        public struct Target
         {
-            _index = index;
-            _start = start;
-            _direction = direction;
-            Weight = weight;
-        }
+            /// <summary>
+            /// 
+            /// </summary>
+            public static Target Default = new Target()
+            {
+                Direction = Vector3d.UnitX,
+                Weight = 1.0
+            };
 
+            /// <summary></summary>
+            public Vector3d Start;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Index
-        {
-            get { return _index; }
-            set { _index = value; }
-        }
+            /// <summary></summary>
+            public Vector3d Direction;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Start
-        {
-            get { return _start; }
-            set { _start = value; }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Vector3d Direction
-        {
-            get { return _direction; }
-            set { _direction = value; }
-        }
-
-
-        /// <inheritdoc />
-        public void Calculate(ReadOnlyArrayView<Body> bodies)
-        {
-            _delta = Vector3d.Reject(_start - bodies[_index].Position.Current, _direction);
-        }
-
-
-        /// <inheritdoc />
-        public void Apply(ReadOnlyArrayView<Body> bodies)
-        {
-            bodies[_index].Position.AddDelta(_delta, Weight);
-        }
-
-
-        /// <inheritdoc />
-        public void GetEnergy(out double linear, out double angular)
-        {
-            linear = _delta.Length;
-            angular = 0.0;
-        }
-
-
-        #region Explicit Interface Implementations
-
-        bool IConstraint.AffectsPosition
-        {
-            get { return true; }
-        }
-
-
-        bool IConstraint.AffectsRotation
-        {
-            get { return false; }
-        }
-
-
-        IEnumerable<int> IConstraint.Indices
-        {
-            get { yield return _index; }
-            set { _index = value.First(); }
+            /// <summary>Relative influence of this target</summary>
+            public double Weight;
         }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public override void Calculate(
+            ArrayView<ParticlePosition> positions,
+            ArrayView<ParticleRotation> rotations)
+        {
+            base.Calculate(positions, rotations);
+            var indices = TargetIndices;
+
+            if (Parallel)
+                ForEach(Partitioner.Create(0, indices.Count), range => Calculate(range.Item1, range.Item2));
+            else
+                Calculate(0, indices.Count);
+
+            void Calculate(int from, int to)
+            {
+                var particles = Particles;
+                var deltas = Deltas;
+                var targets = Targets;
+
+                for (int i = from; i < to; i++)
+                {
+                    ref var t = ref targets[indices[i]];
+                    var d = Vector3d.Reject(t.Start - positions[particles[i].PositionIndex].Current, t.Direction);
+                    deltas[i] = new Vector4d(d, 1.0) * t.Weight;
+                }
+            }
+        }
     }
 }
