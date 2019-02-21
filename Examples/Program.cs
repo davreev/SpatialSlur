@@ -18,7 +18,7 @@ namespace SpatialSlur.Examples
         /// </summary>
         public static void Main()
         {
-            PlanarizeHeMesh.Start();
+            //PlanarizeHeMesh.Start();
         }
     }
 }
