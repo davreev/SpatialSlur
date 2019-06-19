@@ -66,3 +66,4 @@ __Unity__ has the following additional dependencies:
 See below for links to reference documentation by version number.
 
 * [0.2.4](https://spatialslur.gitlab.io/docs/0_2_4)
+* [0.2.3](https://spatialslur.gitlab.io/docs/0_2_3)
