@@ -30,7 +30,7 @@ The following additional namespaces contain classes and convenience methods for 
 - **SpatialSlur.Unity**
 
 ## Setup
-To get started, download the precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases). Depending on your operating system, the downloaded files may be blocked by default so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to make sure they're unblocked before referencing them within your own project(s).
+To get started, download the precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases). If on Windows, the downloaded files may be blocked by default so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to make sure they're unblocked before referencing them within your own project(s).
 
 ### Grasshopper
 To use within Grasshopper, start by moving the contents of the **Binaries > Rhino** folder to your Grasshopper components folder (**File > Special Folders > Components Folder**). 
