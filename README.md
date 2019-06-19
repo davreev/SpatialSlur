@@ -6,25 +6,28 @@ Spatial Slur is an open source library of geometric data structures and algorith
 </p>
 
 ## Overview
-Below is a brief outline of the library by namespace. For further detail, take a look at the [latest reference documentation](http://www.spatialslur.com/documentation/0_3_1/index.html) or just dive into the source files and poke around. If you have any questions, comments, or suggestions, feel free to [get in touch](http://spatialslur.com/contact/).
+Below is a brief outline of the library by namespace. For further detail, take a look at the [latest reference documentation](http://www.spatialslur.com/documentation/0_3_1/index.html) or just dive into the source files and poke around. If you have any questions, comments, or suggestions, feel free to [get in touch](mailto:darthur.reeves@gmail.com).
 
-+ __SpatialSlur__ contains primitive data types and algorithms for geometry processing in 2 and 3 dimensions.
+- **SpatialSlur**
+  - Primitive data types and algorithms for geometry processing in 2 and 3 dimensions
+- **SpatialSlur.Collections** 
+  - Generic data structures for spatial queries and related algorithms
+  - Extension methods for .NET collection types
+- **SpatialSlur.Dynamics**
+  - Position-based constraint solver and various constraint types for shape exploration and optimization
+- **SpatialSlur.Fields**
+  - Generic data structures for discrete and continuous field representations (scalar, vector etc.)
+  - Algorithms for image/signal processing and visualization
+- **SpatialSlur.Meshes** 
+  - Generic half-edge data structures for discrete representations of networks, surfaces, and (eventually) volumes
+  - Algorithms for mesh/graph processing and visualization
+- **SpatialSlur.Tools** 
+  - Tools and applications that utilize functionality offered by the rest of library
 
-+ __SpatialSlur.Collections__ contains generic data structures for spatial queries and related algorithms. Also contains various general-purpose extension methods for .NET collection types.
+The following additional namespaces contain classes and convenience methods for interfacing with external APIs.
 
-+ __SpatialSlur.Dynamics__ contains a projection based constraint solver and various constraint types for geometry optimization and shape exploration. This is based on methods described in [(1)](http://lgg.epfl.ch/publications/2012/shapeup/paper.pdf) and follows many of the implementation details given in [(2)](http://lgg.epfl.ch/publications/2015/ShapeOp/ShapeOp_DMSC15.pdf).
-
-+ __SpatialSlur.Fields__ contains generic data structures for discrete and continuous field representations (scalar, vector, and tensor) along with various algorithms for processing, compositing, and visualization.
-
-+ __SpatialSlur.Meshes__ contains generic half-edge data structures for discrete representations of networks, surfaces, and volumes (coming soon) along with various algorithms for geometry processing, graph processing, segmentation, and subdivision.
-
-+ __SpatialSlur.Tools__ contains more specific tools and applications that utilize functionality offered by the rest of library such as dynamic remeshing and Steiner tree relaxation.
-
-Additionally, the following namespaces contain classes and convenience methods for interfacing with .NET APIs of their respective applications.
-
-+ __SpatialSlur.Rhino__
-
-+ __SpaitalSlur.Unity__
+- **SpatialSlur.Rhino**
+- **SpatialSlur.Unity**
 
 ## Setup
 To get started, download the precompiled binaries from the [latest release](https://github.com/daveReeves/SpatialSlur/releases). Depending on your operating system, the downloaded files may be blocked by default so follow [these instructions](https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/) to make sure they're unblocked before referencing them within your own project(s).
@@ -60,9 +63,6 @@ __Unity__ has the following additional dependencies:
 * UnityEditor.dll
 
 ## Reference Documentation
-See below for links to reference documentation by version number. For earlier versions please refer to the corresponding [release](https://github.com/daveReeves/SpatialSlur/releases).
+See below for links to reference documentation by version number.
 
-* [0.3.1](http://spatialslur.com/documentation/0_3_1/index.html)
-* [0.2.4](http://spatialslur.com/documentation/0_2_4/index.html)
-* [0.2.3](http://spatialslur.com/documentation/0_2_3/index.html)
-* [0.2.2](http://spatialslur.com/documentation/0_2_2/index.html)
+* [0.2.4](https://spatialslur.gitlab.io/docs/0_2_4)
