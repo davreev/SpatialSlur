@@ -294,9 +294,7 @@
     <Compile Include="Meshes\TriMesh.cs" />
     <Compile Include="Meshes\Delegates.cs" />
     <Compile Include="Meshes\Matrix.cs" />
-    <Compile Include="Meshes\TriMesh2d.cs" />
     <Compile Include="Meshes\TriMesh3d.cs" />
-    <Compile Include="Meshes\TriMesh3f.cs" />
     <Compile Include="Rhino\Extensions\ArrayViewExtensions.cs" />
     <Compile Include="Rhino\Extensions\PriorityQueueExtensions.cs" />
     <Compile Include="Rhino\Isosurface.cs" />

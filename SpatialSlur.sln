@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpatialSlur", "SpatialSlur\SpatialSlur.csproj", "{B57AF965-5201-4215-8077-50B3CC8B1F6B}"
 EndProject
@@ -14,8 +14,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlurGH", "SlurGH\SlurGH.csp
 	ProjectSection(ProjectDependencies) = postProject
 		{B57AF965-5201-4215-8077-50B3CC8B1F6B} = {B57AF965-5201-4215-8077-50B3CC8B1F6B}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,14 +53,6 @@ Global
 		{BC254A97-352C-41D5-BEBE-CF792ABE454D}.Rhino|Any CPU.Build.0 = Rhino|Any CPU
 		{BC254A97-352C-41D5-BEBE-CF792ABE454D}.Unity Debug|Any CPU.ActiveCfg = Rhino Debug|Any CPU
 		{BC254A97-352C-41D5-BEBE-CF792ABE454D}.Unity|Any CPU.ActiveCfg = Rhino|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Default Debug|Any CPU.ActiveCfg = Default Debug|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Default Debug|Any CPU.Build.0 = Default Debug|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Default|Any CPU.ActiveCfg = Default|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Default|Any CPU.Build.0 = Default|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Rhino Debug|Any CPU.ActiveCfg = Default Debug|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Rhino|Any CPU.ActiveCfg = Default|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Unity Debug|Any CPU.ActiveCfg = Default Debug|Any CPU
-		{C6CB6A3C-C7C3-47EC-A3E1-56B7D07F4378}.Unity|Any CPU.ActiveCfg = Default|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
