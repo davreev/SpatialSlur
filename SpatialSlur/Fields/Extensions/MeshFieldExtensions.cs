@@ -86,7 +86,7 @@ namespace SpatialSlur.Rhino
         public static MeshField3d<double> GetLaplacian(this MeshField3d<double> field, Func<HeMesh3d.Halfedge, double> getWeight, bool parallel = true)
         {
             var result = MeshField3d.Double.Create(field);
-            GetLaplacian(result, getWeight, parallel);
+            GetLaplacian(field, getWeight, result, parallel);
             return result;
         }
 
@@ -98,7 +98,7 @@ namespace SpatialSlur.Rhino
         /// <param name="getWeight"></param>
         /// <param name="result"></param>
         /// <param name="parallel"></param>
-        public static void GetLaplacian(this MeshField3d<double> field, Func<HeMesh3d.Halfedge, double> getWeight, double[] result, bool parallel = true)
+        public static void GetLaplacian(this MeshField3d<double> field, Func<HeMesh3d.Halfedge, double> getWeight, ArrayView<double> result, bool parallel = true)
         {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, field.Count), range => Body(range.Item1, range.Item2));
