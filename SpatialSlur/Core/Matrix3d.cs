@@ -80,18 +80,18 @@ namespace SpatialSlur
                     // Jacobi rotate in plane of max off-diagonal value of A
                     if (a01 > a02 && a01 > a12)
                     {
-                        if (a01 < epsilon) return true;
-                        JacobiRotate01(ref A, ref V);
+                        if (a01 <= epsilon) return true;
+                        JacobiRotate01(ref A, ref V, epsilon);
                     }
                     else if (a02 > a12)
                     {
-                        if (a02 < epsilon) return true;
-                        JacobiRotate02(ref A, ref V);
+                        if (a02 <= epsilon) return true;
+                        JacobiRotate02(ref A, ref V, epsilon);
                     }
                     else
                     {
-                        if (a12 < epsilon) return true;
-                        JacobiRotate12(ref A, ref V);
+                        if (a12 <= epsilon) return true;
+                        JacobiRotate12(ref A, ref V, epsilon);
                     }
                 }
 
@@ -102,10 +102,12 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            private static void JacobiRotate01(ref Matrix3d A, ref Matrix3d V)
+            private static void JacobiRotate01(ref Matrix3d A, ref Matrix3d V, double epsilon)
             {
-                var beta = (A.M11 - A.M00) / (2.0 * A.M01);
-                GetJacobiTerms(beta, out var t, out var c, out var s, out var p);
+                GetJacobiTerms(
+                    A.M00, A.M11, A.M01, epsilon,
+                    out var t, out var c, out var s, out var p
+                );
 
                 /*
                     | c  s  0 |
@@ -138,10 +140,12 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            private static void JacobiRotate02(ref Matrix3d A, ref Matrix3d V)
+            private static void JacobiRotate02(ref Matrix3d A, ref Matrix3d V, double epsilon)
             {
-                var beta = (A.M22 - A.M00) / (2.0 * A.M02);
-                GetJacobiTerms(beta, out var t, out var c, out var s, out var p);
+                GetJacobiTerms(
+                    A.M00, A.M22, A.M02, epsilon,
+                    out var t, out var c, out var s, out var p
+                );
 
                 /*
                     | c  0  s |
@@ -174,10 +178,12 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            private static void JacobiRotate12(ref Matrix3d A, ref Matrix3d V)
+            private static void JacobiRotate12(ref Matrix3d A, ref Matrix3d V, double epsilon)
             {
-                var beta = (A.M22 - A.M11) / (2.0 * A.M12);
-                GetJacobiTerms(beta, out var t, out var c, out var s, out var p);
+                GetJacobiTerms(
+                    A.M11, A.M22, A.M12, epsilon,
+                    out var t, out var c, out var s, out var p
+                );
 
                 /*
                     | 1  0  0 |
@@ -210,12 +216,26 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            private static void GetJacobiTerms(double beta, out double t, out double c, out double s, out double p)
+            private static void GetJacobiTerms(
+                double App, double Aqq, double Apq, double epsilon,
+                out double t, out double c, out double s, out double p)
             {
-                t = Math.Sign(beta) / (Math.Abs(beta) + Math.Sqrt(beta * beta + 1.0));
-                c = 1.0 / Math.Sqrt(t * t + 1.0);
-                s = c * t;
-                p = s / (1.0 + c);
+                var theta = (Aqq - App) / (2.0 * Apq);
+
+                if(Math.Abs(theta) > epsilon)
+                {
+                    t = Math.Sign(theta) / (Math.Abs(theta) + Math.Sqrt(theta * theta + 1.0));
+                    c = 1.0 / Math.Sqrt(t * t + 1.0);
+                    s = c * t;
+                    p = s / (1.0 + c);
+                }
+                else
+                {
+                    t = 1.0;
+                    c = 1.0 / SlurMath.Constantsd.Sqrt2;
+                    s = c;
+                    p = s / (1.0 + c);
+                }
             }
 
 
@@ -239,107 +259,6 @@ namespace SpatialSlur
                 Utilities.Swap(ref A.M11, ref A.M12);
                 Utilities.Swap(ref A.M21, ref A.M22);
             }
-
-
-#if OBSOLETE
-            /// <summary>
-            /// Diagonalizes matrix A by iteratively applying Jacobi rotations.
-            /// Returns true if A is successfully diagonalized within the specified number of steps.
-            /// Also returns the cumulative Jacobi rotation in V.
-            /// </summary>
-            /// <param name="A"></param>
-            /// <param name="V"></param>
-            /// <param name="epsilon"></param>
-            /// <param name="maxSteps"></param>
-            /// <returns></returns>
-            private static bool DiagonalizeJacobi(ref Matrix3d A, ref Matrix3d V, double epsilon = D.ZeroTolerance, int maxSteps = 16)
-            {
-                // impl ref
-                // https://www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf (11.1)
-
-                // TODO optimize - no need to build the full 3x3 rotation matrix at each step
-                Matrix3d P;
-
-                while (maxSteps-- > 0)
-                {
-                    var a01 = Math.Abs(A.M01);
-                    var a02 = Math.Abs(A.M02);
-                    var a12 = Math.Abs(A.M12);
-
-                    // Create Jacobi rotation P from max off-diagonal value of A
-                    if (a01 > a02 && a01 > a12)
-                    {
-                        if (a01 < epsilon) return true;
-                        GetJacobiRotation01(ref A, out P);
-                    }
-                    else if (a02 > a12)
-                    {
-                        if (a02 < epsilon) return true;
-                        GetJacobiRotation02(ref A, out P);
-                    }
-                    else
-                    {
-                        if (a12 < epsilon) return true;
-                        GetJacobiRotation12(ref A, out P);
-                    }
-
-                    // Apply Jacobi rotation
-                    A = P.ApplyTranspose(A.Apply(ref P)); // A' = Pt A P
-                    V = V.Apply(ref P); // V' = V P
-                }
-
-                return false;
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            private static void GetJacobiRotation01(ref Matrix3d A, out Matrix3d P)
-            {
-                var b = (A.M11 - A.M00) / (2.0 * A.M01);
-                GetJacobiTerms(b, out var c, out var s);
-                
-                P = Identity;
-                P.M00 = P.M11 = c;
-                P.M01 = s;
-                P.M10 = -s;
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            private static void GetJacobiRotation02(ref Matrix3d A, out Matrix3d P)
-            {
-                var b = (A.M22 - A.M00) / (2.0 * A.M02);
-                GetJacobiTerms(b, out var c, out var s);
-
-                P = Identity;
-                P.M00 = P.M22 = c;
-                P.M02 = s;
-                P.M20 = -s;
-            }
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            private static void GetJacobiRotation12(ref Matrix3d A, out Matrix3d P)
-            {
-                var b = (A.M22 - A.M11) / (2.0 * A.M12);
-                GetJacobiTerms(b, out var c, out var s);
-
-                P = Identity;
-                P.M11 = P.M22 = c;
-                P.M12 = s;
-                P.M21 = -s;
-            }
-#endif
-
 
             /// <summary>
             /// 
@@ -478,7 +397,7 @@ namespace SpatialSlur
 
                 // U = A V inv(sigma)
                 // must handle cases where singular values are zero
-                if (sigma.X < epsilon)
+                if (sigma.X <= epsilon)
                 {
                     // all zero singular values
 
@@ -491,7 +410,7 @@ namespace SpatialSlur
 
                     return 0;
                 }
-                else if (sigma.Y < epsilon)
+                else if (sigma.Y <= epsilon)
                 {
                     // one non-zero singular value
 
@@ -510,7 +429,7 @@ namespace SpatialSlur
 
                     return 1;
                 }
-                else if (sigma.Z < epsilon)
+                else if (sigma.Z <= epsilon)
                 {
                     // two non-zero singular values
 
@@ -528,30 +447,32 @@ namespace SpatialSlur
 
                     return 2;
                 }
-
-                // all non-zero singular values
-
-                //     | x  -  - |
-                // Σ = | -  y  - |
-                //     | -  -  z |
-
-                sigma.X = Math.Sqrt(sigma.X);
-                sigma.Y = Math.Sqrt(sigma.Y);
-                sigma.Z = Math.Sqrt(sigma.Z);
-
-                U = new Matrix3d(
-                    A.Apply(V.Column0 / sigma.X),
-                    A.Apply(V.Column1 / sigma.Y),
-                    A.Apply(V.Column2 / sigma.Z));
-
-                // handle reflection in U
-                if (U.Determinant < 0.0)
+                else
                 {
-                    U.Column2 *= -1.0;
-                    sigma.Z *= -1.0;
-                }
+                    // all non-zero singular values
 
-                return 3;
+                    //     | x  -  - |
+                    // Σ = | -  y  - |
+                    //     | -  -  z |
+
+                    sigma.X = Math.Sqrt(sigma.X);
+                    sigma.Y = Math.Sqrt(sigma.Y);
+                    sigma.Z = Math.Sqrt(sigma.Z);
+
+                    U = new Matrix3d(
+                        A.Apply(V.Column0 / sigma.X),
+                        A.Apply(V.Column1 / sigma.Y),
+                        A.Apply(V.Column2 / sigma.Z));
+
+                    // handle reflection in U
+                    if (U.Determinant < 0.0)
+                    {
+                        U.Column2 *= -1.0;
+                        sigma.Z *= -1.0;
+                    }
+
+                    return 3;
+                }
             }
 
 
