@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PlanarizeHeMesh.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="HeMeshFromFile.cs" />
     <Compile Include="Paths.cs" />
