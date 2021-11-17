@@ -59,7 +59,7 @@ namespace SpatialSlur.Rhino
                 {
                     var t = values[index++];
 
-                    Vector2d p = field.ToWorldSpace(new Vector2d(x, y));
+                    Vector2d p = field.GridToModel(new Vector2d(x, y));
                     verts.Add(p.X, p.Y, getHeight(t));
                     colors.Add(getColor(t));
                 }
@@ -69,7 +69,7 @@ namespace SpatialSlur.Rhino
             {
                 for (int x = 0; x < nx - 1; x++)
                 {
-                    index = field.ToIndexUnsafe(new Vector2i(x, y));
+                    index = field.IndexAtUnsafe(new Vector2i(x, y));
                     faces.AddFace(index, index + 1, index + 1 + nx, index + nx);
                 }
             }
@@ -95,7 +95,7 @@ namespace SpatialSlur.Rhino
             // add vertices
             foreach (int index in selection)
             {
-                var p = field.ToWorldSpace(index);
+                var p = field.IndexToModel(index);
                 verts.Add(p.X - dx, p.Y - dy, 0.0);
                 verts.Add(p.X + dx, p.Y - dy, 0.0);
                 verts.Add(p.X - dx, p.Y + dy, 0.0);
@@ -136,7 +136,7 @@ namespace SpatialSlur.Rhino
             {
                 for (int y = 0; y < nx; y++)
                 {
-                    var p = field.ToWorldSpace(new Vector2d(y, x));
+                    var p = field.GridToModel(new Vector2d(y, x));
                     verts.Add(p.X - dx, p.Y - dy, 0.0);
                     verts.Add(p.X + dx, p.Y - dy, 0.0);
                     verts.Add(p.X - dx, p.Y + dy, 0.0);
@@ -177,7 +177,7 @@ namespace SpatialSlur.Rhino
             // add vertices
             foreach (int index in selection)
             {
-                var p = field.ToWorldSpace(index);
+                var p = field.IndexToModel(index);
 
                 verts.Add(p.X - dx, p.Y - dy, 0.0);
                 verts.Add(p.X + dx, p.Y - dy, 0.0);

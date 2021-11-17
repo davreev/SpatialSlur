@@ -56,17 +56,17 @@ namespace SpatialSlur
         public static partial class Parallel
         {
 <#
-foreach(string t in types) 
+foreach(string type in types) 
 {
-    var props = scalarProperties[t];
-    var s = props["Suffix"];
-    var e = props["Epsilon"];
+    var props = scalarProperties[type];
+    var suf = props["Suffix"];
+    var eps = props["Epsilon"];
 
-	var vecIn = $"ReadOnlyArrayView<{t}>";
-	var vecOut = $"ArrayView<{t}>";
+	var vecIn = $"ReadOnlyArrayView<{type}>";
+	var vecOut = $"ArrayView<{type}>";
 #>
 
-            #region <#= t #>
+            #region <#= type #>
 
             /// <summary>
             /// 
@@ -123,7 +123,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void Add(<#= vecIn #> vector, <#= t #> scalar, <#= vecOut #> result)
+            public static void Add(<#= vecIn #> vector, <#= type #> scalar, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, vector.Count), range =>
                 {
@@ -162,7 +162,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void Multiply(<#= vecIn #> vector, <#= t #> scalar, <#= vecOut #> result)
+            public static void Multiply(<#= vecIn #> vector, <#= type #> scalar, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, vector.Count), range =>
                 {
@@ -175,7 +175,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void MultiplyPointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            public static void Multiply(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -188,7 +188,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void DividePointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+            public static void Divide(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -201,7 +201,7 @@ foreach(string t in types)
             /// <summary>
             /// result = v0 + v1 * t
             /// </summary>
-            public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+            public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= type #> t, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -227,7 +227,7 @@ foreach(string t in types)
             /// <summary>
             /// result = v0 * t0 + v1 * t1
             /// </summary>
-            public static void AddScaled(<#= vecIn #> v0, <#= t #> t0, <#= vecIn #> v1, <#= t #> t1, <#= vecOut #> result)
+            public static void AddScaled(<#= vecIn #> v0, <#= type #> t0, <#= vecIn #> v1, <#= type #> t1, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -253,7 +253,7 @@ foreach(string t in types)
             /// <summary>
             /// result = v0 + (v1 - v2) * t
             /// </summary>
-            public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= t #> t, <#= vecOut #> result)
+            public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= type #> t, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -279,7 +279,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void Lerp(<#= vecIn #> vector, <#= t #> value, <#= t #> t, <#= vecOut #> result)
+            public static void Lerp(<#= vecIn #> vector, <#= type #> value, <#= type #> t, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, vector.Count), range =>
                 {
@@ -292,7 +292,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+            public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= type #> t, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -318,7 +318,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void Normalize(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+            public static void Normalize(<#= vecIn #> vector, Interval<#= suf #> interval, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, vector.Count), range =>
                 {
@@ -331,7 +331,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void Evaluate(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+            public static void Evaluate(<#= vecIn #> vector, Interval<#= suf #> interval, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, vector.Count), range =>
                 {
@@ -344,7 +344,7 @@ foreach(string t in types)
             /// <summary>
             /// 
             /// </summary>
-            public static void Remap(<#= vecIn #> vector, Interval<#= s #> from, Interval<#= s #> to, <#= vecOut #> result)
+            public static void Remap(<#= vecIn #> vector, Interval<#= suf #> from, Interval<#= suf #> to, <#= vecOut #> result)
             {
                 ForEach(Partitioner.Create(0, vector.Count), range =>
                 {
@@ -378,8 +378,8 @@ foreach(string t in types)
             /// </summary>
             public static void Reflect(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
             {
-                Multiply(v1, Dot(v0, v1) / Dot(v1, v1) * 2.0<#= s #>, result);
-                AddScaled(result, v0, -1.0<#= s #>, result);
+                Multiply(v1, Dot(v0, v1) / Dot(v1, v1) * 2.0<#= suf #>, result);
+                AddScaled(result, v0, -1.0<#= suf #>, result);
             }
 
 
@@ -408,9 +408,9 @@ foreach(string t in types)
             {
                 var d = Dot(vector, vector);
 
-                if (d > 0.0<#= s #>)
+                if (d > 0.0<#= suf #>)
                 {
-                    Multiply(vector, 1.0<#= s #> / SlurMath.Sqrt(d), result);
+                    Multiply(vector, 1.0<#= suf #> / SlurMath.Sqrt(d), result);
                     return true;
                 }
 
@@ -425,22 +425,22 @@ foreach(string t in types)
         }
 
 <#
-foreach(string t in types) 
+foreach(string type in types) 
 {
-    var props = scalarProperties[t];
-    var s = props["Suffix"];
-    var e = props["Epsilon"];
+    var props = scalarProperties[type];
+    var suf = props["Suffix"];
+    var eps = props["Epsilon"];
 		
-	var vecIn = $"ReadOnlyArrayView<{t}>";
-	var vecOut = $"ArrayView<{t}>";
+	var vecIn = $"ReadOnlyArrayView<{type}>";
+	var vecOut = $"ArrayView<{type}>";
 #>
 
-		#region <#= t #>
+		#region <#= type #>
 
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> Max(<#= vecIn #>  vector)
+        public static <#= type #> Max(<#= vecIn #>  vector)
         {
             var result = vector[0];
 
@@ -454,7 +454,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> Min(<#= vecIn #>  vector)
+        public static <#= type #> Min(<#= vecIn #>  vector)
         {
             var result = vector[0];
 
@@ -468,9 +468,9 @@ foreach(string t in types)
 		/// <summary>
 		/// 
 		/// </summary>
-		public static <#= t #> Sum(<#= vecIn #> vector)
+		public static <#= type #> Sum(<#= vecIn #> vector)
 		{
-			var sum = default(<#= t #>);
+			var sum = default(<#= type #>);
 
 			for (int i = 0; i < vector.Count; i++)
 				sum += vector[i];
@@ -482,9 +482,9 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> Sum(<#= vecIn #> vector, <#= vecIn #> weights)
+        public static <#= type #> Sum(<#= vecIn #> vector, <#= vecIn #> weights)
         {
-            var result = 0.0<#= s #>;
+            var result = 0.0<#= suf #>;
 
             for (int i = 0; i < vector.Count; i++)
                 result += vector[i] * weights[i];
@@ -496,7 +496,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> Mean(<#= vecIn #> vector)
+        public static <#= type #> Mean(<#= vecIn #> vector)
         {
             return Sum(vector) / vector.Count;
         }
@@ -505,10 +505,10 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> Mean(<#= vecIn #> vector, <#= vecIn #> weights)
+        public static <#= type #> Mean(<#= vecIn #> vector, <#= vecIn #> weights)
         {
-            var sum = 0.0<#= s #>;
-            var wsum = 0.0<#= s #>;
+            var sum = 0.0<#= suf #>;
+            var wsum = 0.0<#= suf #>;
 
             for (int i = 0; i < vector.Count; i++)
             {
@@ -524,7 +524,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static bool ApproxEquals(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> epsilon = <#= e #>)
+        public static bool ApproxEquals(<#= vecIn #> v0, <#= vecIn #> v1, <#= type #> epsilon = <#= eps #>)
         {
             for (int i = 0; i < v0.Count; i++)
                 if (Math.Abs(v1[i] - v0[i]) > epsilon) return false;
@@ -588,7 +588,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void Add(<#= vecIn #> vector, <#= t #> value, <#= vecOut #> result)
+        public static void Add(<#= vecIn #> vector, <#= type #> value, <#= vecOut #> result)
         {
             for (int i = 0; i < vector.Count; i++)
                 result[i] = vector[i] + value;
@@ -618,7 +618,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void Multiply(<#= vecIn #> vector, <#= t #> t, <#= vecOut #> result)
+        public static void Multiply(<#= vecIn #> vector, <#= type #> t, <#= vecOut #> result)
         {
             for (int i = 0; i < vector.Count; i++)
                 result[i] = vector[i] * t;
@@ -628,7 +628,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void MultiplyPointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        public static void Multiply(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] * v1[i];
@@ -638,7 +638,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void DividePointwise(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
+        public static void Divide(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] / v1[i];
@@ -648,7 +648,7 @@ foreach(string t in types)
         /// <summary>
         /// result = v0 + v1 * t
         /// </summary>
-        public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+        public static void AddScaled(<#= vecIn #> v0, <#= vecIn #> v1, <#= type #> t, <#= vecOut #> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] + v1[i] * t;
@@ -668,7 +668,7 @@ foreach(string t in types)
         /// <summary>
         /// result = v0 * t0 + v1 * t1
         /// </summary>
-        public static void AddScaled(<#= vecIn #> v0, <#= t #> t0, <#= vecIn #> v1, <#= t #> t1, <#= vecOut #> result)
+        public static void AddScaled(<#= vecIn #> v0, <#= type #> t0, <#= vecIn #> v1, <#= type #> t1, <#= vecOut #> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] * t0 + v1[i] * t1;
@@ -688,7 +688,7 @@ foreach(string t in types)
         /// <summary>
         /// result = v0 + (v1 - x) * t
         /// </summary>
-        public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> x, <#= t #> t, <#= vecOut #> result)
+        public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= type #> x, <#= type #> t, <#= vecOut #> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] += v0[i] + (v1[i] - x) * t;
@@ -698,7 +698,7 @@ foreach(string t in types)
         /// <summary>
         /// result = v0 + (v1 - v2) * t
         /// </summary>
-        public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= t #> t, <#= vecOut #> result)
+        public static void AddScaledDelta(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecIn #> v2, <#= type #> t, <#= vecOut #> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] += v0[i] + (v1[i] - v2[i]) * t;
@@ -718,7 +718,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(<#= vecIn #> vector, <#= t #> value, <#= t #> t, <#= vecOut #> result)
+        public static void Lerp(<#= vecIn #> vector, <#= type #> value, <#= type #> t, <#= vecOut #> result)
         {
             for (int i = 0; i < vector.Count; i++)
                 result[i] = SlurMath.Lerp(vector[i], value, t);
@@ -728,7 +728,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= t #> t, <#= vecOut #> result)
+        public static void Lerp(<#= vecIn #> v0, <#= vecIn #> v1, <#= type #> t, <#= vecOut #> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = SlurMath.Lerp(v0[i], v1[i], t);
@@ -748,7 +748,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void Normalize(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+        public static void Normalize(<#= vecIn #> vector, Interval<#= suf #> interval, <#= vecOut #> result)
         {
             for (int i = 0; i < vector.Count; i++)
                 result[i] = SlurMath.Normalize(vector[i], interval.A, interval.B);
@@ -758,7 +758,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void Evaluate(<#= vecIn #> vector, Interval<#= s #> interval, <#= vecOut #> result)
+        public static void Evaluate(<#= vecIn #> vector, Interval<#= suf #> interval, <#= vecOut #> result)
         {
             for (int i = 0; i < vector.Count; i++)
                 result[i] = SlurMath.Lerp(interval.A, interval.B, vector[i]);
@@ -768,7 +768,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static void Remap(<#= vecIn #> vector, Interval<#= s #> from, Interval<#= s #> to, <#= vecOut #> result)
+        public static void Remap(<#= vecIn #> vector, Interval<#= suf #> from, Interval<#= suf #> to, <#= vecOut #> result)
         {
             for (int i = 0; i < vector.Count; i++)
                 result[i] = SlurMath.Remap(vector[i], from.A, from.B, to.A, to.B);
@@ -778,9 +778,9 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> Dot(<#= vecIn #>  v0, <#= vecIn #>  v1)
+        public static <#= type #> Dot(<#= vecIn #>  v0, <#= vecIn #>  v1)
         {
-            var result = 0.0<#= s #>;
+            var result = 0.0<#= suf #>;
 
             for (int i = 0; i < v0.Count; i++)
                 result += v0[i] * v1[i];
@@ -792,9 +792,9 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> AbsDot(<#= vecIn #> v0, <#= vecIn #>  v1)
+        public static <#= type #> AbsDot(<#= vecIn #> v0, <#= vecIn #>  v1)
         {
-            var result = 0.0<#= s #>;
+            var result = 0.0<#= suf #>;
 
             for (int i = 0; i < v0.Count; i++)
                 result += Math.Abs(v0[i] * v1[i]);
@@ -827,8 +827,8 @@ foreach(string t in types)
         /// </summary>
         public static void Reflect(<#= vecIn #> v0, <#= vecIn #> v1, <#= vecOut #> result)
         {
-            Multiply(v1, Dot(v0, v1) / Dot(v1, v1) * 2.0<#= s #>, result);
-            AddScaled(result, v0, -1.0<#= s #>, result);
+            Multiply(v1, Dot(v0, v1) / Dot(v1, v1) * 2.0<#= suf #>, result);
+            AddScaled(result, v0, -1.0<#= suf #>, result);
         }
 
 
@@ -853,9 +853,9 @@ foreach(string t in types)
         /// <summary>
         /// Returns the L1 or Manhattan length of the given vector.
         /// </summary>
-        public static <#= t #> NormL1(<#= vecIn #> vector)
+        public static <#= type #> NormL1(<#= vecIn #> vector)
         {
-            var result = 0.0<#= s #>;
+            var result = 0.0<#= suf #>;
 
             for (int i = 0; i < vector.Count; i++)
                 result += Math.Abs(vector[i]);
@@ -867,7 +867,7 @@ foreach(string t in types)
         /// <summary>
         /// Returns the L2 or Euclidean length of the given vector.
         /// </summary>
-        public static <#= t #> NormL2(<#= vecIn #> vector)
+        public static <#= type #> NormL2(<#= vecIn #> vector)
         {
             return SlurMath.Sqrt(Dot(vector, vector));
         }
@@ -876,9 +876,9 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> DistanceL1(<#= vecIn #> v0, <#= vecIn #> v1)
+        public static <#= type #> DistanceL1(<#= vecIn #> v0, <#= vecIn #> v1)
         {
-            var result = 0.0<#= s #>;
+            var result = 0.0<#= suf #>;
 
             for (int i = 0; i < v0.Count; i++)
                 result += Math.Abs(v1[i] - v0[i]);
@@ -890,7 +890,7 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> DistanceL2(<#= vecIn #> v0, <#= vecIn #> v1)
+        public static <#= type #> DistanceL2(<#= vecIn #> v0, <#= vecIn #> v1)
         {
             return SlurMath.Sqrt(SquareDistanceL2(v0, v1));
         }
@@ -899,9 +899,9 @@ foreach(string t in types)
         /// <summary>
         /// 
         /// </summary>
-        public static <#= t #> SquareDistanceL2(<#= vecIn #> v0, <#= vecIn #> v1)
+        public static <#= type #> SquareDistanceL2(<#= vecIn #> v0, <#= vecIn #> v1)
         {
-            var result = 0.0<#= s #>;
+            var result = 0.0<#= suf #>;
 
             for (int i = 0; i < v0.Count; i++)
             {
@@ -920,9 +920,9 @@ foreach(string t in types)
         {
             var d = Dot(vector, vector);
 
-            if (d > 0.0<#= s #>)
+            if (d > 0.0<#= suf #>)
             {
-                Multiply(vector, 1.0<#= s #> / SlurMath.Sqrt(d), result);
+                Multiply(vector, 1.0<#= suf #> / SlurMath.Sqrt(d), result);
                 return true;
             }
 

@@ -231,10 +231,12 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="points"></param>
+        /// <param name="mean"></param>
         /// <returns></returns>
-        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> points)
+        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> points, out Vector2d mean)
         {
-            return CreateCovariance(points, points.Mean());
+            mean = points.Mean();
+            return CreateCovariance(points, mean);
         }
 
 
@@ -242,16 +244,16 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="centroid"></param>
+        /// <param name="mean"></param>
         /// <returns></returns>
-        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> points, Vector2d centroid)
+        public static Matrix2d CreateCovariance(IEnumerable<Vector2d> points, Vector2d mean)
         {
             var result = new Matrix2d();
             int n = 0;
             
             foreach (var v in points)
             {
-                var d = v - centroid;
+                var d = v - mean;
                 result.M00 += d.X * d.X;
                 result.M01 += d.X * d.Y;
                 result.M11 += d.Y * d.Y;

@@ -836,10 +836,12 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="points"></param>
+        /// <param name="mean"></param>
         /// <returns></returns>
-        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> points)
+        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> points, out Vector3d mean)
         {
-            return CreateCovariance(points, points.Mean());
+            mean = points.Mean();
+            return CreateCovariance(points, mean);
         }
 
 
@@ -847,16 +849,16 @@ namespace SpatialSlur
         /// 
         /// </summary>
         /// <param name="points"></param>
-        /// <param name="centroid"></param>
+        /// <param name="mean"></param>
         /// <returns></returns>
-        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> points, Vector3d centroid)
+        public static Matrix3d CreateCovariance(IEnumerable<Vector3d> points, Vector3d mean)
         {
             var result = new Matrix3d();
             int n = 0;
             
             foreach (var v in points)
             {
-                var d = v - centroid;
+                var d = v - mean;
                 result.M00 += d.X * d.X;
                 result.M01 += d.X * d.Y;
                 result.M02 += d.X * d.Z;

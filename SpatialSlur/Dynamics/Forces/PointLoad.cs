@@ -18,14 +18,14 @@ namespace SpatialSlur.Dynamics.Forces
     [Serializable]
     public class PointLoad : IForce
     {
-        private SlurList<Particle> _particles = new SlurList<Particle>();
-        private SlurList<Vector3d> _loadForces;
+        private DynamicArray<Particle> _particles = new DynamicArray<Particle>();
+        private DynamicArray<Vector3d> _loadForces;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<Particle> Particles
+        public DynamicArray<Particle> Particles
         {
             get => _particles;
         }
@@ -34,7 +34,7 @@ namespace SpatialSlur.Dynamics.Forces
         /// <summary>
         /// Per-particle load forces
         /// </summary>
-        public SlurList<Vector3d> LoadForces
+        public DynamicArray<Vector3d> LoadForces
         {
             get => _loadForces;
         }

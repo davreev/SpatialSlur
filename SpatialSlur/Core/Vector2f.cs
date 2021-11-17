@@ -375,7 +375,8 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector2f Reject(Vector2f v0, Vector2f v1)
         {
-            return v0 - Project(v0, v1);
+            // return v0 - Project(v0, v1);
+            return v0 - Dot(v0, v1) / v1.SquareLength * v1;
         }
 
 
@@ -387,7 +388,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector2f Reflect(Vector2f v0, Vector2f v1)
         {
-            //return Project(v0, v1) * 2.0f - v0;
+            // return Project(v0, v1) * 2.0f - v0;
             return v1 * (Dot(v0, v1) / v1.SquareLength * 2.0f) - v0;
         }
 

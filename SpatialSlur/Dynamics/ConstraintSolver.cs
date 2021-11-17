@@ -16,7 +16,7 @@ using SpatialSlur;
 using SpatialSlur.Collections;
 
 using static System.Threading.Tasks.Parallel;
-using static SpatialSlur.Collections.Buffer;
+using static SpatialSlur.Collections.DynamicArray;
 
 namespace SpatialSlur.Dynamics
 {

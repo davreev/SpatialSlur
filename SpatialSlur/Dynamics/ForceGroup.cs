@@ -21,14 +21,14 @@ namespace SpatialSlur.Dynamics
     [Serializable]
     public class ForceGroup
     {
-        private SlurList<IForce> _forces = new SlurList<IForce>();
+        private DynamicArray<IForce> _forces = new DynamicArray<IForce>();
         private bool _parallel;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<IForce> Forces
+        public DynamicArray<IForce> Forces
         {
             get => _forces;
         }

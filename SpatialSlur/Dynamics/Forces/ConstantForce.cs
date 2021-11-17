@@ -17,14 +17,14 @@ namespace SpatialSlur.Dynamics.Forces
     /// </summary>
     public class ConstantForce : IForce
     {
-        private SlurList<Particle> _particles = new SlurList<Particle>();
+        private DynamicArray<Particle> _particles = new DynamicArray<Particle>();
         private Vector3d _force;
 
 
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<Particle> Particles
+        public DynamicArray<Particle> Particles
         {
             get => _particles;
         }

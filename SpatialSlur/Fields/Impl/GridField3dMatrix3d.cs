@@ -71,7 +71,7 @@ namespace SpatialSlur.Fields
         /// <inheritdoc />
         protected sealed override Matrix3d ValueAtLinear(Vector3d point)
         {
-            (var u, var v, var w) = Vector3d.Fract(ToGridSpace(point), out Vector3i whole);
+            (var u, var v, var w) = Vector3d.Fract(ModelToGrid(point), out Vector3i whole);
 
             var x0 = WrapX(whole.X);
             var y0 = WrapY(whole.Y) * CountX;
@@ -98,7 +98,7 @@ namespace SpatialSlur.Fields
         /// <inheritdoc />
         protected sealed override Matrix3d ValueAtLinearUnsafe(Vector3d point)
         {
-            (var u, var v, var w) = Vector3d.Fract(ToGridSpace(point), out Vector3i whole);
+            (var u, var v, var w) = Vector3d.Fract(ModelToGrid(point), out Vector3i whole);
 
             var x0 = whole.X;
             var y0 = whole.Y * CountX;

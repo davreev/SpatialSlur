@@ -144,7 +144,7 @@ namespace SpatialSlur.Meshes
         /// <param name="parallel"></param>
         public void Action(Action<E> action, bool parallel = false)
         {
-            var hedges = _hedges.AsReadOnlyView();
+            var hedges = _hedges.AsView();
 
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, Count), range => Body(range.Item1, range.Item2));

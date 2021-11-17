@@ -464,7 +464,8 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector3d Reject(Vector3d v0, Vector3d v1)
         {
-            return v0 - Project(v0, v1);
+            // return v0 - Project(v0, v1);
+            return v0 - Dot(v0, v1) / v1.SquareLength * v1;
         }
 
 
@@ -476,7 +477,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector3d Reflect(Vector3d v0, Vector3d v1)
         {
-            //return Project(v0, v1) * 2.0 - v0;
+            // return Project(v0, v1) * 2.0 - v0;
             return v1 * (Dot(v0, v1) / v1.SquareLength * 2.0) - v0;
         }
 
@@ -598,7 +599,8 @@ namespace SpatialSlur
         /// </summary>
         public Vector2d XY
         {
-            get { return new Vector2d(X, Y); }
+            get => new Vector2d(X, Y);
+            set => (X, Y) = value;
         }
 
 

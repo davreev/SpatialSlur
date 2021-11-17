@@ -53,7 +53,7 @@ namespace SpatialSlur.Fields
                 dy = 1.0 / (dy * dy);
 
                 (int di, int dj) = field.GetBoundaryOffsets();
-                (int i, int j) = field.ToGridSpace(from);
+                (int i, int j) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {
@@ -105,7 +105,7 @@ namespace SpatialSlur.Fields
                 (var nx, var ny) = field.Count;
                 (var dx, var dy) = (0.5 / field.Scale);
                 (int di, int dj) = field.GetBoundaryOffsets();
-                (int i, int j) = field.ToGridSpace(from);
+                (int i, int j) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {
@@ -195,7 +195,7 @@ namespace SpatialSlur.Fields
                 dy = 1.0 / (dy * dy);
 
                 (int di, int dj) = field.GetBoundaryOffsets();
-                (int i, int j) = field.ToGridSpace(from);
+                (int i, int j) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {
@@ -247,7 +247,7 @@ namespace SpatialSlur.Fields
                 (var nx, var ny) = field.Count;
                 (var dx, var dy) = (0.5 / field.Scale);
                 (int di, int dj) = field.GetBoundaryOffsets();
-                (int i, int j) = field.ToGridSpace(from);
+                (int i, int j) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {
@@ -301,7 +301,7 @@ namespace SpatialSlur.Fields
                 (var nx, var ny) = field.Count;
                 (var tx, var ty) = (0.5 / field.Scale);
                 (int di, int dj) = field.GetBoundaryOffsets();
-                (int i, int j) = field.ToGridSpace(from);
+                (int i, int j) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {

@@ -18,13 +18,13 @@ namespace SpatialSlur.Dynamics.Forces
     [Serializable]
     public class AreaLoad : Impl.PositionForce
     {
-        private SlurList<Vector3d> _loadForces;
+        private DynamicArray<Vector3d> _loadForces;
 
 
         /// <summary>
         /// Per-segment load forces
         /// </summary>
-        public SlurList<Vector3d> LoadForces
+        public DynamicArray<Vector3d> LoadForces
         {
             get => _loadForces;
         }

@@ -14,7 +14,7 @@ namespace SpatialSlur.Dynamics
     public abstract class Influence<TDelta> : IInfluence
         where TDelta : struct
     {
-        private SlurList<Particle> _particles = new SlurList<Particle>();
+        private DynamicArray<Particle> _particles = new DynamicArray<Particle>();
         private TDelta[] _deltas = Array.Empty<TDelta>();
         private bool _parallel;
 
@@ -22,7 +22,7 @@ namespace SpatialSlur.Dynamics
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<Particle> Particles
+        public DynamicArray<Particle> Particles
         {
             get => _particles;
         }
@@ -33,7 +33,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public ArrayView<TDelta> Deltas
         {
-            get { return _deltas.AsView(_particles.Count); }
+            get { return _deltas.First(_particles.Count); }
         }
 
 

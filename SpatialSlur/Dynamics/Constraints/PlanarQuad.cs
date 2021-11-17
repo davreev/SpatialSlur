@@ -45,13 +45,13 @@ namespace SpatialSlur.Dynamics.Constraints
         #endregion
 
 
-        private SlurList<Element> _elements = new SlurList<Element>();
+        private DynamicArray<Element> _elements = new DynamicArray<Element>();
 
 
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<Element> Elements
+        public DynamicArray<Element> Elements
         {
             get => _elements;
         }

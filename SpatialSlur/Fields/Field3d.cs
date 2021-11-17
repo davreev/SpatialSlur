@@ -135,7 +135,7 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Returns a linear approximation of the signed distance to a given threshold in a given function.
+        /// Approximates the signed distance to a given threshold in a given function.
         /// </summary>
         /// <param name="function"></param>
         /// <param name="gradient"></param>

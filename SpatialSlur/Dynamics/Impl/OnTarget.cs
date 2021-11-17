@@ -11,13 +11,13 @@ namespace SpatialSlur.Dynamics.Impl
     /// </summary>
     public abstract class OnTarget<T> : PositionConstraint
     {
-        private SlurList<int> _targetIndices = new SlurList<int>();
-        private SlurList<T> _targets = new SlurList<T>();
+        private DynamicArray<int> _targetIndices = new DynamicArray<int>();
+        private DynamicArray<T> _targets = new DynamicArray<T>();
 
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<int> TargetIndices
+        public DynamicArray<int> TargetIndices
         {
             get => _targetIndices;
         }
@@ -25,7 +25,7 @@ namespace SpatialSlur.Dynamics.Impl
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<T> Targets
+        public DynamicArray<T> Targets
         {
             get => _targets;
         }

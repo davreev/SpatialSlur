@@ -52,7 +52,7 @@ namespace SpatialSlur.Fields
                 Clamp(index, count);
 
 #if OBSOLETE
-            // switch implementation doesn't allow for inline optimization
+            // This implementation doesn't inline
             switch (mode)
             {
                 case WrapMode.Clamp:

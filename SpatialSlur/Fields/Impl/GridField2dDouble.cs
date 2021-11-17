@@ -72,7 +72,7 @@ namespace SpatialSlur.Fields
         /// <inheritdoc />
         protected sealed override double ValueAtLinear(Vector2d point)
         {
-            (var u, var v) = Vector2d.Fract(ToGridSpace(point), out Vector2i whole);
+            (var u, var v) = Vector2d.Fract(ModelToGrid(point), out Vector2i whole);
             
             var x0 = WrapX(whole.X);
             var y0 = WrapY(whole.Y) * CountX;
@@ -91,7 +91,7 @@ namespace SpatialSlur.Fields
         /// <inheritdoc />
         protected sealed override double ValueAtLinearUnsafe(Vector2d point)
         {
-            (var u, var v) = Vector2d.Fract(ToGridSpace(point), out Vector2i whole);
+            (var u, var v) = Vector2d.Fract(ModelToGrid(point), out Vector2i whole);
 
             var x0 = whole.X;
             var y0 = whole.Y * CountX;

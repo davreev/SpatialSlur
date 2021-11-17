@@ -139,7 +139,7 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            public static void MultiplyPointwise(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
+            public static void Multiply(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -152,7 +152,7 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            public static void DividePointwise(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
+            public static void Divide(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -493,7 +493,7 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            public static void MultiplyPointwise(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
+            public static void Multiply(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -506,7 +506,7 @@ namespace SpatialSlur
             /// <summary>
             /// 
             /// </summary>
-            public static void DividePointwise(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
+            public static void Divide(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
             {
                 ForEach(Partitioner.Create(0, v0.Count), range =>
                 {
@@ -933,7 +933,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void MultiplyPointwise(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
+        public static void Multiply(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] * v1[i];
@@ -943,7 +943,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void DividePointwise(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
+        public static void Divide(ReadOnlyArrayView<double> v0, ReadOnlyArrayView<double> v1, ArrayView<double> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] / v1[i];
@@ -1430,7 +1430,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void MultiplyPointwise(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
+        public static void Multiply(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] * v1[i];
@@ -1440,7 +1440,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void DividePointwise(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
+        public static void Divide(ReadOnlyArrayView<float> v0, ReadOnlyArrayView<float> v1, ArrayView<float> result)
         {
             for (int i = 0; i < v0.Count; i++)
                 result[i] = v0[i] / v1[i];

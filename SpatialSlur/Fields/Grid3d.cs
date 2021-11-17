@@ -222,7 +222,7 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Returns the number of samples in the z dimension
+        /// Returns the number of samples in the z dimension.
         /// </summary>
         public int CountZ
         {
@@ -285,39 +285,14 @@ namespace SpatialSlur.Fields
             get => _wrapZ;
             set => _wrapZ = value;
         }
-        
+
 
         /// <summary>
-        /// Converts from grid space to world space.
+        /// Transforms the given point from model space to grid space.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vector3d ToWorldSpace(Vector3d point)
-        {
-            return new Vector3d(
-               point.X * _tx + _dx,
-               point.Y * _ty + _dy,
-               point.Z * _tz + _dz);
-        }
-
-
-        /// <summary>
-        /// Converts from index to world space.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Vector3d ToWorldSpace(int index)
-        {
-            return ToWorldSpace(ToGridSpace(index));
-        }
-
-
-        /// <summary>
-        /// Converts from world space to grid space.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public Vector3d ToGridSpace(Vector3d point)
+        public Vector3d ModelToGrid(Vector3d point)
         {
             return new Vector3d(
                 (point.X - _dx) * _txInv,
@@ -327,11 +302,36 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Converts from index to grid space.
+        /// Transforms the given point from grid space to model space.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vector3d GridToModel(Vector3d point)
+        {
+            return new Vector3d(
+               point.X * _tx + _dx,
+               point.Y * _ty + _dy,
+               point.Z * _tz + _dz);
+        }
+
+
+        /// <summary>
+        /// Converts the given index to a point in model space.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Vector3i ToGridSpace(int index)
+        public Vector3d IndexToModel(int index)
+        {
+            return GridToModel(IndexToGrid(index));
+        }
+
+
+        /// <summary>
+        /// Converts the given index to a point in grid space.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Vector3i IndexToGrid(int index)
         {
             int z = index / _nxy;
             index -= z * _nxy;
@@ -341,23 +341,23 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Converts from grid space to index.
+        /// Returns the index at the given point in grid space.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public int ToIndex(Vector3i point)
+        public int IndexAt(Vector3i point)
         {
             return WrapX(point.X) + WrapY(point.Y) * _nx + WrapZ(point.Z) * _nxy;
         }
 
 
         /// <summary>
-        /// Converts from grid space to index.
-        /// Assumes the given point is within the bounds of the grid.
+        /// Returns the index at the given point in grid space.
+        /// Assumes the point is within the bounds of the grid.
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public int ToIndexUnsafe(Vector3i point)
+        public int IndexAtUnsafe(Vector3i point)
         {
             return point.X + point.Y * _nx + point.Z * _nxy;
         }
@@ -378,7 +378,7 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Applies a wrap function to the given index based on the current wrap mode.
+        /// Applies a wrap function to the given index based on the current wrap mode
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
@@ -389,7 +389,7 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Applies a wrap function to the given index based on the current wrap mode.
+        /// Applies a wrap function to the given index based on the current wrap mode
         /// </summary>
         /// <param name="y"></param>
         /// <returns></returns>
@@ -400,7 +400,7 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Applies a wrap function to the given index based on the current wrap mode.
+        /// Applies a wrap function to the given index based on the current wrap mode
         /// </summary>
         /// <param name="z"></param>
         /// <returns></returns>

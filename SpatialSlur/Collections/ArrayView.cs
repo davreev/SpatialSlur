@@ -44,7 +44,7 @@ namespace SpatialSlur.Collections
         /// <param name="source"></param>
         public static implicit operator ArrayView<T>(T[] source)
         {
-            return source.AsView();
+            return new ArrayView<T>(source, 0, source.Length);
         }
 
         #endregion
@@ -131,6 +131,20 @@ namespace SpatialSlur.Collections
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="source"></param>
+        /// <param name="start"></param>
+        /// <param name="count"></param>
+        internal ArrayView(T[] source, int start, int count)
+        {
+            _source = source;
+            _start = start;
+            _count = count;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public T[] Source
         {
             get { return _source; }
@@ -156,8 +170,25 @@ namespace SpatialSlur.Collections
 
 
         /// <summary>
-        /// Gets or sets the element at the given index with respect to this view.
+        /// 
+        /// </summary>
+        public bool IsValid
+        {
+            get
+            {
+                return
+                    _source != null &&
+                    _start >= 0 &&
+                    _count >= 0 &&
+                    _start + _count <= _source.Length;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the item at the given index by reference.
         /// Note that this does not perform an additional bounds check.
+        /// If bounds check is needed, use ItemAt() instead.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -165,22 +196,39 @@ namespace SpatialSlur.Collections
         {
             get => ref _source[index + _start];
         }
-        
+
+
+        /// <summary>
+        /// Returns the item at the given index by reference.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public ref T ItemAt(int index)
+        {
+            Utilities.BoundsCheck(index, _count);
+            return ref _source[index + _start];
+        }
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="start"></param>
         /// <param name="count"></param>
-        internal ArrayView(T[] source, int start, int count)
+        /// <returns></returns>
+        public ArrayView<T> Head(int count)
         {
-            if (start < 0 || count < 0 || start + count > source.Length)
-                throw new ArgumentOutOfRangeException();
+            return new ArrayView<T>(_source, _start, count);
+        }
 
-            _source = source;
-            _start = start;
-            _count = count;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public ArrayView<T> Tail(int count)
+        {
+            return new ArrayView<T>(_source, _start + _count - count, count);
         }
 
 
@@ -190,7 +238,7 @@ namespace SpatialSlur.Collections
         /// <param name="start"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public ArrayView<T> Subview(int start, int count)
+        public ArrayView<T> Segment(int start, int count)
         {
             return new ArrayView<T>(_source, _start + start, count);
         }
@@ -211,6 +259,7 @@ namespace SpatialSlur.Collections
         /// <param name="value"></param>
         public void Set(T value)
         {
+            // TODO: Double-check that this is calling the correct overload
             _source.SetRange(value, _start, _count);
         }
 
@@ -231,18 +280,8 @@ namespace SpatialSlur.Collections
         /// <param name="values"></param>
         public void Set(IEnumerable<T> values)
         {
+            // TODO double-check that this is calling the correct overload
             _source.SetRange(values, _start, _count);
-        }
-
-
-        /// <summary>
-        /// Performs an action over this view.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="parallel"></param>
-        public void Action(Action<T> action, bool parallel = false)
-        {
-            _source.ActionRange(_start, _count, action, parallel);
         }
 
 

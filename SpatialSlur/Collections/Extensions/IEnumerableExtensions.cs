@@ -9,10 +9,12 @@ using System.Linq;
 
 using SpatialSlur.Collections;
 
-using Constd = SpatialSlur.SlurMath.Constantsd;
+using static SpatialSlur.Collections.DynamicArray;
 
 namespace SpatialSlur
 {
+    using Constd = SpatialSlur.SlurMath.Constantsd;
+
     /// <summary>
     /// 
     /// </summary>
@@ -51,16 +53,10 @@ namespace SpatialSlur
         /// <param name="array"></param>
         public static int ToArray<T>(this IEnumerable<T> source, ref T[] array)
         {
-            const int minCapacity = 4;
             int n = 0;
 
             foreach (var item in source)
-            {
-                if (array.Length == n)
-                    Array.Resize(ref array, Math.Max(n << 1, minCapacity));
-
-                array[n++] = item;
-            }
+                Append(ref array, n++, item);
 
             return n;
         }
@@ -106,9 +102,9 @@ namespace SpatialSlur
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static RefList<T> ToRefList<T>(this IEnumerable<T> source)
+        public static DynamicArray<T> ToRefList<T>(this IEnumerable<T> source)
         {
-            return new RefList<T>(source);
+            return new DynamicArray<T>(source);
         }
 
 
@@ -121,7 +117,7 @@ namespace SpatialSlur
         /// <param name="source"></param>
         /// <param name="list"></param>
         /// <returns></returns>
-        public static int ToRefList<T>(this IEnumerable<T> source, RefList<T> list)
+        public static int ToRefList<T>(this IEnumerable<T> source, DynamicArray<T> list)
         {
             var itr = source.GetEnumerator();
             int n = 0;
@@ -556,10 +552,13 @@ namespace SpatialSlur
         public static Vector2d Sum(this IEnumerable<Vector2d> vectors)
         {
             if (vectors is Vector2d[] arr)
-                return Matrix.ColumnSum(arr);
+                return Matrix.RowWise.Sum(arr);
 
             Vector2d sum = new Vector2d();
-            foreach (Vector2d v in vectors) sum += v;
+
+            foreach (Vector2d v in vectors)
+                sum += v;
+
             return sum;
         }
 
@@ -570,7 +569,7 @@ namespace SpatialSlur
         public static Vector2d Mean(this IEnumerable<Vector2d> vectors)
         {
             if (vectors is Vector2d[] arr)
-                return Matrix.ColumnMean(arr);
+                return Matrix.RowWise.Mean(arr);
 
             Vector2d sum = new Vector2d();
             int count = 0;
@@ -620,10 +619,13 @@ namespace SpatialSlur
         public static Vector3d Sum(this IEnumerable<Vector3d> vectors)
         {
             if (vectors is Vector3d[] arr)
-                return Matrix.ColumnSum(arr);
+                return Matrix.RowWise.Sum(arr);
 
             var sum = new Vector3d();
-            foreach (Vector3d v in vectors) sum += v;
+
+            foreach (Vector3d v in vectors)
+                sum += v;
+
             return sum;
         }
 
@@ -634,7 +636,7 @@ namespace SpatialSlur
         public static Vector3d Mean(this IEnumerable<Vector3d> vectors)
         {
             if (vectors is Vector3d[] arr)
-                return Matrix.ColumnMean(arr);
+                return Matrix.RowWise.Mean(arr);
 
             Vector3d sum = new Vector3d();
             int count = 0;
@@ -681,7 +683,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void Sum(this IEnumerable<double[]> vectors, double[] result)
+        public static void Sum(this IEnumerable<ReadOnlyArrayView<double>> vectors, ArrayView<double> result)
         {
             result.Set(vectors.First());
 
@@ -693,7 +695,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void Mean(this IEnumerable<double[]> vectors, double[] result)
+        public static void Mean(this IEnumerable<ReadOnlyArrayView<double>> vectors, ArrayView<double> result)
         {
             result.Set(vectors.First());
             int n = 1;

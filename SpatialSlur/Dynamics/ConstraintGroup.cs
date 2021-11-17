@@ -21,14 +21,14 @@ namespace SpatialSlur.Dynamics
     [Serializable]
     public class ConstraintGroup
     {
-        private SlurList<IConstraint> _constraints = new SlurList<IConstraint>();
+        private DynamicArray<IConstraint> _constraints = new DynamicArray<IConstraint>();
         private bool _parallel;
         
         
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<IConstraint> Constraints
+        public DynamicArray<IConstraint> Constraints
         {
             get => _constraints;
         }

@@ -310,7 +310,8 @@ namespace SpatialSlur
         /// </summary>
         public Vector2i XY
         {
-            get { return new Vector2i(X, Y); }
+            get => new Vector2i(X, Y); 
+            set => (X, Y) = value;
         }
 
 

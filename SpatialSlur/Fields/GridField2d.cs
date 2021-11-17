@@ -110,12 +110,12 @@ namespace SpatialSlur.Fields
             get
             {
                 BoundsCheck(index.X, CountX);
-                return _values[ToIndexUnsafe(index)];
+                return _values[IndexAtUnsafe(index)];
             }
             set
             {
                 BoundsCheck(index.X, CountX);
-                _values[ToIndexUnsafe(index)] = value;
+                _values[IndexAtUnsafe(index)] = value;
             }
         }
 
@@ -151,7 +151,7 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public T ValueAt(Vector2i point)
         {
-            return _values[ToIndex(point)];
+            return _values[IndexAt(point)];
         }
 
 
@@ -163,7 +163,7 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public T ValueAtUnsafe(Vector2i point)
         {
-            return _values[ToIndexUnsafe(point)];
+            return _values[IndexAtUnsafe(point)];
         }
 
 
@@ -175,11 +175,11 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public T ValueAt(Vector2d point)
         {
-            // conditional implementation allows for inline optimization
             return SampleMode == SampleMode.Nearest ?
                 ValueAtNearest(point) : ValueAtLinear(point);
 
-            /*
+#if OBSOLETE
+            // This implementation doesn't inline optimize
             switch (SampleMode)
             {
                 case SampleMode.Nearest:
@@ -189,7 +189,7 @@ namespace SpatialSlur.Fields
             }
 
             throw new NotSupportedException();
-            */
+#endif
         }
 
 
@@ -225,8 +225,8 @@ namespace SpatialSlur.Fields
         /// <param name="point"></param>
         private T ValueAtNearest(Vector2d point)
         {
-            point = Vector2d.Round(ToGridSpace(point));
-            return _values[ToIndex(point.As2i)];
+            point = Vector2d.Round(ModelToGrid(point));
+            return _values[IndexAt(point.As2i)];
         }
 
 
@@ -236,8 +236,8 @@ namespace SpatialSlur.Fields
         /// <param name="point"></param>
         private T ValueAtNearestUnsafe(Vector2d point)
         {
-            point = Vector2d.Round(ToGridSpace(point));
-            return _values[ToIndexUnsafe(point.As2i)];
+            point = Vector2d.Round(ModelToGrid(point));
+            return _values[IndexAtUnsafe(point.As2i)];
         }
 
 
@@ -283,7 +283,7 @@ namespace SpatialSlur.Fields
         /// <param name="result"></param>
         public void GridPointAt(Vector2d point, ref GridPoint2d result)
         {
-            result.SetWeights(Vector2d.Fract(ToGridSpace(point), out Vector2i whole));
+            result.SetWeights(Vector2d.Fract(ModelToGrid(point), out Vector2i whole));
             GridPointAt(whole, ref result);
         }
         
@@ -330,7 +330,7 @@ namespace SpatialSlur.Fields
         /// <param name="result"></param>
         public void GridPointAtUnsafe(Vector2d point, ref GridPoint2d result)
         {
-            result.SetWeights(Vector2d.Fract(ToGridSpace(point), out Vector2i whole));
+            result.SetWeights(Vector2d.Fract(ModelToGrid(point), out Vector2i whole));
             GridPointAtUnsafe(whole, ref result);
         }
 
@@ -442,7 +442,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         /// <param name="func"></param>
         /// <param name="parallel"></param>
-        public void SampleInWorldSpace(Func<Vector2d, T> func, bool parallel = false)
+        public void ModelSpaceSample(Func<Vector2d, T> func, bool parallel = false)
         {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, CountXY), range => Body(range.Item1, range.Item2));
@@ -453,7 +453,7 @@ namespace SpatialSlur.Fields
             {
                 var vals = _values;
                 var nx = CountX;
-                var p = ToGridSpace(from);
+                var p = IndexToGrid(from);
 
                 for (int index = from; index < to; index++, p.X++)
                 {
@@ -463,7 +463,7 @@ namespace SpatialSlur.Fields
                         p.Y++;
                     }
 
-                    vals[index] = func(ToWorldSpace(p));
+                    vals[index] = func(GridToModel(p));
                 }
             }
         }
@@ -474,7 +474,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         /// <param name="func"></param>
         /// <param name="parallel"></param>
-        public void SampleInGridSpace(Func<Vector2i, T> func, bool parallel = false)
+        public void GridSpaceSample(Func<Vector2i, T> func, bool parallel = false)
         {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, CountXY), range => Body(range.Item1, range.Item2));
@@ -485,7 +485,7 @@ namespace SpatialSlur.Fields
             {
                 var vals = _values;
                 var nx = CountX;
-                var p = ToGridSpace(from);
+                var p = IndexToGrid(from);
 
                 for (int index = from; index < to; index++, p.X++)
                 {
@@ -506,7 +506,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         /// <param name="func"></param>
         /// <param name="parallel"></param>
-        public void SampleInUnitSpace(Func<Vector2d, T> func, bool parallel = false)
+        public void UnitSpaceSample(Func<Vector2d, T> func, bool parallel = false)
         {
             if (parallel)
                 Parallel.ForEach(Partitioner.Create(0, CountXY), range => Body(range.Item1, range.Item2));
@@ -517,7 +517,7 @@ namespace SpatialSlur.Fields
             {
                 var vals = _values;
                 (var nx, var ny) = Count;
-                var p = ToGridSpace(from);
+                var p = IndexToGrid(from);
 
                 var t = new Vector2d(
                     1.0 / (nx - 1),
@@ -574,7 +574,7 @@ namespace SpatialSlur.Fields
         }
 
 
-        #region Explicit Interface Implementations
+#region Explicit Interface Implementations
 
         ArrayView<T> ISampledField<T>.Values
         {
@@ -621,7 +621,7 @@ namespace SpatialSlur.Fields
                 for (int y = 0; y < ny; y++)
                 {
                     for (int x = 0; x < nx; x++)
-                        yield return ToWorldSpace(new Vector2d(x, y));
+                        yield return GridToModel(new Vector2d(x, y));
                 }
             }
         }
@@ -629,7 +629,7 @@ namespace SpatialSlur.Fields
 
         Vector2d ISampledField2d<T>.PointAt(int index)
         {
-            return ToWorldSpace(index);
+            return IndexToModel(index);
         }
 
 
@@ -642,7 +642,7 @@ namespace SpatialSlur.Fields
                 for (int y = 0; y < ny; y++)
                 {
                     for (int x = 0; x < nx; x++)
-                        yield return ToWorldSpace(new Vector2d(x, y)).As3d;
+                        yield return GridToModel(new Vector2d(x, y)).As3d;
                 }
             }
         }
@@ -650,7 +650,7 @@ namespace SpatialSlur.Fields
 
         Vector3d ISampledField3d<T>.PointAt(int index)
         {
-            return ToWorldSpace(index).As3d;
+            return IndexToModel(index).As3d;
         }
 
 #endregion

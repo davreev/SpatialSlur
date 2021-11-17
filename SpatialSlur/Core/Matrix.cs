@@ -21,9 +21,10 @@ namespace SpatialSlur
         /// </summary>
         /// <param name="vectors"></param>
         /// <param name="result"></param>
-        public static void GetCovariance(IEnumerable<double[]> vectors, double[] result)
+        /// <param name="mean"></param>
+        public static void GetCovariance(IEnumerable<double[]> vectors, double[] result, out double[] mean)
         {
-            var mean = new double[vectors.First().Length];
+            mean = new double[vectors.First().Length];
             vectors.Mean(mean);
             GetCovariance(vectors, mean, result);
         }

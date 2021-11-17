@@ -110,13 +110,13 @@ namespace SpatialSlur.Fields
             {
                 BoundsCheck(point.X, CountX);
                 BoundsCheck(point.Y, CountY);
-                return _values[ToIndexUnsafe(point)];
+                return _values[IndexAtUnsafe(point)];
             }
             set
             {
                 BoundsCheck(point.X, CountX);
                 BoundsCheck(point.Y, CountY);
-                _values[ToIndexUnsafe(point)] = value;
+                _values[IndexAtUnsafe(point)] = value;
             }
         }
 
@@ -152,7 +152,7 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public T ValueAt(Vector3i point)
         {
-            return _values[ToIndex(point)];
+            return _values[IndexAt(point)];
         }
 
 
@@ -164,7 +164,7 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public T ValueAtUnsafe(Vector3i point)
         {
-            return _values[ToIndexUnsafe(point)];
+            return _values[IndexAtUnsafe(point)];
         }
 
             
@@ -226,8 +226,8 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         private T ValueAtNearest(Vector3d point)
         {
-            point = Vector3d.Round(ToGridSpace(point));
-            return _values[ToIndex(point.As3i)];
+            point = Vector3d.Round(ModelToGrid(point));
+            return _values[IndexAt(point.As3i)];
         }
 
 
@@ -238,8 +238,8 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         private T ValueAtNearestUnsafe(Vector3d point)
         {
-            point = Vector3d.Round(ToGridSpace(point));
-            return _values[ToIndexUnsafe(point.As3i)];
+            point = Vector3d.Round(ModelToGrid(point));
+            return _values[IndexAtUnsafe(point.As3i)];
         }
 
 
@@ -285,7 +285,7 @@ namespace SpatialSlur.Fields
         /// <param name="result"></param>
         public void GridPointAt(Vector3d point, ref GridPoint3d result)
         {
-            result.SetWeights(Vector3d.Fract(ToGridSpace(point), out Vector3i whole));
+            result.SetWeights(Vector3d.Fract(ModelToGrid(point), out Vector3i whole));
             GridPointAt(whole, ref result);
         }
 
@@ -338,7 +338,7 @@ namespace SpatialSlur.Fields
         /// <param name="result"></param>
         public void GridPointAtUnsafe(Vector3d point, ref GridPoint3d result)
         {
-            result.SetWeights(Vector3d.Fract(ToGridSpace(point), out Vector3i whole));
+            result.SetWeights(Vector3d.Fract(ModelToGrid(point), out Vector3i whole));
             GridPointAtUnsafe(whole, ref result);
         }
 
@@ -524,7 +524,7 @@ namespace SpatialSlur.Fields
                 var vals = _values;
                 var nx = CountX;
                 var ny = CountY;
-                var p = ToGridSpace(from);
+                var p = IndexToGrid(from);
 
                 for (int index = from; index < to; index++, p.X++)
                 {
@@ -540,7 +540,7 @@ namespace SpatialSlur.Fields
                         p.Z++;
                     }
                     
-                    vals[index] = func(ToWorldSpace(p));
+                    vals[index] = func(GridToModel(p));
                 }
             }
         }
@@ -563,7 +563,7 @@ namespace SpatialSlur.Fields
                 var vals = _values;
                 var nx = CountX;
                 var ny = CountY;
-                var p = ToGridSpace(from);
+                var p = IndexToGrid(from);
 
                 for (int index = from; index < to; index++, p.X++)
                 {
@@ -602,7 +602,7 @@ namespace SpatialSlur.Fields
                 var vals = _values;
                 var nx = CountX;
                 var ny = CountY;
-                var p = ToGridSpace(from);
+                var p = IndexToGrid(from);
 
                 var t = new Vector3d(
                     1.0 / (CountX - 1),
@@ -703,7 +703,7 @@ namespace SpatialSlur.Fields
                     for (int y = 0; y < ny; y++)
                     {
                         for (int x = 0; x < nx; x++)
-                            yield return ToWorldSpace(new Vector3d(x, y, z));
+                            yield return GridToModel(new Vector3d(x, y, z));
                     }
                 }
             }
@@ -712,7 +712,7 @@ namespace SpatialSlur.Fields
 
         Vector3d ISampledField3d<T>.PointAt(int index)
         {
-            return ToWorldSpace(index);
+            return IndexToModel(index);
         }
 
 #endregion

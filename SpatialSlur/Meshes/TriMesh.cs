@@ -1,10 +1,14 @@
 ﻿
 /*
  * Notes
+ * 
+ * TODO make index type generic to handle line segments and point clouds
  */
 
 using System;
 using SpatialSlur.Collections;
+
+using static SpatialSlur.Collections.DynamicArray;
 
 namespace SpatialSlur.Meshes
 {
@@ -71,7 +75,7 @@ namespace SpatialSlur.Meshes
         /// </summary>
         public ArrayView<TVec3> Positions
         {
-            get { return _positions.AsView(_vertexCount); }
+            get { return _positions.First(_vertexCount); }
         }
 
 
@@ -80,7 +84,7 @@ namespace SpatialSlur.Meshes
         /// </summary>
         public ArrayView<TVec3> Normals
         {
-            get { return _normals.AsView(_vertexCount); }
+            get { return _normals.First(_vertexCount); }
         }
 
 
@@ -89,7 +93,7 @@ namespace SpatialSlur.Meshes
         /// </summary>
         public ArrayView<TVec3> Tangents
         {
-            get { return _tangents.AsView(_vertexCount); }
+            get { return _tangents.First(_vertexCount); }
         }
 
 
@@ -98,7 +102,7 @@ namespace SpatialSlur.Meshes
         /// </summary>
         public ArrayView<TVec2> TextureCoords
         {
-            get {  return _textureCoords.AsView(_vertexCount); }
+            get {  return _textureCoords.First(_vertexCount); }
         }
 
 
@@ -107,7 +111,7 @@ namespace SpatialSlur.Meshes
         /// </summary>
         public ArrayView<Vector3i> Faces
         {
-            get { return _faces.AsView(_faceCount); }
+            get { return _faces.First(_faceCount); }
         }
 
 
@@ -149,21 +153,10 @@ namespace SpatialSlur.Meshes
             get { return _vertexCount; }
             set
             {
-                if(value > VertexCapacity)
-                {
-                    Array.Resize(ref _positions, value);
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
 
-                    if (HasNormals)
-                        Array.Resize(ref _normals, value);
-
-                    if (HasTangents)
-                        Array.Resize(ref _tangents, value);
-
-                    if (HasTextureCoords)
-                        Array.Resize(ref _textureCoords, value);
-                }
-
-                _vertexCount = value;
+                SetVertexCount(value);
             }
         }
 
@@ -201,10 +194,10 @@ namespace SpatialSlur.Meshes
             get { return _faceCount; }
             set
             {
-                if (value > FaceCapacity)
-                    Array.Resize(ref _faces, value);
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException("The value cannot be negative.");
 
-                _faceCount = value;
+                SetFaceCount(value);
             }
         }
 
@@ -264,6 +257,43 @@ namespace SpatialSlur.Meshes
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="value"></param>
+        private void SetVertexCount(int value)
+        {
+            if (value > _positions.Length)
+            {
+                ExpandToFit(ref _positions, value);
+
+                if (HasNormals)
+                    Array.Resize(ref _normals, _positions.Length);
+
+                if (HasTangents)
+                    Array.Resize(ref _tangents, _positions.Length);
+
+                if (HasTextureCoords)
+                    Array.Resize(ref _textureCoords, _positions.Length);
+            }
+
+            _vertexCount = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        private void SetFaceCount(int value)
+        {
+            if (value > _faces.Length)
+                ExpandToFit(ref _faces, value);
+
+            _faceCount = value;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="position"></param>
         public void AddVertex(TVec3 position)
         {
@@ -271,7 +301,19 @@ namespace SpatialSlur.Meshes
             int index = _vertexCount++;
 
             if (index == VertexCapacity)
-                ExpandVertexCapacity(Math.Max(index << 1, minCapacity));
+            {
+                int newCapacity = Math.Max(index << 1, minCapacity);
+                Array.Resize(ref _positions, newCapacity);
+
+                if (HasNormals)
+                    Array.Resize(ref _normals, newCapacity);
+
+                if (HasTangents)
+                    Array.Resize(ref _tangents, newCapacity);
+
+                if (HasTextureCoords)
+                    Array.Resize(ref _textureCoords, newCapacity);
+            }
 
             _positions[index] = position;
         }
@@ -287,7 +329,10 @@ namespace SpatialSlur.Meshes
             int index = _faceCount++;
 
             if (index == FaceCapacity)
-                ExpandFaceCapacity(Math.Max(index << 1, minCapacity));
+            {
+                int newCapacity = Math.Max(index << 1, minCapacity);
+                Array.Resize(ref _faces, newCapacity);
+            }
 
             _faces[index] = face;
         }
@@ -311,22 +356,21 @@ namespace SpatialSlur.Meshes
         {
             int nv0 = _vertexCount;
             int nv1 = other._vertexCount;
-            int sum = nv0 + nv1;
 
-            if (sum > VertexCapacity)
-                ExpandVertexCapacity(nv0 + sum);
+            // Resizes arrays if necessary
+            SetVertexCount(nv0 + nv1);
 
-            _positions.SetRange(other._positions, nv0, 0, nv1);
-            _vertexCount = sum;
+            // Assign attributes
+            _positions.SetRange(nv0, other._positions, 0, nv1);
 
             if (HasNormals && other.HasNormals)
-                _normals.SetRange(other._normals, nv0, 0, nv1);
+                _normals.SetRange(nv0, other._normals, 0, nv1);
 
             if (HasTangents && other.HasTangents)
-                _tangents.SetRange(other._tangents, nv0, 0, nv1);
+                _tangents.SetRange(nv0, other._tangents, 0, nv1);
 
             if (HasTextureCoords && other.HasTextureCoords)
-                _textureCoords.SetRange(other._textureCoords, nv0, 0, nv1);
+                _textureCoords.SetRange(nv0, other._textureCoords, 0, nv1);
         }
 
 
@@ -338,41 +382,12 @@ namespace SpatialSlur.Meshes
         {
             int nf0 = _faceCount;
             int nf1 = other._faceCount;
-            int sum = nf0 + nf1;
 
-            if (sum > FaceCapacity)
-                ExpandFaceCapacity(nf0 + sum);
-
-            _faces.SetRange(other._faces, nf0, 0, nf1);
-            _faceCount = sum;
-        }
-
-
-        /// <summary>
-        /// Assumes that the new capacity is larger than the current.
-        /// </summary>
-        private void ExpandVertexCapacity(int newCapacity)
-        {
-            Array.Resize(ref _positions, newCapacity);
-
-            if (HasNormals)
-                Array.Resize(ref _normals, newCapacity);
-
-            if (HasTangents)
-                Array.Resize(ref _tangents, newCapacity);
-
-            if (HasTextureCoords)
-                Array.Resize(ref _textureCoords, newCapacity);
-        }
-
-
-        /// <summary>
-        /// Assumes that the new capacity is larger than the current.
-        /// </summary>
-        /// <param name="newCapacity"></param>
-        private void ExpandFaceCapacity(int newCapacity)
-        {
-            Array.Resize(ref _faces, newCapacity);
+            // Resizes arrays if necessary
+            SetFaceCount(nf0 + nf1);
+            
+            // Assign attributes
+            _faces.SetRange(nf0, other._faces, 0, nf1);
         }
     }
 }

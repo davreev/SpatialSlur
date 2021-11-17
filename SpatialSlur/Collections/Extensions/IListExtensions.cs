@@ -31,7 +31,7 @@ namespace SpatialSlur.Collections
         /// </summary>
         public static void Set<T>(this IList<T> list, IReadOnlyList<T> other)
         {
-            SetRange(list, other, 0, 0, list.Count);
+            SetRange(list, 0, other, 0, list.Count);
         }
 
 
@@ -93,18 +93,18 @@ namespace SpatialSlur.Collections
         /// </summary>
         public static void SetRange<T>(this IList<T> list, IReadOnlyList<T> other, int count)
         {
-            SetRange(list, other, 0, 0, count);
+            SetRange(list, 0, other, 0, count);
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        public static void SetRange<T>(this IList<T> list, IReadOnlyList<T> other, int index, int otherIndex, int count)
+        public static void SetRange<T>(this IList<T> list, int index, IReadOnlyList<T> other, int otherIndex, int count)
         {
             if (list is T[] arr0 && other is T[] arr1)
             {
-                ArrayExtensions.SetRange(arr0, arr1, index, otherIndex, count);
+                ArrayExtensions.SetRange(arr0, index, arr1, otherIndex, count);
                 return;
             }
 

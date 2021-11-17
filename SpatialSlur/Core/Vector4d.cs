@@ -395,7 +395,8 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector4d Reject(Vector4d v0, Vector4d v1)
         {
-            return v0 - Project(v0, v1);
+            // return v0 - Project(v0, v1);
+            return v0 - Dot(v0, v1) / v1.SquareLength * v1;
         }
 
 
@@ -549,7 +550,8 @@ namespace SpatialSlur
         /// </summary>
         public Vector2d XY
         {
-            get { return new Vector2d(X, Y); }
+            get => new Vector2d(X, Y);
+            set => (X, Y) = value;
         }
 
 
@@ -558,7 +560,8 @@ namespace SpatialSlur
         /// </summary>
         public Vector3d XYZ
         {
-            get { return new Vector3d(X, Y, Z); }
+            get => new Vector3d(X, Y, Z);
+            set => (X, Y, Z) = value;
         }
 
 

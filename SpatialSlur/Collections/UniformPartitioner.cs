@@ -1,7 +1,9 @@
 ﻿
 /*
  * Notes
- */ 
+ * 
+ * TODO: Implement struct enumerator
+ */
 
 using System;
 using System.Collections;
@@ -18,7 +20,7 @@ namespace SpatialSlur.Collections
     {
         #region Static Members
 
-        private static readonly int _defaultCount = Environment.ProcessorCount << 3; // TODO test other values
+        private static readonly int _defaultCount = Environment.ProcessorCount << 3; // TODO: Test other values
 
         #endregion
 
@@ -68,6 +70,7 @@ namespace SpatialSlur.Collections
             get
             {
                 BoundsCheck(index, _count);
+
                 index = _from + index * _stride;
                 return (index, Math.Min(index + _stride, _to));
             }

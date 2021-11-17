@@ -26,6 +26,8 @@ namespace SpatialSlur.Collections
         /// </summary>
         private class Bin : List<T>
         {
+            // TODO: Derive from DynamicArray instead
+
             /// <summary></summary>
             public int Version = int.MinValue;
 

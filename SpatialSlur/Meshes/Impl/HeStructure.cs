@@ -62,7 +62,7 @@ namespace SpatialSlur.Meshes.Impl
         /// 
         /// </summary>
         [Serializable]
-        public abstract class Vertex : Node<V, E>
+        public abstract class Vertex : HeNode<V, E>
         {
             /// <summary>
             /// Circulates through all halfedges starting at this vertex.
@@ -213,7 +213,7 @@ namespace SpatialSlur.Meshes.Impl
         #endregion
 
 
-        private NodeList<V> _vertices;
+        private HeNodeList<V> _vertices;
         private HalfedgeList<E> _hedges;
 
 
@@ -242,7 +242,7 @@ namespace SpatialSlur.Meshes.Impl
         /// <summary>
         /// 
         /// </summary>
-        public NodeList<V> Vertices
+        public HeNodeList<V> Vertices
         {
             get => _vertices;
         }
@@ -590,7 +590,7 @@ namespace SpatialSlur.Meshes.Impl
         /// 
         /// </summary>
         [Serializable]
-        public abstract class Face : Node<F, E>
+        public abstract class Face : HeNode<F, E>
         {
             /// <summary>
             /// Circulates through all halfedges in this face.
@@ -798,7 +798,7 @@ namespace SpatialSlur.Meshes.Impl
         #endregion
 
 
-        private NodeList<F> _faces;
+        private HeNodeList<F> _faces;
 
 
         /// <summary>
@@ -827,7 +827,7 @@ namespace SpatialSlur.Meshes.Impl
         /// <summary>
         /// 
         /// </summary>
-        public NodeList<F> Faces
+        public HeNodeList<F> Faces
         {
             get => _faces;
         }
@@ -1013,7 +1013,7 @@ namespace SpatialSlur.Meshes.Impl
         /// 
         /// </summary>
         [Serializable]
-        public abstract class Cluster : Node<VG, E>
+        public abstract class Cluster : HeNode<VG, E>
         {
         }
 
@@ -1022,7 +1022,7 @@ namespace SpatialSlur.Meshes.Impl
         /// 
         /// </summary>
         [Serializable]
-        public abstract class Bundle : Node<EG, E>
+        public abstract class Bundle : HeNode<EG, E>
         {
         }
 
@@ -1031,16 +1031,16 @@ namespace SpatialSlur.Meshes.Impl
         /// 
         /// </summary>
         [Serializable]
-        public abstract class Cell : Node<FG, E>
+        public abstract class Cell : HeNode<FG, E>
         {
         }
 
         #endregion
 
 
-        private NodeList<VG> _clusters;
-        private NodeList<EG> _bundles;
-        private NodeList<FG> _cells;
+        private HeNodeList<VG> _clusters;
+        private HeNodeList<EG> _bundles;
+        private HeNodeList<FG> _cells;
         // private protected NodeList<FP> _pairs; // face pairs
 
         
@@ -1081,7 +1081,7 @@ namespace SpatialSlur.Meshes.Impl
         /// <summary>
         /// 
         /// </summary>
-        public NodeList<VG> Clusters
+        public HeNodeList<VG> Clusters
         {
             get => _clusters;
         }
@@ -1090,7 +1090,7 @@ namespace SpatialSlur.Meshes.Impl
         /// <summary>
         /// 
         /// </summary>
-        public NodeList<EG> Bundles
+        public HeNodeList<EG> Bundles
         {
             get => _bundles;
         }
@@ -1099,7 +1099,7 @@ namespace SpatialSlur.Meshes.Impl
         /// <summary>
         /// 
         /// </summary>
-        public NodeList<FG> Cells
+        public HeNodeList<FG> Cells
         {
             get => _cells;
         }

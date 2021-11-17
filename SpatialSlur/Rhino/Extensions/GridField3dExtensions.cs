@@ -35,7 +35,7 @@ namespace SpatialSlur.Rhino
             // add vertices
             foreach (int index in selection)
             {
-                (var x, var y, var z) = field.ToWorldSpace(index);
+                (var x, var y, var z) = field.IndexToModel(index);
                 verts.Add(x - dx, y - dy, z);
                 verts.Add(x + dx, y - dy, z);
                 verts.Add(x - dx, y + dy, z);

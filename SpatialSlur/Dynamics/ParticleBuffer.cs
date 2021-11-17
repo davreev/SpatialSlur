@@ -12,8 +12,6 @@ using static SpatialSlur.Utilities;
 
 namespace SpatialSlur.Dynamics
 {
-    using Buffer = SpatialSlur.Collections.Buffer;
-
     /// <summary>
     /// 
     /// </summary>
@@ -60,7 +58,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public ReadOnlyArrayView<Particle> Particles
         {
-            get { return _particles.AsView(_count); }
+            get { return _particles.First(_count); }
         }
 
 
@@ -69,7 +67,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public ArrayView<ParticlePosition> Positions
         {
-            get { return _positions.AsView(_positionCount); }
+            get { return _positions.First(_positionCount); }
         }
 
 
@@ -78,7 +76,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         public ArrayView<ParticleRotation> Rotations
         {
-            get { return _rotations.AsView(_rotationCount); }
+            get { return _rotations.First(_rotationCount); }
         }
 
 
@@ -149,8 +147,8 @@ namespace SpatialSlur.Dynamics
                 RotationIndex = -1
             };
 
-            Buffer.Append(ref _particles, _count++, p);
-            Buffer.Append(ref _positions, _positionCount++, position);
+            DynamicArray.Append(ref _particles, _count++, p);
+            DynamicArray.Append(ref _positions, _positionCount++, position);
 
             return p;
         }
@@ -169,9 +167,9 @@ namespace SpatialSlur.Dynamics
                 RotationIndex = _rotationCount
             };
 
-            Buffer.Append(ref _particles, _count++, p);
-            Buffer.Append(ref _particles, _count++, p);
-            Buffer.Append(ref _rotations, _rotationCount++, rotation);
+            DynamicArray.Append(ref _particles, _count++, p);
+            DynamicArray.Append(ref _particles, _count++, p);
+            DynamicArray.Append(ref _rotations, _rotationCount++, rotation);
 
             return p;
         }
@@ -191,9 +189,9 @@ namespace SpatialSlur.Dynamics
                 RotationIndex = _rotationCount
             };
 
-            Buffer.Append(ref _particles, _count++, p);
-            Buffer.Append(ref _positions, _positionCount++, position);
-            Buffer.Append(ref _rotations, _rotationCount++, rotation);
+            DynamicArray.Append(ref _particles, _count++, p);
+            DynamicArray.Append(ref _positions, _positionCount++, position);
+            DynamicArray.Append(ref _rotations, _rotationCount++, rotation);
 
             return p;
         }
@@ -210,7 +208,7 @@ namespace SpatialSlur.Dynamics
             // Add particles
             {
                 int offset = _count;
-                _count = Buffer.Append(ref _particles, offset, Particle.Default, count);
+                _count = DynamicArray.Append(ref _particles, offset, Particle.Default, count);
 
                 // Set position indices
                 if (hasPosition)
@@ -236,10 +234,10 @@ namespace SpatialSlur.Dynamics
             // Add components
             {
                 if (hasPosition)
-                    _positionCount = Buffer.Append(ref _positions, _positionCount, ParticlePosition.Default, count);
+                    _positionCount = DynamicArray.Append(ref _positions, _positionCount, ParticlePosition.Default, count);
 
                 if (hasRotation)
-                    _rotationCount = Buffer.Append(ref _rotations, _rotationCount, ParticleRotation.Default, count);
+                    _rotationCount = DynamicArray.Append(ref _rotations, _rotationCount, ParticleRotation.Default, count);
             }
         }
 
@@ -256,7 +254,7 @@ namespace SpatialSlur.Dynamics
                 int count = other._count;
 
                 _count = offset + count;
-                Buffer.ExpandToFit(ref _particles, _count);
+                DynamicArray.ExpandToFit(ref _particles, _count);
 
                 // Set particle indices
                 {
@@ -278,8 +276,8 @@ namespace SpatialSlur.Dynamics
 
             // Append components
             {
-                _positionCount = Buffer.Append(ref _positions, _positionCount, other._positions, other._positionCount);
-                _rotationCount = Buffer.Append(ref _rotations, _rotationCount, other._rotations, other._rotationCount);
+                _positionCount = DynamicArray.Append(ref _positions, _positionCount, other._positions, other._positionCount);
+                _rotationCount = DynamicArray.Append(ref _rotations, _rotationCount, other._rotations, other._rotationCount);
             }
         }
 
@@ -366,7 +364,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="handle"></param>
         /// <returns></returns>
-        public ref ParticlePosition Position(in Particle handle)
+        public ref ParticlePosition GetPosition(in Particle handle)
         {
             int index = handle.PositionIndex;
 
@@ -382,7 +380,7 @@ namespace SpatialSlur.Dynamics
         /// </summary>
         /// <param name="handle"></param>
         /// <returns></returns>
-        public ref ParticleRotation Rotation(in Particle handle)
+        public ref ParticleRotation GetRotation(in Particle handle)
         {
             int index = handle.RotationIndex;
 

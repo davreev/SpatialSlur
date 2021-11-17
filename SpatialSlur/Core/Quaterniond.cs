@@ -135,7 +135,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Quaterniond CreateFromTo(Vector3d from, Vector3d to)
         {
-            // impl refs
+            // Impl refs
             // https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
             // http://lolengine.net/blog/2013/09/18/beautiful-maths-quaternion-from-vectors
 
@@ -144,10 +144,10 @@ namespace SpatialSlur
 
             var ca = Vector3d.Dot(from, to);
 
-            // parallel check
+            // Parallel check
             if (SlurMath.ApproxEquals(Math.Abs(ca), 1.0))
             {
-                //opposite check
+                // Opposite check
                 if(ca < 0.0)
                 {
                     var perp = from.X < 1.0 ? from.CrossX : from.CrossY;
@@ -158,7 +158,7 @@ namespace SpatialSlur
                 return Identity;
             }
 
-            // can assume axis is valid
+            // Can assume axis is valid
             var axis = Vector3d.Cross(from, to);
             var q = new Quaterniond(axis.X, axis.Y, axis.Z, ca + 1.0);
             q.Unitize();
@@ -175,7 +175,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Quaterniond CreateLookAt(Vector3d forward, Vector3d up)
         {
-            // impl ref
+            // Impl ref
             // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
 
             return new Quaterniond(OrthoBasis3d.CreateLookAt(forward, up));

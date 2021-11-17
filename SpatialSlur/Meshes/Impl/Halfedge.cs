@@ -17,7 +17,7 @@ namespace SpatialSlur.Meshes.Impl
     /// </summary>
     /// <typeparam name="E"></typeparam>
     [Serializable]
-    public abstract class Halfedge<E> : Node<E>
+    public abstract class Halfedge<E> : HeNode<E>
         where E : Halfedge<E>
     {
         #region Static Members

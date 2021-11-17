@@ -42,7 +42,7 @@ namespace SpatialSlur.Fields
                 int nx = field.CountX;
                 var k = kernel;
 
-                var p = field.ToGridSpace(from);
+                var p = field.IndexToGrid(from);
 
                 for (int i = from; i < to; i++)
                 {
@@ -51,7 +51,7 @@ namespace SpatialSlur.Fields
                     var sum = 0.0;
                     
                     foreach((var d, var w) in k)
-                        sum += vals[field.ToIndex(p + d)] * w;
+                        sum += vals[field.IndexAt(p + d)] * w;
 
                     result[i] = sum;
                 }
@@ -79,7 +79,7 @@ namespace SpatialSlur.Fields
                 int nx = field.CountX;
                 var k = kernel;
 
-                var p = field.ToGridSpace(from);
+                var p = field.IndexToGrid(from);
 
                 for (int i = from; i < to; i++)
                 {
@@ -88,7 +88,7 @@ namespace SpatialSlur.Fields
                     var sum = Vector2d.Zero;
 
                     foreach ((var d, var w) in k)
-                        sum += vals[field.ToIndex(p + d)] * w;
+                        sum += vals[field.IndexAt(p + d)] * w;
 
                     result[i] = sum;
                 }
@@ -117,7 +117,7 @@ namespace SpatialSlur.Fields
                 int ny = field.CountY;
                 var k = kernel;
 
-                var p = field.ToGridSpace(from);
+                var p = field.IndexToGrid(from);
 
                 for (int i = from; i < to; i++)
                 {
@@ -127,7 +127,7 @@ namespace SpatialSlur.Fields
                     var sum = 0.0;
 
                     foreach ((var d, var w) in k)
-                        sum += vals[field.ToIndex(p + d)] * w;
+                        sum += vals[field.IndexAt(p + d)] * w;
 
                     result[i] = sum;
                 }
@@ -156,7 +156,7 @@ namespace SpatialSlur.Fields
                 int ny = field.CountY;
                 var k = kernel;
 
-                var p = field.ToGridSpace(from);
+                var p = field.IndexToGrid(from);
 
                 for (int i = from; i < to; i++)
                 {
@@ -166,7 +166,7 @@ namespace SpatialSlur.Fields
                     var sum = Vector3d.Zero;
 
                     foreach ((var d, var w) in k)
-                        sum += vals[field.ToIndex(p + d)] * w;
+                        sum += vals[field.IndexAt(p + d)] * w;
 
                     result[i] = sum;
                 }
@@ -197,7 +197,7 @@ namespace SpatialSlur.Fields
                 dy = 1.0 / (dy * dy);
 
                 (int di, int dj) = field.GetBoundaryOffsets();
-                (int i, int j) = field.ToGridSpace(from);
+                (int i, int j) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {
@@ -242,7 +242,7 @@ namespace SpatialSlur.Fields
                 dz = 1.0 / (dz * dz);
 
                 (int di, int dj, int dk) = field.GetBoundaryOffsets();
-                (int i, int j, int k) = field.ToGridSpace(from);
+                (int i, int j, int k) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {
@@ -292,7 +292,7 @@ namespace SpatialSlur.Fields
                 dy = 1.0 / Math.Abs(dy);
 
                 (int di, int dj) = field.GetBoundaryOffsets();
-                (int i, int j) = field.ToGridSpace(from);
+                (int i, int j) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {
@@ -362,7 +362,7 @@ namespace SpatialSlur.Fields
                 dz = 1.0 / Math.Abs(dz);
 
                 (int di, int dj, int dk) = field.GetBoundaryOffsets();
-                (int i, int j, int k) = field.ToGridSpace(from);
+                (int i, int j, int k) = field.IndexToGrid(from);
 
                 for (int index = from; index < to; index++, i++)
                 {

@@ -222,32 +222,11 @@ namespace SpatialSlur.Fields
             set => _wrapY = value;
         }
 
-        
-        /// <summary>
-        /// Converts from grid space to world space.
-        /// </summary>
-        public Vector2d ToWorldSpace(Vector2d point)
-        {
-            return new Vector2d(
-              point.X * _tx + _dx,
-              point.Y * _ty + _dy
-          );
-        }
-
 
         /// <summary>
-        /// Converts from index to world space.
+        /// Transforms the given point from model space to grid space.
         /// </summary>
-        public Vector2d ToWorldSpace(int index)
-        {
-            return ToWorldSpace(ToGridSpace(index));
-        }
-        
-
-        /// <summary>
-        /// Converts from world space to grid space.
-        /// </summary>
-        public Vector2d ToGridSpace(Vector2d point)
+        public Vector2d ModelToGrid(Vector2d point)
         {
             return new Vector2d(
                (point.X - _dx) * _txInv,
@@ -257,9 +236,30 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Converts from index to grid space.
+        /// Transforms the given point from grid space to model space.
         /// </summary>
-        public Vector2i ToGridSpace(int index)
+        public Vector2d GridToModel(Vector2d point)
+        {
+            return new Vector2d(
+              point.X * _tx + _dx,
+              point.Y * _ty + _dy
+          );
+        }
+
+
+        /// <summary>
+        /// Converts the given index to a point in model space.
+        /// </summary>
+        public Vector2d IndexToModel(int index)
+        {
+            return GridToModel(IndexToGrid(index));
+        }
+
+
+        /// <summary>
+        /// Converts the given index to a point in grid space.
+        /// </summary>
+        public Vector2i IndexToGrid(int index)
         {
             int y = index / _nx;
             return new Vector2i(index - y * _nx, y);
@@ -267,19 +267,19 @@ namespace SpatialSlur.Fields
 
 
         /// <summary>
-        /// Converts from grid space to index.
+        /// Returns the index at the given point in grid space.
         /// </summary>
-        public int ToIndex(Vector2i point)
+        public int IndexAt(Vector2i point)
         {
             return WrapX(point.X) + WrapY(point.Y) * _nx;
         }
 
 
         /// <summary>
-        /// Converts from grid space to index.
-        /// Assumes the given point is within the bounds of the grid.
+        /// Returns the index at the given point in grid space.
+        /// Assumes the point is within the bounds of the grid.
         /// </summary>
-        public int ToIndexUnsafe(Vector2i point)
+        public int IndexAtUnsafe(Vector2i point)
         {
             return point.X + point.Y * _nx;
         }

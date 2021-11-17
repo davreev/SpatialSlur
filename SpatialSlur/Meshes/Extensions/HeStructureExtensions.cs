@@ -785,7 +785,7 @@ namespace SpatialSlur.Meshes
             where V : HeStructure<V, E>.Vertex
             where E : HeStructure<V, E>.Halfedge
         {
-            var prop = Node<V>.CreateProperty(result);
+            var prop = HeNode<V>.CreateProperty(result);
             GetVertexDepths(graph, sources, prop, exclude);
         }
 
@@ -854,7 +854,7 @@ namespace SpatialSlur.Meshes
             where V : HeStructure<V, E>.Vertex
             where E : HeStructure<V, E>.Halfedge
         {
-            var prop = Node<V>.CreateProperty(result);
+            var prop = HeNode<V>.CreateProperty(result);
             GetVertexDistances(graph, sources, getLength, prop, bestFirst);
         }
 
@@ -1569,7 +1569,7 @@ namespace SpatialSlur.Meshes
            where E : HeStructure<V, E, F>.Halfedge
            where F : HeStructure<V, E, F>.Face
         {
-            var prop = Node<F>.CreateProperty(result);
+            var prop = HeNode<F>.CreateProperty(result);
             GetFaceDepths(mesh, sources, prop, exclude);
         }
 
@@ -1641,7 +1641,7 @@ namespace SpatialSlur.Meshes
            where E : HeStructure<V, E, F>.Halfedge
            where F : HeStructure<V, E, F>.Face
         {
-            var prop = Node<F>.CreateProperty(result);
+            var prop = HeNode<F>.CreateProperty(result);
             GetFaceDistances(mesh, sources, getLength, prop, bestFirst);
         }
 

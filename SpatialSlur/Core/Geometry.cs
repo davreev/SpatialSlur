@@ -14,7 +14,7 @@ namespace SpatialSlur
     /// <summary>
     /// 
     /// </summary>
-    public static class Geometry
+    public static partial class Geometry
     {
         /// <summary>
         /// Returns parameters for the closest pair of points between lines a and b.
@@ -88,10 +88,10 @@ namespace SpatialSlur
         /// </summary>
         private static bool LineLineClosestPoints(Vector3d u, Vector3d v, Vector3d w, out double tu, out double tv)
         {
-            // impl ref
+            // Impl ref
             // http://geomalgorithms.com/a07-_distance.html
 
-            return (SolveSymmetric(u.SquareLength, -Vector3d.Dot(u, v), v.SquareLength, -Vector3d.Dot(w, u), Vector3d.Dot(w, v), out tu, out tv));
+            return SolveSymmetric(u.SquareLength, -Vector3d.Dot(u, v), v.SquareLength, -Vector3d.Dot(w, u), Vector3d.Dot(w, v), out tu, out tv);
         }
 
 
@@ -105,12 +105,12 @@ namespace SpatialSlur
             if (Math.Abs(detA) > 0.0)
             {
                 detA = 1.0 / detA;
-                x0 = (a11 * b0 - a01 * b1) * detA;
+                x0 = (b0 * a11 - b1 * a01) * detA;
                 x1 = (a00 * b1 - a01 * b0) * detA;
                 return true;
             }
 
-            // no unique solution
+            // No unique solution
             x0 = x1 = 0.0;
             return false;
         }
@@ -157,7 +157,7 @@ namespace SpatialSlur
         /// <param name="tv"></param>
         private static bool LineLineIntersection(Vector2d u, Vector2d v, Vector2d w, out double tu, out double tv)
         {
-            // impl ref
+            // Impl ref
             // https://www.codeproject.com/Tips/862988/Find-the-Intersection-Point-of-Two-Line-Segments
             
             var c = Vector2d.Cross(u, v);
@@ -170,7 +170,7 @@ namespace SpatialSlur
                 return true;
             }
 
-            // lines are parallel, no solution
+            // Lines are parallel, no solution
             tu = tv = 0.0;
             return false;
         }
@@ -195,7 +195,7 @@ namespace SpatialSlur
             var cc = c.SquareLength;
             var rr = radius * radius;
 
-            // intersections exist
+            // Intersections exist
             if (cc < rr)
             {
                 var p = start + b;
@@ -205,7 +205,7 @@ namespace SpatialSlur
                 return true;
             }
 
-            // no intersections, return closest point on sphere
+            // No intersections, return closest point on sphere
             near = far = center + c * (radius / Math.Sqrt(cc));
             return false;
         }
@@ -232,7 +232,7 @@ namespace SpatialSlur
                 return true;
             }
 
-            // normals are parallel, no unique solution
+            // Normals are parallel, no unique solution
             point = Vector3d.Zero;
             return false;
         }
@@ -249,10 +249,9 @@ namespace SpatialSlur
         /// <returns></returns>
         public static int PrincipalComponentAnalysis(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d xAxis, out Vector3d yAxis, double epsilon = Constd.ZeroTolerance)
         {
-            origin = points.Mean();
-            var covm = Matrix3d.CreateCovariance(points, origin);
-
+            var covm = Matrix3d.CreateCovariance(points, out origin);
             Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
+
             xAxis = vecs.Column0;
             yAxis = vecs.Column1;
 
@@ -273,7 +272,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d normal, double epsilon = Constd.ZeroTolerance)
         {
-            // impl refs
+            // Impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
             // http://www.ilikebigbits.com/blog/2017/9/24/fitting-a-plane-to-noisy-points-in-3d
 
@@ -292,12 +291,11 @@ namespace SpatialSlur
         /// <returns></returns>
         public static bool FitPlaneToPoints(IEnumerable<Vector3d> points, Vector3d origin, out Vector3d normal, double epsilon = Constd.ZeroTolerance)
         {
-            // impl refs
+            // Impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
             // http://www.ilikebigbits.com/blog/2017/9/24/fitting-a-plane-to-noisy-points-in-3d
 
             var covm = Matrix3d.CreateCovariance(points, origin);
-
             Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
             normal = vecs.Column2;
 
@@ -316,7 +314,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static bool FitLineToPoints(IEnumerable<Vector3d> points, out Vector3d start, out Vector3d direction, double epsilon = Constd.ZeroTolerance)
         {
-            // impl refs
+            // Impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
 
             start = points.Mean();
@@ -325,7 +323,7 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Returns true if a unique plane was found i.e. the given points are not coincident or colinear.
+        /// Returns true if a unique line was found i.e. the given points are not coincident.
         /// </summary>
         /// <param name="points"></param>
         /// <param name="start"></param>
@@ -334,11 +332,10 @@ namespace SpatialSlur
         /// <returns></returns>
         public static bool FitLineToPoints(IEnumerable<Vector3d> points, Vector3d start, out Vector3d direction, double epsilon = Constd.ZeroTolerance)
         {
-            // impl refs
+            // Impl refs
             // https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf
 
             var covm = Matrix3d.CreateCovariance(points, start);
-
             Matrix3d.Decompose.EigenSymmetric(covm, out Matrix3d vecs, out Vector3d vals, epsilon);
             direction = vecs.Column0;
 
@@ -386,9 +383,8 @@ namespace SpatialSlur
         public static bool FitCircleToPoints(IEnumerable<Vector3d> points, out Vector3d origin, out Vector3d normal, out double radius)
         {
             // TODO
+            // Solve in 2d on best fit plane
             throw new NotImplementedException();
-
-            // fit plane followed by 2d fit circle
         }
 
 
@@ -540,35 +536,6 @@ namespace SpatialSlur
 
 
         /// <summary>
-        /// Returns the center of the circle that passes through the 3 given points.
-        /// </summary>
-        /// <param name="p0"></param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
-        public static Vector3d GetCurvatureCenter(Vector3d p0, Vector3d p1, Vector3d p2)
-        {
-            return p1 + GetCurvatureVector(p0 - p1, p2 - p1);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v0"></param>
-        /// <param name="v1"></param>
-        /// <returns></returns>
-        public static Vector3d GetCurvatureVector(Vector3d v0, Vector3d v1)
-        {
-            // impl ref
-            // http://www.block.arch.ethz.ch/brg/files/2013-ijss-vanmele-shaping-tension-structures-with-actively-bent-linear-elements_1386929572.pdf
-
-            Vector3d v2 = Vector3d.Cross(v0, v1);
-            return Vector3d.Cross((v0.SquareLength * v1 - v1.SquareLength * v0), v2) / (2.0 * v2.SquareLength);
-        }
-
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="p0"></param>
@@ -577,7 +544,23 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector3d GetCircumcenter(Vector3d p0, Vector3d p1, Vector3d p2)
         {
-            return p0 + GetCurvatureVector(p1 - p0, p2 - p0);
+            return p0 + GetCircumcenter(p1 - p0, p2 - p0);
+        }
+
+
+        /// <summary>
+        /// Returns the circumcenter of the triangle with the edges.
+        /// </summary>
+        /// <param name="d0"></param>
+        /// <param name="d1"></param>
+        /// <returns></returns>
+        public static Vector3d GetCircumcenter(Vector3d d0, Vector3d d1)
+        {
+            // Impl ref
+            // http://www.block.arch.ethz.ch/brg/files/2013-ijss-vanmele-shaping-tension-structures-with-actively-bent-linear-elements_1386929572.pdf
+
+            Vector3d n = Vector3d.Cross(d0, d1);
+            return Vector3d.Cross((d0.SquareLength * d1 - d1.SquareLength * d0), n) / (2.0 * n.SquareLength);
         }
 
 
@@ -590,12 +573,34 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector3d GetIncenter(Vector3d p0, Vector3d p1, Vector3d p2)
         {
-            double d01 = p0.DistanceTo(p1);
-            double d12 = p1.DistanceTo(p2);
-            double d20 = p2.DistanceTo(p0);
+            double m0 = p0.DistanceTo(p1);
+            double m1 = p1.DistanceTo(p2);
+            double m2 = p2.DistanceTo(p0);
 
-            double perimInv = 1.0 / (d01 + d12 + d20); // inverse perimeter
-            return p0 * (d12 * perimInv) + p1 * (d20 * perimInv) + p2 * (d01 * perimInv);
+            double perimInv = 1.0 / (m0 + m1 + m2); // Inverse perimeter
+            return p0 * (m1 * perimInv) + p1 * (m2 * perimInv) + p2 * (m0 * perimInv);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <returns></returns>
+        public static Vector3d GetOrthocenter(Vector3d p0, Vector3d p1, Vector3d p2)
+        {
+            return p0 + GetOrthocenter(p1 - p0, p2 - p0);
+        }
+
+
+        /// <summary>
+        /// Returns the orthocenter of the triangle with the given edges.
+        /// </summary>
+        public static Vector3d GetOrthocenter(Vector3d d0, Vector3d d1)
+        {
+            return Vector3d.MatchProjection(Vector3d.Reject(d0, d1 - d0), d1, d0);
         }
 
 
@@ -637,20 +642,20 @@ namespace SpatialSlur
         /// <returns></returns>
         public static bool GetBarycentric(Vector3d point, Vector3d a, Vector3d b, Vector3d c, out Vector3d result)
         {
-            // impl ref
+            // Impl ref
             // http://realtimecollisiondetection.net/ (3.1.4, 3.4)
 
             var u = b - a;
             var v = c - a;
             var w = point - a;
 
-            if(SolveSymmetric(u.SquareLength, Vector3d.Dot(u,v), v.SquareLength, Vector3d.Dot(w,u), Vector3d.Dot(w,v), out result.Y, out result.Z))
+            if (SolveSymmetric(u.SquareLength, Vector3d.Dot(u, v), v.SquareLength, Vector3d.Dot(w, u), Vector3d.Dot(w, v), out result.Y, out result.Z))
             {
                 result.X = 1.0 - result.Y - result.Z;
                 return true;
             }
 
-            // no unique solution
+            // No unique solution
             result = Vector3d.Zero;
             return false;
         }
@@ -682,7 +687,7 @@ namespace SpatialSlur
         /// <param name="t2"></param>
         public static Vector3d GetGradient(Vector3d p0, Vector3d p1, Vector3d p2, double t0, double t1, double t2)
         {
-            // impl ref
+            // Impl ref
             // https://www.cs.cmu.edu/~kmcrane/Projects/HeatMethod/paper.pdf
 
             var d0 = p2 - p1;
@@ -706,7 +711,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static Vector3d GetAreaGradient(Vector3d p0, Vector3d p1, Vector3d p2)
         {
-            // impl ref
+            // Impl ref
             // http://www.cs.cmu.edu/~kmcrane/Projects/Other/TriangleMeshDerivativesCheatSheet.pdf
 
             var d = p2 - p1;
@@ -729,7 +734,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static void GetAreaGradients(Vector3d p0, Vector3d p1, Vector3d p2, out Vector3d g0, out Vector3d g1, out Vector3d g2)
         {
-            // impl ref
+            // Impl ref
             // http://www.cs.cmu.edu/~kmcrane/Projects/Other/TriangleMeshDerivativesCheatSheet.pdf
 
             var d0 = p1 - p0;
@@ -755,8 +760,8 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double GetAspect(Vector3d p0, Vector3d p1, Vector3d p2)
         {
-            double maxEdge = 0.0; // longest edge
-            double minAlt = Double.PositiveInfinity; // shortest altitude
+            double maxLength = 0.0;
+            double minAltitude = Double.PositiveInfinity;
 
             Vector3d v0 = p1 - p0;
             Vector3d v1 = p2 - p1;
@@ -766,12 +771,12 @@ namespace SpatialSlur
             Sub(v1, v2);
             Sub(v2, v0);
 
-            return Math.Sqrt(maxEdge) / Math.Sqrt(minAlt);
+            return Math.Sqrt(maxLength) / Math.Sqrt(minAltitude);
 
             void Sub(Vector3d a, Vector3d b)
             {
-                maxEdge = Math.Max(maxEdge, a.SquareLength);
-                minAlt = Math.Min(minAlt, Vector3d.Reject(b, a).SquareLength);
+                maxLength = Math.Max(maxLength, a.SquareLength);
+                minAltitude = Math.Min(minAltitude, Vector3d.Reject(b, a).SquareLength);
             }
         }
 
@@ -787,8 +792,8 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double GetAspect(Vector3d p0, Vector3d p1, Vector3d p2, Vector3d p3)
         {
-            double minEdge = 0.0;
-            double maxAlt = double.PositiveInfinity;
+            double minLength = 0.0;
+            double maxAltitude = double.PositiveInfinity;
 
             Vector3d v0 = p1 - p0;
             Vector3d v1 = p2 - p1;
@@ -800,12 +805,12 @@ namespace SpatialSlur
             Sub(v2, v3, v0);
             Sub(v3, v0, v1);
 
-            return Math.Sqrt(minEdge) / Math.Sqrt(maxAlt);
+            return Math.Sqrt(minLength) / Math.Sqrt(maxAltitude);
 
             void Sub(Vector3d a, Vector3d b, Vector3d c)
             {
-                minEdge = Math.Max(minEdge, a.SquareLength);
-                maxAlt = Math.Min(maxAlt, Vector3d.Project(c, Vector3d.Cross(a, b)).SquareLength);
+                minLength = Math.Max(minLength, a.SquareLength);
+                maxAltitude = Math.Min(maxAltitude, Vector3d.Project(c, Vector3d.Cross(a, b)).SquareLength);
             }
         }
 
@@ -819,7 +824,7 @@ namespace SpatialSlur
         /// <returns></returns>
         public static double GetDihedralAngle(Vector3d unitAxis, Vector3d leftNormal, Vector3d rightNormal)
         {
-            // impl ref
+            // Impl ref
             // http://brickisland.net/DDGFall2017/2017/10/12/assignment-1-coding-investigating-curvature/
 
             return
@@ -827,23 +832,5 @@ namespace SpatialSlur
                 Vector3d.Dot(unitAxis, Vector3d.Cross(leftNormal, rightNormal)),
                 Vector3d.Dot(leftNormal, rightNormal));
         }
-
-
-        /// <summary>
-        /// Calculates the planarity of the given quad as the shortest distance between the 2 diagonals over the mean diagonal length.
-        /// </summary>
-        /// <param name="p0"></param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <param name="p3"></param>
-        /// <returns></returns>
-        public static double GetPlanarity(Vector3d p0, Vector3d p1, Vector3d p2, Vector3d p3)
-        {
-            var d0 = p2 - p0;
-            var d1 = p3 - p1;
-            var d2 = LineLineShortestVector2(p0, d0, p1, d1);
-            return d2.Length / ((d1.Length + d0.Length) * 0.5);
-        }
-
     }
 }

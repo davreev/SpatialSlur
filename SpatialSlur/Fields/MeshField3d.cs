@@ -129,7 +129,7 @@ namespace SpatialSlur.Fields
         public MeshField3d(HeMesh3d mesh)
             : base(mesh)
         {
-            EnsureCapacity();
+            ExpandToFit();
         }
 
 
@@ -140,14 +140,14 @@ namespace SpatialSlur.Fields
         public MeshField3d(MeshField3d other)
             : base(other)
         {
-            EnsureCapacity();
+            ExpandToFit();
         }
 
 
         /// <inheritdoc />
         public ArrayView<T> Values
         {
-            get { return _values.AsView(_count); }
+            get { return _values.First(_count); }
         }
 
 
@@ -212,13 +212,10 @@ namespace SpatialSlur.Fields
         /// <summary>
         /// 
         /// </summary>
-        public void EnsureCapacity()
+        public void ExpandToFit()
         {
-            var verts = Mesh.Vertices;
-            _count = verts.Count;
-
-            if (_values.Length < _count)
-                Array.Resize(ref _values, verts.Capacity);
+            _count = Mesh.Vertices.Count;
+            DynamicArray.ExpandToFit(ref _values, _count);
         }
 
 
@@ -227,10 +224,7 @@ namespace SpatialSlur.Fields
         /// </summary>
         public void TrimExcess()
         {
-            int max = _count << 1;
-
-            if (_values.Length > max)
-                Array.Resize(ref _values, max);
+            DynamicArray.ShrinkToFit(ref _values, _count << 1);
         }
 
 

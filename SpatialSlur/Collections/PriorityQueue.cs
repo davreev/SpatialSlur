@@ -153,7 +153,7 @@ namespace SpatialSlur.Collections
 
 
         /// <summary>
-        /// 
+        /// Maintains the heap invariant by sinking lower priority items to the bottom
         /// </summary>
         /// <param name="parent"></param>
         private void Sink(int parent)
@@ -182,18 +182,13 @@ namespace SpatialSlur.Collections
         /// <param name="value"></param>
         public void Insert(K key, V value)
         {
-            const int minCapacity = 4;
-
-            if (_items.Length == _count)
-                Array.Resize(ref _items, Math.Max(_count << 1, minCapacity));
-            
-            _items[_count] = (key, value);
-            Swim(_count++); // maintain heap invariant
+            DynamicArray.Append(ref _items, _count++, (key, value));
+            Swim(_count);
         }
 
 
         /// <summary>
-        /// 
+        /// Maintains the heap invariant by swimming higher priority elements up to the top
         /// </summary>
         /// <param name="child"></param>
         private void Swim(int child)
@@ -247,10 +242,7 @@ namespace SpatialSlur.Collections
         /// </summary>
         public void TrimExcess()
         {
-            int max = _count << 1;
-
-            if (_items.Length > max)
-                Array.Resize(ref _items, max);
+            DynamicArray.ShrinkToFit(ref _items, _count << 1);
         }
     }
 }

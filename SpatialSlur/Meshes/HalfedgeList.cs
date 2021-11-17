@@ -20,7 +20,7 @@ namespace SpatialSlur.Meshes
     /// </summary>
     /// <typeparam name="E"></typeparam>
     [Serializable]
-    public class HalfedgeList<E> : NodeList<E>
+    public class HalfedgeList<E> : HeNodeList<E>
         where E : Halfedge<E>
     {
         /// <summary>
@@ -45,7 +45,7 @@ namespace SpatialSlur.Meshes
         /// <inheritdoc/>
         public override int CountUnused()
         {
-            var hedges = AsView();
+            var hedges = Items();
             int result = 0;
 
             for (int i = 0; i < hedges.Count; i += 2)
@@ -58,7 +58,7 @@ namespace SpatialSlur.Meshes
         /// <inheritdoc/>
         protected override int Swim()
         {
-            var hedges = AsView();
+            var hedges = Items();
             int index = 0;
 
             for (int i = 0; i < hedges.Count; i += 2)
@@ -86,7 +86,7 @@ namespace SpatialSlur.Meshes
             if (attributes is A[] arr)
                 return SwimAttributes(arr);
             
-            var hedges = AsView();
+            var hedges = Items();
             int index = 0;
 
             for (int i = 0; i < hedges.Count; i += 2)
@@ -103,7 +103,7 @@ namespace SpatialSlur.Meshes
         /// <inheritdoc/>
         public override int SwimAttributes<A>(A[] attributes)
         {
-            var hedges = AsView();
+            var hedges = Items();
             int index = 0;
 
             for (int i = 0; i < hedges.Count; i += 2)
@@ -125,7 +125,7 @@ namespace SpatialSlur.Meshes
         /// <param name="getKey"></param>
         public override void Sort<K>(Func<E, K> getKey)
         {
-            var hedges = AsView();
+            var hedges = Items();
             int index = 0;
 
             // sort in pairs
@@ -158,7 +158,7 @@ namespace SpatialSlur.Meshes
 
             void Body(int from, int to)
             {
-                var hedges = AsView();
+                var hedges = Items();
 
                 for (int i = from; i < to; i++)
                 {

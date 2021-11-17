@@ -55,10 +55,10 @@ namespace SpatialSlur.Fields
 
         
         /// <summary>
-        /// 
+        /// Transforms the given point from model space to noise space.
         /// </summary>
         /// <param name="point"></param>
-        private void ToNoiseSpace(ref Vector2d point)
+        private void ModelToNoise(ref Vector2d point)
         {
             point = (point - Translation) * _scaleInv;
         }
@@ -67,7 +67,7 @@ namespace SpatialSlur.Fields
         /// <inheritdoc />
         public double ValueAt(Vector2d point)
         {
-            ToNoiseSpace(ref point);
+            ModelToNoise(ref point);
             return Noise.Perlin.ValueAt(point.X, point.Y);
         }
 
@@ -79,7 +79,7 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public Vector2d VectorAt(Vector2d point)
         {
-            ToNoiseSpace(ref point);
+            ModelToNoise(ref point);
             return Noise.Perlin.VectorAt(point.X, point.Y);
         }
 
@@ -91,7 +91,7 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public Vector2d GradientAt(Vector2d point)
         {
-            ToNoiseSpace(ref point);
+            ModelToNoise(ref point);
             return Noise.Perlin.GradientAt(point.X, point.Y) * _scaleInv;
         }
 
@@ -103,7 +103,7 @@ namespace SpatialSlur.Fields
         /// <returns></returns>
         public Vector2d CurlAt(Vector2d point)
         {
-            ToNoiseSpace(ref point);
+            ModelToNoise(ref point);
             return Noise.Perlin.CurlAt(point.X, point.Y) * _scaleInv;
         }
 

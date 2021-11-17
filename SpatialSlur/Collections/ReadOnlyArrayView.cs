@@ -44,7 +44,7 @@ namespace SpatialSlur.Collections
         /// <param name="source"></param>
         public static implicit operator ReadOnlyArrayView<T>(T[] source)
         {
-            return source.AsView();
+            return new ReadOnlyArrayView<T>(source, 0, source.Length);
         }
 
 
@@ -68,6 +68,20 @@ namespace SpatialSlur.Collections
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="source"></param>
+        /// <param name="start"></param>
+        /// <param name="count"></param>
+        internal ReadOnlyArrayView(T[] source, int start, int count)
+        {
+            _source = source;
+            _start = start;
+            _count = count;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int Start
         {
             get => _start;
@@ -84,8 +98,25 @@ namespace SpatialSlur.Collections
 
 
         /// <summary>
-        /// Gets the element at the given index with respect to this view.
+        /// 
+        /// </summary>
+        public bool IsValid
+        {
+            get
+            {
+                return
+                    _source != null &&
+                    _start >= 0 &&
+                    _count >= 0 &&
+                    _start + _count <= _source.Length;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the item at the given index.
         /// Note that this does not perform an additional bounds check.
+        /// If bounds check is needed, use ItemAt() instead.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -96,39 +127,36 @@ namespace SpatialSlur.Collections
 
 
         /// <summary>
-        /// 
+        /// Returns the item at the given index by reference.
         /// </summary>
-        public bool HasSource
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public T ItemAt(int index)
         {
-            get => _source != null;
+            Utilities.BoundsCheck(index, _count);
+            return _source[index + _start];
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="start"></param>
         /// <param name="count"></param>
-        internal ReadOnlyArrayView(T[] source, int start, int count)
+        /// <returns></returns>
+        public ArrayView<T> Head(int count)
         {
-            if (start < 0 || count < 0 || start + count > source.Length)
-                throw new ArgumentOutOfRangeException();
-
-            _source = source;
-            _start = start;
-            _count = count;
+            return new ArrayView<T>(_source, _start, count);
         }
 
 
         /// <summary>
-        /// Performs an action over this view.
+        /// 
         /// </summary>
-        /// <param name="action"></param>
-        /// <param name="parallel"></param>
-        public void Action(Action<T> action, bool parallel = false)
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public ArrayView<T> Tail(int count)
         {
-            _source.ActionRange(_start, _count, action, parallel);
+            return new ArrayView<T>(_source, _start + _count - count, count);
         }
 
 
@@ -138,9 +166,9 @@ namespace SpatialSlur.Collections
         /// <param name="start"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public ReadOnlyArrayView<T> Subview(int start, int count)
+        public ArrayView<T> Segment(int start, int count)
         {
-            return new ReadOnlyArrayView<T>(_source, _start + start, count);
+            return new ArrayView<T>(_source, _start + start, count);
         }
 
 

@@ -786,7 +786,7 @@ namespace SpatialSlur.Collections
             {
                 BoxSearchImpl(n0, point, range, callback, j);
                 
-                if (Math.Abs(d) < range[i])
+                if (Math.Abs(d) <= range[i])
                     BoxSearchImpl(n1, point, range, callback, j);
             }
 

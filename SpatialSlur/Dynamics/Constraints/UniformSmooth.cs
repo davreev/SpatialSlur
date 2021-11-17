@@ -9,7 +9,7 @@ using System.Collections.Concurrent;
 using SpatialSlur.Collections;
 
 using static System.Threading.Tasks.Parallel;
-using static SpatialSlur.Collections.Buffer;
+using static SpatialSlur.Collections.DynamicArray;
 
 namespace SpatialSlur.Dynamics.Constraints
 {
@@ -49,13 +49,13 @@ namespace SpatialSlur.Dynamics.Constraints
 
         #endregion
 
-        private SlurList<Element> _elements = new SlurList<Element>();
+        private DynamicArray<Element> _elements = new DynamicArray<Element>();
 
 
         /// <summary>
         /// 
         /// </summary>
-        public SlurList<Element> Elements
+        public DynamicArray<Element> Elements
         {
             get => _elements;
         }

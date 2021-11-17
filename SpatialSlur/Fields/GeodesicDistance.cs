@@ -213,7 +213,7 @@ namespace SpatialSlur.Fields
                 int i0 = queue.Dequeue();
                 var d0 = result[i0];
 
-                (int x0, int y0) = grid.ToGridSpace(i0);
+                (int x0, int y0) = grid.IndexToGrid(i0);
 
                 // -x
                 if (x0 > 0)
@@ -283,7 +283,7 @@ namespace SpatialSlur.Fields
                 (var d0, int i0) = queue.RemoveMin();
                 if (result[i0] < d0) continue; // skip if lower value has been assigned
 
-                (int x0, int y0) = cost.ToGridSpace(i0);
+                (int x0, int y0) = cost.IndexToGrid(i0);
 
                 // -x
                 if (x0 > 0)
@@ -354,7 +354,7 @@ namespace SpatialSlur.Fields
                 (double d0, int i0) = queue.RemoveMin();
                 if (result[i0] < d0) continue; // skip if lower value has been assigned
 
-                (int x0, int y0) = cost.ToGridSpace(i0);
+                (int x0, int y0) = cost.IndexToGrid(i0);
 
                 if (x0 > 0)
                     TryUpdateX(i0 - 1);
@@ -473,7 +473,7 @@ namespace SpatialSlur.Fields
                 int i0 = queue.Dequeue();
                 var d0 = result[i0];
 
-                (int x0, int y0, int z0) = grid.ToGridSpace(i0);
+                (int x0, int y0, int z0) = grid.IndexToGrid(i0);
 
                 // -x
                 if (x0 > 0)
@@ -554,7 +554,7 @@ namespace SpatialSlur.Fields
                 (var d0, int i0) = queue.RemoveMin();
                 if (result[i0] < d0) continue; // skip if lower value has been assigned
 
-                (int x0, int y0, int z0) = cost.ToGridSpace(i0);
+                (int x0, int y0, int z0) = cost.IndexToGrid(i0);
 
                 // -x
                 if (x0 > 0)
@@ -636,7 +636,7 @@ namespace SpatialSlur.Fields
                 (double d0, int i0) = queue.RemoveMin();
                 if (result[i0] < d0) continue; // skip if lower value has been assigned
 
-                (int x0, int y0, int z0) = cost.ToGridSpace(i0);
+                (int x0, int y0, int z0) = cost.IndexToGrid(i0);
 
                 if (x0 > 0)
                     TryUpdateX(i0 - 1);

@@ -220,10 +220,10 @@ namespace SpatialSlur.Collections
         /// <param name="indexMap"></param>
         /// <param name="tolerance"></param>
         /// <returns></returns>
-        public static List<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, HashGrid2d<int> grid, out List<int> indexMap, double tolerance = Constd.ZeroTolerance)
+        public static DynamicArray<T> RemoveCoincident<T>(IEnumerable<T> items, Func<T, Vector2d> getPosition, HashGrid2d<int> grid, out DynamicArray<int> indexMap, double tolerance = Constd.ZeroTolerance)
         {
-            var result = new List<T>();
-            indexMap = new List<int>();
+            var result = new DynamicArray<T>();
+            indexMap = new DynamicArray<int>();
             grid.Scale = tolerance * _radiusToGridScale;
 
             // add points to result if no duplicates are found

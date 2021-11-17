@@ -135,7 +135,7 @@ namespace SpatialSlur
         /// <summary>
         /// 
         /// </summary>
-        public static void SetRange<T>(this T[] array, T[] other, int index, int otherIndex, int count)
+        public static void SetRange<T>(this T[] array, int index, T[] other, int otherIndex, int count)
         {
             Array.Copy(other, otherIndex, array, index, count);
         }
@@ -790,21 +790,9 @@ namespace SpatialSlur
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="array"></param>
-        /// <returns></returns>
-        public static ArrayView<T> AsView<T>(this T[] array)
-        {
-            return new ArrayView<T>(array, 0, array.Length);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="array"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public static ArrayView<T> AsView<T>(this T[] array, int count)
+        public static ArrayView<T> First<T>(this T[] array, int count)
         {
             return new ArrayView<T>(array, 0, count);
         }
@@ -846,7 +834,7 @@ namespace SpatialSlur
             int marker = 0;
             foreach (int n in sizes)
             {
-                yield return source.Subview(marker, n);
+                yield return source.Sub(marker, n);
                 marker += n;
             }
         }
